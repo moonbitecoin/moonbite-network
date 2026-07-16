@@ -1,0 +1,164 @@
+/* ============================================================
+   MoonBite — "The Plinth"
+   Obsidian showroom. Separation by hairline only. No gradients,
+   no shadows, no ambient motion. Gold is spent, never sprayed.
+   ============================================================ */
+
+:root {
+  --obsidian: #0A0C0F;   /* page */
+  --basalt:   #12151A;   /* raised cards */
+  --hair:     #262B33;   /* the only separator */
+  --ivory:    #ECEEF1;   /* primary text */
+  --mist:     #8A9099;   /* secondary text */
+  --gold:     #C9A24B;   /* the era accent — used sparingly */
+  --gold-dim: #6a5a30;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", "JetBrains Mono", Consolas, monospace;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--obsidian);
+  color: var(--ivory);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: inherit; text-decoration: none; }
+
+.muted { color: var(--mist); }
+
+.link-quiet { color: var(--mist); border-bottom: 1px solid var(--hair); transition: color .15s, border-color .15s; }
+.link-quiet:hover { color: var(--ivory); border-color: var(--gold-dim); }
+
+/* ---------- Nav ---------- */
+.nav { position: sticky; top: 0; z-index: 10; background: var(--obsidian); border-bottom: 1px solid var(--hair); }
+.nav__inner {
+  max-width: 1080px; margin: 0 auto; padding: 16px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.brand { display: inline-flex; align-items: center; gap: 10px; }
+.brand__mark {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 1.5px solid var(--gold); display: inline-block;
+}
+.brand__name { font-weight: 600; letter-spacing: -0.01em; }
+.nav__links { display: flex; gap: 26px; }
+.nav__links a { color: var(--mist); font-size: 14px; transition: color .15s; }
+.nav__links a:hover { color: var(--ivory); }
+
+/* ---------- Plinth (hero) ---------- */
+.plinth {
+  max-width: 1080px; margin: 0 auto;
+  padding: 120px 24px 130px;
+  text-align: center;
+}
+.plinth__label {
+  color: var(--mist); font-size: 13px; letter-spacing: 0.14em;
+  text-transform: uppercase; margin: 0 0 26px;
+}
+.counter { position: relative; display: inline-block; padding-bottom: 10px; font-family: var(--mono); }
+.counter__num {
+  font-size: clamp(40px, 9vw, 92px);
+  font-weight: 500; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ivory);
+  /* one orchestrated resolve, then silence */
+  filter: blur(10px); opacity: 0;
+  transition: filter .5s ease, opacity .5s ease;
+  display: inline-block;
+}
+.counter__num.resolved { filter: blur(0); opacity: 1; }
+/* the single gold moment: an underline beneath the number */
+.counter::after {
+  content: ""; position: absolute; left: 12%; right: 12%; bottom: 0; height: 2px;
+  background: var(--gold); transform: scaleX(0); transform-origin: center;
+  transition: transform .5s ease .35s;
+}
+.counter.resolved::after { transform: scaleX(1); }
+.counter__unit { color: var(--mist); font-size: 14px; margin: 14px 0 0; }
+
+.plinth__headline {
+  font-size: clamp(22px, 3.4vw, 30px); font-weight: 600; letter-spacing: -0.01em;
+  margin: 56px 0 40px; color: var(--ivory);
+}
+
+.btn-primary {
+  display: inline-block; font-size: 15px; font-weight: 600;
+  color: var(--obsidian); background: var(--gold);
+  padding: 13px 30px; border-radius: 8px;
+  border: 1px solid var(--gold);
+  transition: filter .15s;
+}
+.btn-primary:hover { filter: brightness(1.08); }
+.plinth__note { color: var(--mist); font-size: 13px; margin: 20px 0 0; }
+
+/* ---------- Proof chips ---------- */
+.chips {
+  max-width: 1080px; margin: 0 auto; padding: 40px 24px 96px;
+  display: grid; gap: 14px; grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--hair);
+}
+.chip {
+  background: var(--basalt); border: 1px solid var(--hair); border-radius: 8px;
+  padding: 18px 20px; transition: border-color .15s;
+}
+.chip:hover { border-color: var(--gold-dim); }
+.chip__k { display: block; font-size: 13px; color: var(--mist); text-transform: uppercase; letter-spacing: 0.08em; }
+.chip__v { display: block; margin-top: 8px; font-size: 15px; color: var(--ivory); }
+.chip__go { color: var(--mist); }
+
+/* ---------- Facts / ledger ---------- */
+.facts { max-width: 780px; margin: 0 auto; padding: 80px 24px; border-top: 1px solid var(--hair); }
+.facts__head { margin-bottom: 34px; }
+.facts__head h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 8px; }
+.facts__head p { color: var(--mist); margin: 0; font-size: 15px; }
+
+.ledger { margin: 0; }
+.ledger__row {
+  display: grid; grid-template-columns: 200px 1fr; gap: 20px;
+  padding: 16px 0; border-bottom: 1px solid var(--hair);
+}
+.ledger__row:last-child { border-bottom: none; }
+.ledger dt { color: var(--mist); font-size: 14px; }
+.ledger dd { margin: 0; color: var(--ivory); font-size: 15px; }
+.ledger dd .muted { font-size: 13px; }
+.ledger em { color: var(--gold); font-style: normal; }
+
+/* ---------- Provenance doors ---------- */
+.provenance { max-width: 780px; margin: 0 auto; padding: 80px 24px; border-top: 1px solid var(--hair); }
+.provenance__title { font-size: 24px; font-weight: 600; margin: 0 0 20px; letter-spacing: -0.01em; }
+.door {
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 16px;
+  padding: 22px 4px; border-bottom: 1px solid var(--hair); transition: padding-left .15s;
+}
+.door:hover { padding-left: 12px; }
+.door__name { font-size: 17px; font-weight: 600; }
+.door__desc { grid-column: 1 / 2; grid-row: 2; color: var(--mist); font-size: 14px; margin-top: 4px; }
+.door__go { grid-column: 2; grid-row: 1 / 3; color: var(--gold); font-size: 20px; }
+
+/* ---------- Footer ---------- */
+.footer { max-width: 1080px; margin: 0 auto; padding: 48px 24px 64px; border-top: 1px solid var(--hair); text-align: center; }
+.footer__line { color: var(--ivory); font-size: 14px; margin: 0 0 8px; }
+.footer__meta { color: var(--mist); font-size: 13px; margin: 0; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 720px) {
+  .nav__links { gap: 16px; }
+  .nav__links a:nth-child(4), .nav__links a:nth-child(5) { display: none; }
+  .chips { grid-template-columns: 1fr; }
+  .ledger__row { grid-template-columns: 1fr; gap: 4px; }
+  .plinth { padding: 72px 24px 84px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .counter__num { filter: none; opacity: 1; transition: none; }
+  .counter::after { transform: scaleX(1); transition: none; }
+}

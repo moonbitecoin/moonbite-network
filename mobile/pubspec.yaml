@@ -1,0 +1,37 @@
+name: moonbite_mobile
+description: A cross-platform mobile app for the MoonBite (MBITE) blockchain project.
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.1.0
+  provider: ^6.0.0
+  qr_flutter: ^4.1.0
+  json_annotation: ^4.8.0
+  # --- On-device wallet (non-custodial key layer) ---
+  bip39: ^1.0.6              # BIP39 mnemonic seed phrase
+  coinslib: ^3.1.8           # HD wallet, secp256k1, legacy+bech32 address, WIF (custom networks)
+  flutter_secure_storage: ^9.0.0  # encrypted key storage (Keystore/Keychain)
+  local_auth: ^2.1.7         # PIN / biometric unlock
+  hex: ^0.2.0                # scriptPubKey hex <-> bytes
+  bs58check: ^1.0.2          # base58check decode for legacy addresses
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  build_runner: ^2.4.0
+  json_serializable: ^6.7.0
+  integration_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

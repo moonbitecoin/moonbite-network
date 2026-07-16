@@ -1,0 +1,33 @@
+[Unit]
+Description=MoonBite Core daemon (seed node)
+Documentation=https://github.com/moonbite-project/moonbite
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=moonbite
+Group=moonbite
+
+# Adjust paths if you install elsewhere.
+ExecStart=/usr/local/bin/moonbited -daemon -pid=/run/moonbited/moonbited.pid \
+          -conf=/etc/moonbite/moonbite.conf -datadir=/var/lib/moonbite
+ExecStop=/usr/local/bin/moonbite-cli -conf=/etc/moonbite/moonbite.conf stop
+
+PIDFile=/run/moonbited/moonbited.pid
+RuntimeDirectory=moonbited
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=120
+TimeoutStartSec=60
+
+# --- Hardening ---
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/moonbite
+MemoryDenyWriteExecute=false
+
+[Install]
+WantedBy=multi-user.target
