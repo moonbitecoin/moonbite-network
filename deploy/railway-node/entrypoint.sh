@@ -56,7 +56,12 @@ NODE_PID=$!
 # Optional built-in miner so the fresh chain actually produces blocks.
 # A brand-new chain with zero miners stays at height 0 forever.
 if [[ "${MINE:-0}" == "1" ]]; then
-  echo "MINE=1 -> will mine to ${MINE_ADDRESS:-<new wallet address>}"
+  # Mine in RandomX light mode (~256MB) by default so the built-in miner is not
+  # OOM-killed on small Railway plans; the ~2GB fast-mode dataset would SIGKILL
+  # the process ("Killed"). Set MBITE_MINER_LIGHT=0 to opt into fast mode on a
+  # host with >=3GB RAM.
+  export MBITE_MINER_LIGHT="${MBITE_MINER_LIGHT:-1}"
+  echo "MINE=1 (MBITE_MINER_LIGHT=$MBITE_MINER_LIGHT) -> will mine to ${MINE_ADDRESS:-<new wallet address>}"
   (
     # Wait for RPC to come up.
     until moonbite-cli -datadir="$DATADIR" -rpcport=9445 \
