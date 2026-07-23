@@ -41,11 +41,10 @@ class TestPageRendering:
     """Test that HTML pages render correctly."""
 
     def test_index_page(self, client):
-        """Test GET / returns dashboard page."""
+        """Test GET / returns the MoonBite marketing home page."""
         response = client.get("/")
         assert response.status_code == 200
-        assert b"MyCoin" in response.data
-        assert b"Dashboard" in response.data
+        assert b"MoonBite" in response.data
 
     def test_wallet_page(self, client):
         """Test GET /wallet returns wallet page."""
