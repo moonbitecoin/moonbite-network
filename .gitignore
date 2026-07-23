@@ -11,6 +11,16 @@ __pycache__/
 build/
 dist/
 *.egg-info/
+moonbite-site/moonbite-site.zip
+
+# Reactor app packaging intermediates (keep source + released zip only)
+reactor-app/build/
+reactor-app/dist/
+reactor-app/pkg/
+reactor-app/*.spec
+
+# Notify capture (ephemeral, may contain emails)
+notify_signups.jsonl
 
 # Virtual environments
 .venv/
@@ -37,6 +47,9 @@ walletdata/
 chaindata/
 *.log
 
+# --- Notify capture (local email signups) ---
+notify_signups.jsonl
+
 # --- Compiled binaries (32MB+, rebuildable) ---
 release/bin/
 
@@ -48,3 +61,12 @@ Thumbs.db
 
 # --- Local tooling config ---
 .claude/
+
+# --- Machine-specific / local-only (contain local paths, live URLs, LAN setup) ---
+_start_roproxy.sh
+_start_tunnel.sh
+install-autostart.sh
+build_mining_estimate.py
+moonbite_lan_setup.ps1
+CURRENT_TUNNEL_URL.txt
+BigCoin_Mining_Estimate.xlsx

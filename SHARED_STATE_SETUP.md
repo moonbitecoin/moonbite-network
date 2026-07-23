@@ -1,4 +1,4 @@
-# MoonBite Shared State Setup
+# MyCoin Shared State Setup
 
 ## Problem
 Web Dashboard and Desktop GUI each create their own `Node` instance, so they don't share the same blockchain, addresses, or mining state.

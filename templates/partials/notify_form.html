@@ -1,0 +1,12 @@
+<!-- Reusable "get notified" capture. Progressive-enhanced by site.js; posts to
+     /api/notify. Honest copy: listing news only, no price predictions. -->
+<div class="mb-notify">
+    <h3>{{ notify_title | default("Get notified when MBITE lists") }}</h3>
+    <p>{{ notify_text | default("MoonBite isn't on any exchange yet. Drop your email and we'll tell you the moment it is — nothing else.") }}</p>
+    <form class="mb-notify-form" method="post" action="/api/notify" data-source="{{ notify_source | default('site') }}">
+        <input type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+        <button type="submit" class="btn btn-primary">Notify me</button>
+    </form>
+    <div class="mb-notify-ok" role="status" aria-live="polite"></div>
+    <p class="mb-notify-note">We'll only email you about the exchange listing. No price predictions, no spam.</p>
+</div>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="MoonBite (MBITE) — a fixed-emission, capped, no-premine cryptocurrency. 13,999,999.909 MBITE maximum, ever. Every claim links to its proof." />
+  <meta name="description" content="MoonBite (MBITE) — a fixed-emission, capped, no-premine cryptocurrency. 19,999,999.87 MBITE maximum, ever. Every claim links to its proof." />
   <meta name="theme-color" content="#0A0C0F" />
   <title>MoonBite (MBITE) — the first coin you ever truly owned</title>
   <link rel="stylesheet" href="css/style.css" />
@@ -20,6 +20,7 @@
       <nav class="nav__links" aria-label="Primary">
         <a href="#vision">Vision</a>
         <a href="spark.html">Mine</a>
+        <a href="download.html">Download</a>
         <a href="#wallet">Wallet</a>
         <a href="#live">Live</a>
         <a href="#provenance">Docs</a>
@@ -32,15 +33,15 @@
     <section class="plinth">
       <p class="plinth__label" id="counterLabel">Maximum MBITE that can ever exist</p>
 
-      <div class="counter" id="counter" aria-live="polite" aria-label="Maximum supply: 13,999,999.909 MBITE">
-        <span class="counter__num" id="counterNum">13,999,999.909</span>
+      <div class="counter" id="counter" aria-live="polite" aria-label="Maximum supply: 19,999,999.87 MBITE">
+        <span class="counter__num" id="counterNum">19,999,999.87</span>
       </div>
       <p class="counter__unit">MBITE · fixed forever · <a href="#provenance" class="link-quiet">enforced in code</a></p>
 
       <h1 class="plinth__headline">The first coin you ever truly owned</h1>
 
       <a href="spark.html" class="btn-primary" id="mineCta">Mine in your browser</a>
-      <p class="plinth__note" id="mineNote">Pre-mainnet · testnet &amp; regtest only · no live value yet</p>
+      <p class="plinth__note" id="mineNote">Pre-mainnet · testnet &amp; regtest only · no live value yet · <a href="download.html" class="link-quiet">download a desktop miner →</a></p>
     </section>
 
     <!-- ============ PROOF CHIPS ============ -->
@@ -67,14 +68,14 @@
       </div>
       <dl class="ledger">
         <div class="ledger__row"><dt>Ticker</dt><dd>MBITE</dd></div>
-        <div class="ledger__row"><dt>Maximum supply</dt><dd>13,999,999.909 MBITE <span class="muted">— asymptotic cap, never exceeded</span></dd></div>
+        <div class="ledger__row"><dt>Maximum supply</dt><dd>19,999,999.87 MBITE <span class="muted">— asymptotic cap, never exceeded</span></dd></div>
         <div class="ledger__row"><dt>Block subsidy</dt><dd>10 MBITE at genesis</dd></div>
-        <div class="ledger__row"><dt>Halving</dt><dd>every 700,000 blocks <span class="muted">(~3.3 years at 2.5-min blocks)</span></dd></div>
+        <div class="ledger__row"><dt>Halving</dt><dd>every 1,000,000 blocks <span class="muted">(~4.75 years at 2.5-min blocks)</span></dd></div>
         <div class="ledger__row"><dt>Block time</dt><dd>2.5 minutes (150 s target)</dd></div>
         <div class="ledger__row"><dt>Premine</dt><dd>none — any founder allocation is publicly burned <span class="muted">(ADR-006)</span></dd></div>
         <div class="ledger__row"><dt>Treasury</dt><dd>5% of subsidy, <em>hard-sunsets at halving 2</em> <span class="muted">(ADR-005)</span></dd></div>
         <div class="ledger__row"><dt>Fees</dt><dd>100% to the miner — none burned, none redirected <span class="muted">(ADR-007)</span></dd></div>
-        <div class="ledger__row"><dt>Proof-of-work</dt><dd>CPU-friendly <span class="muted">— RandomX port in progress; testnet runs Scrypt today</span></dd></div>
+        <div class="ledger__row"><dt>Proof-of-work</dt><dd>CPU-friendly RandomX proof-of-work</dd></div>
         <div class="ledger__row"><dt>Governance</dt><dd>no throne — params frozen at the signed genesis tag <span class="muted">(ADR-007)</span></dd></div>
       </dl>
     </section>
@@ -96,19 +97,24 @@
     <!-- ============ PROVENANCE (three doors) ============ -->
     <section class="provenance" id="provenance">
       <h2 class="provenance__title">Provenance</h2>
-      <a class="door" href="https://github.com/zaptapagency/MoonBite/blob/main/docs/ADR-006-founder-allocation.md">
+      <a class="door" href="https://github.com/moonbitecoin/MoonBite-Coin/blob/main/docs/ADR-006-founder-allocation.md">
         <span class="door__name">The Burn</span>
         <span class="door__desc">Why there is no price-gated unlock, and why any founder coins are burned, not held.</span>
         <span class="door__go">→</span>
       </a>
-      <a class="door" href="https://github.com/zaptapagency/MoonBite/blob/main/docs/ADR-007-long-term-sustainability.md">
+      <a class="door" href="https://github.com/moonbitecoin/MoonBite-Coin/blob/main/docs/ADR-007-long-term-sustainability.md">
         <span class="door__name">Ledger of Restraint</span>
         <span class="door__desc">The 14-year economic constitution: dual miner revenue, no fee burn, sunsetting treasury.</span>
         <span class="door__go">→</span>
       </a>
-      <a class="door" href="https://github.com/zaptapagency/MoonBite/blob/main/docs/ADR-005-treasury.md">
+      <a class="door" href="https://github.com/moonbitecoin/MoonBite-Coin/blob/main/docs/ADR-005-treasury.md">
         <span class="door__name">No Throne</span>
         <span class="door__desc">The treasury that ends, and the params no one can quietly amend.</span>
+        <span class="door__go">→</span>
+      </a>
+      <a class="door" href="https://github.com/moonbitecoin/MoonBite-Coin/blob/main/docs/ADR-008-liquidity-and-merchant-adoption.md">
+        <span class="door__name">Nobody Holds Your Coins</span>
+        <span class="door__desc">Liquidity and merchant payments that stay non-custodial — the server observes the chain, it never holds funds.</span>
         <span class="door__go">→</span>
       </a>
     </section>

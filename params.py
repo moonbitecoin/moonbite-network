@@ -1,4 +1,4 @@
-"""MoonBite — central consensus parameters.
+"""MyCoin — central consensus parameters.
 
 Collecting every consensus-critical constant in one module keeps them from
 drifting apart across files and makes the network's rules auditable at a glance.

@@ -1,4 +1,4 @@
-# MoonBite — Web-Only Setup (No Desktop GUI)
+# MyCoin — Web-Only Setup (No Desktop GUI)
 
 If the Desktop GUI (PyQt6) is not working, you can use **Web Dashboard only**.
 
@@ -6,7 +6,7 @@ If the Desktop GUI (PyQt6) is not working, you can use **Web Dashboard only**.
 
 ### Terminal 1: Start Shared State Server
 ```bash
-cd C:\Users\usman\Desktop\MoonBite
+cd C:\Users\%USERNAME%\Desktop\BigCoinBB
 python shared_state.py
 ```
 
@@ -18,7 +18,7 @@ Output should show:
 
 ### Terminal 2: Start Web Dashboard
 ```bash
-cd C:\Users\usman\Desktop\MoonBite
+cd C:\Users\%USERNAME%\Desktop\BigCoinBB
 python web_app_shared.py
 ```
 

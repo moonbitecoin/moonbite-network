@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}MoonBite Developers — API, docs &amp; run a node{% endblock %}
+{% block meta_description %}Build on MoonBite: a read-only REST API for blocks, transactions and search, plus everything you need to run your own node.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> Open network</span>
+            <h1 class="mb-hero-title">Build on <span class="mb-gradient-text">MoonBite.</span></h1>
+            <p class="mb-hero-sub">A clean, read-only REST API for the chain — blocks, transactions and search, no keys required. Run a node, index the chain, or wire MBITE into your app.</p>
+            <div class="mb-cta-row">
+                <a href="#api" class="btn btn-primary mb-btn-xl">API Reference</a>
+                <a href="#run-a-node" class="btn btn-secondary mb-btn-xl">Run a Node</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" id="api">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">REST API</span>
+            <h2 class="mb-section-title">Read-only endpoints</h2>
+            <p class="mb-section-sub">Every endpoint returns JSON with a <code>status</code> field. These are read-only — they never move funds or expose keys.</p>
+        </div>
+
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title"><code>GET /api/blockchain/info</code></h3>
+                <p class="mb-card-text">Chain height, tip hash, coins in circulation, tx count and mempool size.</p>
+                <pre class="mb-code">{
+  <span class="mb-c-key">"status"</span>: "success",
+  <span class="mb-c-key">"height"</span>: 128,
+  <span class="mb-c-key">"tip_hash"</span>: "…",
+  <span class="mb-c-key">"total_money_coins"</span>: 1280,
+  <span class="mb-c-key">"tx_count"</span>: 129,
+  <span class="mb-c-key">"mempool_size"</span>: 0
+}</pre>
+            </div>
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title"><code>GET /api/explorer/blocks</code></h3>
+                <p class="mb-card-text">Paginated block list, newest first. Params: <code>limit</code> (1–50), <code>offset</code>.</p>
+                <pre class="mb-code">{
+  <span class="mb-c-key">"status"</span>: "success",
+  <span class="mb-c-key">"blocks"</span>: [ { "height": 128,
+    "hash": "…", "tx_count": 1,
+    "confirmations": 1 } ],
+  <span class="mb-c-key">"total"</span>: 129
+}</pre>
+            </div>
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title"><code>GET /api/explorer/block/&lt;id&gt;</code></h3>
+                <p class="mb-card-text">A single block by <em>height</em> or <em>hash</em>, including its transactions.</p>
+            </div>
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title"><code>GET /api/explorer/tx/&lt;txid&gt;</code></h3>
+                <p class="mb-card-text">A transaction by id, from the active chain or the mempool, with inputs/outputs.</p>
+            </div>
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title"><code>GET /api/explorer/search?q=</code></h3>
+                <p class="mb-card-text">Resolve a query to a block (height/hash) or a transaction (txid).</p>
+            </div>
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title"><code>GET /api/transactions</code></h3>
+                <p class="mb-card-text">The most recent transactions across the mempool and latest blocks.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" id="run-a-node" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-teaser">
+            <div class="mb-teaser-copy mb-reveal">
+                <span class="mb-eyebrow">Run a node</span>
+                <h2>Enforce the rules yourself.</h2>
+                <p>A full node validates every block and transaction against MoonBite's consensus rules and helps other peers stay in sync. Don't trust — verify.</p>
+                <a href="/downloads/README.txt" class="btn btn-primary">Node &amp; downloads</a>
+            </div>
+            <div class="mb-reveal">
+                <pre class="mb-code"><span class="mb-c-comment"># Create an address</span>
+moonbite-cli getnewaddress
+
+<span class="mb-c-comment"># Check chain state over REST</span>
+curl -s http://127.0.0.1:5000/api/blockchain/<span class="mb-c-key">info</span></pre>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">🧬</div><h3>Litecoin lineage</h3><p>Battle-tested core, familiar tooling and address formats (<code>moon1…</code> / <code>M…</code>).</p></div>
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">🔓</div><h3>No auth to read</h3><p>Public read-only endpoints. Nothing here can spend coins or reveal a key.</p></div>
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">🌍</div><h3>CORS-friendly</h3><p>JSON responses allow cross-origin reads, so you can build web dashboards directly.</p></div>
+        </div>
+    </div>
+</section>
+{% endblock %}

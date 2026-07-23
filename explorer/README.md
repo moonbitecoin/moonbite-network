@@ -1,7 +1,7 @@
-# MoonBite (MBITE) Block Explorer
+# BigCoin (BIG) Block Explorer
 
-A lightweight, dark-themed web block explorer for **MoonBite** — a
-Litecoin/Bitcoin-Core fork. It talks to a `moonbited` daemon over the standard
+A lightweight, dark-themed web block explorer for **BigCoin** — a
+Litecoin/Bitcoin-Core fork. It talks to a `bigcoind` daemon over the standard
 Bitcoin-style JSON-RPC interface (the same methods as Bitcoin/Litecoin Core:
 `getblockchaininfo`, `getblockcount`, `getblockhash`, `getblock`,
 `getrawtransaction`, `getmempoolinfo`, `getrawmempool`, `getnetworkinfo`).
@@ -21,7 +21,7 @@ Built with Flask. The RPC client uses only the Python standard library
   transaction (then a block), otherwise shows a friendly "not found" page.
 - **DEMO_MODE** — serves realistic sample data so the explorer renders and can
   be demoed with no running chain.
-- Responsive dark UI, monospace hashes, human-readable timestamps and MBITE
+- Responsive dark UI, monospace hashes, human-readable timestamps and BIG
   amounts.
 
 ## Requirements
@@ -33,11 +33,11 @@ Built with Flask. The RPC client uses only the Python standard library
 
 | Variable                | Default     | Purpose                              |
 |-------------------------|-------------|--------------------------------------|
-| `MOONBITE_RPC_HOST`      | `127.0.0.1` | moonbited RPC host                    |
-| `MOONBITE_RPC_PORT`      | `9445`      | moonbited RPC port                    |
-| `MOONBITE_RPC_USER`      | *(empty)*   | RPC username (`rpcuser`)             |
-| `MOONBITE_RPC_PASSWORD`  | *(empty)*   | RPC password (`rpcpassword`)         |
-| `MOONBITE_RPC_TIMEOUT`   | `8`         | RPC HTTP timeout (seconds)           |
+| `BIGCOIN_RPC_HOST`      | `127.0.0.1` | bigcoind RPC host                    |
+| `BIGCOIN_RPC_PORT`      | `9445`      | bigcoind RPC port                    |
+| `BIGCOIN_RPC_USER`      | *(empty)*   | RPC username (`rpcuser`)             |
+| `BIGCOIN_RPC_PASSWORD`  | *(empty)*   | RPC password (`rpcpassword`)         |
+| `BIGCOIN_RPC_TIMEOUT`   | `8`         | RPC HTTP timeout (seconds)           |
 | `DEMO_MODE`             | *(auto)*    | `1` forces sample data; unset = auto |
 | `EXPLORER_PORT`         | `5055`      | Web server port                      |
 | `EXPLORER_LATEST_BLOCKS`| `15`        | Blocks shown on the home page        |
@@ -47,17 +47,17 @@ Built with Flask. The RPC client uses only the Python standard library
 ```bash
 pip install -r requirements.txt
 
-export MOONBITE_RPC_HOST=127.0.0.1
-export MOONBITE_RPC_PORT=9445
-export MOONBITE_RPC_USER=yourrpcuser
-export MOONBITE_RPC_PASSWORD=yourrpcpassword
+export BIGCOIN_RPC_HOST=127.0.0.1
+export BIGCOIN_RPC_PORT=9445
+export BIGCOIN_RPC_USER=yourrpcuser
+export BIGCOIN_RPC_PASSWORD=yourrpcpassword
 
 python app.py
 ```
 
 Then open <http://127.0.0.1:5055/>.
 
-Your `moonbite.conf` should enable the RPC server, e.g.:
+Your `bigcoin.conf` should enable the RPC server, e.g.:
 
 ```
 server=1
@@ -78,7 +78,7 @@ transactions) shaped exactly like real JSON-RPC output.
   unreachable, the explorer automatically switches to demo data so it still
   renders (a banner explains why).
 - **Disable fallback:** `DEMO_MODE=0` — if the node is unreachable you get a
-  friendly "cannot reach MoonBite node" page instead of fake data.
+  friendly "cannot reach BigCoin node" page instead of fake data.
 
 Quick demo:
 

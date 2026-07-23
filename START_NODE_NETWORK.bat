@@ -1,31 +1,31 @@
 @echo off
-REM Start a 3-node MoonBite P2P network for testing
+REM Start a 3-node BigCoin P2P network for testing
 
 setlocal enabledelayedexpansion
 
-cd C:\Users\usman\Desktop\MoonBite
+cd C:\Users\%USERNAME%\Desktop\BigCoinBB
 
 echo.
 echo ================================================
-echo  MoonBite P2P Network - Start 3 Nodes
+echo  BigCoin P2P Network - Start 3 Nodes
 echo ================================================
 echo.
 
 REM Node 1: Alice
 echo Starting Node 1 (Alice) on port 9001 (RPC: 8001)...
-start "MoonBite Node 1 - Alice" cmd /k python node_rpc_server.py alice 9001 8001
+start "BigCoin Node 1 - Alice" cmd /k python node_rpc_server.py alice 9001 8001
 
 timeout /t 3 >nul
 
 REM Node 2: Bob
 echo Starting Node 2 (Bob) on port 9002 (RPC: 8002)...
-start "MoonBite Node 2 - Bob" cmd /k python node_rpc_server.py bob 9002 8002
+start "BigCoin Node 2 - Bob" cmd /k python node_rpc_server.py bob 9002 8002
 
 timeout /t 3 >nul
 
 REM Node 3: Charlie
 echo Starting Node 3 (Charlie) on port 9003 (RPC: 8003)...
-start "MoonBite Node 3 - Charlie" cmd /k python node_rpc_server.py charlie 9003 8003
+start "BigCoin Node 3 - Charlie" cmd /k python node_rpc_server.py charlie 9003 8003
 
 timeout /t 3 >nul
 

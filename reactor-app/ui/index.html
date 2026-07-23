@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoonBite Reactor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="mining-god.css">
+<link rel="stylesheet" href="reactor.css">
+</head>
+<body>
+<!-- Custom draggable title bar (chrome-less --app window) -->
+<div class="rx-titlebar">
+    <div class="rx-brand"><span class="rx-brand-moon">🌙</span> MoonBite <b>Reactor</b></div>
+    <div class="rx-titlebar-spacer"></div>
+    <div class="rx-conn"><span id="rxConnDot" class="rx-conn-dot"></span><span id="rxConnText">connecting…</span></div>
+</div>
+
+<main class="rx-shell">
+    <!-- LEFT: control console -->
+    <aside class="rx-console">
+        <div class="rx-console-head">
+            <div class="rx-eyebrow">Live chain miner</div>
+            <h1 class="rx-title">Fire the reactor.<br><span class="rx-title-grad">Mine real MBITE.</span></h1>
+            <p class="rx-sub">Point the core at your address and let it work the live MoonBite chain. Proof-of-work runs on the network node — you just collect the blocks.</p>
+        </div>
+
+        <form id="rxForm" class="rx-form" autocomplete="off">
+            <label class="rx-label" for="rxAddress">Reward address</label>
+            <input id="rxAddress" class="rx-input" type="text" spellcheck="false"
+                   placeholder="moon1…  or  M…  (your MoonBite address)">
+            <div id="rxAddrHint" class="rx-hint">Blocks you mine pay their reward straight to this address.</div>
+
+            <div class="rx-actions">
+                <button id="rxStart" type="submit" class="rx-btn rx-btn-fire">
+                    <span class="rx-btn-glow"></span>⚡ Start Reactor
+                </button>
+                <button id="rxStop" type="button" class="rx-btn rx-btn-stop" hidden>⏹ Power Down</button>
+            </div>
+        </form>
+
+        <div class="rx-stats">
+            <div class="rx-stat">
+                <div class="rx-stat-label">Blocks this session</div>
+                <div id="rxStatBlocks" class="rx-stat-value">0</div>
+            </div>
+            <div class="rx-stat">
+                <div class="rx-stat-label">Chain height</div>
+                <div id="rxStatHeight" class="rx-stat-value">—</div>
+            </div>
+            <div class="rx-stat">
+                <div class="rx-stat-label">Uptime</div>
+                <div id="rxStatUptime" class="rx-stat-value">0s</div>
+            </div>
+        </div>
+
+        <div id="rxLog" class="rx-logfeed" aria-live="polite"></div>
+
+        <div class="rx-foot">
+            <span class="rx-foot-dot"></span> Non-custodial · your keys stay on your machine · pre-mainnet, coins carry no market value yet
+        </div>
+    </aside>
+
+    <!-- RIGHT: the god-reactor stage (verbatim carrier/HUD contract) -->
+    <section class="rx-stagewrap">
+        <div id="godStage" class="god-stage">
+            <div class="god-grid"></div>
+            <div class="god-aurora"></div>
+            <canvas id="godParticles" class="god-canvas"></canvas>
+            <canvas id="godReactor" class="god-canvas"></canvas>
+            <div class="god-scan"></div>
+
+            <div class="god-badge"><span></span>MOONBITE RIG</div>
+
+            <div class="god-spark">
+                <div class="god-spark-title">Hashrate · live</div>
+                <canvas id="godSpark"></canvas>
+            </div>
+
+            <div class="god-core-readout">
+                <div id="godHashrate" class="god-hashrate">0 H/s</div>
+                <div class="god-hashunit">Proof of Work</div>
+                <div class="god-state">
+                    <span class="god-dot"></span>
+                    <span id="godStateText">STANDBY</span>
+                </div>
+            </div>
+
+            <div class="god-beam-wrap">
+                <div class="god-beam-labels">
+                    <span>SESSION YIELD</span>
+                    <span><b id="godPct">0%</b></span>
+                </div>
+                <div class="god-beam">
+                    <div id="godBeamFill" class="god-beam-fill"></div>
+                </div>
+            </div>
+
+            <div class="god-hud">
+                <div class="god-hud-cell">
+                    <div class="god-hud-label">Chain Height</div>
+                    <div id="godHeight" class="god-hud-value">--</div>
+                </div>
+                <div class="god-hud-cell">
+                    <div class="god-hud-label">Blocks</div>
+                    <div id="godBlocks" class="god-hud-value">0 / 0</div>
+                </div>
+                <div class="god-hud-cell">
+                    <div class="god-hud-label">Elapsed</div>
+                    <div id="godElapsed" class="god-hud-value">0s</div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Legacy state carriers the god engine reads every frame. Hidden. -->
+<div class="god-legacy" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;">
+    <div id="miningOrb" class="mining-orb idle">
+        <div class="orb-ring"></div>
+        <div class="orb-ring ring-2"></div>
+        <div class="orb-core"></div>
+    </div>
+    <span id="blocksMined">0</span>
+    <span id="totalBlocks">0</span>
+    <div id="progressBarFill" class="progress-fill" style="width: 0%"></div>
+    <div id="currentHeight">--</div>
+    <code id="currentHash">--</code>
+    <div id="elapsedTime">0s</div>
+</div>
+
+<script src="mining-god.js"></script>
+<script src="reactor-app.js"></script>
+</body>
+</html>

@@ -41,7 +41,7 @@ class WalletScreen extends StatelessWidget {
                     Text(
                       balance == null
                           ? '—'
-                          : '${balance.total.toStringAsFixed(8)} MBITE',
+                          : '${balance.total.toStringAsFixed(8)} BIG',
                       style: const TextStyle(
                           fontSize: 28, fontWeight: FontWeight.bold),
                     ),

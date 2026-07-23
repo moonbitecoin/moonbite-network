@@ -1,0 +1,994 @@
+/* ============================================================================
+   MoonBite — cinematic homepage hero + scroll theatre
+   Scoped entirely under .cine-*  (loaded only on / via home.html head_extra).
+   Reuses the global design tokens from style.css — no new palette.
+   ========================================================================== */
+
+/* ------------------------------------------------------------ HERO STAGE */
+.cine-hero {
+    position: relative;
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    isolation: isolate;
+    padding: 7rem 1.25rem 5rem;
+}
+
+/* Deep-space canvas that sits behind everything */
+.cine-starfield {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* Colour wash + vignette layered over the starfield */
+.cine-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+        radial-gradient(1200px 700px at 50% 12%, rgba(124, 92, 255, 0.22), transparent 60%),
+        radial-gradient(900px 600px at 82% 78%, rgba(52, 211, 255, 0.16), transparent 58%),
+        radial-gradient(700px 500px at 12% 68%, rgba(34, 229, 168, 0.10), transparent 60%);
+    pointer-events: none;
+}
+.cine-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: radial-gradient(120% 120% at 50% 40%, transparent 55%, rgba(2, 3, 8, 0.85) 100%);
+    pointer-events: none;
+}
+
+/* Parallax scene wrapper */
+.cine-scene {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    transform-style: preserve-3d;
+}
+
+/* -------------------------------------------------------------- THE MOON */
+.cine-orbit-wrap {
+    position: relative;
+    width: min(520px, 80vw);
+    height: min(520px, 80vw);
+    margin: 0 auto -14%;
+    display: grid;
+    place-items: center;
+    will-change: transform;
+}
+
+/* Elliptical orbit ring the coin travels on */
+.cine-orbit-ring {
+    position: absolute;
+    inset: 4%;
+    border-radius: 50%;
+    border: 1px solid rgba(124, 92, 255, 0.22);
+    box-shadow: inset 0 0 60px rgba(52, 211, 255, 0.08);
+    transform: rotateX(74deg);
+}
+.cine-orbit-ring.two {
+    inset: -10%;
+    border-color: rgba(52, 211, 255, 0.14);
+    transform: rotateX(74deg) rotateZ(28deg);
+}
+
+/* The moon body */
+.cine-moon {
+    position: relative;
+    width: 58%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 34% 30%, #cdd3f7 0%, #9aa2d6 26%, #5a5f9a 55%, #2c2f52 78%, #191a30 100%);
+    box-shadow:
+        inset -34px -26px 70px rgba(0, 0, 0, 0.72),
+        inset 24px 18px 46px rgba(205, 211, 247, 0.28),
+        0 0 70px rgba(124, 92, 255, 0.55),
+        0 0 150px rgba(52, 211, 255, 0.30);
+    animation: cineMoonSpin 60s linear infinite;
+    will-change: transform;
+}
+/* Crater texture painted with radial gradients */
+.cine-moon::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 62% 40%, rgba(0,0,0,0.30) 0 6%, transparent 7%),
+        radial-gradient(circle at 44% 62%, rgba(0,0,0,0.26) 0 9%, transparent 10%),
+        radial-gradient(circle at 70% 68%, rgba(0,0,0,0.22) 0 5%, transparent 6%),
+        radial-gradient(circle at 30% 38%, rgba(0,0,0,0.20) 0 4%, transparent 5%),
+        radial-gradient(circle at 54% 24%, rgba(0,0,0,0.18) 0 3.5%, transparent 4.5%),
+        radial-gradient(circle at 78% 52%, rgba(0,0,0,0.16) 0 3%, transparent 4%);
+    mix-blend-mode: multiply;
+    opacity: 0.9;
+}
+/* Crescent terminator highlight */
+.cine-moon::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 26%, rgba(224, 230, 255, 0.55), transparent 40%);
+    mix-blend-mode: screen;
+}
+
+/* Atmospheric halo behind the moon */
+.cine-moon-halo {
+    position: absolute;
+    width: 74%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124, 92, 255, 0.35), rgba(52, 211, 255, 0.12) 55%, transparent 72%);
+    filter: blur(14px);
+    animation: cinePulse 6s ease-in-out infinite;
+}
+
+/* The orbiting MBITE coin */
+.cine-orbiter {
+    position: absolute;
+    inset: 0;
+    animation: cineOrbit 16s linear infinite;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+.cine-coin {
+    position: absolute;
+    top: -4%;
+    left: 50%;
+    width: 62px;
+    height: 62px;
+    margin-left: -31px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 1.7rem;
+    background: var(--gradient-primary);
+    box-shadow: 0 0 24px rgba(52, 211, 255, 0.7), inset 0 0 14px rgba(255,255,255,0.35);
+    border: 2px solid rgba(255,255,255,0.35);
+    animation: cineCoinFlip 16s linear infinite;
+}
+
+/* --------------------------------------------------------------- COPY */
+.cine-copy {
+    position: relative;
+    z-index: 3;
+    margin-top: -2%;
+    display: grid;
+    justify-items: center;
+    gap: 1.4rem;
+    padding: 0 0.5rem;
+}
+
+.cine-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.5rem 1.05rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: rgba(124, 92, 255, 0.10);
+    border: 1px solid rgba(124, 92, 255, 0.35);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 0 30px rgba(124, 92, 255, 0.18);
+    opacity: 0;
+    transform: translateY(14px);
+    animation: cineRise 0.7s cubic-bezier(.2,.8,.2,1) forwards;
+}
+.cine-chip .cine-ping {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--success-color);
+    box-shadow: 0 0 0 0 rgba(34, 229, 168, 0.6);
+    animation: cinePing 2.2s ease-out infinite;
+}
+
+.cine-title {
+    font-size: clamp(2.6rem, 8vw, 6rem);
+    line-height: 0.98;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    max-width: 16ch;
+    margin: 0;
+}
+.cine-title .cine-word {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(28px) rotate(2deg);
+    animation: cineRise 0.8s cubic-bezier(.2,.85,.2,1) forwards;
+}
+.cine-shine {
+    background: linear-gradient(100deg, #7c5cff 0%, #34d3ff 40%, #22e5a8 60%, #7c5cff 100%);
+    background-size: 220% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: cineShine 6s linear infinite;
+}
+
+.cine-sub {
+    font-size: clamp(1rem, 2.1vw, 1.28rem);
+    color: var(--text-secondary);
+    max-width: 62ch;
+    line-height: 1.6;
+    margin: 0;
+    opacity: 0;
+    transform: translateY(16px);
+    animation: cineRise 0.8s cubic-bezier(.2,.8,.2,1) 0.5s forwards;
+}
+
+.cine-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 0.4rem;
+    opacity: 0;
+    transform: translateY(16px);
+    animation: cineRise 0.8s cubic-bezier(.2,.8,.2,1) 0.68s forwards;
+}
+.cine-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1rem 2rem;
+    border-radius: 999px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: transform .25s ease, box-shadow .25s ease;
+    will-change: transform;
+}
+.cine-btn.primary {
+    color: #0a0a16;
+    background: var(--gradient-primary);
+    box-shadow: 0 10px 40px rgba(124, 92, 255, 0.45);
+}
+.cine-btn.primary:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 16px 54px rgba(52, 211, 255, 0.55);
+}
+.cine-btn.ghost {
+    color: var(--text-primary);
+    background: rgba(255,255,255,0.04);
+    border-color: var(--border-color);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+.cine-btn.ghost:hover {
+    transform: translateY(-3px);
+    border-color: rgba(124, 92, 255, 0.6);
+    box-shadow: var(--glow-primary);
+}
+
+/* ------------------------------------------------- FLOATING STAT PODS */
+.cine-pods {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+}
+.cine-pod {
+    position: absolute;
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.85rem 1.15rem;
+    border-radius: 1rem;
+    background: rgba(14, 18, 32, 0.55);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+    text-align: left;
+    min-width: 116px;
+    opacity: 0;
+    animation: cinePodIn 0.9s ease forwards;
+    will-change: transform;
+}
+.cine-pod .cine-pod-value {
+    font-size: 1.3rem;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.cine-pod .cine-pod-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+}
+.cine-pod.p1 { top: 20%;  left: 6%;  animation-delay: 0.9s; }
+.cine-pod.p2 { top: 30%;  right: 6%; animation-delay: 1.05s; }
+.cine-pod.p3 { bottom: 24%; left: 10%; animation-delay: 1.2s; }
+.cine-pod.p4 { bottom: 30%; right: 9%; animation-delay: 1.35s; }
+.cine-pod.float { animation: cinePodIn 0.9s ease forwards, cineFloat 7s ease-in-out infinite; }
+
+/* --------------------------------------------------------- SCROLL CUE */
+.cine-scrollcue {
+    position: absolute;
+    bottom: 1.6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: grid;
+    justify-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: cineRise 1s ease 1.4s forwards;
+}
+.cine-scrollcue .cine-mouse {
+    width: 24px;
+    height: 38px;
+    border-radius: 14px;
+    border: 2px solid var(--border-color);
+    position: relative;
+}
+.cine-scrollcue .cine-mouse::after {
+    content: "";
+    position: absolute;
+    top: 7px;
+    left: 50%;
+    width: 4px;
+    height: 7px;
+    margin-left: -2px;
+    border-radius: 2px;
+    background: var(--primary-color);
+    animation: cineWheel 1.6s ease-in-out infinite;
+}
+
+/* -------------------------------------------------- FEATURE MARQUEE */
+.cine-marquee {
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    background: rgba(10, 13, 26, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 1.1rem 0;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.cine-marquee-track {
+    display: inline-flex;
+    align-items: center;
+    gap: 2.6rem;
+    white-space: nowrap;
+    will-change: transform;
+    animation: cineMarquee 32s linear infinite;
+}
+.cine-marquee-track span {
+    font-weight: 700;
+    font-size: 1.02rem;
+    color: var(--text-primary);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+.cine-marquee-track b {
+    color: var(--primary-color-2);
+}
+.cine-marquee-track .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gradient-primary);
+}
+
+/* -------------------------------------------- LUNAR SCROLL PROGRESS */
+.cine-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 2000;
+    background: transparent;
+    pointer-events: none;
+}
+.cine-progress > span {
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #7c5cff, #34d3ff 55%, #22e5a8);
+    box-shadow: 0 0 14px rgba(52, 211, 255, 0.7);
+    transition: width 0.08s linear;
+}
+.cine-progress .cine-progress-moon {
+    position: absolute;
+    top: -5px;
+    left: 0;
+    width: 13px;
+    height: 13px;
+    margin-left: -6px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 34% 30%, #eef1ff, #9aa2d6 60%, #4a4f86);
+    box-shadow: 0 0 12px rgba(124, 92, 255, 0.9);
+    transition: left 0.08s linear;
+}
+
+/* ---------------------------------------------- EMISSION CURVE THEATRE */
+.cine-emission {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    align-items: center;
+}
+@media (max-width: 860px) {
+    .cine-emission { grid-template-columns: 1fr; }
+}
+.cine-emission-copy h2 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0.4rem 0 0.9rem;
+}
+.cine-emission-copy p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 52ch;
+}
+.cine-emission-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-top: 1.4rem;
+}
+.cine-emission-stat {
+    padding: 0.9rem 1rem;
+    border-radius: 0.9rem;
+    background: var(--card-bg-solid);
+    border: 1px solid var(--border-color);
+}
+.cine-emission-stat .v {
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 1.15rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.cine-emission-stat .k {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-top: 0.15rem;
+}
+
+.cine-chart {
+    position: relative;
+    border-radius: var(--border-radius-lg);
+    background:
+        radial-gradient(700px 300px at 70% 0%, rgba(124, 92, 255, 0.12), transparent 60%),
+        var(--card-bg-solid);
+    border: 1px solid var(--border-color);
+    padding: 1.1rem 1.1rem 0.6rem;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+    overflow: hidden;
+}
+.cine-chart svg { display: block; width: 100%; height: auto; }
+.cine-chart-cap {
+    stroke: rgba(255,255,255,0.16);
+    stroke-width: 1;
+    stroke-dasharray: 4 5;
+}
+.cine-chart-cap-label {
+    fill: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 11px;
+}
+.cine-curve-line {
+    fill: none;
+    stroke: url(#cineCurveGrad);
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 6px rgba(52, 211, 255, 0.55));
+}
+.cine-curve-area { fill: url(#cineAreaGrad); opacity: 0; transition: opacity 1s ease 0.3s; }
+.cine-chart.is-drawn .cine-curve-area { opacity: 1; }
+.cine-halving {
+    stroke: rgba(255, 184, 77, 0.55);
+    stroke-width: 1;
+    stroke-dasharray: 3 4;
+}
+.cine-halving-dot { fill: var(--warning-color, #ffb84d); }
+.cine-halving-label {
+    fill: var(--text-secondary);
+    font-size: 10px;
+    font-family: var(--font-mono);
+}
+.cine-chart-axis {
+    fill: var(--text-secondary);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-family: var(--font-mono);
+}
+
+/* ------------------------------------------------------ REVEAL POLISH */
+.cine-reveal {
+    opacity: 0;
+    transform: translateY(38px);
+    transition: opacity .9s cubic-bezier(.2,.8,.2,1), transform .9s cubic-bezier(.2,.8,.2,1);
+}
+.cine-reveal.is-visible {
+    opacity: 1;
+    transform: none;
+}
+
+/* ---------------------------------------------------------- RESPONSIVE */
+@media (max-width: 720px) {
+    .cine-pod.p1, .cine-pod.p3 { left: 2%; }
+    .cine-pod.p2, .cine-pod.p4 { right: 2%; }
+    .cine-pod { min-width: 96px; padding: 0.65rem 0.85rem; }
+    .cine-pod .cine-pod-value { font-size: 1.05rem; }
+    .cine-orbit-wrap { margin-bottom: -22%; }
+}
+@media (max-width: 480px) {
+    .cine-pods { display: none; }
+    .cine-hero { padding-top: 6rem; }
+}
+
+/* --------------------------------------------------- MOTION SAFETY */
+@media (prefers-reduced-motion: reduce) {
+    .cine-moon,
+    .cine-orbiter,
+    .cine-coin,
+    .cine-moon-halo,
+    .cine-marquee-track,
+    .cine-pod.float,
+    .cine-shine,
+    .cine-scrollcue .cine-mouse::after,
+    .cine-chip .cine-ping {
+        animation: none !important;
+    }
+    .cine-word, .cine-sub, .cine-cta, .cine-chip, .cine-scrollcue { opacity: 1 !important; transform: none !important; }
+    .cine-reveal { opacity: 1 !important; transform: none !important; }
+}
+
+/* ============================================================================
+   ✦ 2050 FLAGSHIP LAYER — loaded only on / (after site.css, so it wins ties).
+   Turns the stacked mb-* sections into one cohesive, futuristic, "billion-dollar"
+   world: aurora ambience, holographic glass, gradient-lit edges, kinetic depth.
+   Reuses global tokens only. Zero effect on other pages. Motion-safe below.
+   ========================================================================== */
+
+/* ---- Aurora ambience: slow-drifting cosmic light woven behind the whole page,
+        so the hero's deep-space mood continues instead of ending at the fold. */
+body.mb-home { position: relative; }
+body.mb-home::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(60vw 50vh at 12% 18%, rgba(124, 92, 255, 0.10), transparent 60%),
+        radial-gradient(55vw 45vh at 88% 42%, rgba(52, 211, 255, 0.09), transparent 60%),
+        radial-gradient(50vw 45vh at 30% 82%, rgba(34, 229, 168, 0.07), transparent 62%);
+    background-size: 200% 200%, 200% 200%, 200% 200%;
+    animation: mbAurora 34s ease-in-out infinite alternate;
+}
+/* keep real content above the aurora */
+.mb-home main, .mb-home .mb-meganav, .mb-home .mb-footer { position: relative; z-index: 1; }
+
+/* ---- Section rhythm: a soft light source anchored to each header, so sections
+        read as designed scenes, not flat bands. */
+.mb-home .mb-section { position: relative; }
+.mb-home .mb-section-head { position: relative; }
+.mb-home .mb-section-head::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -120px;
+    width: min(640px, 90vw);
+    height: 300px;
+    transform: translateX(-50%);
+    background: radial-gradient(closest-side, rgba(124, 92, 255, 0.16), transparent 72%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* ---- Eyebrow → a crisp futuristic pill with a lit indicator dot. */
+.mb-home .mb-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.4rem 0.95rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary-color) 9%, transparent);
+    border: 1px solid color-mix(in srgb, var(--primary-color) 32%, transparent);
+    color: var(--primary-color-2);
+    box-shadow: 0 0 26px color-mix(in srgb, var(--primary-color) 16%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+.mb-home .mb-eyebrow::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--primary-color-2) 85%, transparent);
+}
+.mb-home .mb-section-title {
+    font-size: clamp(1.9rem, 4vw, 3rem);
+    letter-spacing: -0.03em;
+}
+.mb-home .mb-section-sub { font-size: clamp(1rem, 1.6vw, 1.15rem); }
+
+/* ---- Holographic glass cards: real depth, a gradient-lit top edge, and a
+        conic aura that ignites on hover. This is the core "flagship" upgrade. */
+.mb-home .mb-card {
+    position: relative;
+    background:
+        linear-gradient(180deg,
+            color-mix(in srgb, var(--bg-secondary) 55%, transparent),
+            color-mix(in srgb, var(--card-bg-solid) 94%, transparent));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 24px 60px -34px rgba(0, 0, 0, 0.85);
+    overflow: hidden;
+    transition:
+        transform .34s cubic-bezier(.2,.8,.2,1),
+        border-color .34s ease,
+        box-shadow .34s ease;
+}
+/* gradient-lit top edge (subtle at rest, full on hover) */
+.mb-home .mb-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 2px;
+    background: var(--gradient-primary);
+    opacity: 0.35;
+    transition: opacity .34s ease;
+}
+/* holo aura sweep, revealed on hover */
+.mb-home .mb-card::after {
+    content: "";
+    position: absolute;
+    inset: -40%;
+    background: conic-gradient(from 0deg,
+        transparent 0deg,
+        rgba(124, 92, 255, 0.14) 60deg,
+        rgba(52, 211, 255, 0.12) 140deg,
+        transparent 220deg);
+    opacity: 0;
+    transition: opacity .5s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+.mb-home .mb-card > * { position: relative; z-index: 1; }
+.mb-home a.mb-card:hover,
+.mb-home .mb-card.mb-hoverable:hover {
+    transform: translateY(-8px);
+    border-color: color-mix(in srgb, var(--primary-color) 60%, transparent);
+    box-shadow:
+        0 40px 70px -34px rgba(124, 92, 255, 0.55),
+        0 0 0 1px color-mix(in srgb, var(--primary-color) 35%, transparent),
+        var(--glow-primary);
+}
+.mb-home a.mb-card:hover::before,
+.mb-home .mb-card.mb-hoverable:hover::before { opacity: 1; }
+.mb-home a.mb-card:hover::after,
+.mb-home .mb-card.mb-hoverable:hover::after { opacity: 1; animation: mbHolo 6s linear infinite; }
+
+/* ---- Feature blocks were naked <div>s — promote them to first-class glass
+        cards so "Why MoonBite" and "Proof, not promises" feel intentional. */
+.mb-home .mb-feature {
+    position: relative;
+    background:
+        linear-gradient(180deg,
+            color-mix(in srgb, var(--bg-secondary) 48%, transparent),
+            color-mix(in srgb, var(--card-bg-solid) 92%, transparent));
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: transform .34s cubic-bezier(.2,.8,.2,1), border-color .34s ease, box-shadow .34s ease;
+}
+.mb-home .mb-feature::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 2px;
+    background: var(--gradient-primary);
+    opacity: 0;
+    transition: opacity .34s ease;
+}
+.mb-home .mb-feature:hover {
+    transform: translateY(-6px);
+    border-color: color-mix(in srgb, var(--primary-color) 45%, transparent);
+    box-shadow: 0 34px 64px -36px rgba(0, 0, 0, 0.9), var(--glow-primary);
+}
+.mb-home .mb-feature:hover::before { opacity: 1; }
+
+/* ---- Icon tiles: bare emoji → luminous gradient chips with inner light. */
+.mb-home .mb-card-icon,
+.mb-home .mb-feature-icon {
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    font-size: 1.65rem;
+    border-radius: 16px;
+    background:
+        linear-gradient(150deg,
+            color-mix(in srgb, var(--primary-color) 30%, transparent),
+            color-mix(in srgb, var(--primary-color-2) 16%, transparent));
+    border: 1px solid color-mix(in srgb, var(--primary-color) 32%, transparent);
+    box-shadow:
+        0 10px 26px -12px color-mix(in srgb, var(--primary-color) 65%, transparent),
+        inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    margin-bottom: var(--spacing-xs);
+    transition: transform .34s cubic-bezier(.2,.8,.2,1);
+}
+.mb-home a.mb-card:hover .mb-card-icon,
+.mb-home .mb-feature:hover .mb-feature-icon {
+    transform: translateY(-3px) scale(1.06) rotate(-2deg);
+}
+
+/* ---- Card link → confident, warms to full white on hover. */
+.mb-home .mb-card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 700;
+    transition: color .25s ease, gap .25s ease;
+}
+.mb-home a.mb-card:hover .mb-card-link,
+.mb-home .mb-feature:hover .mb-card-link {
+    color: var(--text-primary);
+    gap: 0.6rem;
+}
+
+/* ---- Live stat band → mission-control readout: gradient rail + hover glow. */
+.mb-home .mb-statband {
+    position: relative;
+    box-shadow: 0 34px 80px -46px rgba(0, 0, 0, 0.95);
+}
+.mb-home .mb-statband::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 2px;
+    z-index: 2;
+    background: var(--gradient-primary);
+    background-size: 200% auto;
+    animation: cineShine 5s linear infinite;
+}
+.mb-home .mb-stat { transition: background .3s ease; }
+.mb-home .mb-stat:hover {
+    background: color-mix(in srgb, var(--primary-color) 8%, var(--card-bg-solid));
+}
+.mb-home .mb-stat-value { font-size: clamp(1.5rem, 3vw, 2.2rem); letter-spacing: -0.02em; }
+
+/* ---- Code block (dev teaser) → terminal from the future. */
+.mb-home .mb-code {
+    box-shadow: 0 30px 64px -40px rgba(0, 0, 0, 0.9), var(--glow-primary);
+    border-color: color-mix(in srgb, var(--primary-color) 22%, transparent);
+}
+
+/* ---- Motion safety for the new layer. */
+@media (prefers-reduced-motion: reduce) {
+    body.mb-home::after,
+    .mb-home .mb-statband::before,
+    .mb-home .mb-card::after { animation: none !important; }
+}
+
+@keyframes mbAurora {
+    0%   { background-position: 0% 0%,   100% 0%,   50% 100%; }
+    100% { background-position: 100% 100%, 0% 100%, 0% 0%; }
+}
+@keyframes mbHolo {
+    to { transform: rotate(360deg); }
+}
+
+/* ------------------------------------------------------- KEYFRAMES */
+@keyframes cineRise {
+    to { opacity: 1; transform: none; }
+}
+@keyframes cineShine {
+    to { background-position: 220% center; }
+}
+@keyframes cineMoonSpin {
+    to { transform: rotate(360deg); }
+}
+@keyframes cinePulse {
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    50% { transform: scale(1.08); opacity: 1; }
+}
+@keyframes cineOrbit {
+    from { transform: rotateX(74deg) rotateZ(0deg); }
+    to   { transform: rotateX(74deg) rotateZ(360deg); }
+}
+@keyframes cineCoinFlip {
+    from { transform: rotateY(0deg); }
+    to   { transform: rotateY(360deg); }
+}
+@keyframes cinePing {
+    0%   { box-shadow: 0 0 0 0 rgba(34, 229, 168, 0.55); }
+    70%  { box-shadow: 0 0 0 10px rgba(34, 229, 168, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(34, 229, 168, 0); }
+}
+@keyframes cinePodIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.94); }
+    to   { opacity: 1; transform: none; }
+}
+@keyframes cineFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+}
+@keyframes cineWheel {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(10px); }
+}
+@keyframes cineMarquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+
+/* ============================================================================
+   ✦ CONTINUOUS COSMOS — the ENTIRE page becomes one deep-space flight, not a
+   stack of slabs. A fixed far-starfield + a scrolling near-starfield create
+   real parallax depth; transparent sections let space show through; each scene
+   drifts in with cinematic motion. This is the "whole page is alive" upgrade.
+   ========================================================================== */
+
+/* The home is an intentionally always-dark cinematic flight. Re-assert the deep
+   space palette even under the light theme so the toggle can never produce
+   dark-text-on-dark-space; the rest of the site still themes normally. */
+html[data-theme="light"] body.mb-home {
+    --bg-primary: #05060d;
+    --bg-secondary: #0a0d1a;
+    --bg-tertiary: #131a2e;
+    --text-primary: #f2f4fb;
+    --text-secondary: #8991b3;
+    --border-color: rgba(255, 255, 255, 0.09);
+    --card-bg: rgba(255, 255, 255, 0.035);
+    --card-bg-solid: #0e1220;
+    --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+    --glow-primary: 0 0 24px rgba(124, 92, 255, 0.45);
+}
+
+/* The page floor is deep space, and every section floats in it (no more slabs). */
+.mb-home { background: #04050c; }
+.mb-home main { background: transparent; }
+.mb-home .mb-section,
+.mb-home .mb-section-tight { background: transparent !important; border-top: 0 !important; border-bottom: 0 !important; }
+
+/* FAR starfield — fixed, so it barely moves: the distant sky you fly past. */
+body.mb-home::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-color: #04050c;
+    background-image:
+        radial-gradient(1.6px 1.6px at 40px 60px,  rgba(255,255,255,0.90), transparent),
+        radial-gradient(1.2px 1.2px at 130px 100px, rgba(200,210,255,0.70), transparent),
+        radial-gradient(1px 1px     at 90px 165px, rgba(255,255,255,0.55), transparent),
+        radial-gradient(1.4px 1.4px at 175px 40px,  rgba(180,220,255,0.65), transparent),
+        radial-gradient(1px 1px     at 20px 185px, rgba(255,255,255,0.50), transparent),
+        radial-gradient(1.2px 1.2px at 150px 150px, rgba(210,200,255,0.55), transparent);
+    background-size: 220px 220px;
+    background-repeat: repeat;
+}
+
+/* NEAR starfield — scrolls with the page, so it slides past faster = parallax. */
+.mb-home main::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+        radial-gradient(2.2px 2.2px at 60px 80px,   rgba(124,92,255,0.55), transparent),
+        radial-gradient(1.8px 1.8px at 260px 220px, rgba(52,211,255,0.45), transparent),
+        radial-gradient(2px 2px     at 380px 60px,   rgba(255,255,255,0.55), transparent),
+        radial-gradient(1.6px 1.6px at 160px 300px, rgba(34,229,168,0.40), transparent);
+    background-size: 420px 420px;
+    background-repeat: repeat;
+    opacity: 0.9;
+}
+
+/* Content rides above the cosmos. */
+.mb-home main, .mb-home .mb-meganav, .mb-home .mb-footer { position: relative; z-index: 1; }
+
+/* ---- Scene choreography: each section is a "shot" that drifts up into frame
+        with depth as it enters the viewport. JS feeds --enter (0 → 1). Falls
+        back to fully-shown (1) with no JS and under reduced-motion. */
+.mb-home .cine-scene-block {
+    --enter: 1;
+    position: relative;
+    z-index: 1;
+    transform: translate3d(0, calc((1 - var(--enter)) * 60px), 0)
+               scale(calc(0.975 + var(--enter) * 0.025));
+    transform-origin: center top;
+}
+/* A soft light-seam between scenes instead of a hard 2009 divider line. */
+.mb-home .cine-scene-block:not(.mb-section-tight)::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(1100px, 84%);
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(124,92,255,0.35), rgba(52,211,255,0.28), transparent);
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* ---- Cinematic headlines: bigger, tighter, with a faint aura. */
+.mb-home .mb-section-title {
+    font-size: clamp(2.1rem, 5vw, 3.7rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    text-shadow: 0 0 60px rgba(124, 92, 255, 0.25);
+}
+.mb-home .cine-emission-copy h2,
+.mb-home .mb-teaser-copy h2 { font-size: clamp(2rem, 4.4vw, 3.2rem); letter-spacing: -0.03em; }
+
+/* ---- Staggered card cascade so grids reveal like a wave, not all at once. */
+.mb-home .mb-grid > .cine-reveal:nth-child(2) { transition-delay: 0.08s; }
+.mb-home .mb-grid > .cine-reveal:nth-child(3) { transition-delay: 0.16s; }
+.mb-home .mb-grid > .cine-reveal:nth-child(4) { transition-delay: 0.24s; }
+.mb-home .mb-grid > .cine-reveal:nth-child(5) { transition-delay: 0.32s; }
+.mb-home .mb-grid > .cine-reveal:nth-child(6) { transition-delay: 0.40s; }
+
+/* A touch more travel + scale on reveal for a filmic entrance. */
+.mb-home .cine-reveal {
+    transform: translateY(46px) scale(0.985);
+}
+.mb-home .cine-reveal.is-visible { transform: none; }
+
+/* Emission/teaser "island" surfaces glow a bit stronger now they float in space. */
+.mb-home .cine-chart,
+.mb-home .cine-emission-stat,
+.mb-home .mb-teaser .mb-card {
+    box-shadow: 0 30px 70px -38px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(124, 92, 255, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mb-home .cine-scene-block { transform: none !important; }
+}

@@ -1,4 +1,4 @@
-"""Production-grade WSGI serving helper for MoonBite full nodes.
+"""Production-grade WSGI serving helper for BigCoin full nodes.
 
 Flask's built-in development server saturates under high concurrent request
 load (e.g. many peers polling /api/blockchain/info). This module provides a

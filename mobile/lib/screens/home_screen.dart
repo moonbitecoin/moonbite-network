@@ -8,7 +8,7 @@ import 'wallet_screen.dart';
 
 /// Main shell once a wallet exists. Three tabs: receive (Wallet), Send, and
 /// chain status (Chain). Mining was removed — a phone can't meaningfully do
-/// scrypt PoW, and the wallet is non-custodial.
+/// RandomX PoW, and the wallet is non-custodial.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 

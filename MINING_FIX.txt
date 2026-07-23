@@ -20,14 +20,14 @@ SOLUTION: RESTART EVERYTHING
 
    Terminal 1:
    -----------
-   cd C:\Users\usman\Desktop\MoonBite
+   cd C:\Users\%USERNAME%\Desktop\BigCoinBB
    python shared_state.py
 
    Wait for output: "[Shared State Server] Listening on 127.0.0.1:9999"
 
    Terminal 2:
    -----------
-   cd C:\Users\usman\Desktop\MoonBite
+   cd C:\Users\%USERNAME%\Desktop\BigCoinBB
    python web_app_shared.py
 
    Wait for output: "Running on http://127.0.0.1:5000"

@@ -6,12 +6,12 @@ from PyQt6.QtCore import Qt
 app = QApplication(sys.argv)
 
 window = QMainWindow()
-window.setWindowTitle("MoonBite Test Window")
+window.setWindowTitle("MyCoin Test Window")
 window.setGeometry(100, 100, 500, 300)
 
 central = QWidget()
 layout = QVBoxLayout()
-layout.addWidget(QLabel("MoonBite GUI Test\n\nIf you see this, the GUI is working!"))
+layout.addWidget(QLabel("MyCoin GUI Test\n\nIf you see this, the GUI is working!"))
 btn = QPushButton("Click Me")
 btn.clicked.connect(lambda: print("Button clicked!"))
 layout.addWidget(btn)

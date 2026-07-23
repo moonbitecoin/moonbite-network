@@ -6,7 +6,7 @@ The fix is in the code. The problem: Old Python processes are running old byteco
 
 SOLUTION: Run this command in PowerShell to automatically restart everything:
 
-    powershell -ExecutionPolicy Bypass -File "C:\Users\usman\Desktop\MoonBite\FULL_AUTO_RESTART.ps1"
+    powershell -ExecutionPolicy Bypass -File "C:\Users\%USERNAME%\Desktop\BigCoinBB\FULL_AUTO_RESTART.ps1"
 
 This will:
   ✓ Kill all Python processes

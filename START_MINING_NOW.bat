@@ -1,12 +1,12 @@
 @echo off
-REM MoonBite Mining - One-Click Restart & Start
+REM MyCoin Mining - One-Click Restart & Start
 REM This script kills old processes, clears cache, and starts fresh servers
 
 setlocal enabledelayedexpansion
 
 echo.
 echo ================================================================
-echo   MoonBite Mining - One-Click Auto Restart
+echo   MyCoin Mining - One-Click Auto Restart
 echo ================================================================
 echo.
 echo Fixing: "Failed to start mining" error
@@ -22,7 +22,7 @@ echo.
 
 REM Clear __pycache__ directories
 echo [Step 2/5] Clearing Python cache directories...
-for /d /r "C:\Users\usman\Desktop\MoonBite" %%d in (__pycache__) do (
+for /d /r "C:\Users\%USERNAME%\Desktop\BigCoinBB" %%d in (__pycache__) do (
     if exist "%%d" (
         rmdir /s /q "%%d" >nul 2>&1
     )
@@ -32,7 +32,7 @@ echo.
 
 REM Delete .pyc files
 echo [Step 3/5] Clearing compiled Python files (.pyc)...
-for /r "C:\Users\usman\Desktop\MoonBite" %%f in (*.pyc) do (
+for /r "C:\Users\%USERNAME%\Desktop\BigCoinBB" %%f in (*.pyc) do (
     del "%%f" >nul 2>&1
 )
 echo   ✓ Done
@@ -48,7 +48,7 @@ REM Start servers
 echo [Step 5/5] Starting servers...
 echo.
 
-cd C:\Users\usman\Desktop\MoonBite
+cd C:\Users\%USERNAME%\Desktop\BigCoinBB
 
 echo   Opening Terminal 1: shared_state.py
 start cmd /k python shared_state.py

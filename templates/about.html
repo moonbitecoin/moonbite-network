@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}About MoonBite — mission, roadmap &amp; tokenomics{% endblock %}
+{% block meta_description %}The mission behind MoonBite, its roadmap to an exchange listing, and MBITE's fixed, no-premine tokenomics.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> About</span>
+            <h1 class="mb-hero-title">Built in the <span class="mb-gradient-text">open.</span></h1>
+            <p class="mb-hero-sub">MoonBite is a fair-launch cryptocurrency with a simple promise: capped supply, no premine, and tools anyone can run. Here's where it stands and where it's going.</p>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Mission</span>
+            <h2 class="mb-section-title">Fair money, verifiable by anyone</h2>
+            <p class="mb-section-sub">MoonBite exists to be sound, open and self-custodial from day one. Every MBITE is mined under one public schedule — no insiders, no hidden allocations, no trust required.</p>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" id="tokenomics" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Tokenomics</span>
+            <h2 class="mb-section-title">The MBITE ledger</h2>
+            <p class="mb-section-sub">Fixed emission, capped supply, no premine.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">🧮</div><h3>19,999,999.87 MBITE</h3><p>Asymptotic maximum supply — never exceeded, ever.</p></div>
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">🎁</div><h3>10 MBITE subsidy</h3><p>Block reward at genesis, paid entirely to miners.</p></div>
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">📉</div><h3>Halving every 1M blocks</h3><p>Roughly every 4.75 years at 2.5-minute blocks.</p></div>
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">⏱️</div><h3>2.5-minute blocks</h3><p>150-second target block time.</p></div>
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">⚖️</div><h3>No premine</h3><p>Any founder allocation is publicly burned. Fair launch by design.</p></div>
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">🧠</div><h3>CPU-friendly PoW</h3><p>CPU-friendly RandomX proof-of-work.</p></div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" id="roadmap">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Roadmap</span>
+            <h2 class="mb-section-title">The path to listing</h2>
+            <p class="mb-section-sub">Where MoonBite is today and what's next. Honest statuses, no promises.</p>
+        </div>
+        {% include "partials/roadmap.html" %}
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        {% set notify_title = "Follow the journey to mainnet" %}
+        {% set notify_source = "about" %}
+        {% include "partials/notify_form.html" %}
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-banner mb-reveal">
+            <span>MoonBite is a pre-mainnet, open-source project. It is <strong>not an investment or a security</strong> and carries no promise of future value.</span>
+        </div>
+    </div>
+</section>
+{% endblock %}

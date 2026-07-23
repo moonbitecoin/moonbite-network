@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MoonBite (MBITE) — Fair-launch crypto you can mine{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}MoonBite is an open, fair-launch cryptocurrency you can mine, hold in a self-custody wallet, and run yourself. Pre-mainnet — exchange listing coming soon.{% endblock %}">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='site.css') }}">
+    {% block head_extra %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-orb">
+            <div class="loader-ring"></div>
+            <div class="loader-moon"></div>
+        </div>
+        <div class="loader-text">MoonBite</div>
+    </div>
+
+    {% include "partials/mega_nav.html" %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    {% include "partials/mega_footer.html" %}
+
+    <script>
+        // Reveal page + fade out loader once ready (with a safety fallback).
+        (function () {
+            function reveal() { document.body.classList.add('loaded'); }
+            window.addEventListener('load', function () { setTimeout(reveal, 300); });
+            setTimeout(reveal, 2000);
+        })();
+
+        // Theme init (single source of truth — child pages must NOT redeclare
+        // htmlElement / themeToggle or they'll throw "already declared").
+        var htmlElement = document.documentElement;
+        var themeToggle = document.getElementById('themeToggle');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var storedTheme = localStorage.getItem('theme');
+        var isDark = storedTheme === 'dark' || (prefersDark && !storedTheme);
+        htmlElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        if (themeToggle) {
+            themeToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+            themeToggle.addEventListener('click', function () {
+                var current = htmlElement.getAttribute('data-theme');
+                var next = current === 'dark' ? 'light' : 'dark';
+                htmlElement.setAttribute('data-theme', next);
+                localStorage.setItem('theme', next);
+                themeToggle.textContent = next === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+            });
+        }
+    </script>
+    <script defer src="{{ url_for('static', filename='site.js') }}"></script>
+    {% block scripts_extra %}{% endblock %}
+</body>
+</html>

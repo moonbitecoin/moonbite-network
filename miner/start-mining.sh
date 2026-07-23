@@ -16,26 +16,26 @@ if [[ -z "${MINE_ADDRESS:-}" ]]; then
   exit 1
 fi
 
-if [[ -z "${MOONBITE_RPC_HOST:-}" ]]; then
-  read -rp "Node RPC host [127.0.0.1]: " MOONBITE_RPC_HOST
-  MOONBITE_RPC_HOST="${MOONBITE_RPC_HOST:-127.0.0.1}"
+if [[ -z "${BIGCOIN_RPC_HOST:-}" ]]; then
+  read -rp "Node RPC host [127.0.0.1]: " BIGCOIN_RPC_HOST
+  BIGCOIN_RPC_HOST="${BIGCOIN_RPC_HOST:-127.0.0.1}"
 fi
-if [[ -z "${MOONBITE_RPC_PORT:-}" ]]; then
-  read -rp "Node RPC port [9445]: " MOONBITE_RPC_PORT
-  MOONBITE_RPC_PORT="${MOONBITE_RPC_PORT:-9445}"
+if [[ -z "${BIGCOIN_RPC_PORT:-}" ]]; then
+  read -rp "Node RPC port [9445]: " BIGCOIN_RPC_PORT
+  BIGCOIN_RPC_PORT="${BIGCOIN_RPC_PORT:-9445}"
 fi
-if [[ -z "${MOONBITE_RPC_USER:-}" ]]; then
-  read -rp "RPC username: " MOONBITE_RPC_USER
+if [[ -z "${BIGCOIN_RPC_USER:-}" ]]; then
+  read -rp "RPC username: " BIGCOIN_RPC_USER
 fi
-if [[ -z "${MOONBITE_RPC_PASSWORD:-}" ]]; then
-  read -rsp "RPC password: " MOONBITE_RPC_PASSWORD
+if [[ -z "${BIGCOIN_RPC_PASSWORD:-}" ]]; then
+  read -rsp "RPC password: " BIGCOIN_RPC_PASSWORD
   echo
 fi
 
-export MINE_ADDRESS MOONBITE_RPC_HOST MOONBITE_RPC_PORT MOONBITE_RPC_USER MOONBITE_RPC_PASSWORD
+export MINE_ADDRESS BIGCOIN_RPC_HOST BIGCOIN_RPC_PORT BIGCOIN_RPC_USER BIGCOIN_RPC_PASSWORD
 
 echo
-echo "Starting miner -> ${MOONBITE_RPC_HOST}:${MOONBITE_RPC_PORT}  reward ${MINE_ADDRESS}"
+echo "Starting miner -> ${BIGCOIN_RPC_HOST}:${BIGCOIN_RPC_PORT}  reward ${MINE_ADDRESS}"
 echo "Press Ctrl+C to stop."
 echo
 

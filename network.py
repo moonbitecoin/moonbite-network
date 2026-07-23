@@ -1,4 +1,4 @@
-"""MoonBite — Milestone 4: Peer-to-peer network (whitepaper section 5).
+"""MyCoin — Milestone 4: Peer-to-peer network (whitepaper section 5).
 
 An in-process simulation of a gossip network so we can run several `Node`s in
 one program and exercise transaction/block propagation, forks, reorgs, and the

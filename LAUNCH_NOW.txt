@@ -10,7 +10,7 @@ Everything is ready! Here's exactly what to do:
 
 One Click Launch (Recommended):
 
-  1. Open: C:\Users\usman\Desktop\MoonBite
+  1. Open: C:\Users\%USERNAME%\Desktop\BigCoinBB
 
   2. Double-click: LAUNCH_EVERYTHING.bat
 
@@ -42,7 +42,7 @@ If you prefer manual control:
 STEP 1: Start Node 1 (Alice)
 ───────────────────────────
   Terminal 1:
-  cd C:\Users\usman\Desktop\MoonBite
+  cd C:\Users\%USERNAME%\Desktop\BigCoinBB
   python node_rpc_server.py alice 9001 8001
 
   Wait for:
@@ -52,7 +52,7 @@ STEP 1: Start Node 1 (Alice)
 STEP 2: Start Node 2 (Bob)
 ──────────────────────────
   Terminal 2:
-  cd C:\Users\usman\Desktop\MoonBite
+  cd C:\Users\%USERNAME%\Desktop\BigCoinBB
   python node_rpc_server.py bob 9002 8002
 
   Wait for:
@@ -62,7 +62,7 @@ STEP 2: Start Node 2 (Bob)
 STEP 3: Start Node 3 (Charlie)
 ──────────────────────────────
   Terminal 3:
-  cd C:\Users\usman\Desktop\MoonBite
+  cd C:\Users\%USERNAME%\Desktop\BigCoinBB
   python node_rpc_server.py charlie 9003 8003
 
   Wait for:
@@ -72,7 +72,7 @@ STEP 3: Start Node 3 (Charlie)
 STEP 4: Connect Nodes
 ──────────────────────
   Terminal 4:
-  cd C:\Users\usman\Desktop\MoonBite
+  cd C:\Users\%USERNAME%\Desktop\BigCoinBB
   python connect_nodes.py
 
   Wait for:
@@ -86,7 +86,7 @@ STEP 4: Connect Nodes
 STEP 5: Test Network
 ────────────────────
   Terminal 5:
-  cd C:\Users\usman\Desktop\MoonBite
+  cd C:\Users\%USERNAME%\Desktop\BigCoinBB
   python test_p2p_network.py
 
   Should show:
@@ -369,7 +369,7 @@ Choose one and run it now! 🚀
 ================================================================================
 
 1. Open File Explorer
-2. Navigate to: C:\Users\usman\Desktop\MoonBite
+2. Navigate to: C:\Users\%USERNAME%\Desktop\BigCoinBB
 3. Double-click: LAUNCH_EVERYTHING.bat
 4. Wait for all terminals to open
 5. Wait for tests to complete

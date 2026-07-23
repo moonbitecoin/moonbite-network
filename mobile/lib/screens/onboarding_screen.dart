@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import '../wallet/moonbite_network.dart';
+import '../wallet/bigcoin_network.dart';
 import '../wallet/wallet_controller.dart';
 
 /// First-run flow: create a new wallet (shows the recovery phrase to back up)
@@ -57,7 +57,7 @@ class OnboardingScreen extends StatelessWidget {
   Future<void> _createWallet(BuildContext context) async {
     final controller = context.read<WalletController>();
     final phrase =
-        await controller.createNew(network: MoonBiteNetwork.testnet);
+        await controller.createNew(network: BigCoinNetwork.testnet);
     if (!context.mounted) return;
     await showDialog<void>(
       context: context,
@@ -141,7 +141,7 @@ class _ImportScreenState extends State<_ImportScreen> {
     try {
       await context
           .read<WalletController>()
-          .importExisting(_controller.text, network: MoonBiteNetwork.testnet);
+          .importExisting(_controller.text, network: BigCoinNetwork.testnet);
       if (mounted) {
         Navigator.of(context)
           ..pop()

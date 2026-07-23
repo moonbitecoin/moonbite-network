@@ -21,17 +21,17 @@ if "%MINE_ADDRESS%"=="" (
 )
 
 REM --- RPC connection (press Enter for local-node defaults) ---
-if "%MOONBITE_RPC_HOST%"=="" set /p MOONBITE_RPC_HOST="Node RPC host [127.0.0.1]: "
-if "%MOONBITE_RPC_HOST%"=="" set MOONBITE_RPC_HOST=127.0.0.1
+if "%BIGCOIN_RPC_HOST%"=="" set /p BIGCOIN_RPC_HOST="Node RPC host [127.0.0.1]: "
+if "%BIGCOIN_RPC_HOST%"=="" set BIGCOIN_RPC_HOST=127.0.0.1
 
-if "%MOONBITE_RPC_PORT%"=="" set /p MOONBITE_RPC_PORT="Node RPC port [9445]: "
-if "%MOONBITE_RPC_PORT%"=="" set MOONBITE_RPC_PORT=9445
+if "%BIGCOIN_RPC_PORT%"=="" set /p BIGCOIN_RPC_PORT="Node RPC port [9445]: "
+if "%BIGCOIN_RPC_PORT%"=="" set BIGCOIN_RPC_PORT=9445
 
-if "%MOONBITE_RPC_USER%"=="" set /p MOONBITE_RPC_USER="RPC username: "
-if "%MOONBITE_RPC_PASSWORD%"=="" set /p MOONBITE_RPC_PASSWORD="RPC password: "
+if "%BIGCOIN_RPC_USER%"=="" set /p BIGCOIN_RPC_USER="RPC username: "
+if "%BIGCOIN_RPC_PASSWORD%"=="" set /p BIGCOIN_RPC_PASSWORD="RPC password: "
 
 echo.
-echo Starting miner -> %MOONBITE_RPC_HOST%:%MOONBITE_RPC_PORT%  reward %MINE_ADDRESS%
+echo Starting miner -> %BIGCOIN_RPC_HOST%:%BIGCOIN_RPC_PORT%  reward %MINE_ADDRESS%
 echo Press Ctrl+C to stop.
 echo.
 

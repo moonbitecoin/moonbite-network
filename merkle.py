@@ -1,4 +1,4 @@
-"""MoonBite — Milestone 2/7: Merkle tree (Bitcoin whitepaper section 7, section 8).
+"""MyCoin — Milestone 2/7: Merkle tree (Bitcoin whitepaper section 7, section 8).
 
 Transactions in a block are committed to by a single Merkle root in the block
 header. This lets a lightweight (SPV) client verify that a transaction is

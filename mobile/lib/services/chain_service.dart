@@ -12,7 +12,7 @@ import '../models/chain_models.dart';
 class ChainService {
   /// Live explorer (demo data until a real moonbited backend is wired up).
   static const String defaultBaseUrl =
-      'https://MoonBite-production.up.railway.app';
+      'https://moonbite-production.up.railway.app';
 
   String baseUrl;
   final http.Client _http;
@@ -66,7 +66,7 @@ class ChainService {
     return WalletBalance.fromJson(_decode(r));
   }
 
-  /// Suggested fee rate in MBITE per kB.
+  /// Suggested fee rate in BIG per kB.
   Future<double> getFeeRate() async {
     final r = await _http.get(_u('/api/fee')).timeout(timeout);
     final json = _decode(r);

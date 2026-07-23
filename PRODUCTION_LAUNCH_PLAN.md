@@ -1,4 +1,4 @@
-# MoonBite — Production Launch Plan (Mineable L1, Wallet, Exchange-Listable)
+# BigCoin — Production Launch Plan (Mineable L1, Wallet, Exchange-Listable)
 
 > Honest scope note: The Python code in this repo is an **educational reference**. It is
 > NOT the production chain and will never be listed. The production coin is a **fork of a
@@ -11,13 +11,13 @@
 
 | Parameter            | Value                          | Why |
 |----------------------|--------------------------------|-----|
-| Name / Ticker        | MoonBite / **MBITE**              | Reuse existing brand |
-| Base to fork         | **Litecoin Core** (Bitcoin fork, Scrypt) | Most exchange-integrated, simplest PoW change |
-| PoW algorithm        | **Scrypt** (or RandomX for CPU-friendly) | Scrypt = proven & GPU-mineable; RandomX = "mine on any PC" |
-| Max supply           | 84,000,000 MBITE                 | Litecoin-like scarcity |
+| Name / Ticker        | BigCoin / **BIG**              | Reuse existing brand |
+| Base to fork         | **Litecoin Core** (Bitcoin fork)         | Most exchange-integrated, simplest PoW change |
+| PoW algorithm        | **RandomX** (CPU-friendly, ASIC-resistant) | Mine on any PC; CPU-optimized like Monero |
+| Max supply           | 19,999,999.87 BIG              | Tighter-than-Litecoin scarcity |
 | Block time           | 2.5 minutes                    | Fast confirmations, proven |
-| Initial block reward | 50 MBITE                         | Familiar economics |
-| Halving interval     | 840,000 blocks (~4 yrs)        | Predictable issuance |
+| Initial block reward | 10 BIG                         | Familiar economics |
+| Halving interval     | 1,000,000 blocks (~4.75 yrs)   | Predictable issuance |
 | Premine              | **≤ 1%** (or 0)                | Large premines look like scams → exchanges reject |
 | Address prefix       | custom (e.g. "B..." / bech32 `big1`) | Brand identity |
 | P2P / RPC ports      | custom (avoid 8333/9333)       | Network separation |
@@ -28,7 +28,7 @@
 - [ ] **Phase 0 — Toolchain**: Linux/WSL build env, C++ toolchain, clone Litecoin Core source.
 - [ ] **Phase 1 — Rebrand & params**: edit `chainparams.cpp` (magic bytes, ports, prefixes,
       supply, reward, halving), mine a new **genesis block**, set checkpoints, add DNS seeds.
-- [ ] **Phase 2 — Build**: compile `moonbited` (daemon) + `moonbite-qt` (**desktop wallet — free from the fork**).
+- [ ] **Phase 2 — Build**: compile `bigcoind` (daemon) + `bigcoin-qt` (**desktop wallet — free from the fork**).
 - [ ] **Phase 3 — Testnet**: launch 3–5 seed nodes on cloud VPS, test mining, sends, reorgs, sync.
 - [ ] **Phase 4 — Security audit**: professional review before mainnet ($10k–$50k). Non-negotiable if it holds value.
 - [ ] **Phase 5 — Block explorer**: deploy open-source explorer (e.g. BTC RPC Explorer / Iquidus).
@@ -38,7 +38,7 @@
 
 ## 3. Getting listed on exchanges (the hard, expensive part)
 
-**DEX first (realistic, fast):** wrap MBITE or bridge to Ethereum/BSC → list on Uniswap/PancakeSwap
+**DEX first (realistic, fast):** wrap BIG or bridge to Ethereum/BSC → list on Uniswap/PancakeSwap
 by adding liquidity. Instant, permissionless, no listing fee. This is where new coins get their first market price.
 
 **CEX (hard, costly):**
@@ -50,7 +50,7 @@ by adding liquidity. Instant, permissionless, no listing fee. This is where new 
 
 ## 4. Legal & compliance (READ THIS — it makes or breaks you)
 
-- **Securities law (Howey test):** if MBITE is marketed/sold as an investment, it may be a security.
+- **Securities law (Howey test):** if BIG is marketed/sold as an investment, it may be a security.
   Getting this wrong is **criminal**, not just a fine. Get a crypto lawyer's opinion letter.
 - **Money transmission / MSB:** issuing/exchanging may require FinCEN registration + state licenses (US), plus **KYC/AML**.
 - **Jurisdiction:** many founders incorporate in crypto-clearer jurisdictions with proper counsel.
@@ -74,5 +74,5 @@ by adding liquidity. Instant, permissionless, no listing fee. This is where new 
 ## 7. Recommended first move
 
 Start **Phase 0–1 on your machine (WSL/Linux)**: I'll generate the exact rebrand + genesis
-scripts and walk the Litecoin Core fork step-by-step, producing a running `moonbited` testnet.
+scripts and walk the Litecoin Core fork step-by-step, producing a running `bigcoind` testnet.
 That gets you a *real, mineable coin with a real wallet* to build everything else on.

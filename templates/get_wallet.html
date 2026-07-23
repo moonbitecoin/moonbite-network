@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}MoonBite Wallet — self-custody for MBITE{% endblock %}
+{% block meta_description %}Download the MoonBite self-custody wallet, or open the web wallet in your browser. Your keys, your MBITE.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> Self-custody</span>
+            <h1 class="mb-hero-title">Your keys. <span class="mb-gradient-text">Your MBITE.</span></h1>
+            <p class="mb-hero-sub">A non-custodial MoonBite wallet — hold, send and receive MBITE without handing your keys to anyone. Try it instantly in your browser, or download the desktop wallet.</p>
+            <div class="mb-cta-row">
+                <a href="/wallet" class="btn btn-primary mb-btn-xl">Open Web Wallet</a>
+                <a href="#downloads" class="btn btn-secondary mb-btn-xl">Download Desktop</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" id="downloads">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Download</span>
+            <h2 class="mb-section-title">Get the MoonBite wallet</h2>
+            <p class="mb-section-sub">Non-custodial desktop builds. Always verify checksums before you run a binary.</p>
+        </div>
+        <div class="mb-download-grid">
+            <div class="mb-download-card mb-reveal">
+                <div class="mb-dl-os">🐧</div>
+                <h3>Linux (x86_64)</h3>
+                <div class="mb-dl-meta">tar.gz · ~11.8 MB</div>
+                <p class="mb-card-text">Full desktop wallet for 64-bit Linux.</p>
+                <a href="/downloads/moonbite-wallet-linux-x86_64.tar.gz" class="btn btn-primary">Download</a>
+            </div>
+            <div class="mb-download-card mb-soon mb-reveal">
+                <div class="mb-dl-os">🪟</div>
+                <h3>Windows</h3>
+                <span class="mb-soon-chip">◇ Coming soon</span>
+                <p class="mb-card-text">A signed 64-bit installer for Windows 10/11 is being built and verified. We'll never ship an unsigned binary.</p>
+                <a href="/markets" class="btn btn-secondary">Notify me when it's ready</a>
+            </div>
+            <div class="mb-download-card mb-soon mb-reveal">
+                <div class="mb-dl-os">🍏</div>
+                <h3>macOS</h3>
+                <span class="mb-soon-chip">◇ Coming soon</span>
+                <p class="mb-card-text">A notarized universal build for Apple Silicon &amp; Intel is on the way. Meanwhile, the web wallet runs on macOS today.</p>
+                <a href="/markets" class="btn btn-secondary">Notify me when it's ready</a>
+            </div>
+            <div class="mb-download-card mb-reveal">
+                <div class="mb-dl-os">🌐</div>
+                <h3>Web Wallet</h3>
+                <div class="mb-dl-meta">nothing to install</div>
+                <p class="mb-card-text">Generate an address and check balances in your browser.</p>
+                <a href="/wallet" class="btn btn-primary">Open now</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">🔑</div><h3>Non-custodial</h3><p>Your private keys are generated and stored by you — never uploaded, never held by MoonBite.</p></div>
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">🛡️</div><h3>No seed exposure</h3><p>We will never ask for your seed phrase or private key. Anyone who does is trying to scam you.</p></div>
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">📖</div><h3>Open source</h3><p>Built on a Litecoin-lineage core so you can audit exactly what the wallet does.</p></div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-banner mb-reveal">
+            <span>🔒 <strong>Security:</strong> download binaries only from this site, verify checksums, and never share your seed phrase. MoonBite is pre-mainnet — coins carry no market value yet.</span>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -36,7 +36,7 @@ START_MINING_NOW.bat
 ### Option B: Manual Control
 Run in Command Prompt:
 ```
-cd C:\Users\usman\Desktop\MoonBite
+cd C:\Users\%USERNAME%\Desktop\BigCoinBB
 CLEAN_RESTART.bat
 ```
 

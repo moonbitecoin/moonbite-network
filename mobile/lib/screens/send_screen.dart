@@ -65,7 +65,7 @@ class _SendScreenState extends State<SendScreen> {
       builder: (_) => AlertDialog(
         title: const Text('Confirm send'),
         content: Text(
-            'Send ${amount.toStringAsFixed(8)} MBITE to:\n\n$to\n\nOn ${wallet.network.id}.'),
+            'Send ${amount.toStringAsFixed(8)} BIG to:\n\n$to\n\nOn ${wallet.network.id}.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -121,7 +121,7 @@ class _SendScreenState extends State<SendScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (available != null)
-              Text('Available: ${available.toStringAsFixed(8)} MBITE',
+              Text('Available: ${available.toStringAsFixed(8)} BIG',
                   style: const TextStyle(color: Colors.white54)),
             const SizedBox(height: 16),
             TextField(
@@ -141,7 +141,7 @@ class _SendScreenState extends State<SendScreen> {
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
-                labelText: 'Amount (MBITE)',
+                labelText: 'Amount (BIG)',
                 border: const OutlineInputBorder(),
                 errorText: _amountError,
               ),

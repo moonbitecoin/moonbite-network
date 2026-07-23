@@ -5,7 +5,7 @@ to interact with the local full node.
 """
 
 from flask import Flask, jsonify, request, render_template
-from full_node import MoonBiteFullNode
+from full_node import BigCoinFullNode
 import logging
 import json
 import sys
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class NodeRPCServer:
     """Wraps a full node with JSON-RPC HTTP API."""
 
-    def __init__(self, node: MoonBiteFullNode, rpc_host: str = "127.0.0.1", rpc_port: int = 8000):
+    def __init__(self, node: BigCoinFullNode, rpc_host: str = "127.0.0.1", rpc_port: int = 8000):
         self.node = node
         self.rpc_host = rpc_host
         self.rpc_port = rpc_port
@@ -224,7 +224,7 @@ def main():
     maturity = int(os.environ.get("COINBASE_MATURITY", "100"))
 
     # Create full node
-    node = MoonBiteFullNode(node_id, host="127.0.0.1", port=p2p_port,
+    node = BigCoinFullNode(node_id, host="127.0.0.1", port=p2p_port,
                            coinbase_maturity=maturity)
     node.start_server()
 

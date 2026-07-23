@@ -1,4 +1,4 @@
-# MoonBite — Shared State Quick Start
+# MyCoin — Shared State Quick Start
 
 ## Problem Solved ✓
 
@@ -34,7 +34,7 @@ All 3 apps now use the same blockchain! ✓
 
 ### Terminal 1: Start Shared State Server (port 9999)
 ```bash
-cd C:\Users\usman\Desktop\MoonBite
+cd C:\Users\%USERNAME%\Desktop\BigCoinBB
 python shared_state.py
 ```
 **Output:** `[Shared State Server] Listening on 127.0.0.1:9999`

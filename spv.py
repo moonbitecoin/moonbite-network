@@ -1,4 +1,4 @@
-"""MoonBite — Milestone 7: Simplified Payment Verification (whitepaper section 8).
+"""MyCoin — Milestone 7: Simplified Payment Verification (whitepaper section 8).
 
 An SPV (Simplified Payment Verification) client is a *light* node. Rather than
 downloading and validating every transaction in every block, it keeps only the

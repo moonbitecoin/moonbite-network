@@ -1,4 +1,4 @@
-"""MoonBite Desktop GUI — Using Shared State Server.
+"""MyCoin Desktop GUI — Using Shared State Server.
 
 This version connects to shared_state.py instead of creating its own Node.
 Run shared_state.py FIRST, then this app.
@@ -80,7 +80,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         try:
             super().__init__()
-            self.setWindowTitle("MoonBite — Desktop Mining (Shared State)")
+            self.setWindowTitle("MyCoin — Desktop Mining (Shared State)")
             self.setGeometry(100, 100, 900, 700)
 
             # Connect to shared state server
@@ -321,7 +321,7 @@ Transactions: {result['tx_count']}
 
 if __name__ == "__main__":
     try:
-        logger.info("Starting MoonBite GUI...")
+        logger.info("Starting MyCoin GUI...")
         app = QApplication(sys.argv)
         logger.info("QApplication created")
         window = MainWindow()

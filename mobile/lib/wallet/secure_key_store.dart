@@ -7,8 +7,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 /// address and private key is re-derived from it on demand, so nothing else
 /// needs to touch disk.
 class SecureKeyStore {
-  static const _mnemonicKey = 'moonbite.mnemonic';
-  static const _networkKey = 'moonbite.network'; // "mainnet" | "testnet"
+  static const _mnemonicKey = 'bigcoin.mnemonic';
+  static const _networkKey = 'bigcoin.network'; // "mainnet" | "testnet"
 
   final FlutterSecureStorage _storage;
 

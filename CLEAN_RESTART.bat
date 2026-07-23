@@ -1,7 +1,7 @@
 @echo off
 echo.
 echo ========================================
-echo  MoonBite - CLEAN RESTART (Clear Cache)
+echo  MyCoin - CLEAN RESTART (Clear Cache)
 echo ========================================
 echo.
 
@@ -36,11 +36,11 @@ echo NEXT: Open 2 NEW Command Prompts
 echo ========================================
 echo.
 echo Copy and paste this into FIRST terminal:
-echo   cd C:\Users\usman\Desktop\MoonBite
+echo   cd C:\Users\%USERNAME%\Desktop\BigCoinBB
 echo   python shared_state.py
 echo.
 echo Copy and paste this into SECOND terminal:
-echo   cd C:\Users\usman\Desktop\MoonBite
+echo   cd C:\Users\%USERNAME%\Desktop\BigCoinBB
 echo   python web_app_shared.py
 echo.
 echo Then refresh browser: http://localhost:5000

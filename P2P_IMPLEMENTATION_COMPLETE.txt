@@ -3,7 +3,7 @@
 ================================================================================
 
 COMPLETION: ✓ WEEK 1 COMPLETE (2000+ lines of code)
-PROJECT: MoonBite Full P2P Decentralized Blockchain Network
+PROJECT: BigCoin Full P2P Decentralized Blockchain Network
 STATUS: READY TO USE
 
 ================================================================================
@@ -38,7 +38,7 @@ Core System (800 lines):
      → Message handling (handshake, blocks, sync)
 
   2. full_node.py (200 lines)
-     → MoonBiteFullNode (P2P + Blockchain)
+     → BigCoinFullNode (P2P + Blockchain)
      → Mining loop (mines & broadcasts)
      → Sync loop (stays in sync)
 
@@ -141,7 +141,7 @@ P2PNode (p2p_network.py):
   - Broadcasts messages
   - Handles keep-alive (ping/pong)
 
-MoonBiteFullNode (full_node.py):
+BigCoinFullNode (full_node.py):
   - Extends P2PNode with blockchain
   - Mines blocks locally
   - Broadcasts mined blocks
@@ -417,7 +417,7 @@ Requirements:
 Verify Setup:
   python --version (should be 3.8+)
   pip list (check flask, requests installed)
-  cd C:\Users\usman\Desktop\MoonBite
+  cd C:\Users\%USERNAME%\Desktop\BigCoinBB
   python -c "from p2p_network import P2PNode; print('OK')"
 
 Start Here:

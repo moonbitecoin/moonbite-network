@@ -1,4 +1,4 @@
-"""MoonBite — real TCP peer-to-peer transport (whitepaper section 5, for real).
+"""MyCoin — real TCP peer-to-peer transport (whitepaper section 5, for real).
 
 The in-process `network.Network` gossips by calling peer methods directly. This
 module replaces that with an actual asyncio TCP layer so `Node`s can run as
@@ -19,7 +19,7 @@ than ``MAX_FRAME_BYTES`` are rejected to bound memory (basic DoS protection).
 
 Design notes / trade-offs vs Bitcoin:
   * JSON envelope instead of a compact binary protocol — readable and easy to
-    debug, matching the rest of MoonBite.
+    debug, matching the rest of MyCoin.
   * No peer discovery, addr gossip, or ping/pong keepalive; peers are wired up
     explicitly via `connect`.
   * `Node` instances used here should be constructed with ``network=None`` so

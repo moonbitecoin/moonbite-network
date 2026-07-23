@@ -1,4 +1,4 @@
-"""MoonBite — command-line interface.
+"""MyCoin — command-line interface.
 
 A thin, human-friendly wrapper over the existing modules (transaction, block,
 node, wallet, params). It creates fresh in-memory state per invocation; there is
@@ -102,8 +102,8 @@ def cmd_info(args: argparse.Namespace) -> int:
 # --------------------------------------------------------------------------- #
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="moonbite",
-        description="MoonBite command-line interface (educational; no real funds).",
+        prog="mycoin",
+        description="MyCoin command-line interface (educational; no real funds).",
     )
     sub = parser.add_subparsers(dest="command", metavar="command")
 

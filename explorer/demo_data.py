@@ -1,7 +1,7 @@
 """Realistic fake sample data for DEMO_MODE.
 
 Provides a small in-memory blockchain (a handful of blocks + transactions)
-shaped exactly like the JSON that moonbited's JSON-RPC returns, so every
+shaped exactly like the JSON that bigcoind's JSON-RPC returns, so every
 explorer page renders without a live chain.
 """
 import time
@@ -20,7 +20,7 @@ def _h(n: int) -> str:
     """Deterministic 64-hex 'hash' derived from an integer seed."""
     import hashlib
 
-    return hashlib.sha256(f"moonbite-demo-{n}".encode()).hexdigest()
+    return hashlib.sha256(f"bigcoin-demo-{n}".encode()).hexdigest()
 
 
 # --- Transactions --------------------------------------------------------
@@ -309,7 +309,7 @@ def getrawmempool(verbose=False):
 def getnetworkinfo():
     return {
         "version": 250000,
-        "subversion": "/MoonBite:2.5.0/",
+        "subversion": "/BigCoin:2.5.0/",
         "protocolversion": 70015,
         "connections": 8,
         "connections_in": 3,

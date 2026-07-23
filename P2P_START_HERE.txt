@@ -1,5 +1,5 @@
 ================================================================================
-                   MoonBite P2P Network - START HERE
+                   BigCoin P2P Network - START HERE
 ================================================================================
 
 You now have a COMPLETE, DECENTRALIZED P2P blockchain network!
@@ -68,7 +68,7 @@ New Files Created:
 
 Architecture:
 ──────────────
-  Browser → HTTP → NodeRPCServer → MoonBiteFullNode
+  Browser → HTTP → NodeRPCServer → BigCoinFullNode
                                        ↓
                                    P2PNode ←→ Other Peers
                                        ↓
@@ -272,7 +272,7 @@ p2p_network.py (415 lines)
 
 full_node.py (200 lines)
 ────────────────────────
-  - MoonBiteFullNode: Combines P2P + Blockchain
+  - BigCoinFullNode: Combines P2P + Blockchain
   - Mining loop: Mines locally, broadcasts blocks
   - Sync loop: Periodically syncs with peers
   - Keep-alive: Monitors peer health

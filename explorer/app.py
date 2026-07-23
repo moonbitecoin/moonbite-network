@@ -1,6 +1,6 @@
-"""MoonBite (MBITE) block explorer -- Flask web app.
+"""BigCoin (BIG) block explorer -- Flask web app.
 
-Talks to a Bitcoin/Litecoin-Core-style JSON-RPC daemon (moonbited). Supports a
+Talks to a Bitcoin/Litecoin-Core-style JSON-RPC daemon (bigcoind). Supports a
 DEMO_MODE that serves realistic sample data so the explorer can be run and
 demoed without a live chain.
 """
@@ -9,11 +9,16 @@ import datetime
 from flask import Flask, abort, redirect, render_template, request, url_for
 
 import config
+import webhooks
 from api import api as api_blueprint
 from rpc import RpcClient, RPCConnectionError, RPCError
 
 app = Flask(__name__)
 app.register_blueprint(api_blueprint)
+
+# Start the background webhook poller (single instance across gunicorn workers
+# via a SQLite lock). No-op when webhooks are disabled.
+webhooks.start_poller()
 
 
 # --- Jinja filters -------------------------------------------------------
@@ -49,7 +54,7 @@ def fmt_since(value):
 
 @app.template_filter("coin")
 def fmt_coin(value):
-    """Format a coin amount (already in MBITE) with thousands separators."""
+    """Format a coin amount (already in BIG) with thousands separators."""
     try:
         return f"{float(value):,.8f}"
     except (ValueError, TypeError):

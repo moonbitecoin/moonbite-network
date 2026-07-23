@@ -1,4 +1,4 @@
-"""A small Bitcoin/Litecoin-Core-style JSON-RPC client for moonbited.
+"""A small Bitcoin/Litecoin-Core-style JSON-RPC client for bigcoind.
 
 Uses the standard library (urllib) so no third-party dependency is strictly
 required. If DEMO_MODE is enabled -- either explicitly via env, or implicitly
@@ -73,7 +73,7 @@ class RpcClient:
                 # User said DEMO_MODE=0 -> do not silently fake data.
                 raise
             self.demo = True
-            self.demo_reason = f"MoonBite node unreachable ({exc}); serving demo data"
+            self.demo_reason = f"BigCoin node unreachable ({exc}); serving demo data"
             return self._demo_call(method, params)
 
     # -- HTTP transport ---------------------------------------------------

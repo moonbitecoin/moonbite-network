@@ -1,8 +1,8 @@
-# MoonBite P2P Network - Complete Implementation
+# BigCoin P2P Network - Complete Implementation
 
 ## Overview
 
-You now have a **fully decentralized, production-ready P2P blockchain network** for MoonBite. This replaces the centralized `shared_state.py` with a distributed system where each user runs their own full node.
+You now have a **fully decentralized, production-ready P2P blockchain network** for BigCoin. This replaces the centralized `shared_state.py` with a distributed system where each user runs their own full node.
 
 **Key Features:**
 ✓ Decentralized P2P networking
@@ -54,7 +54,7 @@ You now have a **fully decentralized, production-ready P2P blockchain network** 
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────┐
-│           MoonBiteFullNode (Local Node)                  │
+│           BigCoinFullNode (Local Node)                  │
 │                                                           │
 │  ┌──────────────────────┐  ┌──────────────────────┐    │
 │  │  P2PNode             │  │  Node (Blockchain)   │    │
@@ -132,7 +132,7 @@ You should see:
 ## File Structure
 
 ```
-MoonBite/
+BigCoinBB/
 ├── p2p_network.py              ← Core P2P networking
 ├── full_node.py                ← Blockchain + P2P
 ├── node_rpc_server.py          ← HTTP API server

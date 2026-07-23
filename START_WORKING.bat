@@ -1,6 +1,6 @@
 @echo off
-cd C:\Users\usman\Desktop\MoonBite
-echo Starting MoonBite...
+cd C:\Users\%USERNAME%\Desktop\BigCoinBB
+echo Starting MyCoin...
 start cmd /k python shared_state.py
 timeout /t 3 >/dev/null
 start cmd /k python web_app_final.py

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MoonBite ($MBITE) — The Coin That Eats The Moon</title>
+<meta name="description" content="$MBITE — MoonBite. One bite at a time. A cinematic meme about eating the moon. Not financial advice." />
+<meta name="theme-color" content="#07070B" />
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="MoonBite ($MBITE) — The Coin That Eats The Moon" />
+<meta property="og:description" content="One bite at a time. The moon is food." />
+<meta property="og:url" content="https://moonbite.org/" />
+<meta property="og:image" content="[PLACEHOLDER_OG_IMAGE_URL]" />
+<meta name="twitter:card" content="summary_large_image" />
+<!-- Inline SVG crescent favicon -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2307070B'/%3E%3Cpath d='M20 5a11 11 0 1 0 0 22 8.5 8.5 0 0 1 0-22z' fill='%23FFC94A'/%3E%3C/svg%3E" />
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Serif:ital@1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ============ FILM GRAIN + VIGNETTE ============ -->
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<!-- ============ STARFIELD CANVAS ============ -->
+<canvas id="stars" class="stars" aria-hidden="true"></canvas>
+
+<!-- ============ CUSTOM CURSOR ============ -->
+<div id="cursor" class="cursor" aria-hidden="true">
+  <svg viewBox="0 0 40 40" width="40" height="40">
+    <path class="jaw jaw-top" d="M8 14 Q20 8 32 14" />
+    <path class="jaw jaw-bot" d="M8 26 Q20 32 32 26" />
+    <circle class="dot" cx="20" cy="20" r="3.2" />
+  </svg>
+</div>
+
+<!-- ============ SOUND TOGGLE ============ -->
+<button id="soundToggle" class="sound-toggle" aria-pressed="false" aria-label="Toggle chomp sound">SOUND: OFF</button>
+
+<!-- ============ PRELOADER ============ -->
+<div id="preloader" class="preloader" role="status" aria-label="Loading">
+  <div class="pre-curtain pre-curtain-l" aria-hidden="true"></div>
+  <div class="pre-curtain pre-curtain-r" aria-hidden="true"></div>
+  <div class="pre-core">
+    <svg class="pre-moon" viewBox="0 0 200 200" width="200" height="200" aria-hidden="true">
+      <defs>
+        <radialGradient id="preGrad" cx="38%" cy="34%" r="75%">
+          <stop offset="0%" stop-color="#FFF6E2" />
+          <stop offset="55%" stop-color="#F2EDE4" />
+          <stop offset="100%" stop-color="#C9BCA0" />
+        </radialGradient>
+      </defs>
+      <circle cx="100" cy="100" r="70" fill="url(#preGrad)" />
+      <!-- shadow terminator: sweeps away as it "fills" -->
+      <rect id="preShadow" x="30" y="28" width="144" height="144" fill="#07070B" />
+    </svg>
+    <div class="pre-count"><span id="preNum">0</span><span class="pre-pct">%</span></div>
+    <div class="pre-label">CALIBRATING APPETITE</div>
+  </div>
+</div>
+
+<!-- ============ FIXED MOON STAGE (the protagonist) ============ -->
+<div id="moonStage" class="moon-stage" aria-hidden="true">
+  <div id="moonShaker" class="moon-shaker">
+    <svg id="moonSvg" class="moon-svg" viewBox="0 0 600 600" width="600" height="600">
+      <defs>
+        <radialGradient id="moonBody" cx="38%" cy="33%" r="78%">
+          <stop offset="0%" stop-color="#FFF7E6" />
+          <stop offset="45%" stop-color="#F2EDE4" />
+          <stop offset="82%" stop-color="#D8CBAE" />
+          <stop offset="100%" stop-color="#B9A987" />
+        </radialGradient>
+        <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#FFC94A" stop-opacity="0.28" />
+          <stop offset="60%" stop-color="#FFC94A" stop-opacity="0.06" />
+          <stop offset="100%" stop-color="#FFC94A" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="craterG" cx="42%" cy="38%" r="60%">
+          <stop offset="0%" stop-color="#C4B591" />
+          <stop offset="70%" stop-color="#D7CAAD" />
+          <stop offset="100%" stop-color="#E7DCC4" />
+        </radialGradient>
+        <!-- BITE MASK: white = moon visible, black circles = bites removed -->
+        <mask id="biteMask">
+          <rect x="0" y="0" width="600" height="600" fill="black" />
+          <circle cx="300" cy="300" r="200" fill="white" />
+          <!-- edge nibbles (grown via JS by setting r) -->
+          <circle class="bite" data-bite="1" cx="470" cy="180" r="0" fill="black" />
+          <circle class="bite" data-bite="2" cx="150" cy="150" r="0" fill="black" />
+          <circle class="bite" data-bite="3" cx="480" cy="420" r="0" fill="black" />
+          <circle class="bite" data-bite="4" cx="140" cy="430" r="0" fill="black" />
+          <circle class="bite" data-bite="5" cx="300" cy="112" r="0" fill="black" />
+          <!-- the big crescent carve (final reveal) -->
+          <circle id="crescentCarve" cx="392" cy="252" r="0" fill="black" />
+        </mask>
+      </defs>
+
+      <circle cx="300" cy="300" r="270" fill="url(#moonGlow)" />
+
+      <g mask="url(#biteMask)">
+        <circle cx="300" cy="300" r="200" fill="url(#moonBody)" />
+        <!-- crater detail -->
+        <g class="craters" opacity="0.9">
+          <circle cx="238" cy="238" r="34" fill="url(#craterG)" />
+          <circle cx="238" cy="238" r="34" fill="none" stroke="#B7A883" stroke-width="1.5" opacity="0.5" />
+          <circle cx="352" cy="300" r="22" fill="url(#craterG)" />
+          <circle cx="300" cy="372" r="17" fill="url(#craterG)" />
+          <circle cx="380" cy="220" r="12" fill="url(#craterG)" />
+          <circle cx="210" cy="330" r="14" fill="url(#craterG)" />
+          <circle cx="330" cy="392" r="9" fill="url(#craterG)" />
+          <circle cx="270" cy="290" r="7" fill="url(#craterG)" />
+          <circle cx="400" cy="330" r="10" fill="url(#craterG)" />
+          <circle cx="180" cy="270" r="8" fill="url(#craterG)" />
+        </g>
+      </g>
+
+      <!-- bite EDGE glow ring (fades briefly on chomp, positioned by JS) -->
+      <circle id="biteEdge" class="bite-edge" cx="0" cy="0" r="0" fill="none" stroke="#FF3D2E" stroke-width="3" opacity="0" />
+    </svg>
+  </div>
+</div>
+
+<!-- crumb particle layer -->
+<canvas id="crumbs" class="crumbs" aria-hidden="true"></canvas>
+
+<!-- ============ MAIN ============ -->
+<header class="site-head">
+  <a class="brandmark" href="#hero" aria-label="MoonBite home">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 3a9 9 0 1 0 0 18 7 7 0 0 1 0-18z" fill="#FFC94A"/></svg>
+    <span>MOONBITE</span>
+  </a>
+  <nav class="head-nav" aria-label="Primary">
+    <a href="#tokenomics">TOKENOMICS</a>
+    <a href="#roadmap">SCHEDULE</a>
+    <a href="#buy">BUY</a>
+  </nav>
+</header>
+
+<main>
+
+  <!-- 00 HERO -->
+  <section id="hero" class="hero" aria-label="Hero">
+    <span class="eyebrow">00 — MOONBITE</span>
+    <div class="hero-lockup">
+      <h1 class="wordmark">
+        <span class="word word-back">MOON</span>
+        <span class="word word-front">BITE</span>
+      </h1>
+    </div>
+    <p class="hero-sub">$MBITE — THE COIN THAT EATS THE MOON</p>
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track" id="marqueeTrack">
+        <span>$MBITE&nbsp;&nbsp;◦&nbsp;&nbsp;ONE BITE AT A TIME&nbsp;&nbsp;◦&nbsp;&nbsp;NOT FINANCIAL ADVICE&nbsp;&nbsp;◦&nbsp;&nbsp;THE MOON IS FOOD&nbsp;&nbsp;◦&nbsp;&nbsp;</span>
+        <span>$MBITE&nbsp;&nbsp;◦&nbsp;&nbsp;ONE BITE AT A TIME&nbsp;&nbsp;◦&nbsp;&nbsp;NOT FINANCIAL ADVICE&nbsp;&nbsp;◦&nbsp;&nbsp;THE MOON IS FOOD&nbsp;&nbsp;◦&nbsp;&nbsp;</span>
+      </div>
+    </div>
+    <div class="scrollcue" aria-hidden="true"><span>SCROLL TO FEED</span><i></i></div>
+  </section>
+
+  <!-- 01 STORY -->
+  <section id="story" class="story" aria-label="The story">
+    <span class="eyebrow">01 — THE HUNGER</span>
+    <div class="beat beat-l" data-beat="1">
+      <p class="beat-line">Every coin promised you<br />the <em>moon</em>.</p>
+    </div>
+    <div class="beat beat-r" data-beat="2">
+      <p class="beat-line">We got <em>hungry</em><br />instead.</p>
+    </div>
+    <div class="beat beat-l" data-beat="3">
+      <p class="beat-line">So we started<br /><em>eating</em> it.</p>
+    </div>
+  </section>
+
+  <!-- 02 TOKENOMICS -->
+  <section id="tokenomics" class="tokenomics" aria-label="Tokenomics">
+    <span class="eyebrow">02 — TOKENOMICS</span>
+    <div class="tk-inner">
+      <h2 class="tk-title">The Bite Chart</h2>
+      <p class="tk-note">The moon <em>is</em> the chart. Every missing chunk is a number.</p>
+      <ul class="tk-list" role="list">
+        <li class="tk-row" data-bite-link="1">
+          <span class="tk-k">MAX SUPPLY</span>
+          <span class="tk-v"><span class="count" data-to="19999999">0</span>.87 $MBITE <b class="tk-note-inline">asymptotic cap</b></span>
+        </li>
+        <li class="tk-row" data-bite-link="2">
+          <span class="tk-k">BLOCK REWARD</span>
+          <span class="tk-v"><span class="count" data-to="10">0</span> $MBITE <b class="tk-note-inline">halves every 1,000,000 blocks</b></span>
+        </li>
+        <li class="tk-row" data-bite-link="3">
+          <span class="tk-k">PREMINE</span>
+          <span class="tk-v tk-burn">
+            NONE
+            <svg class="ico-flame" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 2c1 3-2 4-2 7a2 2 0 0 0 4 0c2 2 3 4 3 6a5 5 0 0 1-10 0c0-4 4-6 5-13z" fill="#FFC94A"/></svg>
+            <svg class="ico-lock" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2" fill="none" stroke="#F2EDE4" stroke-width="1.6"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="#F2EDE4" stroke-width="1.6"/></svg>
+          </span>
+        </li>
+        <li class="tk-row" data-bite-link="4">
+          <span class="tk-k">BLOCK TIME</span>
+          <span class="tk-v"><span class="count" data-to="150">0</span>s <b class="tk-note-inline">2.5-min target · RandomX PoW</b></span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 03 ROADMAP -->
+  <section id="roadmap" class="roadmap" aria-label="The feeding schedule">
+    <div class="rm-pin">
+      <div class="rm-head">
+        <span class="eyebrow">03 — THE FEEDING SCHEDULE</span>
+        <div class="rm-progress" aria-hidden="true">
+          <svg viewBox="0 0 40 40" width="34" height="34">
+            <defs>
+              <mask id="miniMask">
+                <rect width="40" height="40" fill="black" />
+                <circle cx="20" cy="20" r="14" fill="white" />
+                <circle id="miniCarve" cx="27" cy="14" r="0" fill="black" />
+              </mask>
+            </defs>
+            <circle cx="20" cy="20" r="14" fill="#FFC94A" mask="url(#miniMask)" />
+          </svg>
+        </div>
+      </div>
+      <div class="rm-track" id="rmTrack">
+        <article class="rm-panel">
+          <span class="rm-num">01</span>
+          <h3 class="rm-name">NIBBLE</h3>
+          <ul>
+            <li>Fair launch, zero premine — the first crumb.</li>
+            <li>Ship the block explorer + open-source the miner.</li>
+            <li>Gather the first 1,000 hungry mouths.</li>
+          </ul>
+        </article>
+        <article class="rm-panel">
+          <span class="rm-num">02</span>
+          <h3 class="rm-name">CHOMP</h3>
+          <ul>
+            <li>First exchange &amp; mining-pool conversations open.</li>
+            <li>Wallet + mobile app polish.</li>
+            <li>Meme arsenal deployed nightly.</li>
+          </ul>
+        </article>
+        <article class="rm-panel">
+          <span class="rm-num">03</span>
+          <h3 class="rm-name">DEVOUR</h3>
+          <ul>
+            <li>Listings live, liquidity deep.</li>
+            <li>Merch drop: "The Moon Is Food."</li>
+            <li>Community feeding events + contests.</li>
+          </ul>
+        </article>
+        <article class="rm-panel rm-final">
+          <span class="rm-num">04</span>
+          <h3 class="rm-name">ECLIPSE</h3>
+          <ul>
+            <li>Finish the moon. Only the crescent remains.</li>
+            <li>The crescent becomes the logo forever.</li>
+            <li>We start eyeing the sun.</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 HOW TO GET MBITE -->
+  <section id="buy" class="buy" aria-label="How to take a bite">
+    <span class="eyebrow">04 — HOW TO TAKE A BITE</span>
+    <h2 class="buy-title">Four bites to full.</h2>
+    <ol class="steps" role="list">
+      <li class="step"><span class="step-n">01</span><div><h3>Get the wallet</h3><p>Grab the MoonBite wallet — desktop or web. Your keys, your coin. It hands you a native <b>moon…</b> address.</p></div></li>
+      <li class="step"><span class="step-n">02</span><div><h3>Point a miner at it</h3><p>Download the open-source miner and start hashing. Fair launch, zero premine — every $MBITE is <b>mined, never minted</b>.</p></div></li>
+      <li class="step"><span class="step-n">03</span><div><h3>Earn or receive</h3><p>Collect block rewards, or have a peer send straight to your <b>moon…</b> address. No listing, no middleman.</p></div></li>
+      <li class="step"><span class="step-n">04</span><div><h3>Hold. Howl. Repeat.</h3><p>Watch each block land in the explorer. You're one of us now.</p></div></li>
+    </ol>
+
+    <a class="cta" id="cta" href="https://github.com/moonbitecoin/MoonBite-Coin/releases" target="_blank" rel="noopener">GET THE WALLET</a>
+
+    <div class="contract" aria-label="Live chain explorer">
+      <span class="contract-label">LIVE CHAIN</span>
+      <code id="contractAddr" data-full="[PLACEHOLDER_EXPLORER_URL]">[PLACEHOLDER_EXPLORER_URL]</code>
+      <button id="copyBtn" class="copy-btn" aria-label="Copy block explorer link">COPY</button>
+    </div>
+  </section>
+
+  <!-- 05 COMMUNITY + FOOTER -->
+  <footer id="footer" class="footer" aria-label="Community and footer">
+    <span class="eyebrow">05 — THE PAYOFF</span>
+    <div class="payoff">
+      <svg id="crescentLogo" class="crescent-logo" viewBox="0 0 220 220" width="220" height="220" role="img" aria-label="MoonBite crescent logo">
+        <defs>
+          <radialGradient id="crescBody" cx="40%" cy="35%" r="75%">
+            <stop offset="0%" stop-color="#FFF7E6" />
+            <stop offset="60%" stop-color="#F2EDE4" />
+            <stop offset="100%" stop-color="#D8CBAE" />
+          </radialGradient>
+          <mask id="crescMask">
+            <rect width="220" height="220" fill="black" />
+            <circle cx="110" cy="110" r="82" fill="white" />
+            <circle cx="146" cy="88" r="72" fill="black" />
+          </mask>
+        </defs>
+        <circle cx="110" cy="110" r="120" fill="url(#moonGlow)" />
+        <circle cx="110" cy="110" r="82" fill="url(#crescBody)" mask="url(#crescMask)" />
+      </svg>
+      <p class="payoff-line">The moon isn't finished.<br /><em>Neither are we.</em></p>
+    </div>
+
+    <nav class="mega-links" aria-label="Community">
+      <a href="[PLACEHOLDER_X_URL]" target="_blank" rel="noopener" aria-label="X / Twitter"><span>X / TWITTER</span><i>↗</i></a>
+      <a href="[PLACEHOLDER_TELEGRAM_URL]" target="_blank" rel="noopener" aria-label="Telegram"><span>TELEGRAM</span><i>↗</i></a>
+      <a href="https://github.com/moonbitecoin/MoonBite-Coin" target="_blank" rel="noopener" aria-label="GitHub"><span>GITHUB</span><i>↗</i></a>
+    </nav>
+
+    <p class="legal">$MBITE is an experimental proof-of-work cryptocurrency with no intrinsic value or expectation of financial return. Pre-mainnet — no coins have market value. Do your own research.</p>
+    <p class="copy-year">© <span id="year">2026</span> MOONBITE — ONE BITE AT A TIME</p>
+  </footer>
+
+</main>
+
+<!-- CDNs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/split-type@0.3.4/umd/index.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

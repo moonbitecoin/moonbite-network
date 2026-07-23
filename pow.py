@@ -1,4 +1,4 @@
-"""MoonBite — Milestone 3: Proof-of-Work (Bitcoin whitepaper section 4).
+"""MyCoin — Milestone 3: Proof-of-Work (Bitcoin whitepaper section 4).
 
 Mining searches for a header nonce whose double-SHA-256 hash is below a target,
 i.e. begins with a required number of leading zero bits. This is "one CPU, one

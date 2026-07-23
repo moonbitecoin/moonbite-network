@@ -5,10 +5,10 @@
 <div class="message-card error">
   <div class="message-icon">⚠</div>
   <h1 class="page-title">Cannot reach the {{ COIN_NAME }} node</h1>
-  <p class="muted">The explorer could not talk to the moonbited JSON-RPC server.</p>
+  <p class="muted">The explorer could not talk to the bigcoind JSON-RPC server.</p>
   {% if message %}<div class="mono query-box">{{ message }}</div>{% endif %}
   <p>
-    Check that <code>moonbited</code> is running and that the RPC host/port and
+    Check that <code>bigcoind</code> is running and that the RPC host/port and
     credentials are correct. To preview the explorer without a live chain, set
     <code>DEMO_MODE=1</code> and restart.
   </p>

@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+
+{% block title %}Accept MBITE — MoonBite merchant directory & payments{% endblock %}
+{% block meta_description %}Businesses that voluntarily accept MoonBite (MBITE), plus a non-custodial way to get paid. The server never holds funds — payments land wallet-to-wallet and are verified on-chain.{% endblock %}
+{% block nav_active %}merchants{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> Non-custodial payments</span>
+            <h1 class="mb-hero-title">Spend and accept <span class="mb-gradient-text">MoonBite.</span></h1>
+            <p class="mb-hero-sub">A directory of businesses that choose to take MBITE, and a simple way for any of them to get paid. Money moves wallet-to-wallet — the server only watches the chain to confirm a payment arrived. It never holds your coins.</p>
+            <div class="mb-cta-row">
+                <a href="#directory" class="btn btn-primary mb-btn-xl">Browse merchants</a>
+                <a href="#getpaid" class="btn btn-secondary mb-btn-xl">Accept MBITE</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" id="directory">
+    <div class="mb-container">
+        <div class="mb-banner mb-reveal" style="margin-bottom: var(--spacing-2xl);">
+            <span>ℹ️ <strong>Early days, listed honestly.</strong> MBITE is pre-mainnet with no established value, so this directory starts empty and grows only as real businesses opt in. Nothing here is an endorsement, and MoonBite is <strong>not an investment or a security</strong>.</span>
+        </div>
+
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Directory</span>
+            <h2 class="mb-section-title">Who accepts MBITE</h2>
+            <p class="mb-section-sub">Businesses that voluntarily take MoonBite. Filter by what they offer.</p>
+        </div>
+
+        <div class="mb-mrc-filters mb-reveal" id="mrcFilters">
+            <button class="mb-mrc-filter is-active" data-cat="">All</button>
+        </div>
+
+        <div class="mb-grid mb-grid-3 mb-reveal" id="mrcGrid">
+            <div class="mb-mrc-empty">Loading…</div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" id="getpaid" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">For businesses</span>
+            <h2 class="mb-section-title">Get paid in MBITE</h2>
+            <p class="mb-section-sub">List your business, then raise a payment request. The customer pays from their own wallet straight to yours — we just confirm it landed.</p>
+        </div>
+
+        <div class="mb-mrc-cols mb-reveal">
+            <!-- List your business -->
+            <form class="mb-mrc-card" id="mrcRegForm" autocomplete="off">
+                <h3 class="mb-mrc-card-title">1 · List your business</h3>
+                <div class="mb-mrc-field">
+                    <label for="mrcName">Business name</label>
+                    <input id="mrcName" name="name" type="text" placeholder="Moon Coffee" required>
+                </div>
+                <div class="mb-mrc-field">
+                    <label for="mrcCat">What you offer</label>
+                    <select id="mrcCat" name="category" required></select>
+                </div>
+                <div class="mb-mrc-field">
+                    <label for="mrcUrl">Website <span class="mb-ex-qlabel">(optional)</span></label>
+                    <input id="mrcUrl" name="url" type="url" placeholder="https://…">
+                </div>
+                <div class="mb-mrc-field">
+                    <label for="mrcBlurb">One-line description <span class="mb-ex-qlabel">(optional)</span></label>
+                    <input id="mrcBlurb" name="blurb" type="text" maxlength="160" placeholder="Fresh coffee, priced in MBITE">
+                </div>
+                <div class="mb-mrc-field">
+                    <label for="mrcAddr">Your MBITE address <span class="mb-ex-qlabel">(where you receive)</span></label>
+                    <div class="mb-mrc-addrrow">
+                        <input id="mrcAddr" name="mbite_address" type="text" placeholder="your address" required>
+                        <button type="button" class="btn btn-secondary" id="mrcGenAddr" title="Generate a demo address on this node">Demo addr</button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mb-btn-xl" id="mrcRegBtn">List business</button>
+                <div class="mb-ex-formmsg" id="mrcRegMsg" role="status" aria-live="polite"></div>
+            </form>
+
+            <!-- Raise an invoice -->
+            <form class="mb-mrc-card" id="mrcInvForm" autocomplete="off">
+                <h3 class="mb-mrc-card-title">2 · Request a payment</h3>
+                <div class="mb-mrc-field">
+                    <label for="mrcInvAddr">Receiving MBITE address</label>
+                    <input id="mrcInvAddr" name="address" type="text" placeholder="your address" list="mrcAddrList" required>
+                    <datalist id="mrcAddrList"></datalist>
+                </div>
+                <div class="mb-mrc-field">
+                    <label for="mrcInvAmount">Amount (MBITE)</label>
+                    <input id="mrcInvAmount" name="amount" type="number" step="any" min="0" placeholder="3" required>
+                </div>
+                <div class="mb-mrc-field">
+                    <label for="mrcInvMemo">What's it for <span class="mb-ex-qlabel">(optional)</span></label>
+                    <input id="mrcInvMemo" name="memo" type="text" maxlength="140" placeholder="Latte">
+                </div>
+                <button type="submit" class="btn btn-primary mb-btn-xl" id="mrcInvBtn">Create payment request</button>
+                <div class="mb-ex-formmsg" id="mrcInvMsg" role="status" aria-live="polite"></div>
+            </form>
+        </div>
+
+        <!-- Checkout panel (shown after an invoice is created) -->
+        <div class="mb-mrc-checkout mb-reveal" id="mrcCheckout" hidden>
+            <div class="mb-mrc-checkout-head">
+                <div>
+                    <div class="mb-mrc-checkout-eyebrow">Payment request</div>
+                    <div class="mb-mrc-checkout-amt" id="mrcCoAmt"></div>
+                    <div class="mb-mrc-checkout-memo" id="mrcCoMemo"></div>
+                </div>
+                <div class="mb-mrc-status" id="mrcCoStatus">pending</div>
+            </div>
+            <div class="mb-mrc-checkout-body">
+                <div class="mb-mrc-field">
+                    <label>Send exactly to this address</label>
+                    <div class="mb-mrc-copyrow">
+                        <code id="mrcCoAddr"></code>
+                        <button type="button" class="mb-mrc-copy" data-copy="mrcCoAddr">Copy</button>
+                    </div>
+                </div>
+                <div class="mb-mrc-field">
+                    <label>Or scan / open this payment link</label>
+                    <div class="mb-mrc-copyrow">
+                        <code id="mrcCoUri"></code>
+                        <button type="button" class="mb-mrc-copy" data-copy="mrcCoUri">Copy</button>
+                    </div>
+                </div>
+                <div class="mb-mrc-progress"><div class="mb-mrc-progress-fill" id="mrcCoFill"></div></div>
+                <div class="mb-mrc-checkout-note" id="mrcCoNote"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">How it works</span>
+            <h2 class="mb-section-title">Nobody holds the money but you</h2>
+        </div>
+        <div class="mb-grid mb-grid-3 mb-reveal">
+            <div class="mb-card">
+                <div class="mb-card-icon">🧾</div>
+                <h3 class="mb-card-title">1 · Raise a request</h3>
+                <p class="mb-card-text">You enter an amount. We create a payment link pointing at <em>your</em> address — no account, no deposit, no custody.</p>
+            </div>
+            <div class="mb-card">
+                <div class="mb-card-icon">📲</div>
+                <h3 class="mb-card-title">2 · Customer pays you</h3>
+                <p class="mb-card-text">They send MBITE from their own wallet directly to your address. The coins never pass through us.</p>
+            </div>
+            <div class="mb-card">
+                <div class="mb-card-icon">👀</div>
+                <h3 class="mb-card-title">3 · We confirm on-chain</h3>
+                <p class="mb-card-text">The server watches the chain and flips the request to <strong>paid</strong> once your address receives the amount. Watch-only — no keys, ever.</p>
+            </div>
+        </div>
+        <div class="mb-banner mb-reveal" style="margin-top: var(--spacing-2xl);">
+            <span>🔎 <strong>Demo verification runs against this educational node.</strong> Payments are detected when your address actually receives coins here; in production the same check points at the MoonBite RandomX node. Pricing is in MBITE — a fiat peg needs real trades, which don't exist yet.</span>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-banner mb-reveal">
+            <span>MoonBite is a pre-mainnet, open-source project. The merchant tools are non-custodial software — the server stores directory listings and payment requests only, and never holds coins, keys or balances. Nothing here is financial advice or an offer to sell a security.</span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+(function () {
+    "use strict";
+    var CATS = [];
+    var pollTimer = null;
+
+    function esc(s) {
+        return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+    }
+    function fmt(n) {
+        var v = Number(n);
+        return isFinite(v) ? v.toLocaleString(undefined, { maximumFractionDigits: 8 }) : String(n);
+    }
+    var CAT_ICON = { goods: "📦", services: "🛠️", food: "🍽️", digital: "💾", donation: "❤️", other: "✨" };
+
+    /* ---------------------------------------------- directory ---- */
+    var grid = document.getElementById("mrcGrid");
+    var filters = document.getElementById("mrcFilters");
+    var currentCat = "";
+
+    function cardHtml(m) {
+        var icon = CAT_ICON[m.category] || "✨";
+        var name = '<div class="mb-mrc-name">' + esc(m.name) + "</div>";
+        var head = m.url
+            ? '<a class="mb-mrc-name-link" href="' + esc(m.url) + '" target="_blank" rel="noopener nofollow">' + esc(m.name) + " ↗</a>"
+            : name;
+        return '<div class="mb-card mb-mrc-item">' +
+            '<div class="mb-mrc-item-head"><span class="mb-mrc-icon">' + icon + "</span>" +
+            '<span class="mb-mrc-cat">' + esc(m.category) + "</span></div>" +
+            head +
+            (m.blurb ? '<p class="mb-card-text">' + esc(m.blurb) + "</p>" : "") +
+            '<div class="mb-mrc-addr"><code>' + esc(m.mbite_address) + "</code>" +
+            '<button class="mb-mrc-pay" data-addr="' + esc(m.mbite_address) + '" data-name="' + esc(m.name) + '">Pay this merchant</button></div>' +
+            "</div>";
+    }
+
+    function loadMerchants() {
+        var q = currentCat ? "?category=" + encodeURIComponent(currentCat) : "";
+        fetch("/api/merchants" + q)
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (!d || d.status !== "success") throw new Error(d && d.message || "load failed");
+                if (!CATS.length) { CATS = d.categories; buildCatControls(); }
+                if (!d.merchants.length) {
+                    grid.innerHTML = '<div class="mb-mrc-empty">No merchants listed yet in this category. Be the first — list your business below.</div>';
+                    return;
+                }
+                grid.innerHTML = d.merchants.map(cardHtml).join("");
+                grid.querySelectorAll(".mb-mrc-pay").forEach(function (b) {
+                    b.addEventListener("click", function () {
+                        var addr = b.getAttribute("data-addr");
+                        document.getElementById("mrcInvAddr").value = addr;
+                        document.getElementById("getpaid").scrollIntoView({ behavior: "smooth" });
+                        document.getElementById("mrcInvAmount").focus();
+                    });
+                });
+            })
+            .catch(function (e) { grid.innerHTML = '<div class="mb-mrc-empty">Could not load: ' + esc(e.message) + "</div>"; });
+    }
+
+    function buildCatControls() {
+        CATS.forEach(function (c) {
+            var b = document.createElement("button");
+            b.className = "mb-mrc-filter";
+            b.setAttribute("data-cat", c);
+            b.textContent = c;
+            filters.appendChild(b);
+        });
+        filters.querySelectorAll(".mb-mrc-filter").forEach(function (b) {
+            b.addEventListener("click", function () {
+                filters.querySelectorAll(".mb-mrc-filter").forEach(function (x) { x.classList.remove("is-active"); });
+                b.classList.add("is-active");
+                currentCat = b.getAttribute("data-cat");
+                loadMerchants();
+            });
+        });
+        var sel = document.getElementById("mrcCat");
+        sel.innerHTML = CATS.map(function (c) { return '<option value="' + c + '">' + c + "</option>"; }).join("");
+    }
+
+    /* ---------------------------------------------- register ---- */
+    document.getElementById("mrcGenAddr").addEventListener("click", function () {
+        var btn = this;
+        btn.disabled = true;
+        fetch("/api/wallet/new").then(function (r) { return r.json(); }).then(function (d) {
+            if (d && d.address) document.getElementById("mrcAddr").value = d.address;
+        }).catch(function () {}).finally(function () { btn.disabled = false; });
+    });
+
+    document.getElementById("mrcRegForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var msg = document.getElementById("mrcRegMsg");
+        var btn = document.getElementById("mrcRegBtn");
+        var body = {
+            name: document.getElementById("mrcName").value,
+            category: document.getElementById("mrcCat").value,
+            url: document.getElementById("mrcUrl").value,
+            blurb: document.getElementById("mrcBlurb").value,
+            mbite_address: document.getElementById("mrcAddr").value
+        };
+        btn.disabled = true; msg.className = "mb-ex-formmsg"; msg.textContent = "Listing…";
+        fetch("/api/merchants", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+            .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+            .then(function (res) {
+                if (!res.ok || res.d.status !== "success") throw new Error(res.d.message || "Could not list");
+                msg.className = "mb-ex-formmsg is-ok"; msg.textContent = "Listed! Your business is now in the directory.";
+                document.getElementById("mrcRegForm").reset();
+                loadMerchants();
+            })
+            .catch(function (err) { msg.className = "mb-ex-formmsg is-err"; msg.textContent = err.message; })
+            .finally(function () { btn.disabled = false; });
+    });
+
+    /* ---------------------------------------------- invoice ---- */
+    var checkout = document.getElementById("mrcCheckout");
+
+    document.getElementById("mrcInvForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var msg = document.getElementById("mrcInvMsg");
+        var btn = document.getElementById("mrcInvBtn");
+        var body = {
+            address: document.getElementById("mrcInvAddr").value,
+            amount: document.getElementById("mrcInvAmount").value,
+            memo: document.getElementById("mrcInvMemo").value
+        };
+        btn.disabled = true; msg.className = "mb-ex-formmsg"; msg.textContent = "Creating…";
+        fetch("/api/merchant/invoice", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+            .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+            .then(function (res) {
+                if (!res.ok || res.d.status !== "success") throw new Error(res.d.message || "Could not create request");
+                msg.className = "mb-ex-formmsg is-ok"; msg.textContent = "Payment request created below.";
+                showCheckout(res.d.invoice);
+            })
+            .catch(function (err) { msg.className = "mb-ex-formmsg is-err"; msg.textContent = err.message; })
+            .finally(function () { btn.disabled = false; });
+    });
+
+    function showCheckout(inv) {
+        document.getElementById("mrcCoAmt").textContent = fmt(inv.amount) + " MBITE";
+        document.getElementById("mrcCoMemo").textContent = inv.memo || "";
+        document.getElementById("mrcCoAddr").textContent = inv.address;
+        document.getElementById("mrcCoUri").textContent = inv.pay_uri;
+        checkout.hidden = false;
+        checkout.scrollIntoView({ behavior: "smooth" });
+        renderStatus(inv);
+        if (pollTimer) clearInterval(pollTimer);
+        if (inv.status === "pending") {
+            pollTimer = setInterval(function () { pollInvoice(inv.id); }, 4000);
+        }
+    }
+
+    function pollInvoice(id) {
+        fetch("/api/merchant/invoice/" + encodeURIComponent(id))
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (!d || d.status !== "success") return;
+                renderStatus(d.invoice);
+                if (d.invoice.status !== "pending" && pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+            })
+            .catch(function () {});
+    }
+
+    function renderStatus(inv) {
+        var pill = document.getElementById("mrcCoStatus");
+        var note = document.getElementById("mrcCoNote");
+        var fill = document.getElementById("mrcCoFill");
+        pill.textContent = inv.status;
+        pill.className = "mb-mrc-status is-" + inv.status;
+        var pct = inv.amount_units ? Math.min(100, Math.round(100 * inv.paid_units / inv.amount_units)) : 0;
+        fill.style.width = pct + "%";
+        if (inv.status === "paid") {
+            note.innerHTML = "✅ <strong>Paid.</strong> Your address received the full amount on-chain.";
+        } else if (inv.status === "expired") {
+            note.innerHTML = "⌛ <strong>Expired.</strong> No full payment arrived in time — raise a new request.";
+        } else {
+            var left = Math.floor((inv.seconds_left || 0) / 60);
+            note.innerHTML = "Waiting for payment… detected " + fmt(inv.paid_units / 100) +
+                " of " + fmt(inv.amount) + " MBITE. Expires in ~" + left + " min. This checks the chain automatically.";
+        }
+    }
+
+    /* ---------------------------------------------- copy buttons ---- */
+    document.addEventListener("click", function (e) {
+        var b = e.target.closest(".mb-mrc-copy");
+        if (!b) return;
+        var el = document.getElementById(b.getAttribute("data-copy"));
+        if (el && navigator.clipboard) {
+            navigator.clipboard.writeText(el.textContent).then(function () {
+                var t = b.textContent; b.textContent = "Copied"; setTimeout(function () { b.textContent = t; }, 1200);
+            }).catch(function () {});
+        }
+    });
+
+    loadMerchants();
+})();
+</script>
+{% endblock %}

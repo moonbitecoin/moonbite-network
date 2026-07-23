@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """MoonBite one-click CPU solo miner.
 
-Real solo mining against a MoonBite (moonbited) node. The node performs the
+Real solo mining against a MoonBite (bigcoind) node. The node performs the
 proof-of-work via the `generatetoaddress` RPC, so this is genuine mining -- on a
 new / low-difficulty network it will find blocks; the reward goes to the address
 you provide.
@@ -13,10 +13,10 @@ Usage:
 
 Common options (all also read from env / config file):
     --address    MoonBite address that receives the block rewards (required)
-    --rpc-host   node RPC host           (default 127.0.0.1, env MOONBITE_RPC_HOST)
-    --rpc-port   node RPC port           (default 9445,      env MOONBITE_RPC_PORT)
-    --rpc-user   RPC username            (env MOONBITE_RPC_USER)
-    --rpc-pass   RPC password            (env MOONBITE_RPC_PASSWORD)
+    --rpc-host   node RPC host           (default 127.0.0.1, env BIGCOIN_RPC_HOST)
+    --rpc-port   node RPC port           (default 9445,      env BIGCOIN_RPC_PORT)
+    --rpc-user   RPC username            (env BIGCOIN_RPC_USER)
+    --rpc-pass   RPC password            (env BIGCOIN_RPC_PASSWORD)
     --maxtries   PoW attempts per round  (default 1000000)
     --blocks     stop after N blocks     (default 0 = run forever)
 
@@ -90,10 +90,10 @@ def main(argv=None):
     p = argparse.ArgumentParser(description="MoonBite one-click CPU solo miner")
     p.add_argument("--address", default=os.environ.get("MINE_ADDRESS", ""),
                    help="MoonBite address to receive rewards (required)")
-    p.add_argument("--rpc-host", default=os.environ.get("MOONBITE_RPC_HOST", "127.0.0.1"))
-    p.add_argument("--rpc-port", type=int, default=int(os.environ.get("MOONBITE_RPC_PORT", "9445")))
-    p.add_argument("--rpc-user", default=os.environ.get("MOONBITE_RPC_USER", ""))
-    p.add_argument("--rpc-pass", default=os.environ.get("MOONBITE_RPC_PASSWORD", ""))
+    p.add_argument("--rpc-host", default=os.environ.get("BIGCOIN_RPC_HOST", "127.0.0.1"))
+    p.add_argument("--rpc-port", type=int, default=int(os.environ.get("BIGCOIN_RPC_PORT", "9445")))
+    p.add_argument("--rpc-user", default=os.environ.get("BIGCOIN_RPC_USER", ""))
+    p.add_argument("--rpc-pass", default=os.environ.get("BIGCOIN_RPC_PASSWORD", ""))
     p.add_argument("--maxtries", type=int, default=1000000,
                    help="PoW attempts per round before returning (default 1000000)")
     p.add_argument("--blocks", type=int, default=0,
@@ -102,7 +102,7 @@ def main(argv=None):
 
     if not args.address:
         p.error("--address is required (or set MINE_ADDRESS). "
-                "Get one from your wallet or `moonbite-cli getnewaddress`.")
+                "Get one from your wallet or `bigcoin-cli getnewaddress`.")
 
     conn = RpcConn(args.rpc_host, args.rpc_port, args.rpc_user, args.rpc_pass)
 

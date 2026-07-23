@@ -18,7 +18,7 @@ address. On a new / low-difficulty network this finds blocks quickly.
 
 ### Requirements
 - Python 3 (no extra packages)
-- A reachable MoonBite node RPC (your own local `moonbited`, or any node whose
+- A reachable MoonBite node RPC (your own local `bigcoind`, or any node whose
   RPC you can reach). **The public Railway node keeps RPC private**, so for the
   CPU miner run your own node locally (WSL) or point at one you control.
 
@@ -42,7 +42,7 @@ python moonbite_miner.py \
 
 Get a reward address from your wallet, or:
 ```bash
-moonbite-cli getnewaddress
+bigcoin-cli getnewaddress
 ```
 
 Stop any time with **Ctrl+C**.
@@ -51,9 +51,9 @@ Stop any time with **Ctrl+C**.
 | Flag | Default | Meaning |
 |---|---|---|
 | `--address` | — (required) | address that receives block rewards |
-| `--rpc-host` | `127.0.0.1` | node RPC host (env `MOONBITE_RPC_HOST`) |
-| `--rpc-port` | `9445` | node RPC port (env `MOONBITE_RPC_PORT`) |
-| `--rpc-user` / `--rpc-pass` | — | RPC auth (env `MOONBITE_RPC_USER` / `_PASSWORD`) |
+| `--rpc-host` | `127.0.0.1` | node RPC host (env `BIGCOIN_RPC_HOST`) |
+| `--rpc-port` | `9445` | node RPC port (env `BIGCOIN_RPC_PORT`) |
+| `--rpc-user` / `--rpc-pass` | — | RPC auth (env `BIGCOIN_RPC_USER` / `_PASSWORD`) |
 | `--maxtries` | `1000000` | PoW attempts per round |
 | `--blocks` | `0` | stop after N blocks (0 = forever) |
 

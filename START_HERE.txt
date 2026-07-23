@@ -1,8 +1,8 @@
 ================================================================================
-                    MOONBITE — START HERE GUIDE
+                    MYCOIN — START HERE GUIDE
 ================================================================================
 
-Welcome! MoonBite is a complete Bitcoin-like cryptocurrency with:
+Welcome! MyCoin is a complete Bitcoin-like cryptocurrency with:
   - Blockchain Core (100% Bitcoin whitepaper)
   - Web Dashboard (browser-based)
   - Desktop GUI (PyQt6 native window)
@@ -16,15 +16,15 @@ Welcome! MoonBite is a complete Bitcoin-like cryptocurrency with:
 Step 1: Open 3 Command Prompts/Terminals
 
 Terminal 1 - Type this:
-  cd C:\Users\usman\Desktop\MoonBite
+  cd C:\Users\%USERNAME%\Desktop\BigCoinBB
   python shared_state.py
 
 Terminal 2 - Type this:
-  cd C:\Users\usman\Desktop\MoonBite
+  cd C:\Users\%USERNAME%\Desktop\BigCoinBB
   python web_app_shared.py
 
 Terminal 3 - Type this:
-  cd C:\Users\usman\Desktop\MoonBite
+  cd C:\Users\%USERNAME%\Desktop\BigCoinBB
   python gui_shared.py
 
 Step 2: Wait 5 seconds for everything to start
@@ -72,7 +72,7 @@ IF ANY TERMINAL STOPS, RESTART IT!
                          SETUP FILES AT
 ================================================================================
 
-C:\Users\usman\Desktop\MoonBite\
+C:\Users\%USERNAME%\Desktop\BigCoinBB\
 
 Core Files:
   shared_state.py       (IPC server, port 9999)
@@ -144,7 +144,7 @@ If you want iOS/Android app:
 
 1. Install Flutter from flutter.dev
 
-2. From MoonBite folder:
+2. From MyCoin folder:
    cd mobile
    flutter pub get
    flutter run
@@ -244,7 +244,7 @@ web_app.py, gui.py
                         BLOCKCHAIN FEATURES
 ================================================================================
 
-MoonBite implements:
+MyCoin implements:
   ✓ ECDSA signing (secp256k1)
   ✓ Proof-of-work mining
   ✓ Difficulty retargeting
@@ -267,7 +267,7 @@ This is 99% of Bitcoin! (Educational only, no audit)
                       EDUCATIONAL USE ONLY!
 ================================================================================
 
-MoonBite is for LEARNING Bitcoin, NOT for real money!
+MyCoin is for LEARNING Bitcoin, NOT for real money!
 
 Why:
   - No independent security audit
@@ -278,7 +278,7 @@ Why:
 
 See SECURITY.md for full threat model.
 
-Never hold real funds in MoonBite!
+Never hold real funds in MyCoin!
 
 ================================================================================
                         NEXT: READ THESE DOCS

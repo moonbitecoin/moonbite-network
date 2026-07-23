@@ -4,11 +4,11 @@ REM This starts all 3 nodes, connects them, and runs tests
 
 setlocal enabledelayedexpansion
 
-cd C:\Users\usman\Desktop\MoonBite
+cd C:\Users\%USERNAME%\Desktop\BigCoinBB
 
 echo.
 echo ================================================================================
-echo                    MoonBite P2P Network - Full Launch
+echo                    BigCoin P2P Network - Full Launch
 echo ================================================================================
 echo.
 echo This script will:
@@ -36,15 +36,15 @@ echo Step 3: Starting 3 nodes in separate terminals...
 echo.
 
 echo   Starting Alice (P2P: 9001, RPC: 8001)...
-start "MoonBite Node - Alice" cmd /k python node_rpc_server.py alice 9001 8001
+start "BigCoin Node - Alice" cmd /k python node_rpc_server.py alice 9001 8001
 timeout /t 3 >nul
 
 echo   Starting Bob (P2P: 9002, RPC: 8002)...
-start "MoonBite Node - Bob" cmd /k python node_rpc_server.py bob 9002 8002
+start "BigCoin Node - Bob" cmd /k python node_rpc_server.py bob 9002 8002
 timeout /t 3 >nul
 
 echo   Starting Charlie (P2P: 9003, RPC: 8003)...
-start "MoonBite Node - Charlie" cmd /k python node_rpc_server.py charlie 9003 8003
+start "BigCoin Node - Charlie" cmd /k python node_rpc_server.py charlie 9003 8003
 timeout /t 3 >nul
 
 echo   ✓ All 3 nodes started!

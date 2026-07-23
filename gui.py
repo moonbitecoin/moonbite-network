@@ -1,6 +1,6 @@
-"""MoonBite Desktop GUI Application using PyQt6.
+"""MyCoin Desktop GUI Application using PyQt6.
 
-A user-friendly interface for MoonBite mining and wallet management.
+A user-friendly interface for MyCoin mining and wallet management.
 This is an educational project and does not hold real funds.
 """
 
@@ -416,7 +416,7 @@ class MainWindow(QMainWindow):
         self.init_ui()
 
     def init_ui(self):
-        self.setWindowTitle("MoonBite Mining & Wallet Manager")
+        self.setWindowTitle("MyCoin Mining & Wallet Manager")
         self.setGeometry(100, 100, 900, 700)
 
         # Central widget with tabs
@@ -468,9 +468,9 @@ class MainWindow(QMainWindow):
         from PyQt6.QtWidgets import QMessageBox
         QMessageBox.information(
             self,
-            "About MoonBite GUI",
-            "MoonBite Mining & Wallet Manager\n\n"
-            "An educational desktop application for mining and managing MoonBite.\n"
+            "About MyCoin GUI",
+            "MyCoin Mining & Wallet Manager\n\n"
+            "An educational desktop application for mining and managing MyCoin.\n"
             "This application does not hold real funds.\n\n"
             "Built with PyQt6",
         )

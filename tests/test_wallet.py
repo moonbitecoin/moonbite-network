@@ -1,4 +1,4 @@
-"""Tests for MoonBite Milestone 8: Wallet & Privacy."""
+"""Tests for MyCoin Milestone 8: Wallet & Privacy."""
 
 import sys
 from pathlib import Path

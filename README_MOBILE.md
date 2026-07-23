@@ -1,6 +1,6 @@
-# MoonBite Mobile App - Flutter
+# MyCoin Mobile App - Flutter
 
-This is a cross-platform mobile application for MoonBite, an educational blockchain project. The app provides wallet management, mining capabilities, and blockchain information viewing on iOS and Android.
+This is a cross-platform mobile application for MyCoin, an educational blockchain project. The app provides wallet management, mining capabilities, and blockchain information viewing on iOS and Android.
 
 **EDUCATIONAL USE ONLY** - This app never holds real funds and is intended for learning purposes only.
 
@@ -24,7 +24,7 @@ This is a cross-platform mobile application for MoonBite, an educational blockch
    - **Android**: Android SDK, Android emulator or physical device
    - **iOS**: Xcode (macOS only), iPhone simulator or physical device
 
-3. **Backend**: MoonBite web app must be running
+3. **Backend**: MyCoin web app must be running
    - Default expected at: `http://localhost:5000`
    - See main README for web_app.py setup
 
@@ -44,7 +44,7 @@ flutter doctor
 ### 2. Clone/Navigate to Project
 
 ```bash
-cd C:/Users/usman/Desktop/MoonBite/mobile
+cd C:/Users/%USERNAME%/Desktop/BigCoinBB/mobile
 ```
 
 ### 3. Install Dependencies

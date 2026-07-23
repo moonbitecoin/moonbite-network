@@ -3,10 +3,10 @@ import 'dart:typed_data';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:coinslib/coinslib.dart';
 
-import 'moonbite_network.dart';
+import 'bigcoin_network.dart';
 
 /// A single derived Big Coin key/address, ready to show, receive to, or spend.
-class MoonBiteAccount {
+class BigCoinAccount {
   final int index;
   final String derivationPath;
 
@@ -22,7 +22,7 @@ class MoonBiteAccount {
   /// WIF-encoded private key — SECRET. Only used locally for signing.
   final String wif;
 
-  const MoonBiteAccount({
+  const BigCoinAccount({
     required this.index,
     required this.derivationPath,
     required this.bech32Address,
@@ -36,13 +36,13 @@ class MoonBiteAccount {
 ///
 /// All key material is derived locally from a BIP39 mnemonic; nothing leaves
 /// the device. Addresses follow BIP84 (native SegWit, `big1…`) using Big Coin's
-/// own network parameters ([MoonBiteNetwork]).
+/// own network parameters ([BigCoinNetwork]).
 ///
 /// Derivation path: `m/84'/<coinType>'/0'/0/<index>`
 ///   - mainnet coinType 2 (Litecoin-lineage fork)
 ///   - testnet coinType 1 (BIP44 test convention)
 class HdWalletService {
-  final MoonBiteNetwork network;
+  final BigCoinNetwork network;
 
   HdWalletService(this.network);
 
@@ -82,7 +82,7 @@ class HdWalletService {
   }
 
   /// Derives the receive account at [index] (default 0) from [mnemonic].
-  MoonBiteAccount deriveAccount(
+  BigCoinAccount deriveAccount(
     String mnemonic, {
     int index = 0,
     String passphrase = '',
@@ -93,7 +93,7 @@ class HdWalletService {
     final bech32 =
         P2WPKH.fromPublicKey(node.pubKeyBytes).address(network.coins);
 
-    return MoonBiteAccount(
+    return BigCoinAccount(
       index: index,
       derivationPath: path,
       bech32Address: bech32,
@@ -104,7 +104,7 @@ class HdWalletService {
   }
 
   /// Derives a contiguous range of accounts `[start, start+count)`.
-  List<MoonBiteAccount> deriveAccounts(
+  List<BigCoinAccount> deriveAccounts(
     String mnemonic, {
     int start = 0,
     int count = 1,
@@ -117,13 +117,13 @@ class HdWalletService {
     final seed = bip39.mnemonicToSeed(normalized, passphrase: passphrase);
     final root = HDWallet.fromSeed(seed, network: network.coins);
 
-    return List<MoonBiteAccount>.generate(count, (i) {
+    return List<BigCoinAccount>.generate(count, (i) {
       final index = start + i;
       final path = derivationPathForIndex(index);
       final node = root.derivePath(path);
       final bech32 =
           P2WPKH.fromPublicKey(node.pubKeyBytes).address(network.coins);
-      return MoonBiteAccount(
+      return BigCoinAccount(
         index: index,
         derivationPath: path,
         bech32Address: bech32,

@@ -1,4 +1,4 @@
-"""MoonBite — Milestone 8: Wallet & Privacy (Bitcoin whitepaper section 10).
+"""MyCoin — Milestone 8: Wallet & Privacy (Bitcoin whitepaper section 10).
 
 This module gives users a way to hold keys, derive human-shareable addresses,
 check balances against a UTXO set, and build spendable transactions.

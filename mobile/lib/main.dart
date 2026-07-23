@@ -7,11 +7,11 @@ import 'screens/onboarding_screen.dart';
 import 'wallet/wallet_controller.dart';
 
 void main() {
-  runApp(const MoonBiteApp());
+  runApp(const BigCoinApp());
 }
 
-class MoonBiteApp extends StatelessWidget {
-  const MoonBiteApp({super.key});
+class BigCoinApp extends StatelessWidget {
+  const BigCoinApp({super.key});
 
   @override
   Widget build(BuildContext context) {

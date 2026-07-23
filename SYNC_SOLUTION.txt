@@ -1,5 +1,5 @@
 ================================================================================
-                    MOONBITE — SYNCHRONIZED UI SOLUTION
+                    MYCOIN — SYNCHRONIZED UI SOLUTION
 ================================================================================
 
 PROBLEM FIXED:
@@ -63,7 +63,7 @@ All 3 UIs now use the SAME blockchain!
 ================================================================================
 
 Terminal 1 - Start Shared State Server:
-  cd C:\Users\usman\Desktop\MoonBite
+  cd C:\Users\%USERNAME%\Desktop\BigCoinBB
   python shared_state.py
 
   Output: [Shared State Server] Listening on 127.0.0.1:9999
@@ -249,7 +249,7 @@ ORIGINAL FILES (unchanged):
                          CONCLUSION
 ================================================================================
 
-Your MoonBite UIs are now fully synchronized!
+Your MyCoin UIs are now fully synchronized!
 
 - Web browser and Desktop GUI share the same blockchain
 - Generate addresses anywhere, mine anywhere, check balance anywhere

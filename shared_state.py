@@ -1,4 +1,4 @@
-"""MoonBite Shared State Server — IPC for synchronized blockchain state.
+"""MyCoin Shared State Server — IPC for synchronized blockchain state.
 
 Both web_app.py and gui.py connect to this server to share a single Node instance.
 This ensures the same blockchain, addresses, and mining state across all UIs.

@@ -1,6 +1,6 @@
-# Running a MoonBite Full Node / Seed Node
+# Running a BigCoin Full Node / Seed Node
 
-A full node validates and relays the MoonBite blockchain. Running one strengthens
+A full node validates and relays the BigCoin blockchain. Running one strengthens
 the network, gives you a trustless view of the chain, and is required to operate
 a seed node, block explorer, pool, or exchange integration.
 
@@ -18,13 +18,13 @@ a seed node, block explorer, pool, or exchange integration.
 
 ---
 
-## Sample `moonbite.conf`
+## Sample `bigcoin.conf`
 
 Place this in the data directory:
 
-- Linux: `~/.moonbite/moonbite.conf`
-- macOS: `~/Library/Application Support/MoonBite/moonbite.conf`
-- Windows: `%APPDATA%\MoonBite\moonbite.conf`
+- Linux: `~/.bigcoin/bigcoin.conf`
+- macOS: `~/Library/Application Support/BigCoin/bigcoin.conf`
+- Windows: `%APPDATA%\BigCoin\bigcoin.conf`
 
 ```ini
 # ---- RPC / server ----
@@ -46,8 +46,8 @@ txindex=1          # required for explorers / full tx lookups
 dbcache=512        # MB of DB cache; raise for faster sync if you have RAM
 
 # ---- peers to connect to at startup ----
-addnode=seed1.moonbite.example.com
-addnode=seed2.moonbite.example.com
+addnode=seed1.bigcoin.example.com
+addnode=seed2.bigcoin.example.com
 addnode=203.0.113.10:9444
 addnode=198.51.100.20:9444
 ```
@@ -59,10 +59,10 @@ addnode=198.51.100.20:9444
 Test it:
 
 ```bash
-moonbited -daemon
-moonbite-cli getblockchaininfo
-moonbite-cli getpeerinfo
-moonbite-cli getnetworkinfo
+bigcoind -daemon
+bigcoin-cli getblockchaininfo
+bigcoin-cli getpeerinfo
+bigcoin-cli getnetworkinfo
 ```
 
 ---
@@ -74,7 +74,7 @@ To accept inbound peers you must allow **TCP 9444** in.
 ### Linux (ufw)
 
 ```bash
-sudo ufw allow 9444/tcp comment "MoonBite P2P"
+sudo ufw allow 9444/tcp comment "BigCoin P2P"
 # DO NOT open 9445 (RPC) to the internet
 ```
 
@@ -106,32 +106,32 @@ For testnet, substitute **19555** everywhere you see 9444.
 Create a dedicated user and directories, then a unit file.
 
 ```bash
-sudo useradd -r -m -d /var/lib/moonbited moonbite
-sudo mkdir -p /etc/moonbite
-sudo cp moonbite.conf /etc/moonbite/moonbite.conf
-sudo chown -R moonbite:moonbite /var/lib/moonbited /etc/moonbite
+sudo useradd -r -m -d /var/lib/bigcoind bigcoin
+sudo mkdir -p /etc/bigcoin
+sudo cp bigcoin.conf /etc/bigcoin/bigcoin.conf
+sudo chown -R bigcoin:bigcoin /var/lib/bigcoind /etc/bigcoin
 ```
 
-`/etc/systemd/system/moonbited.service`:
+`/etc/systemd/system/bigcoind.service`:
 
 ```ini
 [Unit]
-Description=MoonBite daemon
+Description=BigCoin daemon
 After=network-online.target
 Wants=network-online.target
 
 [Service]
-User=moonbite
-Group=moonbite
+User=bigcoin
+Group=bigcoin
 Type=simple
-ExecStart=/usr/local/bin/moonbited \
-  -conf=/etc/moonbite/moonbite.conf \
-  -datadir=/var/lib/moonbited \
-  -pid=/run/moonbited/moonbited.pid
-ExecStop=/usr/local/bin/moonbite-cli -conf=/etc/moonbite/moonbite.conf stop
+ExecStart=/usr/local/bin/bigcoind \
+  -conf=/etc/bigcoin/bigcoin.conf \
+  -datadir=/var/lib/bigcoind \
+  -pid=/run/bigcoind/bigcoind.pid
+ExecStop=/usr/local/bin/bigcoin-cli -conf=/etc/bigcoin/bigcoin.conf stop
 Restart=on-failure
 TimeoutStopSec=120
-RuntimeDirectory=moonbited
+RuntimeDirectory=bigcoind
 
 # hardening
 NoNewPrivileges=true
@@ -147,12 +147,12 @@ Enable and start:
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now moonbited
-sudo systemctl status moonbited
-journalctl -u moonbited -f
+sudo systemctl enable --now bigcoind
+sudo systemctl status bigcoind
+journalctl -u bigcoind -f
 ```
 
-> Note: run `moonbited` **without** `-daemon` under systemd (`Type=simple`), so
+> Note: run `bigcoind` **without** `-daemon` under systemd (`Type=simple`), so
 > systemd manages the process directly.
 
 ---
@@ -166,17 +166,17 @@ Nodes discover each other through:
    maintainers) run a `dnsseed`-style server or use a static host and publish its
    name. Once compiled in, clients query it automatically.
 
-2. **`addnode` entries** — explicit peers, added in `moonbite.conf` or at runtime:
+2. **`addnode` entries** — explicit peers, added in `bigcoin.conf` or at runtime:
 
 ```bash
 # add a peer at runtime
-moonbite-cli addnode "203.0.113.10:9444" add
+bigcoin-cli addnode "203.0.113.10:9444" add
 
 # force a one-time connection attempt
-moonbite-cli addnode "198.51.100.20:9444" onetry
+bigcoin-cli addnode "198.51.100.20:9444" onetry
 
 # inspect current peers
-moonbite-cli getpeerinfo | grep addr
+bigcoin-cli getpeerinfo | grep addr
 ```
 
 - Use `addnode` for peers you always want to try.
@@ -201,7 +201,7 @@ For a brand-new coin there are no peers yet. Bring up an initial mesh:
    addnode=<ip-of-seed-C>:9444
    ```
 
-3. **Publish DNS seed hostnames** (e.g. `seed1.moonbite.example.com`) pointing at
+3. **Publish DNS seed hostnames** (e.g. `seed1.bigcoin.example.com`) pointing at
    those IPs, and ship them in the client's chain params / default `addnode`
    list so new users auto-connect.
 

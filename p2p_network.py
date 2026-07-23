@@ -1,4 +1,4 @@
-"""MoonBite P2P Network - Decentralized blockchain synchronization.
+"""MyCoin P2P Network - Decentralized blockchain synchronization.
 
 This module handles:
 - Peer discovery and connection

@@ -1,14 +1,14 @@
 @echo off
-REM MoonBite P2P Network - Fixed Launch Script
+REM BigCoin P2P Network - Fixed Launch Script
 REM Fixes: JSON serialization issue with private keys
 
 setlocal enabledelayedexpansion
 
-cd C:\Users\usman\Desktop\MoonBite
+cd C:\Users\%USERNAME%\Desktop\BigCoinBB
 
 echo.
 echo ================================================================================
-echo                    MoonBite P2P Network - FIXED Launch
+echo                    BigCoin P2P Network - FIXED Launch
 echo ================================================================================
 echo.
 
@@ -32,13 +32,13 @@ echo.
 echo Step 3: Starting nodes...
 echo.
 
-start "MoonBite Node - Alice" cmd /k python node_rpc_server.py alice 9001 8001
+start "BigCoin Node - Alice" cmd /k python node_rpc_server.py alice 9001 8001
 timeout /t 3 >nul
 
-start "MoonBite Node - Bob" cmd /k python node_rpc_server.py bob 9002 8002
+start "BigCoin Node - Bob" cmd /k python node_rpc_server.py bob 9002 8002
 timeout /t 3 >nul
 
-start "MoonBite Node - Charlie" cmd /k python node_rpc_server.py charlie 9003 8003
+start "BigCoin Node - Charlie" cmd /k python node_rpc_server.py charlie 9003 8003
 timeout /t 3 >nul
 
 echo   ✓ Nodes started

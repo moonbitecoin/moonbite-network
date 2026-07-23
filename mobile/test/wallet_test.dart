@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:moonbite_mobile/wallet/moonbite_network.dart';
-import 'package:moonbite_mobile/wallet/hd_wallet_service.dart';
+import 'package:bigcoin_mobile/wallet/bigcoin_network.dart';
+import 'package:bigcoin_mobile/wallet/hd_wallet_service.dart';
 
 /// Standard BIP39 test vector mnemonic (all-zero entropy). Deterministic, so
 /// the derived addresses below are fixed for a given set of network params.
@@ -10,9 +10,9 @@ const _testVectorMnemonic =
     'abandon abandon abandon abandon abandon about';
 
 void main() {
-  group('MoonBiteNetwork params', () {
+  group('BigCoinNetwork params', () {
     test('mainnet uses big bech32 + Litecoin-fork version bytes', () {
-      final n = MoonBiteNetwork.mainnet.coins;
+      final n = BigCoinNetwork.mainnet.coins;
       expect(n.bech32, 'big');
       expect(n.pubKeyHash, 25);
       expect(n.scriptHash, 5);
@@ -22,7 +22,7 @@ void main() {
     });
 
     test('testnet uses tbig bech32 + testnet version bytes', () {
-      final n = MoonBiteNetwork.testnet.coins;
+      final n = BigCoinNetwork.testnet.coins;
       expect(n.bech32, 'tbig');
       expect(n.pubKeyHash, 111);
       expect(n.scriptHash, 196);
@@ -32,14 +32,14 @@ void main() {
     });
 
     test('byId round-trips and defaults to mainnet', () {
-      expect(MoonBiteNetwork.byId('testnet').isTestnet, isTrue);
-      expect(MoonBiteNetwork.byId('mainnet').isTestnet, isFalse);
-      expect(MoonBiteNetwork.byId('anything-else').id, 'mainnet');
+      expect(BigCoinNetwork.byId('testnet').isTestnet, isTrue);
+      expect(BigCoinNetwork.byId('mainnet').isTestnet, isFalse);
+      expect(BigCoinNetwork.byId('anything-else').id, 'mainnet');
     });
   });
 
   group('Mnemonic', () {
-    final svc = HdWalletService(MoonBiteNetwork.testnet);
+    final svc = HdWalletService(BigCoinNetwork.testnet);
 
     test('generates a valid 12-word phrase by default', () {
       final m = svc.generateMnemonic();
@@ -64,7 +64,7 @@ void main() {
   });
 
   group('Derivation — testnet', () {
-    final svc = HdWalletService(MoonBiteNetwork.testnet);
+    final svc = HdWalletService(BigCoinNetwork.testnet);
 
     test('uses BIP84 path with testnet coin type 1', () {
       expect(svc.accountPath, "m/84'/1'/0'/0");
@@ -112,7 +112,7 @@ void main() {
   });
 
   group('Derivation — mainnet', () {
-    final svc = HdWalletService(MoonBiteNetwork.mainnet);
+    final svc = HdWalletService(BigCoinNetwork.mainnet);
 
     test('uses BIP84 path with mainnet coin type 2', () {
       expect(svc.accountPath, "m/84'/2'/0'/0");
@@ -126,7 +126,7 @@ void main() {
 
     test('mainnet and testnet derive different addresses from same seed', () {
       final mainAddr = svc.deriveAccount(_testVectorMnemonic).bech32Address;
-      final testAddr = HdWalletService(MoonBiteNetwork.testnet)
+      final testAddr = HdWalletService(BigCoinNetwork.testnet)
           .deriveAccount(_testVectorMnemonic)
           .bech32Address;
       expect(mainAddr, isNot(testAddr));

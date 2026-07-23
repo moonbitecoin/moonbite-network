@@ -1,13 +1,13 @@
 @echo off
-REM MoonBite Web Dashboard - Simple Launcher
+REM MyCoin Web Dashboard - Simple Launcher
 
 setlocal enabledelayedexpansion
 
-cd C:\Users\usman\Desktop\MoonBite
+cd C:\Users\%USERNAME%\Desktop\BigCoinBB
 
 echo.
 echo ========================================
-echo   MoonBite Web Dashboard
+echo   MyCoin Web Dashboard
 echo ========================================
 echo.
 

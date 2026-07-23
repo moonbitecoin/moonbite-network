@@ -22,14 +22,14 @@ Python caches compiled bytecode (`.pyc` files). When you edit the `.py` file, th
 
 Terminal 1:
 ```bash
-cd C:\Users\usman\Desktop\MoonBite
+cd C:\Users\%USERNAME%\Desktop\BigCoinBB
 python shared_state.py
 ```
 Wait for: `[Shared State Server] Listening on 127.0.0.1:9999`
 
 Terminal 2:
 ```bash
-cd C:\Users\usman\Desktop\MoonBite
+cd C:\Users\%USERNAME%\Desktop\BigCoinBB
 python web_app_shared.py
 ```
 Wait for: `Running on http://127.0.0.1:5000`
@@ -47,7 +47,7 @@ http://localhost:5000
 
 Run this file:
 ```
-C:\Users\usman\Desktop\MoonBite\RESTART.bat
+C:\Users\%USERNAME%\Desktop\BigCoinBB\RESTART.bat
 ```
 
 Then follow the on-screen instructions to open 2 new terminals.

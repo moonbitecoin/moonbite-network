@@ -1,4 +1,4 @@
-"""Tests for the MoonBite GUI application.
+"""Tests for the MyCoin GUI application.
 
 GUI testing is challenging in headless environments due to display requirements.
 These tests focus on module loading and basic instantiation.
@@ -51,7 +51,7 @@ class TestGUIWidgets:
             window = MainWindow(node)
 
             # Verify window properties
-            assert window.windowTitle() == "MoonBite Mining & Wallet Manager"
+            assert window.windowTitle() == "MyCoin Mining & Wallet Manager"
             assert window.width() > 0
             assert window.height() > 0
 

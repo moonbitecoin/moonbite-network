@@ -1,6 +1,6 @@
-# Security Policy & Threat Model — MoonBite
+# Security Policy & Threat Model — MyCoin
 
-> **MoonBite is an educational / portfolio project. It must never be used to hold
+> **MyCoin is an educational / portfolio project. It must never be used to hold
 > real funds.** The engineering here is "production-grade" in the sense of
 > software quality (tests, persistence, real networking, packaging, CI). It is
 > **not** production-grade money: it has had no independent security audit, no

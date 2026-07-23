@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}MoonBite (MBITE) — Fair-launch crypto you can mine &amp; hold{% endblock %}
+
+{% block body_class %}mb-home mb-film{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='home-cinematic.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='home-film.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Lunar scroll-progress meter -->
+<div class="cine-progress" aria-hidden="true"><span><i class="cine-progress-moon"></i></span></div>
+
+<!-- =========================================================================
+     THE FILM — the whole page is one continuous scroll-driven cinematic shot.
+     A single sticky stage holds a persistent starfield + moon that "flies" as
+     you scroll, while content chapters cross-fade over it. No stacked sections.
+     Degrades to normal flow (all chapters visible) with no JS / reduced motion.
+     ========================================================================= -->
+<div class="film" id="film">
+  <div class="film-stage">
+    <canvas id="cineStars" class="cine-starfield" aria-hidden="true"></canvas>
+
+    <!-- Persistent celestial body that flies through the whole scroll -->
+    <div class="film-cosmos" aria-hidden="true">
+      <div class="cine-orbit-wrap film-moonwrap">
+        <div class="cine-moon-halo"></div>
+        <div class="cine-orbit-ring"></div>
+        <div class="cine-orbit-ring two"></div>
+        <div class="cine-moon"></div>
+        <div class="cine-orbiter"><div class="cine-coin">🌙</div></div>
+      </div>
+    </div>
+
+    <div class="film-chapters">
+
+      <!-- 0 · HERO -->
+      <section class="chapter" data-chapter="0">
+        <div class="chapter-inner">
+          <span class="cine-chip"><span class="cine-ping"></span> Pre-mainnet · Live testnet · MBITE</span>
+          <h1 class="film-h1">Money for the<br><span class="cine-shine">next orbit.</span></h1>
+          <p class="film-lead">MoonBite is open, fair-launch, proof-of-work money — mine it on your own hardware, hold it in self-custody, verify it with your own node. No premine. No gatekeepers.</p>
+          <div class="film-cta">
+            <a href="/get-wallet" class="cine-btn primary">Get the Wallet →</a>
+            <a href="/mine" class="cine-btn ghost">⛏️ Start Mining</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- 1 · LIVE NETWORK -->
+      <section class="chapter" data-chapter="1">
+        <div class="chapter-inner">
+          <span class="film-eyebrow">Live now</span>
+          <h2 class="film-h2">The network is<br><span class="cine-shine">already alive.</span></h2>
+          <div class="film-stats" data-mb-ticker>
+            <div class="film-stat"><div class="film-stat-v" id="mbStatHeight">—</div><div class="film-stat-k">Block height</div></div>
+            <div class="film-stat"><div class="film-stat-v" id="mbStatSupply">—</div><div class="film-stat-k">MBITE mined</div></div>
+            <div class="film-stat"><div class="film-stat-v" id="mbStatTx">—</div><div class="film-stat-k">Transactions</div></div>
+            <div class="film-stat"><div class="film-stat-v" id="mbStatMempool">—</div><div class="film-stat-k">Mempool</div></div>
+          </div>
+          <a href="/dashboard" class="film-link">Open the live dashboard →</a>
+        </div>
+      </section>
+
+      <!-- 2 · GET MBITE -->
+      <section class="chapter" data-chapter="2">
+        <div class="chapter-inner">
+          <span class="film-eyebrow">Get MBITE</span>
+          <h2 class="film-h2">Two honest ways in.</h2>
+          <p class="film-lead">You can't buy MBITE yet — it isn't listed on any exchange. Today, the real way to get it is to mine it.</p>
+          <div class="film-lanes">
+            <a href="/mine" class="film-lane">
+              <span class="film-lane-ic">⛏️</span>
+              <b>Mine it now</b>
+              <span>Point a miner at the network and earn the block reward directly. Live today on testnet &amp; regtest.</span>
+              <i>How to mine →</i>
+            </a>
+            <a href="/markets" class="film-lane is-soon">
+              <span class="film-lane-ic">🏦</span>
+              <b>Buy on an exchange</b>
+              <span>Not trading yet. Get notified the moment a listing goes live — no hype, no spam.</span>
+              <i>See markets →</i>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3 · TOOLKIT -->
+      <section class="chapter" data-chapter="3">
+        <div class="chapter-inner film-wide">
+          <span class="film-eyebrow">The toolkit</span>
+          <h2 class="film-h2">Everything, <span class="cine-shine">first-party &amp; open.</span></h2>
+          <div class="film-orbits">
+            <a href="/get-wallet" class="film-orb"><span>👛</span><b>Wallet</b><i>Self-custody. Your keys, your coins.</i></a>
+            <a href="/mine" class="film-orb"><span>⛏️</span><b>Miner</b><i>Windows, macOS &amp; Linux — or watch in-browser.</i></a>
+            <a href="/explorer" class="film-orb"><span>🔍</span><b>Explorer</b><i>Search blocks &amp; verify the chain live.</i></a>
+            <a href="/developers#run-a-node" class="film-orb"><span>🖧</span><b>Node</b><i>Run the rules and secure the network.</i></a>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4 · WHY TRUST IT -->
+      <section class="chapter" data-chapter="4">
+        <div class="chapter-inner film-wide">
+          <span class="film-eyebrow">Why trust it</span>
+          <h2 class="film-h2">Proof, <span class="cine-shine">not promises.</span></h2>
+          <div class="film-pillars">
+            <div class="film-pillar"><span>⚖️</span><b>No premine, fair launch</b><p>Every MBITE is mined in the open under one published emission schedule. No insider allocation, no head-start.</p></div>
+            <div class="film-pillar"><span>🗝️</span><b>Your keys, your coins</b><p>Non-custodial by default. The site never asks you for a seed phrase or a private key.</p></div>
+            <div class="film-pillar"><span>🔎</span><b>Verify, don't trust</b><p>An open explorer and a read-only REST API. Check every claim against the chain yourself.</p></div>
+          </div>
+          <a href="/about" class="film-link">Read the design records →</a>
+        </div>
+      </section>
+
+      <!-- 5 · EMISSION -->
+      <section class="chapter" data-chapter="5">
+        <div class="chapter-inner film-wide">
+          <span class="film-eyebrow">Tokenomics</span>
+          <h2 class="film-h2">A supply you can <span class="cine-shine">count on.</span></h2>
+          <div class="film-emission">
+            <div class="cine-chart">
+              <svg viewBox="0 0 600 320" role="img" aria-label="MoonBite cumulative supply curve approaching its 19,999,999.87 MBITE cap, with reward halvings marked.">
+                <defs>
+                  <linearGradient id="cineCurveGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stop-color="#7c5cff"/><stop offset="0.6" stop-color="#34d3ff"/><stop offset="1" stop-color="#22e5a8"/>
+                  </linearGradient>
+                  <linearGradient id="cineAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="rgba(124,92,255,0.32)"/><stop offset="1" stop-color="rgba(52,211,255,0.02)"/>
+                  </linearGradient>
+                </defs>
+                <line class="cine-chart-cap" x1="40" y1="46" x2="588" y2="46"/>
+                <text class="cine-chart-cap-label" x="44" y="40">19,999,999.87 cap</text>
+                <g>
+                  <line class="cine-halving" x1="150" y1="46" x2="150" y2="286"/><circle class="cine-halving-dot" cx="150" cy="128" r="3.5"/><text class="cine-halving-label" x="150" y="302" text-anchor="middle">H1</text>
+                  <line class="cine-halving" x1="286" y1="46" x2="286" y2="286"/><circle class="cine-halving-dot" cx="286" cy="86" r="3.5"/><text class="cine-halving-label" x="286" y="302" text-anchor="middle">H2</text>
+                  <line class="cine-halving" x1="420" y1="46" x2="420" y2="286"/><circle class="cine-halving-dot" cx="420" cy="63" r="3.5"/><text class="cine-halving-label" x="420" y="302" text-anchor="middle">H3</text>
+                </g>
+                <path class="cine-curve-area" d="M40 286 C 95 210, 130 150, 150 128 C 210 78, 250 92, 286 86 C 350 74, 380 66, 420 63 C 500 56, 540 52, 588 50 L 588 286 Z"/>
+                <path class="cine-curve-line" d="M40 286 C 95 210, 130 150, 150 128 C 210 78, 250 92, 286 86 C 350 74, 380 66, 420 63 C 500 56, 540 52, 588 50"/>
+                <text class="cine-chart-axis" x="40" y="316">Genesis</text>
+                <text class="cine-chart-axis" x="588" y="316" text-anchor="end">Time →</text>
+              </svg>
+            </div>
+            <div class="film-emission-stats">
+              <div class="film-estat"><div class="v">19,999,999.87</div><div class="k">Max supply (MBITE)</div></div>
+              <div class="film-estat"><div class="v">10 MBITE</div><div class="k">Genesis block reward</div></div>
+              <div class="film-estat"><div class="v">1,000,000</div><div class="k">Blocks per halving</div></div>
+              <div class="film-estat"><div class="v">2.5 min</div><div class="k">Target block time</div></div>
+            </div>
+          </div>
+          <p class="film-fine">Illustrative emission schedule — not a price or market forecast.</p>
+        </div>
+      </section>
+
+      <!-- 6 · ROADMAP -->
+      <section class="chapter" data-chapter="6">
+        <div class="chapter-inner film-wide">
+          <span class="film-eyebrow">Roadmap</span>
+          <h2 class="film-h2">From pre-launch to listing.</h2>
+          <div class="film-timeline">
+            <div class="film-phase is-done"><span class="film-phase-dot"></span><b>Phase 0 · Done</b><i>Protocol &amp; genesis — capped supply, fair no-premine emission.</i></div>
+            <div class="film-phase is-done"><span class="film-phase-dot"></span><b>Phase 1 · Done</b><i>Wallet, miner &amp; live block explorer.</i></div>
+            <div class="film-phase is-now"><span class="film-phase-dot"></span><b>Phase 2 · In progress</b><i>Network hardening — seed nodes, peer discovery, stability.</i></div>
+            <div class="film-phase"><span class="film-phase-dot"></span><b>Phase 3 · Next</b><i>Public mainnet &amp; the road to a first exchange listing.</i></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7 · JOIN -->
+      <section class="chapter" data-chapter="7">
+        <div class="chapter-inner">
+          <span class="film-eyebrow">Join the orbit</span>
+          <h2 class="film-h1 film-h1-sm">Be first when<br><span class="cine-shine">MBITE lists.</span></h2>
+          {% set notify_title = "Be first to know when MBITE lists" %}
+          {% set notify_source = "home-film" %}
+          {% include "partials/notify_form.html" %}
+          <p class="film-fine">MoonBite is pre-mainnet and not an investment or security. Nothing here is a price prediction — only what you can verify today.</p>
+        </div>
+      </section>
+
+    </div>
+
+    <div class="film-cue" aria-hidden="true"><div class="cine-mouse"></div><span>Scroll to fly</span></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script defer src="{{ url_for('static', filename='home-film.js') }}"></script>
+{% endblock %}

@@ -1,4 +1,4 @@
-"""MoonBite — Milestone 1: Transactions (Bitcoin whitepaper sections 2 and 9).
+"""MyCoin — Milestone 1: Transactions (Bitcoin whitepaper sections 2 and 9).
 
 A coin is modeled as a chain of digital signatures. Each transaction spends the
 outputs of earlier transactions by signing over a commitment to what is being

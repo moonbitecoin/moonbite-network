@@ -5,10 +5,10 @@ import 'package:http/testing.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import 'package:moonbite_mobile/services/chain_service.dart';
-import 'package:moonbite_mobile/wallet/moonbite_network.dart';
-import 'package:moonbite_mobile/wallet/secure_key_store.dart';
-import 'package:moonbite_mobile/wallet/wallet_controller.dart';
+import 'package:bigcoin_mobile/services/chain_service.dart';
+import 'package:bigcoin_mobile/wallet/bigcoin_network.dart';
+import 'package:bigcoin_mobile/wallet/secure_key_store.dart';
+import 'package:bigcoin_mobile/wallet/wallet_controller.dart';
 
 const _mnemonic =
     'abandon abandon abandon abandon abandon abandon '
@@ -36,7 +36,7 @@ void main() {
                 'verificationprogress': 1.0,
                 'mempool_txs': 0,
                 'connections': 3,
-                'subversion': '/MoonBite:2.5.0/',
+                'subversion': '/BigCoin:2.5.0/',
                 'demo': false,
               }),
               200);
@@ -98,7 +98,7 @@ void main() {
 
   test('imports a wallet and derives the index-0 address', () async {
     final c = makeController();
-    await c.importExisting(_mnemonic, network: MoonBiteNetwork.testnet);
+    await c.importExisting(_mnemonic, network: BigCoinNetwork.testnet);
     expect(c.hasWallet, isTrue);
     expect(c.receiveAddress, _addr0);
     expect(await c.store.hasWallet(), isTrue);
@@ -106,7 +106,7 @@ void main() {
 
   test('createNew persists and produces a tbig1 address', () async {
     final c = makeController();
-    final phrase = await c.createNew(network: MoonBiteNetwork.testnet);
+    final phrase = await c.createNew(network: BigCoinNetwork.testnet);
     expect(phrase.split(' ').length, 12);
     expect(c.receiveAddress.startsWith('tbig1'), isTrue);
 
@@ -118,7 +118,7 @@ void main() {
 
   test('refresh loads status and balance', () async {
     final c = makeController();
-    await c.importExisting(_mnemonic, network: MoonBiteNetwork.testnet);
+    await c.importExisting(_mnemonic, network: BigCoinNetwork.testnet);
     await c.refresh();
     expect(c.status?.chain, 'test');
     expect(c.balance?.total, 50.0);
@@ -127,7 +127,7 @@ void main() {
 
   test('send builds, signs, and broadcasts a tx', () async {
     final c = makeController();
-    await c.importExisting(_mnemonic, network: MoonBiteNetwork.testnet);
+    await c.importExisting(_mnemonic, network: BigCoinNetwork.testnet);
     final txid = await c.send(toAddress: _dest, amountBig: 1.0);
     expect(txid, 'deadbeef');
     // The broadcast payload must be a real signed tx hex (segwit marker 0001).

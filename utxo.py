@@ -1,4 +1,4 @@
-"""MoonBite — Milestone 6: UTXO set & disk space (Bitcoin whitepaper section 7).
+"""MyCoin — Milestone 6: UTXO set & disk space (Bitcoin whitepaper section 7).
 
 The UTXO (unspent transaction output) set is an index of every output that can
 still be spent, keyed by outpoint (txid, index). It gives O(1) double-spend

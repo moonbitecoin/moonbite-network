@@ -1,0 +1,381 @@
+/* ============================================================================
+   MoonBite — THE FILM
+   The entire homepage is one continuous, scroll-driven cinematic shot: a single
+   sticky stage holds a persistent starfield + flying moon, and content chapters
+   cross-fade over it as you scroll. No stacked sections.
+   Loaded on / after home-cinematic.css (reuses its moon, chip, buttons, shine,
+   keyframes and the always-dark .mb-home palette). Motion-safe fallback below.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------- BASE / FALLBACK
+   With no JS (or reduced motion) the page is a simple, readable vertical stack:
+   the moon sits up top, chapters flow normally and are fully visible. */
+.film { position: relative; }
+.film-stage { position: relative; }
+.film-cosmos {
+    display: flex;
+    justify-content: center;
+    padding: 5rem 1rem 0;
+}
+.film-moonwrap {
+    position: relative;
+    width: min(340px, 66vw);
+    height: min(340px, 66vw);
+    display: grid;
+    place-items: center;
+}
+.film-chapters { position: relative; z-index: 2; }
+.chapter {
+    position: relative;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 5.5rem 1.25rem;
+}
+.chapter-inner {
+    width: 100%;
+    max-width: 900px;
+    display: grid;
+    justify-items: center;
+    gap: 1.35rem;
+}
+.chapter-inner.film-wide { max-width: 1080px; }
+.film-cue { display: none; }
+
+/* ---------------------------------------------------------------- CINEMATIC MODE
+   Added by JS: the film track grows tall, the stage sticks to the viewport, and
+   chapters become absolutely-stacked cross-fading "shots". */
+.film.is-film { height: var(--film-h, 800vh); }
+.is-film .film-stage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    overflow: hidden;
+    isolation: isolate;
+}
+.is-film .cine-starfield { position: absolute; inset: 0; z-index: 0; }
+
+/* Persistent moon layer — JS "flies" it (translate + scale + rotate). */
+.is-film .film-cosmos {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+.is-film .film-moonwrap {
+    width: min(560px, 82vw);
+    height: min(560px, 82vw);
+    will-change: transform;
+    transform-origin: center center;
+}
+/* soft readability scrim so chapter copy stays legible over the moon */
+.is-film .film-stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: radial-gradient(120% 90% at 50% 50%, transparent 38%, rgba(2, 3, 8, 0.72) 100%);
+}
+
+/* Chapters become full-viewport cross-fading shots. */
+.is-film .film-chapters { position: absolute; inset: 0; z-index: 2; }
+.is-film .chapter {
+    position: absolute;
+    inset: 0;
+    padding: clamp(4.5rem, 9vh, 7rem) 1.25rem 4rem;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity, transform;
+    align-content: center;
+}
+.is-film .chapter.is-active { pointer-events: auto; }
+
+/* Scroll cue (only in film mode, fades out once you move). */
+.is-film .film-cue {
+    display: grid;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 4;
+    justify-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    transition: opacity 0.4s ease;
+}
+
+/* --------------------------------------------------------------- TYPOGRAPHY */
+.film-h1 {
+    font-size: clamp(3rem, 10vw, 7rem);
+    line-height: 0.94;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    margin: 0;
+    text-shadow: 0 0 80px rgba(124, 92, 255, 0.35);
+}
+.film-h1-sm { font-size: clamp(2.6rem, 8vw, 5rem); }
+.film-h2 {
+    font-size: clamp(2.2rem, 6.4vw, 4.6rem);
+    line-height: 0.98;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    margin: 0;
+    text-shadow: 0 0 70px rgba(124, 92, 255, 0.3);
+}
+.film-lead {
+    font-size: clamp(1.05rem, 2.1vw, 1.4rem);
+    color: var(--text-secondary);
+    max-width: 60ch;
+    line-height: 1.6;
+    margin: 0;
+}
+.film-fine {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    max-width: 56ch;
+    opacity: 0.85;
+}
+.film-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.42rem 1rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--primary-color-2);
+    background: rgba(124, 92, 255, 0.10);
+    border: 1px solid rgba(124, 92, 255, 0.32);
+    box-shadow: 0 0 26px rgba(124, 92, 255, 0.16);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+.film-eyebrow::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    box-shadow: 0 0 10px rgba(52, 211, 255, 0.85);
+}
+.film-link {
+    font-weight: 700;
+    color: var(--primary-color-2);
+    text-decoration: none;
+    transition: gap 0.25s ease, color 0.25s ease;
+}
+.film-link:hover { color: var(--text-primary); }
+.film-cta { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-top: 0.3rem; }
+
+/* --------------------------------------------------------------- LIVE STATS */
+.film-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    width: 100%;
+    max-width: 780px;
+    margin-top: 0.4rem;
+}
+.film-stat {
+    padding: 1.1rem 1rem;
+    border-radius: 1rem;
+    background: rgba(14, 18, 32, 0.5);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 20px 50px -30px rgba(0, 0, 0, 0.9);
+}
+.film-stat-v {
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: clamp(1.4rem, 3.4vw, 2.4rem);
+    letter-spacing: -0.02em;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.film-stat-k {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--text-secondary);
+    margin-top: 0.2rem;
+}
+
+/* --------------------------------------------------------------- GET: LANES */
+.film-lanes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.2rem;
+    width: 100%;
+    max-width: 820px;
+    margin-top: 0.4rem;
+}
+.film-lane {
+    display: grid;
+    justify-items: start;
+    gap: 0.55rem;
+    text-align: left;
+    padding: 1.6rem;
+    border-radius: var(--border-radius-lg);
+    text-decoration: none;
+    color: var(--text-primary);
+    background: linear-gradient(180deg, rgba(124,92,255,0.10), rgba(14,18,32,0.6));
+    border: 1px solid rgba(124, 92, 255, 0.28);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 24px 60px -34px rgba(0, 0, 0, 0.9);
+    transition: transform 0.3s cubic-bezier(.2,.8,.2,1), border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.film-lane.is-soon { background: linear-gradient(180deg, rgba(52,211,255,0.08), rgba(14,18,32,0.6)); border-color: rgba(52,211,255,0.24); }
+.film-lane:hover { transform: translateY(-6px); border-color: rgba(124,92,255,0.7); box-shadow: 0 40px 70px -34px rgba(124,92,255,0.5), var(--glow-primary); }
+.film-lane-ic {
+    width: 54px; height: 54px;
+    display: grid; place-items: center;
+    font-size: 1.6rem;
+    border-radius: 15px;
+    background: linear-gradient(150deg, rgba(124,92,255,0.32), rgba(52,211,255,0.16));
+    border: 1px solid rgba(124,92,255,0.3);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.16);
+}
+.film-lane b { font-size: 1.25rem; }
+.film-lane span { color: var(--text-secondary); line-height: 1.5; }
+.film-lane i { font-style: normal; font-weight: 700; color: var(--primary-color-2); }
+
+/* --------------------------------------------------------------- TOOLKIT ORBS */
+.film-orbits {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    width: 100%;
+    max-width: 980px;
+    margin-top: 0.5rem;
+}
+.film-orb {
+    display: grid;
+    justify-items: center;
+    gap: 0.5rem;
+    padding: 1.7rem 1rem;
+    text-align: center;
+    text-decoration: none;
+    color: var(--text-primary);
+    border-radius: var(--border-radius-lg);
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(14,18,32,0.55));
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: transform 0.3s cubic-bezier(.2,.8,.2,1), border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.film-orb span { font-size: 2rem; }
+.film-orb b { font-size: 1.1rem; }
+.film-orb i { font-style: normal; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45; }
+.film-orb:hover { transform: translateY(-6px); border-color: rgba(124,92,255,0.6); box-shadow: 0 34px 64px -36px rgba(124,92,255,0.5), var(--glow-primary); }
+
+/* --------------------------------------------------------------- PILLARS */
+.film-pillars {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.1rem;
+    width: 100%;
+    max-width: 1000px;
+    margin-top: 0.4rem;
+    text-align: left;
+}
+.film-pillar {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1.6rem;
+    border-radius: var(--border-radius-lg);
+    background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(14,18,32,0.55));
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+.film-pillar span { font-size: 1.8rem; }
+.film-pillar b { font-size: 1.15rem; }
+.film-pillar p { color: var(--text-secondary); line-height: 1.55; margin: 0; }
+
+/* --------------------------------------------------------------- EMISSION */
+.film-emission {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: clamp(1.2rem, 3vw, 2.4rem);
+    align-items: center;
+    width: 100%;
+    margin-top: 0.4rem;
+}
+.film-emission .cine-chart { box-shadow: 0 30px 70px -38px rgba(0,0,0,0.95), 0 0 0 1px rgba(124,92,255,0.08); }
+.film-emission-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+.film-estat {
+    padding: 0.95rem 1rem;
+    border-radius: 0.9rem;
+    background: rgba(14, 18, 32, 0.55);
+    border: 1px solid var(--border-color);
+    text-align: left;
+}
+.film-estat .v { font-family: var(--font-mono); font-weight: 800; font-size: 1.1rem; background: var(--gradient-primary); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.film-estat .k { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-top: 0.15rem; }
+
+/* --------------------------------------------------------------- ROADMAP */
+.film-timeline {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    width: 100%;
+    max-width: 1040px;
+    margin-top: 0.5rem;
+    text-align: left;
+}
+.film-phase {
+    position: relative;
+    padding: 1.4rem 1.2rem;
+    border-radius: var(--border-radius-lg);
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(14,18,32,0.55));
+    border: 1px solid var(--border-color);
+    display: grid;
+    gap: 0.4rem;
+}
+.film-phase b { font-size: 0.95rem; }
+.film-phase i { font-style: normal; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.45; }
+.film-phase-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--text-secondary);
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.05);
+}
+.film-phase.is-done .film-phase-dot { background: var(--success-color); box-shadow: 0 0 14px rgba(34,229,168,0.7); }
+.film-phase.is-now .film-phase-dot { background: var(--primary-color); box-shadow: 0 0 14px rgba(124,92,255,0.8); }
+
+/* --------------------------------------------------------------- RESPONSIVE */
+@media (max-width: 900px) {
+    .film-emission { grid-template-columns: 1fr; }
+    .film-orbits { grid-template-columns: repeat(2, 1fr); }
+    .film-timeline { grid-template-columns: repeat(2, 1fr); }
+    .film-pillars { grid-template-columns: 1fr; max-width: 560px; }
+    .film-lanes { grid-template-columns: 1fr; max-width: 480px; }
+}
+@media (max-width: 620px) {
+    .film-stats { grid-template-columns: repeat(2, 1fr); }
+    .is-film .chapter { padding-left: 1rem; padding-right: 1rem; }
+    .film-h1 { text-shadow: 0 0 50px rgba(124,92,255,0.3); }
+}
+
+/* --------------------------------------------------------------- MOTION SAFETY
+   In fallback flow, give chapters gentle breathing room and hide the moon's
+   duplicate haze so the stack reads cleanly. */
+@media (prefers-reduced-motion: reduce) {
+    .film.is-film { height: auto; }
+    .is-film .film-stage { position: relative; height: auto; overflow: visible; }
+    .is-film .film-cosmos { position: relative; }
+    .is-film .film-chapters { position: relative; }
+    .is-film .chapter { position: relative; opacity: 1 !important; transform: none !important; pointer-events: auto; }
+    .is-film .film-stage::after { display: none; }
+    .is-film .cine-starfield { position: absolute; }
+}

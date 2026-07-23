@@ -1,7 +1,7 @@
 @echo off
 echo.
 echo ========================================
-echo  MoonBite - RESTART ALL SERVERS
+echo  MyCoin - RESTART ALL SERVERS
 echo ========================================
 echo.
 echo Step 1: Kill all Python processes
@@ -16,11 +16,11 @@ echo.
 echo   Open 3 NEW Command Prompts:
 echo.
 echo   === TERMINAL 1 ===
-echo   cd C:\Users\usman\Desktop\MoonBite
+echo   cd C:\Users\%USERNAME%\Desktop\BigCoinBB
 echo   python shared_state.py
 echo.
 echo   === TERMINAL 2 ===
-echo   cd C:\Users\usman\Desktop\MoonBite
+echo   cd C:\Users\%USERNAME%\Desktop\BigCoinBB
 echo   python web_app_shared.py
 echo.
 echo   === TERMINAL 3 ===

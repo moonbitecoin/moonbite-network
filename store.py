@@ -1,4 +1,4 @@
-"""MoonBite — persistence layer: a SQLite-backed block store.
+"""MyCoin — persistence layer: a SQLite-backed block store.
 
 Blocks are the durable state of the chain; everything else (the UTXO set,
 heights, chainwork) is derivable by replaying them from genesis. This module

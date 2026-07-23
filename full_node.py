@@ -1,4 +1,4 @@
-"""MoonBite Full Node - Combines P2P network with local blockchain.
+"""BigCoin Full Node - Combines P2P network with local blockchain.
 
 This is what users run to participate in the decentralized network.
 Each full node:
@@ -25,7 +25,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class MoonBiteFullNode(P2PNode):
+class BigCoinFullNode(P2PNode):
     """Full node that runs blockchain + P2P network."""
 
     def __init__(self, node_id: str, host: str = "127.0.0.1", port: int = 9000,
@@ -530,7 +530,7 @@ def main():
     port = int(sys.argv[2]) if len(sys.argv) > 2 else 9000
 
     # Create node
-    node = MoonBiteFullNode(node_id, host="127.0.0.1", port=port)
+    node = BigCoinFullNode(node_id, host="127.0.0.1", port=port)
 
     # Start server
     node.start_server()

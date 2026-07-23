@@ -1,8 +1,8 @@
-# Exchange Listing & Integration Checklist for MoonBite (MBITE)
+# Exchange Listing & Integration Checklist for BigCoin (BIG)
 
-This document describes, honestly, what it takes to get MBITE integrated by an
+This document describes, honestly, what it takes to get BIG integrated by an
 exchange and what exchanges typically require. It is an integration/readiness
-checklist, not a promise that any exchange will list MBITE.
+checklist, not a promise that any exchange will list BIG.
 
 > **Reality check:** Getting listed on a **Tier-1 centralized exchange** (Binance,
 > Coinbase, Kraken, etc.) is **very hard** for a new coin — it involves
@@ -27,7 +27,7 @@ checklist, not a promise that any exchange will list MBITE.
   | 12            | ~30 minutes             |
   | 20            | ~50 minutes             |
 
-  **Recommended deposit confirmations: at least 12** for MBITE (adjust upward if
+  **Recommended deposit confirmations: at least 12** for BIG (adjust upward if
   the network has low total hash power and is thus cheaper to reorg — see
   section on reorgs below). Many exchanges pick a value targeting ~30-60 minutes
   of finality.
@@ -40,7 +40,7 @@ checklist, not a promise that any exchange will list MBITE.
 
 ### Published, reproducible binaries with checksums
 
-- Official `moonbited`, `moonbite-cli`, and `moonbite-qt` binaries for the platforms
+- Official `bigcoind`, `bigcoin-cli`, and `bigcoin-qt` binaries for the platforms
   the exchange runs (typically Linux x86-64).
 - **SHA-256 checksums** published alongside downloads, and ideally
   **GPG-signed** checksum files.
@@ -49,13 +49,13 @@ checklist, not a promise that any exchange will list MBITE.
 
 ```
 # example checksum publication
-sha256sum moonbited-1.0.0-x86_64-linux-gnu.tar.gz
-# -> <hash>  moonbited-1.0.0-x86_64-linux-gnu.tar.gz
+sha256sum bigcoind-1.0.0-x86_64-linux-gnu.tar.gz
+# -> <hash>  bigcoind-1.0.0-x86_64-linux-gnu.tar.gz
 ```
 
 ### JSON-RPC compatibility
 
-MoonBite exposes the standard Bitcoin/Litecoin Core JSON-RPC interface, which is
+BigCoin exposes the standard Bitcoin/Litecoin Core JSON-RPC interface, which is
 what most exchange integration tooling already speaks. The RPC methods exchanges
 rely on include:
 
@@ -79,7 +79,7 @@ wallets), and `getblock`.
 
 ### Replay and reorg considerations
 
-- **Replay protection:** If MBITE ever forked from another chain sharing history,
+- **Replay protection:** If BIG ever forked from another chain sharing history,
   demonstrate replay protection so transactions can't be replayed across chains.
   A clean-genesis fork (its own genesis block) avoids cross-chain replay by
   construction — state this explicitly.
@@ -98,21 +98,21 @@ Provide a single authoritative info sheet. Fill in the bracketed launch values.
 
 | Field               | Value                                             |
 |---------------------|---------------------------------------------------|
-| Name                | MoonBite                                           |
-| Ticker              | MBITE                                               |
-| Algorithm           | Scrypt (PoW)                                       |
+| Name                | BigCoin                                           |
+| Ticker              | BIG                                               |
+| Algorithm           | RandomX (PoW)                                      |
 | Block time          | 2.5 minutes                                        |
-| Initial reward      | 50 MBITE                                             |
-| Halving             | every 840,000 blocks                              |
-| Max supply          | 84,000,000 MBITE                                     |
+| Initial reward      | 10 BIG                                             |
+| Halving             | every 1,000,000 blocks                            |
+| Max supply          | 19,999,999.87 BIG                                 |
 | Address prefix      | `B` (base58) / `big1...` (bech32)                 |
 | P2P port            | 9444 (mainnet) / 19555 (testnet)                  |
 | RPC port            | 9445                                              |
 | Genesis block       | `<genesis hash / date>` (to be filled at launch)  |
 | Deposit confirmations (recommended) | 12+                              |
-| Block explorer URL  | `<https://explorer.moonbite.example>`              |
-| Website             | `<https://moonbite.example>`                        |
-| Source (GitHub)     | `<https://github.com/<org>/moonbite>`              |
+| Block explorer URL  | `<https://explorer.bigcoin.example>`              |
+| Website             | `<https://bigcoin.example>`                        |
+| Source (GitHub)     | `<https://github.com/<org>/bigcoin>`              |
 | Node binaries       | `<downloads URL + checksums>`                     |
 
 ---
@@ -130,7 +130,7 @@ These are non-technical but usually the **actual** gating factors:
 - **Legal opinion / not-a-security.** Reputable exchanges typically want a
   **legal opinion** (from qualified counsel in the relevant jurisdictions)
   stating the token is **not a security** under applicable law, plus clarity on
-  how MBITE was distributed (fair-launch mining vs. premine/ICO matters a lot).
+  how BIG was distributed (fair-launch mining vs. premine/ICO matters a lot).
 - **Liquidity & market making.** Exchanges want assurance of two-sided liquidity.
   Expect to arrange a market maker or seed liquidity yourself, especially on DEXs
   and small CEXs.
@@ -143,7 +143,7 @@ These are non-technical but usually the **actual** gating factors:
 ## 4. Realistic path to being tradable
 
 1. **DEX first.** If a wrapped/bridged or EVM-compatible representation is viable,
-   list on a DEX where anyone can create a market. For a native L1 like MBITE this
+   list on a DEX where anyone can create a market. For a native L1 like BIG this
    usually means a bridge, an atomic-swap market, or an exchange that supports
    the coin natively.
 2. **Small / mid-tier CEX.** Cheaper, faster, more willing to integrate new

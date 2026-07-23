@@ -1,0 +1,471 @@
+{% extends "base.html" %}
+
+{% block title %}MBITE Internal Exchange — non-custodial order book{% endblock %}
+{% block meta_description %}Post and browse MoonBite (MBITE) buy/sell order intents against LTC, BTC and USDT. Non-custodial: the server never holds coins or keys — settlement is a wallet-to-wallet atomic swap.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> Non-custodial order book</span>
+            <h1 class="mb-hero-title">The MoonBite <span class="mb-gradient-text">internal exchange.</span></h1>
+            <p class="mb-hero-sub">Post what you'd trade MBITE for — or take someone else's offer — in LTC, BTC or USDT. The server only matches offers. It never touches your coins or keys. You settle wallet-to-wallet with an atomic swap.</p>
+            <div class="mb-cta-row">
+                <a href="#book" class="btn btn-primary mb-btn-xl">Open the order book</a>
+                <a href="#place" class="btn btn-secondary mb-btn-xl">Post an order</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" id="book">
+    <div class="mb-container">
+        <div class="mb-banner mb-reveal" style="margin-bottom: var(--spacing-2xl);">
+            <span>ℹ️ <strong>This is not a live market.</strong> Prices below are offers people posted, not a traded value. MBITE is pre-mainnet and MoonBite is <strong>not an investment or a security</strong>. The server holds no funds — every trade settles directly between two wallets.</span>
+        </div>
+
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Order book</span>
+            <h2 class="mb-section-title">Live open orders</h2>
+            <p class="mb-section-sub">Pick a pair. Green is people wanting to buy MBITE (bids); red is people selling MBITE (asks).</p>
+        </div>
+
+        <div class="mb-ex-tabs mb-reveal" role="tablist" id="mbExTabs">
+            <button class="mb-ex-tab is-active" data-pair="MBITE/LTC" role="tab">MBITE / LTC</button>
+            <button class="mb-ex-tab" data-pair="MBITE/BTC" role="tab">MBITE / BTC</button>
+            <button class="mb-ex-tab" data-pair="MBITE/USDT" role="tab">MBITE / USDT</button>
+        </div>
+
+        <div class="mb-ex-lastbar mb-reveal">
+            <span class="mb-ex-last-label">Last settled price</span>
+            <span class="mb-ex-last-value" id="mbExLast">—</span>
+            <span class="mb-ex-last-quote" id="mbExLastQuote"></span>
+            <span class="mb-ex-ease" id="mbExEase"></span>
+        </div>
+
+        <div class="mb-ex-book mb-reveal">
+            <div class="mb-ex-side">
+                <div class="mb-ex-side-head mb-ex-bids">Bids · buying MBITE</div>
+                <table class="mb-ex-table">
+                    <thead><tr><th>Price</th><th>Amount (MBITE)</th><th>Total</th><th>Settle</th></tr></thead>
+                    <tbody id="mbExBids"><tr><td colspan="4" class="mb-ex-empty">Loading…</td></tr></tbody>
+                </table>
+            </div>
+            <div class="mb-ex-side">
+                <div class="mb-ex-side-head mb-ex-asks">Asks · selling MBITE</div>
+                <table class="mb-ex-table">
+                    <thead><tr><th>Price</th><th>Amount (MBITE)</th><th>Total</th><th>Settle</th></tr></thead>
+                    <tbody id="mbExAsks"><tr><td colspan="4" class="mb-ex-empty">Loading…</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" id="place" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Post an order</span>
+            <h2 class="mb-section-title">Offer to buy or sell MBITE</h2>
+            <p class="mb-section-sub">You're posting a public offer, not sending coins. Give the address where you'd receive payment so a taker knows where to send. Nothing moves until you both run the swap.</p>
+        </div>
+
+        <form class="mb-ex-form mb-reveal" id="mbExForm" autocomplete="off">
+            <div class="mb-ex-field mb-ex-sidepick">
+                <label>I want to</label>
+                <div class="mb-ex-toggle">
+                    <button type="button" class="mb-ex-sidebtn is-active" data-side="buy">Buy MBITE</button>
+                    <button type="button" class="mb-ex-sidebtn" data-side="sell">Sell MBITE</button>
+                </div>
+            </div>
+            <div class="mb-ex-field">
+                <label for="mbExPair">Pair</label>
+                <select id="mbExPair" name="pair">
+                    <option value="MBITE/LTC">MBITE / LTC</option>
+                    <option value="MBITE/BTC">MBITE / BTC</option>
+                    <option value="MBITE/USDT">MBITE / USDT</option>
+                </select>
+            </div>
+            <div class="mb-ex-field">
+                <label for="mbExPrice">Price <span class="mb-ex-qlabel" id="mbExPriceQuote">(LTC per 1 MBITE)</span></label>
+                <input id="mbExPrice" name="price" type="number" step="any" min="0" placeholder="0.00" required>
+            </div>
+            <div class="mb-ex-field">
+                <label for="mbExAmount">Amount (MBITE)</label>
+                <input id="mbExAmount" name="amount" type="number" step="any" min="0" placeholder="0" required>
+            </div>
+            <div class="mb-ex-field">
+                <label for="mbExMbite">Your MBITE address</label>
+                <input id="mbExMbite" name="mbite_address" type="text" placeholder="moon1…" required>
+            </div>
+            <div class="mb-ex-field">
+                <label for="mbExQuote">Your <span id="mbExQuoteName">LTC</span> address</label>
+                <input id="mbExQuote" name="quote_address" type="text" placeholder="ltc1…" required>
+            </div>
+            <div class="mb-ex-field mb-ex-field-wide">
+                <div class="mb-ex-total" id="mbExFormTotal"></div>
+                <button type="submit" class="btn btn-primary mb-btn-xl" id="mbExSubmit">Post order</button>
+            </div>
+            <div class="mb-ex-formmsg" id="mbExMsg" role="status" aria-live="polite"></div>
+        </form>
+
+        <p class="mb-ex-cancelnote mb-reveal">Made a mistake? Paste your order ID and the MBITE address you used to cancel it.</p>
+        <form class="mb-ex-cancel mb-reveal" id="mbExCancelForm" autocomplete="off">
+            <input type="text" id="mbExCancelId" placeholder="order id" required>
+            <input type="text" id="mbExCancelAddr" placeholder="your MBITE address" required>
+            <button type="submit" class="btn btn-secondary">Cancel order</button>
+            <span class="mb-ex-formmsg" id="mbExCancelMsg" role="status" aria-live="polite"></span>
+        </form>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">How settlement works</span>
+            <h2 class="mb-section-title">You trade wallet-to-wallet</h2>
+            <p class="mb-section-sub">The order book is just a meeting point. When two people agree, they swap coins directly — no middleman ever holds the money.</p>
+        </div>
+        <div class="mb-grid mb-grid-3 mb-reveal">
+            <div class="mb-card">
+                <div class="mb-card-icon">📝</div>
+                <h3 class="mb-card-title">1 · Post or take an offer</h3>
+                <p class="mb-card-text">Add a buy or sell order, or find one you like in the book. You share only the addresses where each of you gets paid.</p>
+            </div>
+            <div class="mb-card">
+                <div class="mb-card-icon">🔒</div>
+                <h3 class="mb-card-title">2 · Atomic swap</h3>
+                <p class="mb-card-text">Both sides lock funds in a hash-time-locked contract. Either the whole trade happens, or everyone gets their coins back. Nobody can run off with the money.</p>
+            </div>
+            <div class="mb-card">
+                <div class="mb-card-icon">✅</div>
+                <h3 class="mb-card-title">3 · Done</h3>
+                <p class="mb-card-text">MBITE ⇄ LTC or BTC swaps natively (shared Bitcoin script family). USDT needs a smart-contract leg. The server just recorded that you two matched.</p>
+            </div>
+        </div>
+        <div class="mb-banner mb-reveal" style="margin-top: var(--spacing-2xl);">
+            <span>🚧 <strong>Automated swap coordination isn't built yet (Phase 2).</strong> For now the exchange matches orders and hands you both the addresses; you run the atomic swap with an external tool. We will never route funds through this server.</span>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" id="notify" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        {% set notify_title = "Get told when new pairs & the swap engine go live" %}
+        {% set notify_text = "Leave your email and we'll tell you when the automated atomic-swap coordinator ships or a new pair opens. That's all we'll send." %}
+        {% set notify_source = "markets" %}
+        {% include "partials/notify_form.html" %}
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-banner mb-reveal">
+            <span>MoonBite is a pre-mainnet, open-source project. The internal exchange is non-custodial software — it stores public order intents only and never holds coins, keys or balances. Nothing here is financial advice or an offer to sell a security.</span>
+        </div>
+    </div>
+</section>
+
+<!-- Atomic-swap hand-off modal (populated from /api/exchange/order/<id>/settle) -->
+<div class="mb-ex-modal" id="mbExModal" hidden>
+    <div class="mb-ex-modal-overlay" data-close></div>
+    <div class="mb-ex-modal-card" role="dialog" aria-modal="true" aria-labelledby="mbExModalTitle">
+        <button class="mb-ex-modal-x" data-close aria-label="Close">×</button>
+        <div class="mb-ex-modal-eyebrow">Atomic-swap hand-off</div>
+        <h3 id="mbExModalTitle">Settle this order</h3>
+        <div class="mb-ex-modal-summary" id="mbExModalSummary"></div>
+        <div class="mb-ex-legs" id="mbExModalLegs"></div>
+        <div class="mb-ex-field" style="margin-top: var(--spacing-lg);">
+            <label for="mbExTakerAddr">Your <span id="mbExTakerAsset">receiving</span> address <span class="mb-ex-qlabel">(optional — completes the summary you share with the maker)</span></label>
+            <input id="mbExTakerAddr" type="text" placeholder="where you receive the coins">
+        </div>
+        <div class="mb-ex-modal-note" id="mbExModalNote"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+(function () {
+    "use strict";
+    var PAIRS = null;                 // filled from /api/exchange/pairs
+    var currentPair = "MBITE/LTC";
+    var currentSide = "buy";
+
+    var elBids = document.getElementById("mbExBids");
+    var elAsks = document.getElementById("mbExAsks");
+    var elLast = document.getElementById("mbExLast");
+    var elLastQuote = document.getElementById("mbExLastQuote");
+    var elEase = document.getElementById("mbExEase");
+
+    function quoteOf(pair) { return (PAIRS && PAIRS[pair]) ? PAIRS[pair].quote : pair.split("/")[1]; }
+    function easeOf(pair) { return (PAIRS && PAIRS[pair]) ? PAIRS[pair].ease : ""; }
+
+    function esc(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+    }
+    function fmt(n) {
+        var v = Number(n);
+        return isFinite(v) ? v.toLocaleString(undefined, { maximumFractionDigits: 8 }) : String(n);
+    }
+
+    function rowsHtml(orders, quote, empty) {
+        if (!orders || !orders.length) {
+            return '<tr><td colspan="4" class="mb-ex-empty">' + empty + "</td></tr>";
+        }
+        return orders.map(function (o) {
+            var total = Number(o.price) * Number(o.amount);
+            return "<tr>" +
+                "<td>" + fmt(o.price) + "</td>" +
+                "<td>" + fmt(o.amount) + "</td>" +
+                "<td>" + fmt(total) + " " + esc(quote) + "</td>" +
+                '<td class="mb-ex-actions">' +
+                    '<button class="mb-ex-takebtn" data-id="' + esc(o.id) + '">Take</button>' +
+                    '<button class="mb-ex-idbtn" data-id="' + esc(o.id) + '" title="Copy order id">id</button>' +
+                "</td></tr>";
+        }).join("");
+    }
+
+    function loadBook() {
+        var quote = quoteOf(currentPair);
+        elEase.textContent = easeOf(currentPair) === "native"
+            ? "native atomic swap" : (easeOf(currentPair) === "contract" ? "needs contract leg" : "");
+        fetch("/api/exchange/orders?pair=" + encodeURIComponent(currentPair))
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (!d || d.status !== "success") throw new Error(d && d.message || "load failed");
+                elBids.innerHTML = rowsHtml(d.bids, quote, "No buy orders yet — be the first.");
+                elAsks.innerHTML = rowsHtml(d.asks, quote, "No sell orders yet — be the first.");
+                elLast.textContent = d.last_price != null ? fmt(d.last_price) : "—";
+                elLastQuote.textContent = d.last_price != null ? quote + " per MBITE" : "no settled trades yet";
+                wireActionButtons();
+            })
+            .catch(function (e) {
+                elBids.innerHTML = elAsks.innerHTML =
+                    '<tr><td colspan="4" class="mb-ex-empty">Could not load: ' + esc(e.message) + "</td></tr>";
+            });
+    }
+
+    function wireActionButtons() {
+        document.querySelectorAll(".mb-ex-idbtn").forEach(function (b) {
+            b.addEventListener("click", function () {
+                var id = b.getAttribute("data-id");
+                document.getElementById("mbExCancelId").value = id;
+                if (navigator.clipboard) navigator.clipboard.writeText(id).catch(function () {});
+                b.textContent = "✓";
+                setTimeout(function () { b.textContent = "id"; }, 1200);
+            });
+        });
+        document.querySelectorAll(".mb-ex-takebtn").forEach(function (b) {
+            b.addEventListener("click", function () { openSettle(b.getAttribute("data-id")); });
+        });
+    }
+
+    /* ---- settle hand-off modal ---- */
+    var modal = document.getElementById("mbExModal");
+    var settleData = null;            // last-fetched settle_hint payload
+
+    function closeSettle() { modal.hidden = true; document.body.style.overflow = ""; }
+    modal.querySelectorAll("[data-close]").forEach(function (el) {
+        el.addEventListener("click", closeSettle);
+    });
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !modal.hidden) closeSettle();
+    });
+
+    function openSettle(id) {
+        fetch("/api/exchange/order/" + encodeURIComponent(id) + "/settle")
+            .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+            .then(function (res) {
+                if (!res.ok || res.d.status !== "success") throw new Error(res.d.message || "Could not load order");
+                settleData = res.d;
+                document.getElementById("mbExTakerAddr").value = "";
+                renderSettle();
+                modal.hidden = false;
+                document.body.style.overflow = "hidden";
+            })
+            .catch(function (err) {
+                alert(err.message);
+            });
+    }
+
+    function renderSettle() {
+        var o = settleData.order;
+        var sw = settleData.swap;
+        var quote = sw.quote_asset;
+        var total = Number(o.price) * Number(o.amount);
+
+        // From the *taker's* perspective. Maker "sell" => taker buys MBITE.
+        var takerBuysMbite = (o.side === "sell");
+        var summary = document.getElementById("mbExModalSummary");
+        summary.innerHTML =
+            '<div class="mb-ex-modal-pair">' + esc(o.pair) + " · you " +
+            (takerBuysMbite ? "buy" : "sell") + " MBITE</div>" +
+            "<div class=\"mb-ex-modal-nums\">" +
+                "<span>" + fmt(o.amount) + " MBITE</span>" +
+                "<span>@ " + fmt(o.price) + " " + esc(quote) + "</span>" +
+                "<span>= " + fmt(total) + " " + esc(quote) + "</span>" +
+            "</div>";
+
+        // The address the taker paid the maker to for each leg. The other leg
+        // goes to the taker's own address (optional field below).
+        var takerAddr = (document.getElementById("mbExTakerAddr") || {}).value || "";
+        takerAddr = takerAddr.trim();
+        var legs = document.getElementById("mbExModalLegs");
+        var sendLeg, recvLeg;
+        if (takerBuysMbite) {
+            sendLeg = { label: "You send", asset: quote, amt: fmt(total) + " " + esc(quote),
+                        to: sw.maker_quote_address, toLabel: "maker's " + esc(quote) + " address" };
+            recvLeg = { label: "You receive", asset: "MBITE", amt: fmt(o.amount) + " MBITE",
+                        to: takerAddr || "— your MBITE address —", toLabel: "your MBITE address" };
+        } else {
+            sendLeg = { label: "You send", asset: "MBITE", amt: fmt(o.amount) + " MBITE",
+                        to: sw.maker_mbite_address, toLabel: "maker's MBITE address" };
+            recvLeg = { label: "You receive", asset: quote, amt: fmt(total) + " " + esc(quote),
+                        to: takerAddr || "— your " + esc(quote) + " address —", toLabel: "your " + esc(quote) + " address" };
+        }
+        document.getElementById("mbExTakerAsset").textContent = recvLeg.asset;
+
+        function legHtml(leg, kind) {
+            return '<div class="mb-ex-leg mb-ex-leg-' + kind + '">' +
+                '<div class="mb-ex-leg-label">' + leg.label + "</div>" +
+                '<div class="mb-ex-leg-amt">' + leg.amt + "</div>" +
+                '<div class="mb-ex-leg-to">→ ' + esc(leg.toLabel) + "</div>" +
+                '<code class="mb-ex-leg-addr">' + esc(leg.to) + "</code>" +
+                "</div>";
+        }
+        legs.innerHTML = legHtml(sendLeg, "send") + '<div class="mb-ex-leg-swap">⇄</div>' + legHtml(recvLeg, "recv");
+
+        document.getElementById("mbExModalNote").innerHTML =
+            "<strong>" + esc(sw.mechanism) + " · status: " + esc(sw.status) + ".</strong> " + esc(sw.note);
+    }
+
+    var takerInput = document.getElementById("mbExTakerAddr");
+    if (takerInput) takerInput.addEventListener("input", function () { if (settleData) renderSettle(); });
+
+    /* ---- pair tabs ---- */
+    document.querySelectorAll(".mb-ex-tab").forEach(function (tab) {
+        tab.addEventListener("click", function () {
+            document.querySelectorAll(".mb-ex-tab").forEach(function (t) { t.classList.remove("is-active"); });
+            tab.classList.add("is-active");
+            currentPair = tab.getAttribute("data-pair");
+            document.getElementById("mbExPair").value = currentPair;
+            syncQuoteLabels();
+            loadBook();
+        });
+    });
+
+    /* ---- form quote labels + side ---- */
+    function syncQuoteLabels() {
+        var pair = document.getElementById("mbExPair").value;
+        var q = quoteOf(pair);
+        document.getElementById("mbExPriceQuote").textContent = "(" + q + " per 1 MBITE)";
+        document.getElementById("mbExQuoteName").textContent = q;
+        updateFormTotal();
+    }
+    function updateFormTotal() {
+        var p = Number(document.getElementById("mbExPrice").value);
+        var a = Number(document.getElementById("mbExAmount").value);
+        var q = quoteOf(document.getElementById("mbExPair").value);
+        var box = document.getElementById("mbExFormTotal");
+        if (p > 0 && a > 0) {
+            box.textContent = (currentSide === "buy" ? "You'd pay ≈ " : "You'd receive ≈ ")
+                + fmt(p * a) + " " + q;
+        } else { box.textContent = ""; }
+    }
+    document.getElementById("mbExPair").addEventListener("change", function () {
+        currentPair = this.value;
+        document.querySelectorAll(".mb-ex-tab").forEach(function (t) {
+            t.classList.toggle("is-active", t.getAttribute("data-pair") === currentPair);
+        });
+        syncQuoteLabels();
+        loadBook();
+    });
+    document.getElementById("mbExPrice").addEventListener("input", updateFormTotal);
+    document.getElementById("mbExAmount").addEventListener("input", updateFormTotal);
+    document.querySelectorAll(".mb-ex-sidebtn").forEach(function (b) {
+        b.addEventListener("click", function () {
+            document.querySelectorAll(".mb-ex-sidebtn").forEach(function (x) { x.classList.remove("is-active"); });
+            b.classList.add("is-active");
+            currentSide = b.getAttribute("data-side");
+            document.getElementById("mbExSubmit").textContent =
+                currentSide === "buy" ? "Post buy order" : "Post sell order";
+            updateFormTotal();
+        });
+    });
+
+    /* ---- submit new order ---- */
+    document.getElementById("mbExForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var msg = document.getElementById("mbExMsg");
+        var btn = document.getElementById("mbExSubmit");
+        var body = {
+            side: currentSide,
+            pair: document.getElementById("mbExPair").value,
+            price: document.getElementById("mbExPrice").value,
+            amount: document.getElementById("mbExAmount").value,
+            mbite_address: document.getElementById("mbExMbite").value,
+            quote_address: document.getElementById("mbExQuote").value
+        };
+        btn.disabled = true;
+        msg.className = "mb-ex-formmsg";
+        msg.textContent = "Posting…";
+        fetch("/api/exchange/order", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+          .then(function (res) {
+              if (!res.ok || res.d.status !== "success") throw new Error(res.d.message || "Could not post order");
+              msg.className = "mb-ex-formmsg is-ok";
+              msg.textContent = "Order posted. ID: " + res.d.order.id + " — keep it to cancel later.";
+              document.getElementById("mbExPrice").value = "";
+              document.getElementById("mbExAmount").value = "";
+              updateFormTotal();
+              if (body.pair === currentPair) loadBook();
+          })
+          .catch(function (err) {
+              msg.className = "mb-ex-formmsg is-err";
+              msg.textContent = err.message;
+          })
+          .finally(function () { btn.disabled = false; });
+    });
+
+    /* ---- cancel order ---- */
+    document.getElementById("mbExCancelForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var msg = document.getElementById("mbExCancelMsg");
+        var id = document.getElementById("mbExCancelId").value.trim();
+        var addr = document.getElementById("mbExCancelAddr").value.trim();
+        msg.className = "mb-ex-formmsg";
+        msg.textContent = "Cancelling…";
+        fetch("/api/exchange/order/" + encodeURIComponent(id) + "/cancel", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mbite_address: addr })
+        }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+          .then(function (res) {
+              if (!res.ok || res.d.status !== "success") throw new Error(res.d.message || "Could not cancel");
+              msg.className = "mb-ex-formmsg is-ok";
+              msg.textContent = "Order cancelled.";
+              loadBook();
+          })
+          .catch(function (err) {
+              msg.className = "mb-ex-formmsg is-err";
+              msg.textContent = err.message;
+          });
+    });
+
+    /* ---- boot ---- */
+    fetch("/api/exchange/pairs")
+        .then(function (r) { return r.json(); })
+        .then(function (d) { if (d && d.status === "success") PAIRS = d.pairs; })
+        .catch(function () {})
+        .finally(function () { syncQuoteLabels(); loadBook(); });
+    setInterval(loadBook, 15000);
+})();
+</script>
+{% endblock %}

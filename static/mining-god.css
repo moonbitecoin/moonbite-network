@@ -1,0 +1,330 @@
+/* ========================================================================== */
+/* MoonBite — GOD-TIER Cinematic Mining Layer                                  */
+/* Scoped to the mining page only. Layers on top of style.css without          */
+/* touching shared tokens, so dashboard/wallet/explorer are unaffected.        */
+/* Everything here is pure CSS + <canvas> (no external assets).                */
+/* ========================================================================== */
+
+:root {
+    --god-violet: #7c5cff;
+    --god-cyan: #34d3ff;
+    --god-teal: #22e5a8;
+    --god-gold: #ffd479;
+    --god-magenta: #ff5cc8;
+    --god-danger: #ff5470;
+    --god-ink: #05060d;
+}
+
+/* The cinematic stage replaces the plain progress card interior. It stacks:
+   (z0) animated grid floor, (z1) particle canvas, (z2) reactor canvas,
+   (z3) HUD readouts. */
+.god-stage {
+    position: relative;
+    border-radius: 22px;
+    overflow: hidden;
+    min-height: 460px;
+    background:
+        radial-gradient(120% 90% at 50% 8%, rgba(124, 92, 255, 0.20), transparent 60%),
+        radial-gradient(120% 120% at 50% 120%, rgba(34, 211, 255, 0.14), transparent 55%),
+        linear-gradient(180deg, #070a17 0%, #05070f 100%);
+    border: 1px solid rgba(124, 92, 255, 0.30);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        inset 0 0 80px rgba(124, 92, 255, 0.10),
+        0 30px 80px rgba(4, 6, 16, 0.7);
+    isolation: isolate;
+}
+
+/* Perspective grid floor that scrolls toward the viewer. */
+.god-grid {
+    position: absolute;
+    left: 50%;
+    bottom: -10%;
+    width: 260%;
+    height: 60%;
+    transform: translateX(-50%) perspective(520px) rotateX(66deg);
+    transform-origin: 50% 100%;
+    background-image:
+        linear-gradient(to right, rgba(124, 92, 255, 0.28) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(52, 211, 255, 0.24) 1px, transparent 1px);
+    background-size: 44px 44px;
+    -webkit-mask-image: radial-gradient(80% 90% at 50% 100%, #000 40%, transparent 78%);
+            mask-image: radial-gradient(80% 90% at 50% 100%, #000 40%, transparent 78%);
+    animation: god-grid-scroll 2.6s linear infinite;
+    z-index: 0;
+    opacity: 0.65;
+}
+@keyframes god-grid-scroll {
+    from { background-position: 0 0, 0 0; }
+    to   { background-position: 0 44px, 0 44px; }
+}
+
+/* Aurora sweep behind the reactor. */
+.god-aurora {
+    position: absolute;
+    inset: -20% -10% auto -10%;
+    height: 70%;
+    background:
+        conic-gradient(from 180deg at 50% 50%,
+            rgba(124, 92, 255, 0.0),
+            rgba(124, 92, 255, 0.25),
+            rgba(52, 211, 255, 0.22),
+            rgba(34, 229, 168, 0.18),
+            rgba(255, 92, 200, 0.20),
+            rgba(124, 92, 255, 0.0));
+    filter: blur(46px);
+    z-index: 0;
+    animation: god-aurora-spin 12s linear infinite;
+    opacity: 0.55;
+    pointer-events: none;
+}
+@keyframes god-aurora-spin {
+    to { transform: rotate(360deg); }
+}
+
+.god-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+#godParticles { z-index: 1; }
+#godReactor   { z-index: 2; }
+
+/* Fine scanline veil for the "hologram" feel. */
+.god-scan {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.025) 0px,
+        rgba(255, 255, 255, 0.025) 1px,
+        transparent 2px,
+        transparent 3px);
+    mix-blend-mode: overlay;
+    opacity: 0.5;
+}
+
+/* Central readout floating over the reactor. */
+.god-core-readout {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    text-align: center;
+    pointer-events: none;
+    text-shadow: 0 0 24px rgba(52, 211, 255, 0.55);
+}
+.god-core-readout .god-hashrate {
+    font-family: var(--font-mono, monospace);
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -1px;
+    background: linear-gradient(180deg, #ffffff 0%, var(--god-cyan) 70%, var(--god-violet) 100%);
+    -webkit-background-clip: text;
+            background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 18px rgba(124, 92, 255, 0.5));
+}
+.god-core-readout .god-hashunit {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.9rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--god-cyan);
+    margin-top: 6px;
+    opacity: 0.85;
+}
+.god-core-readout .god-state {
+    margin-top: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.72rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--god-teal);
+    padding: 5px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(34, 229, 168, 0.35);
+    background: rgba(34, 229, 168, 0.08);
+}
+.god-core-readout .god-state .god-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--god-teal);
+    box-shadow: 0 0 12px var(--god-teal);
+    animation: god-blink 1.1s ease-in-out infinite;
+}
+@keyframes god-blink { 50% { opacity: 0.25; } }
+
+/* Energy progress beam (replaces the plain bar visually). */
+.god-beam-wrap {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    bottom: 74px;
+    z-index: 4;
+}
+.god-beam-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.72rem;
+    letter-spacing: 1.5px;
+    color: rgba(236, 238, 255, 0.7);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+.god-beam-labels b { color: #fff; }
+.god-beam {
+    height: 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(124, 92, 255, 0.28);
+    overflow: hidden;
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.6);
+}
+.god-beam-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--god-violet), var(--god-cyan) 55%, var(--god-teal));
+    box-shadow: 0 0 20px rgba(52, 211, 255, 0.7), 0 0 40px rgba(124, 92, 255, 0.5);
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+.god-beam-fill::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+    background-size: 40% 100%;
+    background-repeat: no-repeat;
+    animation: god-beam-sheen 1.4s linear infinite;
+}
+@keyframes god-beam-sheen {
+    from { background-position: -40% 0; }
+    to   { background-position: 140% 0; }
+}
+
+/* Corner HUD readouts (height / blocks / elapsed) inside the stage. */
+.god-hud {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    bottom: 18px;
+    z-index: 4;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+.god-hud-cell {
+    text-align: center;
+    padding: 8px 6px;
+    border-radius: 12px;
+    background: rgba(10, 14, 28, 0.55);
+    border: 1px solid rgba(124, 92, 255, 0.22);
+    backdrop-filter: blur(6px);
+}
+.god-hud-cell .god-hud-label {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(137, 145, 179, 0.95);
+}
+.god-hud-cell .god-hud-value {
+    font-family: var(--font-mono, monospace);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    margin-top: 2px;
+    text-shadow: 0 0 14px rgba(52, 211, 255, 0.4);
+}
+
+/* Top-left live sparkline of hashrate history. */
+.god-spark {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 4;
+    width: 190px;
+    padding: 8px 10px 6px;
+    border-radius: 12px;
+    background: rgba(8, 11, 24, 0.55);
+    border: 1px solid rgba(52, 211, 255, 0.22);
+    backdrop-filter: blur(6px);
+}
+.god-spark-title {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.58rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--god-cyan);
+    margin-bottom: 4px;
+}
+#godSpark { display: block; width: 100%; height: 42px; }
+
+/* Top-right rig badge. */
+.god-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 4;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.62rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--god-gold);
+    background: rgba(255, 212, 121, 0.08);
+    border: 1px solid rgba(255, 212, 121, 0.35);
+}
+.god-badge span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--god-gold);
+    box-shadow: 0 0 10px var(--god-gold);
+}
+
+/* When idle, dim the whole rig and slow motion (JS toggles .is-live). */
+.god-stage:not(.is-live) .god-grid,
+.god-stage:not(.is-live) .god-aurora { animation-duration: 8s; opacity: 0.3; }
+.god-stage:not(.is-live) .god-core-readout .god-state {
+    color: var(--god-violet);
+    border-color: rgba(124, 92, 255, 0.35);
+    background: rgba(124, 92, 255, 0.08);
+}
+.god-stage:not(.is-live) .god-core-readout .god-state .god-dot {
+    background: var(--god-violet);
+    box-shadow: 0 0 12px var(--god-violet);
+    animation: none;
+    opacity: 0.6;
+}
+
+/* Give the mining page's Start button a heavier, premium presence. */
+#startBtn.btn-large,
+#stopBtn.btn-large {
+    letter-spacing: 0.5px;
+}
+
+/* Reduced motion: kill the loops, keep the layout. */
+@media (prefers-reduced-motion: reduce) {
+    .god-grid, .god-aurora, .god-beam-fill::after,
+    .god-core-readout .god-state .god-dot { animation: none !important; }
+}
+
+@media (max-width: 640px) {
+    .god-stage { min-height: 400px; }
+    .god-spark { width: 150px; }
+    .god-hud { gap: 8px; }
+    .god-hud-cell .god-hud-value { font-size: 0.95rem; }
+}

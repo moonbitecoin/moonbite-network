@@ -50,7 +50,7 @@ class ChainStatus {
 class Utxo {
   final String txid;
   final int vout;
-  final double amount; // MBITE
+  final double amount; // BIG
   final String scriptPubKey; // hex
   final int? height;
   final int confirmations;
@@ -64,7 +64,7 @@ class Utxo {
     required this.confirmations,
   });
 
-  /// Amount in satoshi-equivalent (1 MBITE = 1e8) for coin-selection math.
+  /// Amount in satoshi-equivalent (1 BIG = 1e8) for coin-selection math.
   int get amountSats => (amount * 1e8).round();
 
   factory Utxo.fromJson(Map<String, dynamic> j) => Utxo(

@@ -1,4 +1,4 @@
-"""MoonBite — Milestone 2 & 5: Blocks, timestamp chain, and incentives.
+"""MyCoin — Milestone 2 & 5: Blocks, timestamp chain, and incentives.
 
 A block chains to its predecessor by hash and commits to its transactions via a
 Merkle root, forming the timestamp server of whitepaper section 3. The first

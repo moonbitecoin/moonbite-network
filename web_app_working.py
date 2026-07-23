@@ -1,4 +1,4 @@
-"""MoonBite Web Dashboard - Working Version"""
+"""MyCoin Web Dashboard - Working Version"""
 from flask import Flask, jsonify, render_template, request
 from shared_client import SharedStateClient
 
@@ -128,7 +128,7 @@ def api_mining_stop():
 
 if __name__ == "__main__":
     print("=" * 70)
-    print("MoonBite Web Dashboard")
+    print("MyCoin Web Dashboard")
     print("=" * 70)
     print("Running on http://localhost:5000")
     print("=" * 70)

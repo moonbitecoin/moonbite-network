@@ -33,7 +33,7 @@ class NetworkTester:
     def run_all_tests(self):
         """Run all tests."""
         print("\n" + "=" * 70)
-        print("MoonBite P2P Network - Test Suite")
+        print("BigCoin P2P Network - Test Suite")
         print("=" * 70 + "\n")
 
         self.test_node_availability()

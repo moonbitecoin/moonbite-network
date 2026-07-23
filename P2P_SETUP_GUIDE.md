@@ -1,4 +1,4 @@
-# MoonBite P2P Network Setup Guide
+# BigCoin P2P Network Setup Guide
 
 ## What is P2P Network?
 
@@ -77,7 +77,7 @@ Now you can:
 
 ```python
 # 1. Create full node
-node = MoonBiteFullNode("alice", host="127.0.0.1", port=9001)
+node = BigCoinFullNode("alice", host="127.0.0.1", port=9001)
 
 # 2. Start P2P network server (listens for peer connections)
 node.start_server()
@@ -166,7 +166,7 @@ P2PNode
 ### Full Node (`full_node.py`)
 
 ```
-MoonBiteFullNode(P2PNode)
+BigCoinFullNode(P2PNode)
 ├── Local Blockchain (Node)
 ├── Mining Loop
 ├── Wallet/Address Management
@@ -444,7 +444,7 @@ python connect_nodes.py
                │
                ▼
 ┌─────────────────────────────────────┐
-│      MoonBiteFullNode                │
+│      BigCoinFullNode                │
 │ ┌──────────────────────────────────┐│
 │ │  P2PNode (Network)               ││
 │ │ - Peer connections               ││

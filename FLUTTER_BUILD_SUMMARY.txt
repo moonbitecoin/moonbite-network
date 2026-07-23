@@ -1,8 +1,8 @@
 ================================================================================
-MOONBITE FLUTTER MOBILE APP - BUILD COMPLETE
+MYCOIN FLUTTER MOBILE APP - BUILD COMPLETE
 ================================================================================
 
-Project: Cross-platform Mobile App for MoonBite (Educational Blockchain)
+Project: Cross-platform Mobile App for MyCoin (Educational Blockchain)
 Framework: Flutter (iOS/Android)
 Date: 2026-07-11
 
@@ -10,26 +10,26 @@ Date: 2026-07-11
 FILES CREATED (8 new files)
 ================================================================================
 
-1. C:/Users/usman/Desktop/MoonBite/mobile/pubspec.yaml
+1. C:/Users/%USERNAME%/Desktop/BigCoinBB/mobile/pubspec.yaml
    - Flutter project manifest
    - Dependencies: http, provider, qr_flutter, json_annotation, json_serializable
    - SDK: Flutter >=3.0.0 <4.0.0
    - App version: 1.0.0+1
 
-2. C:/Users/usman/Desktop/MoonBite/mobile/lib/main.dart
+2. C:/Users/%USERNAME%/Desktop/BigCoinBB/mobile/lib/main.dart
    - App entry point with MaterialApp
    - BottomNavigationBar with 3 tabs: Wallet, Mining, Blockchain
    - Dark theme (Color 0xFF121212 background, 0xFF1F6FD9 primary)
    - MultiProvider setup for Provider state management
 
-3. C:/Users/usman/Desktop/MoonBite/mobile/lib/screens/wallet_screen.dart
+3. C:/Users/%USERNAME%/Desktop/BigCoinBB/mobile/lib/screens/wallet_screen.dart
    - Display wallet address with QR code (qr_flutter)
    - "Generate New Key" button calls ApiService.newKey()
    - "Check Balance" button calls ApiService.getBalance()
    - Shows coins, cents, and UTXO count
    - SelectableText for easy copying of address
 
-4. C:/Users/usman/Desktop/MoonBite/mobile/lib/screens/mining_screen.dart
+4. C:/Users/%USERNAME%/Desktop/BigCoinBB/mobile/lib/screens/mining_screen.dart
    - Input fields: blocks count (default 1), miner address
    - Form validation with error messages
    - "Start Mining" button calls ApiService.startMining(blocks, address)
@@ -38,7 +38,7 @@ FILES CREATED (8 new files)
    - Status display: current height, hash snippet, UTXO total
    - 2-second polling for live status updates
 
-5. C:/Users/usman/Desktop/MoonBite/mobile/lib/screens/blockchain_screen.dart
+5. C:/Users/%USERNAME%/Desktop/BigCoinBB/mobile/lib/screens/blockchain_screen.dart
    - Card-based layout showing blockchain stats:
      * Chain height
      * Tip hash (truncated with ellipsis)
@@ -47,7 +47,7 @@ FILES CREATED (8 new files)
    - "Refresh" button
    - Icons for each stat card
 
-6. C:/Users/usman/Desktop/MoonBite/mobile/lib/services/api_service.dart
+6. C:/Users/%USERNAME%/Desktop/BigCoinBB/mobile/lib/services/api_service.dart
    - HTTP client class (ApiService)
    - Methods:
      * newKey() -> GET /api/wallet/new
@@ -61,7 +61,7 @@ FILES CREATED (8 new files)
    - JSON parsing into model objects
    - Error handling with meaningful messages
 
-7. C:/Users/usman/Desktop/MoonBite/mobile/lib/models/wallet_model.dart
+7. C:/Users/%USERNAME%/Desktop/BigCoinBB/mobile/lib/models/wallet_model.dart
    - Model classes:
      * Address (address, pubkey_hash)
      * Balance (coins, cents, utxo_count)
@@ -71,7 +71,7 @@ FILES CREATED (8 new files)
    - @JsonSerializable annotations for automatic JSON parsing
    - Must run 'flutter pub run build_runner build' to generate .g.dart files
 
-8. C:/Users/usman/Desktop/MoonBite/README_MOBILE.md
+8. C:/Users/%USERNAME%/Desktop/BigCoinBB/README_MOBILE.md
    - Installation guide (Flutter SDK setup)
    - Running instructions (Android emulator/device, iOS simulator/device)
    - Build instructions (APK for Android, iOS app)
@@ -136,7 +136,7 @@ SETUP INSTRUCTIONS
    Verify: flutter --version && flutter doctor
 
 2. NAVIGATE TO PROJECT:
-   cd C:/Users/usman/Desktop/MoonBite/mobile
+   cd C:/Users/%USERNAME%/Desktop/BigCoinBB/mobile
 
 3. INSTALL DEPENDENCIES:
    flutter pub get

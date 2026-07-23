@@ -1,4 +1,4 @@
-# MoonBite — Address Sync Fix
+# MyCoin — Address Sync Fix
 
 ## Problem
 

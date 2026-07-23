@@ -1,4 +1,4 @@
-"""MoonBite Web Dashboard — Using Shared State Server.
+"""MyCoin Web Dashboard — Using Shared State Server.
 
 This version connects to shared_state.py instead of creating its own Node.
 Run shared_state.py FIRST, then this app.
@@ -187,7 +187,7 @@ def api_mining_stop():
 
 if __name__ == "__main__":
     print("=" * 70)
-    print("MoonBite Web Dashboard (using Shared State)")
+    print("MyCoin Web Dashboard (using Shared State)")
     print("=" * 70)
     print("Make sure shared_state.py is running on 127.0.0.1:9999")
     print("Starting Flask on http://localhost:5000")

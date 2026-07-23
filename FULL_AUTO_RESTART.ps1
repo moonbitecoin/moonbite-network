@@ -1,8 +1,8 @@
-# MoonBite - Fully Automated Restart
+# MyCoin - Fully Automated Restart
 # Run this with: powershell -ExecutionPolicy Bypass -File FULL_AUTO_RESTART.ps1
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host " MoonBite - AUTOMATIC RESTART" -ForegroundColor Cyan
+Write-Host " MyCoin - AUTOMATIC RESTART" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -15,7 +15,7 @@ Write-Host ""
 
 # Step 2: Clear cache
 Write-Host "Step 2: Clearing Python cache..." -ForegroundColor Yellow
-$cacheDir = "C:\Users\usman\Desktop\MoonBite"
+$cacheDir = "$env:USERPROFILE\Desktop\BigCoinBB"
 Get-ChildItem -Path $cacheDir -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
 Get-ChildItem -Path $cacheDir -Recurse -Filter "*.pyc" | Remove-Item -Force -ErrorAction SilentlyContinue
 Write-Host "✓ Cache cleared" -ForegroundColor Green
@@ -31,7 +31,7 @@ Write-Host ""
 Write-Host "Step 4: Starting servers..." -ForegroundColor Yellow
 Write-Host ""
 
-$workDir = "C:\Users\usman\Desktop\MoonBite"
+$workDir = "$env:USERPROFILE\Desktop\BigCoinBB"
 
 # Terminal 1: shared_state.py
 Write-Host "  → Starting shared_state.py in new window..." -ForegroundColor Cyan

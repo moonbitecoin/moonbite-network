@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/chain_models.dart';
 import '../services/chain_service.dart';
-import 'moonbite_network.dart';
+import 'bigcoin_network.dart';
 import 'hd_wallet_service.dart';
 import 'secure_key_store.dart';
 import 'tx_builder.dart';
@@ -22,16 +22,16 @@ class WalletController extends ChangeNotifier {
     SecureKeyStore? store,
   }) : store = store ?? SecureKeyStore();
 
-  MoonBiteNetwork _network = MoonBiteNetwork.testnet;
+  BigCoinNetwork _network = BigCoinNetwork.testnet;
   String? _mnemonic;
-  MoonBiteAccount? _account;
+  BigCoinAccount? _account;
   WalletBalance? _balance;
   ChainStatus? _status;
   bool _busy = false;
   String? _error;
 
-  MoonBiteNetwork get network => _network;
-  MoonBiteAccount? get account => _account;
+  BigCoinNetwork get network => _network;
+  BigCoinAccount? get account => _account;
   WalletBalance? get balance => _balance;
   ChainStatus? get status => _status;
   bool get busy => _busy;
@@ -55,7 +55,7 @@ class WalletController extends ChangeNotifier {
     final mnemonic = await store.readMnemonic();
     final netId = await store.readNetworkId();
     if (mnemonic == null) return false;
-    _network = MoonBiteNetwork.byId(netId);
+    _network = BigCoinNetwork.byId(netId);
     _mnemonic = mnemonic;
     _account = _hd.deriveAccount(mnemonic, index: 0);
     notifyListeners();
@@ -64,7 +64,7 @@ class WalletController extends ChangeNotifier {
 
   /// Creates a brand-new wallet on [network] and persists it.
   Future<String> createNew({
-    MoonBiteNetwork? network,
+    BigCoinNetwork? network,
     int strengthBits = 128,
   }) async {
     _network = network ?? _network;
@@ -74,7 +74,7 @@ class WalletController extends ChangeNotifier {
   }
 
   /// Imports an existing BIP39 mnemonic. Throws [ArgumentError] if invalid.
-  Future<void> importExisting(String mnemonic, {MoonBiteNetwork? network}) async {
+  Future<void> importExisting(String mnemonic, {BigCoinNetwork? network}) async {
     _network = network ?? _network;
     final normalized = mnemonic.trim();
     if (!_hd.validateMnemonic(normalized)) {
@@ -108,7 +108,7 @@ class WalletController extends ChangeNotifier {
     }
   }
 
-  /// Builds, signs (on-device), and broadcasts a payment of [amountBig] MBITE to
+  /// Builds, signs (on-device), and broadcasts a payment of [amountBig] BIG to
   /// [toAddress]. Returns the accepted txid.
   Future<String> send({
     required String toAddress,

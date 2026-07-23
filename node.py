@@ -1,4 +1,4 @@
-"""MoonBite — Milestone 4 & 5: Blockchain consensus and the node.
+"""MyCoin — Milestone 4 & 5: Blockchain consensus and the node.
 
 `Blockchain` stores every block it has seen (including side branches), tracks
 cumulative proof-of-work, and keeps the active chain on the most-work tip

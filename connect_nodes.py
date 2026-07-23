@@ -13,7 +13,7 @@ def connect_nodes(node_configs):
         node_configs: List of (node_id, rpc_port) tuples
     """
     print("\n" + "=" * 60)
-    print("MoonBite P2P Network - Node Connection")
+    print("BigCoin P2P Network - Node Connection")
     print("=" * 60 + "\n")
 
     for node_id, rpc_port in node_configs:

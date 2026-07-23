@@ -5,7 +5,7 @@ import 'package:hex/hex.dart';
 
 import '../models/chain_models.dart';
 import 'address_script.dart';
-import 'moonbite_network.dart';
+import 'bigcoin_network.dart';
 
 /// A signed, ready-to-broadcast transaction.
 class SignedTx {
@@ -42,7 +42,7 @@ class InsufficientFundsException implements Exception {
 /// wallet currently derives one receive address, so that holds. Nothing here
 /// touches the network; the caller broadcasts the resulting [SignedTx.rawHex].
 class TxBuilder {
-  final MoonBiteNetwork network;
+  final BigCoinNetwork network;
 
   TxBuilder(this.network);
 
@@ -62,7 +62,7 @@ class TxBuilder {
   /// Selects inputs and builds a signed transaction paying [amountSats] to
   /// [toAddress], with change returned to [changeAddress].
   ///
-  /// [feeRateSatPerVByte] is the fee rate in sats/vByte (convert a MBITE/kB rate
+  /// [feeRateSatPerVByte] is the fee rate in sats/vByte (convert a BIG/kB rate
   /// with `feeRateBigPerKb * 1e8 / 1000`).
   SignedTx buildSpend({
     required List<Utxo> utxos,

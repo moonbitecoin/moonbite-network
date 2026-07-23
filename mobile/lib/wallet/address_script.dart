@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:bs58check/bs58check.dart' as bs58check;
 import 'package:coinslib/bech32/bech32.dart';
 
-import 'moonbite_network.dart';
+import 'bigcoin_network.dart';
 
 /// Converts a Big Coin address into its output script (scriptPubKey) bytes.
 ///
@@ -20,7 +20,7 @@ import 'moonbite_network.dart';
 class AddressScript {
   /// Returns the scriptPubKey for [address] on [network], or throws
   /// [FormatException] if the address is invalid for this network.
-  static Uint8List forAddress(String address, MoonBiteNetwork network) {
+  static Uint8List forAddress(String address, BigCoinNetwork network) {
     final net = network.coins;
     final addr = address.trim();
 

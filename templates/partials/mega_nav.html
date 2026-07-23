@@ -1,0 +1,110 @@
+<!-- Mega header: sticky glass nav with dropdowns + CTAs. `nav_active` block
+     from the child page highlights the current top-level section. -->
+<nav class="mb-meganav">
+    <div class="mb-nav-inner">
+        <a href="/" class="mb-brand">
+            <img src="{{ url_for('static', filename='favicon.svg') }}" alt="">
+            <span>🌙 <span class="mb-brand-name">MoonBite</span></span>
+        </a>
+
+        <ul class="mb-nav-links">
+            <li class="mb-nav-item">
+                <button class="mb-nav-trigger" type="button">Wallet <span class="mb-caret"></span></button>
+                <div class="mb-dropdown">
+                    <a href="/get-wallet"><span class="mb-dd-title">Download Wallet</span><span class="mb-dd-desc">Desktop &amp; self-custody</span></a>
+                    <a href="/wallet"><span class="mb-dd-title">Web Wallet</span><span class="mb-dd-desc">Try it in your browser</span></a>
+                    <a href="/downloads/README.txt"><span class="mb-dd-title">All Downloads</span><span class="mb-dd-desc">Binaries &amp; checksums</span></a>
+                </div>
+            </li>
+            <li class="mb-nav-item">
+                <button class="mb-nav-trigger" type="button">Mine <span class="mb-caret"></span></button>
+                <div class="mb-dropdown">
+                    <a href="/mine"><span class="mb-dd-title">How to Mine</span><span class="mb-dd-desc">Get started + downloads</span></a>
+                    <a href="/mining"><span class="mb-dd-title">Live Reactor</span><span class="mb-dd-desc">Watch blocks get mined</span></a>
+                </div>
+            </li>
+            <li class="mb-nav-item">
+                <button class="mb-nav-trigger" type="button">Explore <span class="mb-caret"></span></button>
+                <div class="mb-dropdown">
+                    <a href="/explorer"><span class="mb-dd-title">Block Explorer</span><span class="mb-dd-desc">Blocks, txs &amp; search</span></a>
+                    <a href="/dashboard"><span class="mb-dd-title">Network Dashboard</span><span class="mb-dd-desc">Live chain stats</span></a>
+                    <a href="/markets"><span class="mb-dd-title">Exchange</span><span class="mb-dd-desc">Order book &amp; swaps</span></a>
+                    <a href="/merchants"><span class="mb-dd-title">Accept MBITE</span><span class="mb-dd-desc">Merchant directory &amp; pay</span></a>
+                </div>
+            </li>
+            <li class="mb-nav-item">
+                <button class="mb-nav-trigger" type="button">Developers <span class="mb-caret"></span></button>
+                <div class="mb-dropdown">
+                    <a href="/developers"><span class="mb-dd-title">API &amp; Docs</span><span class="mb-dd-desc">Read-only REST endpoints</span></a>
+                    <a href="/developers#run-a-node"><span class="mb-dd-title">Run a Node</span><span class="mb-dd-desc">Join the network</span></a>
+                </div>
+            </li>
+            <li class="mb-nav-item">
+                <button class="mb-nav-trigger" type="button">Learn <span class="mb-caret"></span></button>
+                <div class="mb-dropdown">
+                    <a href="/learn"><span class="mb-dd-title">Learn &amp; FAQ</span><span class="mb-dd-desc">What is MoonBite?</span></a>
+                    <a href="/about"><span class="mb-dd-title">About &amp; Roadmap</span><span class="mb-dd-desc">Tokenomics &amp; specs</span></a>
+                    <a href="/markets"><span class="mb-dd-title">Markets</span><span class="mb-dd-desc">Exchange listings</span></a>
+                </div>
+            </li>
+        </ul>
+
+        <div class="mb-nav-cta">
+            <button id="themeToggle" class="mb-theme-btn" type="button">🌙 Dark Mode</button>
+            <a href="/markets" class="btn btn-secondary mb-nav-cta-btn">Get Notified</a>
+            <a href="/get-wallet" class="btn btn-primary mb-nav-cta-btn">Get Wallet</a>
+            <button class="mb-hamburger" type="button" aria-label="Open menu"><span></span><span></span><span></span></button>
+        </div>
+    </div>
+</nav>
+
+<!-- Mobile full-screen sheet -->
+<div class="mb-mobile-sheet">
+    <div class="mb-mobile-head">
+        <a href="/" class="mb-brand">🌙 <span class="mb-brand-name">MoonBite</span></a>
+        <button class="mb-mobile-close" type="button" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="mb-mobile-group">
+        <button type="button">Wallet <span class="mb-caret"></span></button>
+        <div class="mb-mobile-links">
+            <a href="/get-wallet">Download Wallet</a>
+            <a href="/wallet">Web Wallet</a>
+            <a href="/downloads/README.txt">All Downloads</a>
+        </div>
+    </div>
+    <div class="mb-mobile-group">
+        <button type="button">Mine <span class="mb-caret"></span></button>
+        <div class="mb-mobile-links">
+            <a href="/mine">How to Mine</a>
+            <a href="/mining">Live Reactor</a>
+        </div>
+    </div>
+    <div class="mb-mobile-group">
+        <button type="button">Explore <span class="mb-caret"></span></button>
+        <div class="mb-mobile-links">
+            <a href="/explorer">Block Explorer</a>
+            <a href="/dashboard">Network Dashboard</a>
+            <a href="/markets">Exchange</a>
+            <a href="/merchants">Accept MBITE</a>
+        </div>
+    </div>
+    <div class="mb-mobile-group">
+        <button type="button">Developers <span class="mb-caret"></span></button>
+        <div class="mb-mobile-links">
+            <a href="/developers">API &amp; Docs</a>
+            <a href="/developers#run-a-node">Run a Node</a>
+        </div>
+    </div>
+    <div class="mb-mobile-group">
+        <button type="button">Learn <span class="mb-caret"></span></button>
+        <div class="mb-mobile-links">
+            <a href="/learn">Learn &amp; FAQ</a>
+            <a href="/about">About &amp; Roadmap</a>
+            <a href="/markets">Markets</a>
+        </div>
+    </div>
+    <div class="mb-mobile-cta">
+        <a href="/markets" class="btn btn-secondary btn-large">Get Notified</a>
+        <a href="/get-wallet" class="btn btn-primary btn-large">Get Wallet</a>
+    </div>
+</div>

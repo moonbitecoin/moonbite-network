@@ -18,14 +18,14 @@ app = QApplication(sys.argv)
 print("[GUI Test] QApplication created")
 
 window = QMainWindow()
-window.setWindowTitle("MoonBite GUI Test")
+window.setWindowTitle("MyCoin GUI Test")
 window.setGeometry(100, 100, 500, 400)
 
 central = QWidget()
 window.setCentralWidget(central)
 layout = QVBoxLayout()
 
-title = QLabel("MoonBite Desktop GUI Test")
+title = QLabel("MyCoin Desktop GUI Test")
 title.setFont(QFont("Arial", 16, QFont.Weight.Bold))
 layout.addWidget(title)
 
@@ -34,7 +34,7 @@ status.setReadOnly(True)
 status.setText("""
 If you see this window, PyQt6 is working!
 
-MoonBite Desktop GUI is operational.
+MyCoin Desktop GUI is operational.
 
 Next steps:
 1. Make sure shared_state.py is running

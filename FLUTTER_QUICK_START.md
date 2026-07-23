@@ -1,4 +1,4 @@
-# MoonBite Flutter App - Quick Start
+# MyCoin Flutter App - Quick Start
 
 ## 1. Prerequisites Check
 
@@ -13,7 +13,7 @@ If Flutter is NOT installed, download from: https://flutter.dev/docs/get-started
 ## 2. Install Dependencies (One-time)
 
 ```bash
-cd C:/Users/usman/Desktop/MoonBite/mobile
+cd C:/Users/%USERNAME%/Desktop/BigCoinBB/mobile
 flutter pub get
 ```
 
@@ -27,7 +27,7 @@ This generates `.g.dart` files for JSON serialization from `lib/models/wallet_mo
 
 ## 4. Start Backend Server
 
-Ensure the MoonBite web app is running:
+Ensure the MyCoin web app is running:
 ```bash
 # In a separate terminal, from the project root
 python web_app.py

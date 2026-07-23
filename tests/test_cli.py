@@ -1,4 +1,4 @@
-"""Tests for the MoonBite CLI (cli.main called directly with argv lists)."""
+"""Tests for the MyCoin CLI (cli.main called directly with argv lists)."""
 
 from __future__ import annotations
 

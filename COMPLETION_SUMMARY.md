@@ -1,4 +1,4 @@
-# MoonBite: Project Completion Summary
+# MyCoin: Project Completion Summary
 
 **Status: COMPLETE — Full test suite green (117 passing), all phases delivered.**
 
@@ -22,7 +22,7 @@ A complete Bitcoin-whitepaper implementation in Python, progressing from theory 
 - **SQLite persistence:** `store.py` (BlockStore with WAL mode, save/load chain, height-order replay).
 - **asyncio TCP P2P:** `p2p.py` (length-prefixed JSON frames, version/verack/inv/getdata/block/tx handshake).
 - **CLI:** `cli.py` with subcommands (newkey, mine, subsidy, info).
-- **Packaging:** `pyproject.toml` with console script entry point (`moonbite` command).
+- **Packaging:** `pyproject.toml` with console script entry point (`mycoin` command).
 - **CI/Quality:** GitHub Actions workflow (ruff linter, mypy type-checker, pytest, Python 3.11 & 3.12 matrix).
 
 ## Test Results
@@ -50,7 +50,7 @@ pytest -q              → 117 passed
 
 ### Flat module layout (no packages)
 ```
-C:\Users\usman\Desktop\MoonBite\
+C:\Users\%USERNAME%\Desktop\BigCoinBB\
 ├── block.py              (Block/BlockHeader, genesis, coinbase, subsidy)
 ├── transaction.py        (TxInput/TxOutput, signing, verification)
 ├── merkle.py             (Merkle root, inclusion proofs)
@@ -114,17 +114,17 @@ C:\Users\usman\Desktop\MoonBite\
 
 ### Installation
 ```bash
-cd C:\Users\usman\Desktop\MoonBite
+cd C:\Users\%USERNAME%\Desktop\BigCoinBB
 pip install -e .
 ```
 
 ### Command-line
 ```bash
-moonbite --help
-moonbite newkey                    # Generate and print a fresh address
-moonbite subsidy --height 0        # Block 0 subsidy = 50 coins
-moonbite info                      # Genesis hash, height, total money
-moonbite mine --count 5            # Mine 5 blocks to a fresh address
+mycoin --help
+mycoin newkey                    # Generate and print a fresh address
+mycoin subsidy --height 0        # Block 0 subsidy = 50 coins
+mycoin info                      # Genesis hash, height, total money
+mycoin mine --count 5            # Mine 5 blocks to a fresh address
 ```
 
 ### Testing
@@ -190,4 +190,4 @@ See `SECURITY.md` for the full threat model.
 
 ## Conclusion
 
-MoonBite is a complete, well-tested, production-engineered educational implementation of the Bitcoin whitepaper. It demonstrates consensus rules, cryptography, networking, persistence, and the attacker-success calculations in a single, readable codebase. **It is not safe for real money** — but as a learning tool and portfolio project, it is comprehensive and ready to share.
+MyCoin is a complete, well-tested, production-engineered educational implementation of the Bitcoin whitepaper. It demonstrates consensus rules, cryptography, networking, persistence, and the attacker-success calculations in a single, readable codebase. **It is not safe for real money** — but as a learning tool and portfolio project, it is comprehensive and ready to share.
