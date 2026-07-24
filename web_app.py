@@ -795,6 +795,31 @@ def api_transactions():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
+@app.route("/api/mempool", methods=["GET"])
+def api_mempool():
+    """Return only the pending (unconfirmed) transactions in the mempool.
+
+    Shape matches the wallet page's mempool panel: each entry carries the txid,
+    input/output counts, and the total output value in cents.
+    """
+    try:
+        node = get_node()
+        transactions = []
+        for txid, tx in node.chain.mempool.items():
+            total_out_cents = sum(out.amount for out in tx.outputs)
+            transactions.append(
+                {
+                    "txid": txid,
+                    "inputs": len(tx.inputs),
+                    "outputs": len(tx.outputs),
+                    "total_out_cents": total_out_cents,
+                }
+            )
+        return jsonify({"status": "success", "transactions": transactions}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
 # ============================================================================= #
 # API Routes — Block Explorer
 # ============================================================================= #

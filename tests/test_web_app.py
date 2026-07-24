@@ -387,6 +387,18 @@ class TestTransactionAPI:
         # Should have at least the coinbase transaction from the mined block
         assert len(data["transactions"]) > 0
 
+    def test_mempool_endpoint_shape(self, client):
+        """GET /api/mempool returns the pending-tx shape the wallet page expects."""
+        response = client.get("/api/mempool")
+        assert response.status_code == 200
+
+        data = response.get_json()
+        assert data["status"] == "success"
+        assert isinstance(data["transactions"], list)
+        # Every entry must carry the fields renderMempool() reads.
+        for tx in data["transactions"]:
+            assert {"txid", "inputs", "outputs", "total_out_cents"} <= tx.keys()
+
 
 # ============================================================================= #
 # Error Handling Tests
