@@ -47,9 +47,6 @@ walletdata/
 chaindata/
 *.log
 
-# --- Notify capture (local email signups) ---
-notify_signups.jsonl
-
 # --- Compiled binaries (32MB+, rebuildable) ---
 release/bin/
 
