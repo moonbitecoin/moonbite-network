@@ -100,7 +100,7 @@ Provide a single authoritative info sheet. Fill in the bracketed launch values.
 |---------------------|---------------------------------------------------|
 | Name                | BigCoin                                           |
 | Ticker              | BIG                                               |
-| Algorithm           | RandomX (PoW)                                      |
+| Algorithm           | scrypt (PoW)                                       |
 | Block time          | 2.5 minutes                                        |
 | Initial reward      | 10 BIG                                             |
 | Halving             | every 1,000,000 blocks                            |

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Why MoonBite — the case for honest, self-custodial money{% endblock %}
+{% block meta_description %}Why MoonBite exists: a fair-launch, no-premine, capped-supply cryptocurrency you can mine, hold in self-custody, and verify with your own node — and an honest account of what it is not, yet.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> Why MoonBite</span>
+            <h1 class="mb-hero-title">Money you can <span class="mb-gradient-text">actually verify.</span></h1>
+            <p class="mb-hero-sub">Most new coins ask you to trust a story — a roadmap, a team, a chart. MoonBite asks you to trust nothing. Mine it yourself, hold your own keys, run your own node, and check every claim against the code. Here is why it exists, and — just as important — what it is not.</p>
+        </div>
+    </div>
+</section>
+
+<!-- WHY IT EXISTS -->
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">The case</span>
+            <h2 class="mb-section-title">Five reasons MoonBite exists</h2>
+            <p class="mb-section-sub">Not marketing lines — each of these is something you can check for yourself.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">⚖️</div>
+                <h3>A genuinely fair launch</h3>
+                <p>No premine. No insider allocation. No presale. Every MBITE in existence is mined in the open under one published emission schedule — the same rules for the founder as for you.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔒</div>
+                <h3>A hard, honest cap</h3>
+                <p>19,999,999.87 MBITE, ever. A 10 MBITE block reward halving every 1,000,000 blocks. Fixed in consensus code, not in a promise — and unit-tested on regtest.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔑</div>
+                <h3>Self-custody by default</h3>
+                <p>Your keys, your coins. MoonBite ships a non-custodial wallet — there is no MoonBite account, no custodian, and nobody who can freeze or claw back your balance.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🛰️</div>
+                <h3>You can run the whole thing</h3>
+                <p>Mine with the Reactor, verify with your own full node, and read the chain with the open block explorer. Nothing here requires our servers to stay honest.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🧱</div>
+                <h3>Built on proven code</h3>
+                <p>MoonBite is a fork of Litecoin Core, itself a Bitcoin Core descendant — over a decade of hardened, audited consensus code, using the same scrypt proof-of-work Litecoin has secured since 2011.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔎</div>
+                <h3>Radical honesty</h3>
+                <p>No fake volume. No invented exchange listings. No price predictions. If something isn't live yet, we say so — on this very site. That discipline is the whole point.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- WHAT IT IS NOT (the honesty section) -->
+<section class="mb-section" id="not" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">The honest half</span>
+            <h2 class="mb-section-title">What MoonBite is <em>not</em> — yet</h2>
+            <p class="mb-section-sub">A "why" page that only listed strengths would be exactly the kind of marketing we're rejecting. So here is the other side, plainly.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🚧</div>
+                <h3>Not on mainnet</h3>
+                <p>MoonBite is pre-mainnet. It runs on testnet and regtest today. No coin has market value, and you cannot buy MBITE anywhere — it isn't listed on any exchange.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🏭</div>
+                <h3>Not ASIC-resistant</h3>
+                <p>Scrypt is a mature algorithm with an established hardware ecosystem — CPUs, GPUs, and dedicated scrypt ASICs (the same class used for Litecoin) can all mine it. We won't pretend otherwise.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🧪</div>
+                <h3>Not audited, not an investment</h3>
+                <p>This is experimental software with no production security audit. It is not a security, not financial advice, and not a promise of profit. Only participate with what you can afford to lose.</p>
+            </div>
+        </div>
+        <div class="mb-banner mb-reveal" style="margin-top: var(--spacing-2xl);">
+            <span>🔭 <strong>Everything above is checkable.</strong> The <a href="/about#tokenomics">tokenomics</a> live in consensus code, the <a href="/explorer">explorer</a> shows the real chain, and the <a href="/developers#run-a-node">node guide</a> lets you verify it yourself. If any claim here ever stops being true, it's a bug — tell us.</span>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Two honest ways in</span>
+            <h2 class="mb-section-title">See it for yourself</h2>
+            <p class="mb-section-sub">Don't take our word for any of this — that's the point.</p>
+        </div>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+            <a href="/mine" class="btn btn-primary btn-large">Mine a block</a>
+            <a href="/get-wallet" class="btn btn-secondary btn-large">Hold your own keys</a>
+            <a href="/explorer" class="btn btn-secondary btn-large">Read the chain</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

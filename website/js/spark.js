@@ -1,7 +1,7 @@
 /* ============================================================
    Spark — browser mining REHEARSAL (honest).
    - Real CPU throughput probe via Web Workers (a SHA-256 stand-in
-     integer-mix loop). It is NOT the real RandomX PoW and earns
+     integer-mix loop). It is NOT the real scrypt PoW and earns
      NO coins. Everything the user sees is literally true.
    - Consent gates every cycle. Stop terminates all workers.
    - On-battery devices auto-pause below 20% (when the API exists).

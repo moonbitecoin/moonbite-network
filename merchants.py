@@ -10,7 +10,7 @@ invoice paid. Keep it that way — do not add custody, escrow, or fiat handling.
 
 Payment verification is deliberately injected (`received_lookup`) so this module
 stays decoupled from any particular node. In this demo the web app wires it to
-the local educational node; in production it points at the MoonBite RandomX node.
+the local educational node; in production it points at the MoonBite node.
 """
 
 from __future__ import annotations

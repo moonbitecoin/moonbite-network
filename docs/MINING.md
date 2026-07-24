@@ -1,14 +1,14 @@
 # Mining BigCoin (BIG)
 
-BigCoin is a RandomX proof-of-work coin (a Litecoin/Bitcoin Core fork). This guide
-covers testing your setup on regtest, solo mining, CPU mining, and joining a
+BigCoin is a scrypt proof-of-work coin (a Litecoin/Bitcoin Core fork). This guide
+covers testing your setup on regtest, solo mining, mining, and joining a
 pool.
 
 ## Key network parameters
 
 | Parameter              | Value                         |
 |------------------------|-------------------------------|
-| PoW algorithm          | RandomX (CPU-optimized)       |
+| PoW algorithm          | scrypt                        |
 | Target block time      | 2.5 minutes (150 s)           |
 | Initial block reward   | 10 BIG                        |
 | Halving interval       | every 1,000,000 blocks        |
@@ -17,9 +17,10 @@ pool.
 | Testnet P2P port       | 19555                         |
 | RPC default port       | 9445                          |
 
-> Because BigCoin uses **RandomX** (like Monero), it is CPU-optimized and
-> ASIC-resistant. Mine it with a CPU using a RandomX-capable miner — SHA-256
-> ASICs and GPU miners have little to no advantage on RandomX.
+> BigCoin uses **scrypt** — the same proof-of-work Litecoin has run since 2011.
+> Scrypt is a mature algorithm with an established hardware ecosystem: it can be
+> mined on a CPU or GPU, and dedicated **scrypt ASICs** exist (the same ones used
+> for Litecoin/Dogecoin). It is **not** ASIC-resistant.
 
 ---
 
@@ -62,7 +63,7 @@ use `getblocktemplate` to fetch work, then submit solved blocks with
 bigcoin-cli -regtest getblocktemplate '{"rules": ["segwit"]}'
 
 # ... your miner builds the block header, finds a nonce whose
-#     RandomX hash meets the target, serializes the block ...
+#     scrypt hash meets the target, serializes the block ...
 
 bigcoin-cli -regtest submitblock <hex-encoded-block>
 ```
@@ -76,26 +77,26 @@ For local testing you almost always just use `generatetoaddress`. Use
 
 ---
 
-## 2. CPU mining with a RandomX miner
+## 2. Mining with a scrypt miner
 
-RandomX is a CPU-optimized proof-of-work. You mine it with a RandomX-capable
-CPU miner (the xmrig-class of RandomX miners) speaking the stratum protocol to a
-pool. GPUs and ASICs have little to no advantage over CPUs on RandomX, so a
-modern multi-core CPU with enough RAM (RandomX uses a large dataset) is the
-right tool.
+Scrypt is mined with a scrypt-capable miner speaking the stratum protocol to a
+pool. Because scrypt is the Litecoin algorithm, the existing tooling works:
+CPU/GPU miners such as **cpuminer** (`cpuminer-multi`) and **cgminer/bfgminer**
+(scrypt builds), and dedicated **scrypt ASICs** for serious hashrate.
 
-Build/obtain a RandomX-capable CPU miner:
+Build/obtain a scrypt miner:
 
 ```bash
-# TODO: exact RandomX miner + build steps for BigCoin TBD
-# (a RandomX/xmrig-class CPU miner pointed at a BigCoin RandomX stratum pool)
+# TODO: exact scrypt miner + build steps for BigCoin TBD
+# (e.g. a cpuminer-multi / cgminer scrypt build pointed at a BigCoin stratum pool)
 ```
 
-### CPU mining against a pool (stratum)
+### Mining against a pool (stratum)
 
 ```bash
-# TODO: exact RandomX miner command line for BigCoin TBD
-# Point your RandomX CPU miner at the pool's stratum endpoint:
+# TODO: exact scrypt miner command line for BigCoin TBD
+# Point your scrypt miner at the pool's stratum endpoint:
+#   --algo=scrypt
 #   --url=stratum+tcp://POOL_HOST:POOL_PORT
 #   --user=YOUR_BIG_ADDRESS.workername
 #   --pass=x
@@ -108,18 +109,19 @@ the password.
 
 ### CPU "solo" mining via a local stratum bridge
 
-The core daemon speaks JSON-RPC (`getblocktemplate`), **not** stratum. RandomX
-CPU miners speak stratum. To solo mine you need a small stratum bridge/proxy
+The core daemon speaks JSON-RPC (`getblocktemplate`), **not** stratum. Scrypt
+miners speak stratum. To solo mine you need a small stratum bridge/proxy
 that translates between the two — for example a lightweight solo pool or a
-`getblocktemplate` proxy that supports RandomX. Point the bridge at your
-`bigcoind` RPC (port 9445) and point your RandomX miner at the bridge:
+`getblocktemplate` proxy that supports scrypt. Point the bridge at your
+`bigcoind` RPC (port 9445) and point your scrypt miner at the bridge:
 
 ```bash
 # 1) run bigcoind with RPC enabled (see NODE_SETUP.md)
-# 2) run a getblocktemplate->stratum bridge (RandomX) pointed at 127.0.0.1:9445
-# 3) point your RandomX CPU miner at the bridge:
-# TODO: exact RandomX miner command + a RandomX-aware getblocktemplate/stratum
+# 2) run a getblocktemplate->stratum bridge (scrypt) pointed at 127.0.0.1:9445
+# 3) point your scrypt miner at the bridge:
+# TODO: exact scrypt miner command + a getblocktemplate/stratum
 #       bridge for BigCoin TBD
+#   --algo=scrypt
 #   --url=stratum+tcp://127.0.0.1:3333
 #   --user=YOUR_BIG_ADDRESS
 #   --pass=x
@@ -130,7 +132,7 @@ that translates between the two — for example a lightweight solo pool or a
 ## 3. Joining a mining pool
 
 A pool aggregates many miners' hash power and pays out proportionally, smoothing
-your rewards. To join, you point any RandomX CPU miner at the pool's stratum URL.
+your rewards. To join, you point any scrypt miner at the pool's stratum URL.
 
 Stratum URL format (placeholder — use your pool's real values):
 
@@ -144,20 +146,21 @@ Typical worker credentials:
 |----------|--------------------------------------------------|
 | Username | `YOUR_BIG_ADDRESS.workername`                    |
 | Password | `x` (or whatever the pool specifies)             |
-| Algo     | `randomx`                                         |
+| Algo     | `scrypt`                                          |
 
 Example:
 
 ```bash
-# TODO: exact RandomX miner command line for BigCoin TBD
-# Point your RandomX CPU miner at the pool:
+# TODO: exact scrypt miner command line for BigCoin TBD
+# Point your scrypt miner at the pool:
+#   --algo=scrypt
 #   --url=stratum+tcp://big-pool.example.com:3333
 #   --user=BqExampleAddressXXXXXXXXXXXXXXXXXXXX.rig1
 #   --pass=x
 ```
 
 Because BigCoin is new, there may be no public pools yet. Early on you may need
-to run your own solo pool (RandomX-capable) as described in section 2.
+to run your own solo pool (scrypt-capable) as described in section 2.
 
 ---
 

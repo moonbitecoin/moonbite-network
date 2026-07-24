@@ -42,7 +42,7 @@ is the least-proven piece.
 - [ ] Set `BIGCOIN_RPC_USER`, `BIGCOIN_RPC_PASSWORD`, `MINE=1`
 - [ ] Enable TCP Proxy on **9444 only**
 - [ ] **Success gate:** deploy logs show height rising
-- [ ] **Fail gate:** if RandomX/CPU can't sustain it → pivot to VPS (`RUNBOOK.md`)
+- [ ] **Fail gate:** if the Railway container can't sustain it → pivot to VPS (`RUNBOOK.md`)
 
 ### 2. Explorer wiring — 🔴 blocked on #1
 - [ ] Deploy `moonbite-explorer` (Root `explorer`)
@@ -66,7 +66,7 @@ is the least-proven piece.
 
 | # | Risk | Prob | Impact | Mitigation | Owner |
 |---|---|---|---|---|---|
-| R1 | Railway node can't sustain P2P / RandomX CPU | High | High | VPS is real home; Railway = bootstrap only | You |
+| R1 | Railway node can't sustain P2P / CPU load | High | High | VPS is real home; Railway = bootstrap only | You |
 | R2 | Volume not mounted → chain wiped on redeploy | Med | High | `/data` volume is step 1, not optional | You |
 | R3 | RPC 9445 exposed publicly | Low | Critical | Only 9444 gets the TCP proxy | You |
 | R4 | `big1` binary shows old address prefixes | High | Low | Cosmetic; rebuild `moon1` in step 4 | You |

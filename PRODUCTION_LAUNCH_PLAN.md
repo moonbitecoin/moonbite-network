@@ -13,7 +13,7 @@
 |----------------------|--------------------------------|-----|
 | Name / Ticker        | BigCoin / **BIG**              | Reuse existing brand |
 | Base to fork         | **Litecoin Core** (Bitcoin fork)         | Most exchange-integrated, simplest PoW change |
-| PoW algorithm        | **RandomX** (CPU-friendly, ASIC-resistant) | Mine on any PC; CPU-optimized like Monero |
+| PoW algorithm        | **scrypt** | Same PoW as Litecoin; mature tooling & scrypt ASICs |
 | Max supply           | 19,999,999.87 BIG              | Tighter-than-Litecoin scarcity |
 | Block time           | 2.5 minutes                    | Fast confirmations, proven |
 | Initial block reward | 10 BIG                         | Familiar economics |

@@ -164,6 +164,12 @@ def about_page():
     return render_template("about.html")
 
 
+@app.route("/why")
+def why_page():
+    """Render the 'why MoonBite' page."""
+    return render_template("why.html")
+
+
 @app.route("/wallet")
 def wallet_page():
     """Render the wallet page."""

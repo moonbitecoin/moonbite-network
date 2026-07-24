@@ -8,7 +8,7 @@ These are Linux x86-64 binaries built on Ubuntu 22.04 (glibc 2.35).
 | Parameter        | Value                        |
 |------------------|------------------------------|
 | Ticker           | MBITE                          |
-| PoW algorithm    | RandomX                      |
+| PoW algorithm    | scrypt                       |
 | Max supply       | 19,999,999.87 MBITE            |
 | Block time       | 2.5 minutes                  |
 | Initial reward   | 10 MBITE                       |
@@ -53,7 +53,7 @@ $CLI stop
 3. See the repo `docs/` for mining, wallet, node-setup, and exchange-listing guides.
 
 ## Verified working
-- **Mining:** RandomX PoW, regtest mined 101 blocks → 10 MBITE coinbase matured.
+- **Mining:** scrypt PoW, regtest mined 101 blocks → 10 MBITE coinbase matured.
 - **Transactions:** send/receive confirmed (12.5 MBITE between two wallets, mempool → block).
 - **P2P networking:** two nodes connect and sync a 10-block chain (identical tips).
 - **Wallet security:** AES-256 encryption, passphrase-locked spending, HD seed, backup — all verified.

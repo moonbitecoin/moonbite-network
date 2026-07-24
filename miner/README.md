@@ -77,8 +77,8 @@ Stop any time with **Ctrl+C**.
 
 > **Honest note:** in "mine the live chain" mode the heavy proof-of-work runs on
 > the **node** (server-side), triggered from your browser. A full in-browser
-> WASM RandomX hasher is a separate, larger piece of work; this gives you real,
-> credited blocks today without pretending your phone did the RandomX math.
+> WASM scrypt hasher is a separate, larger piece of work; this gives you real,
+> credited blocks today without pretending your phone did the scrypt math.
 
 To enable live mode, the Spark page needs your explorer's URL — paste it into
 the field on the page (it's remembered in your browser), or append

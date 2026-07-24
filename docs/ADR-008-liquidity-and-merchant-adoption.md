@@ -11,7 +11,7 @@
 
 ## Context
 
-MoonBite (**MBITE**) is a RandomX PoW Litecoin-family chain. It is **pre-mainnet,
+MoonBite (**MBITE**) is a scrypt PoW Litecoin-family chain. It is **pre-mainnet,
 not listed on any exchange, and has recorded zero trades** — so it has **no
 established market value**. A coin with no way to be traded and nowhere to be
 spent has no reason for anyone to hold it, and no honest basis for any grant,
@@ -78,7 +78,7 @@ coins, keys, or balances, and never touches fiat.
   (default 1 hour). The server confirms a payment happened; it never receives one.
 - Payment verification is **dependency-injected** (`received_lookup`) so the
   module is decoupled from any node: the demo wires it to the local educational
-  node; production points it at the MoonBite RandomX node.
+  node; production points it at the MoonBite node.
 
 ### 3. What we explicitly do NOT build
 

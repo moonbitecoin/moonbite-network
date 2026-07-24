@@ -1,6 +1,6 @@
 # BigCoin (BIG) — Operator & Integration Docs
 
-BigCoin is an experimental, mineable cryptocurrency: a RandomX proof-of-work fork
+BigCoin is an experimental, mineable cryptocurrency: a scrypt proof-of-work fork
 in the Litecoin/Bitcoin Core lineage. It uses the standard Bitcoin/Litecoin Core
 JSON-RPC interface, so most existing tooling and integrations work with minimal
 changes.
@@ -10,7 +10,7 @@ At a glance:
 | Parameter        | Value                                   |
 |------------------|-----------------------------------------|
 | Ticker           | BIG                                      |
-| Algorithm        | RandomX (PoW)                           |
+| Algorithm        | scrypt (PoW)                            |
 | Block time       | 2.5 minutes                             |
 | Initial reward   | 10 BIG, halving every 1,000,000 blocks  |
 | Max supply       | 19,999,999.87 BIG                       |
@@ -24,7 +24,7 @@ At a glance:
 
 | Doc | Description |
 |-----|-------------|
-| [MINING.md](MINING.md) | How to mine BIG: regtest testing, solo mining, RandomX CPU miners, and joining a pool — with an honest note on difficulty and profitability. |
+| [MINING.md](MINING.md) | How to mine BIG: regtest testing, solo mining, scrypt miners, and joining a pool — with an honest note on difficulty and profitability. |
 | [WALLET.md](WALLET.md) | Using the wallet: creating addresses, checking balances, sending, backing up, encrypting, and why key/backup safety is critical. |
 | [NODE_SETUP.md](NODE_SETUP.md) | Running a full/seed node: sample `bigcoin.conf`, firewall & port forwarding, a systemd unit, adding peers, and bootstrapping a launch network. |
 | [EXCHANGE_LISTING.md](EXCHANGE_LISTING.md) | What exchanges require to list BIG: technical readiness, RPC compatibility, a coin info sheet, and the honest business/legal realities. |

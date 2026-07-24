@@ -1,6 +1,6 @@
 # Big Coin (BIG)
 
-**A fast, open, mineable RandomX proof-of-work cryptocurrency** — forked from battle-tested Litecoin / Bitcoin Core. 2.5-minute blocks, a 19,999,999.87 hard-cap supply, and a fair launch. Mine it with a CPU (RandomX is ASIC-resistant and CPU-optimized); hold it in a non-custodial wallet.
+**A fast, open, mineable scrypt proof-of-work cryptocurrency** — forked from battle-tested Litecoin / Bitcoin Core. 2.5-minute blocks, a 19,999,999.87 hard-cap supply, and a fair launch. Hold it in a non-custodial wallet.
 
 > ⚠️ **Experimental software.** Big Coin is a community/experimental cryptocurrency, not an investment or a security. It has not had a production security audit. Verify all software before use and only participate with what you can afford to lose.
 
@@ -11,7 +11,7 @@
 | Parameter | Value |
 | --- | --- |
 | Ticker | **BIG** |
-| Algorithm | **RandomX** (Proof-of-Work, CPU-optimized / ASIC-resistant) |
+| Algorithm | **scrypt** (Proof-of-Work) |
 | Max supply | **19,999,999.87 BIG** |
 | Initial block reward | 10 BIG |
 | Halving interval | every 1,000,000 blocks (~4.75 years) |
@@ -21,7 +21,7 @@
 | Mainnet P2P port | 9444 |
 | RPC port | 9445 |
 
-Because Big Coin uses **RandomX** (like Monero), it is CPU-optimized and ASIC-resistant — mine it with a CPU using a RandomX-capable miner.
+Big Coin uses **scrypt** proof-of-work — the same algorithm Litecoin has secured since 2011. It is mined with scrypt-capable hardware (CPU, GPU, or scrypt ASIC).
 
 ---
 
@@ -45,7 +45,7 @@ In addition, the repository root contains a **from-scratch Python reference impl
 ## Quick start
 
 ### Mine on testnet
-See [`docs/MINING.md`](docs/MINING.md). In short: run `bigcoind`, point a RandomX CPU miner at a stratum bridge or pool, and mine to a Big Coin address.
+See [`docs/MINING.md`](docs/MINING.md). In short: run `bigcoind`, point a scrypt miner at a stratum bridge or pool, and mine to a Big Coin address.
 
 ### Run the block explorer locally
 ```bash

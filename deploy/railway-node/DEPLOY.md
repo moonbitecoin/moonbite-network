@@ -7,8 +7,8 @@ order — the explorer needs the node to exist first.
 > **Honest launch notes — read once before deploying**
 > - **A fresh chain produces NO blocks on its own.** With zero miners the height
 >   stays at 0 forever. Set `MINE=1` on the node service (below) so it mines, or
->   run the miner yourself. RandomX is CPU-heavy; Railway containers are small,
->   so expect slow block production.
+>   run the miner yourself. Railway containers are small, so expect slow block
+>   production.
 > - **RPC port 9445 must stay private.** Only attach a public domain / TCP proxy
 >   to the **P2P port 9444**. The explorer reaches RPC over Railway's *private*
 >   network (`*.railway.internal`). Never expose 9445 publicly.

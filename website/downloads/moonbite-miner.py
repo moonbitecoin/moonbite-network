@@ -2,7 +2,7 @@
 """MoonBite desktop miner (public, one-file, no dependencies).
 
 This mines the LIVE MoonBite chain by asking the public explorer to mine a
-block to your address. The node does the real proof-of-work (RandomX)
+block to your address. The node does the real proof-of-work (scrypt)
 server-side, so no RPC credentials are needed -- you only supply the address
 that should receive the block reward.
 
