@@ -36,6 +36,26 @@ SIDES = ("buy", "sell")  # buy = want MBITE (pay quote); sell = give MBITE (want
 # Basic anti-abuse: cap simultaneously-open orders per MBITE address.
 MAX_OPEN_ORDERS_PER_ADDRESS = 20
 
+# --- Phase 2a: atomic-swap settlement coordination ------------------------- #
+# The server COORDINATES the HTLC hand-off and (from Phase 2b) VERIFIES it
+# on-chain; it never custodies coins or keys. Phase 2a records only the public
+# swap parameters and the parties' self-reported funding txids and advances a
+# state machine. On-chain verification, preimage extraction, the 'redeemed'/
+# 'settled' transitions, and price discovery all arrive in Phase 2b/2c — until
+# then a swap can progress no further than 'both_locked' and last_price stays
+# null (no trade is considered settled without independent on-chain proof).
+SWAP_STATES = (
+    "swap_init",     # HTLC parameters registered; nothing funded yet
+    "base_funded",   # MBITE-leg HTLC funding txid reported (unverified)
+    "quote_funded",  # quote-leg HTLC funding txid reported (unverified)
+    "both_locked",   # both legs' funding txids reported (awaiting 2b verify)
+)
+
+# Safety invariant: the party who redeems second must hold the longer refund
+# window, so the base (MBITE) timelock must exceed the quote timelock by at
+# least this margin. Locktimes are unix timestamps (seconds).
+MIN_TIMELOCK_GAP_SECONDS = 6 * 60 * 60  # 6 hours
+
 _DB_PATH = Path(__file__).with_name("exchange.db")
 _lock = threading.Lock()
 _conn: Optional[sqlite3.Connection] = None
@@ -69,6 +89,39 @@ def _connect() -> sqlite3.Connection:
         # Migration: record the crossing counter-order when a match is found.
         if "matched_with" not in cols:
             _conn.execute("ALTER TABLE orders ADD COLUMN matched_with TEXT")
+        # Phase 2a: atomic-swap settlement coordination. One row per matched
+        # order pair. Holds only PUBLIC swap parameters — no keys, no coins. The
+        # redeem/preimage/confs/settled_at columns are populated later by the
+        # on-chain verifier (Phase 2b/2c); in 2a they stay null/zero.
+        _conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS swaps (
+                swap_id            TEXT PRIMARY KEY,
+                buy_order_id       TEXT NOT NULL,
+                sell_order_id      TEXT NOT NULL,
+                pair               TEXT NOT NULL,
+                price              TEXT NOT NULL,   -- agreed execution (maker) price
+                amount             TEXT NOT NULL,   -- swappable MBITE = min(buy, sell)
+                hashlock           TEXT NOT NULL UNIQUE,  -- SHA256(preimage); anti-replay
+                base_recipient_pk  TEXT NOT NULL,   -- who claims the MBITE leg (hex)
+                base_refund_pk     TEXT NOT NULL,   -- who refunds the MBITE leg (hex)
+                quote_recipient_pk TEXT NOT NULL,   -- who claims the quote leg (hex)
+                quote_refund_pk    TEXT NOT NULL,   -- who refunds the quote leg (hex)
+                base_locktime      INTEGER NOT NULL,-- unix seconds; > quote_locktime
+                quote_locktime     INTEGER NOT NULL,-- unix seconds
+                base_htlc_txid     TEXT,            -- reported funding tx, MBITE leg
+                quote_htlc_txid    TEXT,            -- reported funding tx, quote leg
+                base_redeem_txid   TEXT,            -- filled by verifier (2b)
+                quote_redeem_txid  TEXT,            -- filled by verifier (2b)
+                preimage           TEXT,            -- extracted once public on-chain (2b)
+                base_confs         INTEGER NOT NULL DEFAULT 0,
+                quote_confs        INTEGER NOT NULL DEFAULT 0,
+                status             TEXT NOT NULL DEFAULT 'swap_init',
+                created_at         INTEGER NOT NULL,
+                settled_at         INTEGER          -- set only when fully verified (2c)
+            )
+            """
+        )
         _conn.commit()
     return _conn
 
@@ -85,9 +138,14 @@ def _pos_decimal(value, field: str) -> Decimal:
         d = Decimal(str(value))
     except (InvalidOperation, ValueError, TypeError):
         raise ValueError(f"{field} must be a number")
+    if not d.is_finite():  # reject NaN / Infinity / -Infinity before any comparison
+        raise ValueError(f"{field} must be a finite number")
     if d <= 0:
         raise ValueError(f"{field} must be greater than zero")
-    if d != d.quantize(Decimal(1)) and len(d.as_tuple().digits) > 20:
+    # Bound magnitude/precision without quantize() (which throws on huge
+    # exponents like 1e400): adjusted() is the power of the leading digit,
+    # as_tuple().exponent < 0 counts fractional places.
+    if d.adjusted() > 20 or d.as_tuple().exponent < -20:
         raise ValueError(f"{field} has too many digits")
     return d
 
@@ -327,3 +385,209 @@ def settle_hint(order_id: str) -> dict:
             ),
         },
     }
+
+
+# --------------------------------------------------------------------------- #
+# Phase 2a: atomic-swap settlement coordination
+#
+# These functions record the HTLC hand-off for a matched order pair and track
+# self-reported funding, advancing a small state machine. They perform NO
+# on-chain verification and move NO funds — that is Phase 2b/2c. A swap cannot
+# progress past 'both_locked' here, and nothing is ever marked 'settled', so
+# price discovery (last_price) is untouched. The parameters recorded are all
+# public (hashlock, pubkeys, timelocks, txids); no secret or key is accepted.
+# --------------------------------------------------------------------------- #
+
+
+def _hexish(value, field: str, min_len: int, max_len: int) -> str:
+    """Validate a lowercase hex string (optional 0x prefix) of a bounded length."""
+    if not isinstance(value, str):
+        raise ValueError(f"{field} is required")
+    v = value.strip().lower()
+    if v.startswith("0x"):
+        v = v[2:]
+    if not (min_len <= len(v) <= max_len) or any(c not in "0123456789abcdef" for c in v):
+        raise ValueError(f"{field} must be hex of {min_len}-{max_len} chars")
+    return v
+
+
+def _authorize_order(conn, order_id: str, cancel_token) -> dict:
+    """Return the order row iff the cancel_token proves ownership, else raise.
+
+    Reuses the per-order secret minted at creation: a caller proves they own one
+    side of the matched pair by presenting that order's cancel_token. The address
+    is public and so cannot serve as the secret.
+    """
+    row = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
+    if row is None:
+        raise ValueError("order not found")
+    stored = row["cancel_token"] or ""
+    provided = (cancel_token or "").strip()
+    if not stored or not hmac.compare_digest(stored, provided):
+        raise ValueError("invalid or missing cancel token")
+    return dict(row)
+
+
+def get_swap(order_id: str) -> Optional[dict]:
+    """Return the swap coordinating settlement for a matched order, or None.
+
+    A read path: no secret to strip (every stored field is public). Callable by
+    anyone, since the swap parameters are the public hand-off both parties need.
+    """
+    with _lock:
+        conn = _connect()
+        row = conn.execute(
+            "SELECT * FROM swaps WHERE buy_order_id = ? OR sell_order_id = ?",
+            (order_id, order_id),
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def init_swap(
+    order_id: str,
+    cancel_token,
+    hashlock,
+    base_recipient_pk,
+    base_refund_pk,
+    quote_recipient_pk,
+    quote_refund_pk,
+    base_locktime,
+    quote_locktime,
+) -> dict:
+    """Register the HTLC hand-off for a matched order pair (Phase 2a).
+
+    Records only PUBLIC swap parameters so both legs can later be verified
+    on-chain (Phase 2b). Never accepts a private key or preimage; never moves
+    funds. Auth: the caller proves they own one side via its cancel_token.
+    """
+    with _lock:
+        conn = _connect()
+        order = _authorize_order(conn, order_id, cancel_token)
+        if order["status"] != "matched":
+            raise ValueError(f"order is {order['status']}, not matched")
+        counter_id = order.get("matched_with")
+        counter_row = conn.execute(
+            "SELECT * FROM orders WHERE id = ?", (counter_id,)
+        ).fetchone()
+        if counter_row is None:
+            raise ValueError("counterparty order not found")
+        counter = dict(counter_row)
+
+        # At most one swap per order pair (either party may have started it).
+        existing = conn.execute(
+            "SELECT 1 FROM swaps WHERE buy_order_id IN (?, ?) OR sell_order_id IN (?, ?)",
+            (order_id, counter_id, order_id, counter_id),
+        ).fetchone()
+        if existing is not None:
+            raise ValueError("a swap already exists for this order pair")
+
+        # Hashlock: SHA256 digest (32 bytes = 64 hex). Must be globally fresh.
+        h = _hexish(hashlock, "hashlock", 64, 64)
+        if conn.execute("SELECT 1 FROM swaps WHERE hashlock = ?", (h,)).fetchone():
+            raise ValueError("hashlock already used; use a fresh secret")
+
+        # Pubkeys / pubkey-hashes: hex, 20-byte hash (40) up to uncompressed (130).
+        b_recip = _hexish(base_recipient_pk, "base_recipient_pubkey", 40, 130)
+        b_refund = _hexish(base_refund_pk, "base_refund_pubkey", 40, 130)
+        q_recip = _hexish(quote_recipient_pk, "quote_recipient_pubkey", 40, 130)
+        q_refund = _hexish(quote_refund_pk, "quote_refund_pubkey", 40, 130)
+
+        try:
+            b_lock = int(base_locktime)
+            q_lock = int(quote_locktime)
+        except (TypeError, ValueError):
+            raise ValueError("locktimes must be integers (unix seconds)")
+        if b_lock <= 0 or q_lock <= 0:
+            raise ValueError("locktimes must be positive")
+        if q_lock >= b_lock:
+            raise ValueError("quote_locktime must be earlier than base_locktime")
+        if b_lock - q_lock < MIN_TIMELOCK_GAP_SECONDS:
+            raise ValueError(
+                "timelock gap too small; base must exceed quote by "
+                f">= {MIN_TIMELOCK_GAP_SECONDS} seconds"
+            )
+
+        # Resolve buy/sell sides and the agreed execution terms. Trades execute at
+        # the resting (maker = earlier-created) order's price; the swappable size
+        # is the smaller of the two orders (no partial-fill accounting here).
+        if order["side"] == "buy":
+            buy, sell = order, counter
+        else:
+            buy, sell = counter, order
+        # The maker is the resting order that was crossed. created_at is only
+        # second-resolution, so same-second matches tie; break the tie by rowid
+        # (insertion order), which the resting order always wins.
+        maker_id = conn.execute(
+            "SELECT id FROM orders WHERE id IN (?, ?) "
+            "ORDER BY created_at ASC, rowid ASC LIMIT 1",
+            (order["id"], counter["id"]),
+        ).fetchone()["id"]
+        price = order["price"] if maker_id == order["id"] else counter["price"]
+        amount = min(Decimal(buy["amount"]), Decimal(sell["amount"]))
+
+        swap_id = uuid.uuid4().hex
+        conn.execute(
+            """INSERT INTO swaps
+               (swap_id, buy_order_id, sell_order_id, pair, price, amount,
+                hashlock, base_recipient_pk, base_refund_pk,
+                quote_recipient_pk, quote_refund_pk, base_locktime, quote_locktime,
+                status, created_at)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'swap_init',?)""",
+            (
+                swap_id, buy["id"], sell["id"], order["pair"], price,
+                format(amount, "f"), h, b_recip, b_refund, q_recip, q_refund,
+                b_lock, q_lock, int(time.time()),
+            ),
+        )
+        conn.commit()
+        row = conn.execute(
+            "SELECT * FROM swaps WHERE swap_id = ?", (swap_id,)
+        ).fetchone()
+    return dict(row)
+
+
+def report_funding(order_id: str, cancel_token, leg: str, txid) -> dict:
+    """Record a self-reported HTLC funding txid for one leg (Phase 2a).
+
+    Stores the report and advances the state machine to base_funded / quote_funded
+    / both_locked. It does NOT verify the tx on-chain — that is Phase 2b — and it
+    never treats a report as settlement. Auth: the order's cancel_token.
+    """
+    if leg not in ("base", "quote"):
+        raise ValueError("leg must be 'base' or 'quote'")
+    tx = _hexish(txid, "txid", 64, 64)
+    with _lock:
+        conn = _connect()
+        _authorize_order(conn, order_id, cancel_token)
+        row = conn.execute(
+            "SELECT * FROM swaps WHERE buy_order_id = ? OR sell_order_id = ?",
+            (order_id, order_id),
+        ).fetchone()
+        if row is None:
+            raise ValueError("no swap for this order; call swap/init first")
+        if row["status"] not in ("swap_init", "base_funded", "quote_funded"):
+            raise ValueError(f"swap is {row['status']}; cannot report funding")
+        # `col` is chosen from string literals, never from user input — safe.
+        col = "base_htlc_txid" if leg == "base" else "quote_htlc_txid"
+        conn.execute(
+            f"UPDATE swaps SET {col} = ? WHERE swap_id = ?", (tx, row["swap_id"])
+        )
+        cur = conn.execute(
+            "SELECT base_htlc_txid, quote_htlc_txid FROM swaps WHERE swap_id = ?",
+            (row["swap_id"],),
+        ).fetchone()
+        if cur["base_htlc_txid"] and cur["quote_htlc_txid"]:
+            new_status = "both_locked"
+        elif cur["base_htlc_txid"]:
+            new_status = "base_funded"
+        else:
+            new_status = "quote_funded"
+        conn.execute(
+            "UPDATE swaps SET status = ? WHERE swap_id = ?",
+            (new_status, row["swap_id"]),
+        )
+        conn.commit()
+        final = conn.execute(
+            "SELECT * FROM swaps WHERE swap_id = ?", (row["swap_id"],)
+        ).fetchone()
+    return dict(final)

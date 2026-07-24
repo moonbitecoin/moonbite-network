@@ -410,6 +410,64 @@ def api_exchange_settle_hint(order_id: str):
         return jsonify({"status": "error", "message": str(e)}), 404
 
 
+# --- Phase 2a: atomic-swap settlement coordination (non-custodial) ---------- #
+# Records the HTLC hand-off and self-reported funding for a matched pair. The
+# server verifies nothing on-chain yet (Phase 2b) and moves no funds; a swap
+# progresses no further than 'both_locked' and no trade is marked settled here.
+
+
+@app.route("/api/exchange/order/<order_id>/swap", methods=["GET"])
+def api_exchange_get_swap(order_id: str):
+    """Return the settlement-coordination swap for a matched order, if any."""
+    swap = exchange.get_swap(order_id)
+    if swap is None:
+        return jsonify({"status": "error", "message": "no swap for this order"}), 404
+    return jsonify({"status": "success", "swap": swap}), 200
+
+
+@app.route("/api/exchange/order/<order_id>/swap/init", methods=["POST"])
+@rate_limit(30, 60)
+def api_exchange_swap_init(order_id: str):
+    """Register the HTLC hand-off for a matched order pair. Auth: cancel_token."""
+    data = request.get_json(silent=True) or {}
+    try:
+        swap = exchange.init_swap(
+            order_id=order_id,
+            cancel_token=str(data.get("cancel_token", "")),
+            hashlock=data.get("hashlock", ""),
+            base_recipient_pk=data.get("base_recipient_pubkey", ""),
+            base_refund_pk=data.get("base_refund_pubkey", ""),
+            quote_recipient_pk=data.get("quote_recipient_pubkey", ""),
+            quote_refund_pk=data.get("quote_refund_pubkey", ""),
+            base_locktime=data.get("base_locktime"),
+            quote_locktime=data.get("quote_locktime"),
+        )
+        return jsonify({"status": "success", "swap": swap}), 201
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
+@app.route("/api/exchange/order/<order_id>/swap/funded", methods=["POST"])
+@rate_limit(30, 60)
+def api_exchange_swap_funded(order_id: str):
+    """Report an HTLC funding txid for one leg (base|quote). Auth: cancel_token.
+
+    Phase 2a records the report and advances the state machine; it does NOT
+    verify the tx on-chain (Phase 2b) and never treats it as settlement.
+    """
+    data = request.get_json(silent=True) or {}
+    try:
+        swap = exchange.report_funding(
+            order_id=order_id,
+            cancel_token=str(data.get("cancel_token", "")),
+            leg=str(data.get("leg", "")).strip(),
+            txid=data.get("txid", ""),
+        )
+        return jsonify({"status": "success", "swap": swap}), 200
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
 # ============================================================================= #
 # API Routes — Merchant adoption (non-custodial "Accept MBITE")
 #
