@@ -127,6 +127,9 @@
                         <button type="button" class="mb-mrc-copy" data-copy="mrcCoUri">Copy</button>
                     </div>
                 </div>
+                <div class="mb-mrc-qr" id="mrcCoQrWrap" hidden>
+                    <img id="mrcCoQr" alt="Scan to pay with a MoonBite wallet" width="180" height="180" />
+                </div>
                 <div class="mb-mrc-progress"><div class="mb-mrc-progress-fill" id="mrcCoFill"></div></div>
                 <div class="mb-mrc-checkout-note" id="mrcCoNote"></div>
             </div>
@@ -317,6 +320,11 @@
         document.getElementById("mrcCoMemo").textContent = inv.memo || "";
         document.getElementById("mrcCoAddr").textContent = inv.address;
         document.getElementById("mrcCoUri").textContent = inv.pay_uri;
+        var qrWrap = document.getElementById("mrcCoQrWrap");
+        var qrImg = document.getElementById("mrcCoQr");
+        qrImg.onerror = function () { qrWrap.hidden = true; };
+        qrImg.onload = function () { qrWrap.hidden = false; };
+        qrImg.src = "/api/merchant/invoice/" + encodeURIComponent(inv.id) + "/qr.svg";
         checkout.hidden = false;
         checkout.scrollIntoView({ behavior: "smooth" });
         renderStatus(inv);

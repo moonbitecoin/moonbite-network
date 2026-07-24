@@ -66,6 +66,9 @@ def _connect() -> sqlite3.Connection:
         cols = {r["name"] for r in _conn.execute("PRAGMA table_info(orders)")}
         if "cancel_token" not in cols:
             _conn.execute("ALTER TABLE orders ADD COLUMN cancel_token TEXT")
+        # Migration: record the crossing counter-order when a match is found.
+        if "matched_with" not in cols:
+            _conn.execute("ALTER TABLE orders ADD COLUMN matched_with TEXT")
         _conn.commit()
     return _conn
 
@@ -132,7 +135,8 @@ def create_order(
         cancel_token = secrets.token_urlsafe(24)
         conn.execute(
             """INSERT INTO orders
-               (id, side, pair, price, amount, mbite_address, quote_address, status, created_at, cancel_token)
+               (id, side, pair, price, amount, mbite_address, quote_address,
+                status, created_at, cancel_token)
                VALUES (?, ?, ?, ?, ?, ?, ?, 'open', ?, ?)""",
             (
                 order_id,
@@ -147,11 +151,71 @@ def create_order(
             ),
         )
         conn.commit()
+    # A newly-posted order may cross an existing resting order. If it does, flag
+    # both as 'matched' so the two makers can settle off-server. This is pure
+    # matchmaking: no funds are held or moved — settlement is a manual HTLC swap.
+    match = _try_match(order_id)
+
     # Return the token ONCE, only to the maker who created the order. It is the
     # secret proof-of-ownership required to cancel; it is never shown again.
     order = get_order(order_id)
     order["cancel_token"] = cancel_token
+    if match is not None:
+        order["matched_with"] = match
     return order
+
+
+def _try_match(order_id: str) -> Optional[str]:
+    """If `order_id` crosses a resting opposite order, mark both 'matched'.
+
+    A buy (bid) crosses a sell (ask) when the bid price >= the ask price. We pick
+    the best price for the incoming taker (lowest ask for a buyer / highest bid
+    for a seller), breaking ties by oldest resting order (price-time priority).
+    Returns the counter-order id if matched, else None. Never routes funds.
+    """
+    with _lock:
+        conn = _connect()
+        row = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
+        if row is None or row["status"] != "open":
+            return None
+        taker = dict(row)
+        taker_price = Decimal(taker["price"])
+        if taker["side"] == "buy":
+            # Want the cheapest ask we can afford (ask price <= our bid).
+            candidates = conn.execute(
+                """SELECT * FROM orders
+                   WHERE pair = ? AND side = 'sell' AND status = 'open'
+                     AND id != ? AND mbite_address != ?
+                   ORDER BY CAST(price AS REAL) ASC, created_at ASC""",
+                (taker["pair"], order_id, taker["mbite_address"]),
+            ).fetchall()
+            counter = next(
+                (c for c in candidates if Decimal(c["price"]) <= taker_price), None
+            )
+        else:
+            # Selling: want the highest bid at or above our ask.
+            candidates = conn.execute(
+                """SELECT * FROM orders
+                   WHERE pair = ? AND side = 'buy' AND status = 'open'
+                     AND id != ? AND mbite_address != ?
+                   ORDER BY CAST(price AS REAL) DESC, created_at ASC""",
+                (taker["pair"], order_id, taker["mbite_address"]),
+            ).fetchall()
+            counter = next(
+                (c for c in candidates if Decimal(c["price"]) >= taker_price), None
+            )
+        if counter is None:
+            return None
+        conn.execute(
+            "UPDATE orders SET status = 'matched', matched_with = ? WHERE id = ?",
+            (counter["id"], order_id),
+        )
+        conn.execute(
+            "UPDATE orders SET status = 'matched', matched_with = ? WHERE id = ?",
+            (order_id, counter["id"]),
+        )
+        conn.commit()
+        return counter["id"]
 
 
 def list_orders(pair: Optional[str] = None, status: str = "open") -> dict:
@@ -214,7 +278,8 @@ def _last_trade_price(pair: str) -> Optional[str]:
     """Most recent settled trade price for a pair — the internal price discovery."""
     conn = _connect()
     row = conn.execute(
-        "SELECT price FROM orders WHERE pair = ? AND status = 'settled' ORDER BY created_at DESC LIMIT 1",
+        "SELECT price FROM orders WHERE pair = ? AND status = 'settled' "
+        "ORDER BY created_at DESC LIMIT 1",
         (pair,),
     ).fetchone()
     return row["price"] if row else None
@@ -233,6 +298,18 @@ def settle_hint(order_id: str) -> dict:
     if order is None:
         raise ValueError("order not found")
     quote = SUPPORTED_PAIRS[order["pair"]]["quote"]
+    counterparty = None
+    if order.get("matched_with"):
+        counter = get_order(order["matched_with"])
+        if counter is not None:
+            counterparty = {
+                "order_id": counter["id"],
+                "side": counter["side"],
+                "price": counter["price"],
+                "amount": counter["amount"],
+                "mbite_address": counter["mbite_address"],
+                "quote_address": counter["quote_address"],
+            }
     return {
         "order": order,
         "swap": {
@@ -241,6 +318,7 @@ def settle_hint(order_id: str) -> dict:
             "quote_asset": quote,
             "maker_mbite_address": order["mbite_address"],
             "maker_quote_address": order["quote_address"],
+            "counterparty": counterparty,
             "status": "manual",
             "note": (
                 "Automated HTLC swap coordination is not yet implemented (Phase 2). "

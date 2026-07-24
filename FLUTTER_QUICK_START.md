@@ -1,4 +1,7 @@
-# MyCoin Flutter App - Quick Start
+# MoonBite Flutter Wallet - Quick Start
+
+A **non-custodial** MoonBite (MBITE) wallet. Keys are generated and stored
+on-device; the app only reads chain state and relays signed transactions.
 
 ## 1. Prerequisites Check
 
@@ -17,94 +20,84 @@ cd C:/Users/%USERNAME%/Desktop/BigCoinBB/mobile
 flutter pub get
 ```
 
-## 3. Generate JSON Models (One-time, after model changes)
+> The API models in `lib/models/chain_models.dart` are hand-written — no
+> `build_runner` / code generation step is required.
 
-```bash
-flutter pub run build_runner build
+## 3. Backend / Explorer
+
+No local server is needed. The app defaults to the hosted node:
 ```
-
-This generates `.g.dart` files for JSON serialization from `lib/models/wallet_model.dart`.
-
-## 4. Start Backend Server
-
-Ensure the MyCoin web app is running:
-```bash
-# In a separate terminal, from the project root
-python web_app.py
+https://moonbite-production.up.railway.app
 ```
+To use a different node, edit `defaultBaseUrl` in `lib/services/chain_service.dart`.
 
-The app expects the backend at: `http://localhost:5000`
+## 4. Run the App
 
-## 5. Run the App
-
-### Option A: Run on Android Emulator
+### Android Emulator / iOS Simulator
 ```bash
 flutter run
 ```
 
-### Option B: Run on iOS Simulator (macOS only)
-```bash
-flutter run
-```
-
-### Option C: Run on Physical Device (Android/iOS)
+### Physical Device (Android/iOS)
 1. Connect device via USB
 2. Enable USB debugging (Android) or Trust computer (iOS)
 3. Run: `flutter run`
 
-## 6. Troubleshooting
+On first launch you'll go through onboarding to **create or import a seed phrase**.
+Back it up — there is no server-side recovery.
 
-### Backend URL not working?
-Edit: `mobile/lib/services/api_service.dart` (line 12)
+## 5. Troubleshooting
+
+### Explorer URL not working?
+Edit `mobile/lib/services/chain_service.dart`:
 ```dart
-static const String defaultBaseUrl = 'http://your-machine-ip:5000';
+static const String defaultBaseUrl = 'https://your-node.example';
 ```
-
-### JSON models not generating?
-```bash
-flutter clean
-flutter pub get
-flutter pub run build_runner build --delete-conflicting-outputs
-```
+or call `chainService.setBaseUrl('https://your-node.example')` at runtime.
 
 ### Flutter not found?
-Add Flutter to PATH or use full path:
+Add Flutter to PATH or use the full path:
 ```bash
 /path/to/flutter/bin/flutter run
 ```
 
+### Clean rebuild
+```bash
+flutter clean
+flutter pub get
+flutter run
+```
+
 ## App Screens
 
-**Wallet Tab** - Manage addresses and balance
-- Generate new address with QR code
-- Check current balance
-- View UTXO count
+**Onboarding** - Create or import a BIP39 seed phrase (on-device)
 
-**Mining Tab** - Control mining operations
-- Input blocks to mine and miner address
-- Start/stop mining
-- Real-time progress display
-- Live status updates (height, hash, UTXOs)
+**Wallet** - Address, receive, and balance
+- View address and QR code
+- Confirmed / unconfirmed / total balance
+- UTXO count
 
-**Blockchain Tab** - View chain statistics
-- Chain height
-- Tip hash
-- Total money supply
-- Transaction count
-- Refresh button
+**Send** - Build, sign (on-device), and broadcast a payment
+
+**Blockchain** - Chain status
+- Chain, blocks, best block hash
+- Difficulty, mempool size, connections
 
 ## API Endpoints Used
 
-All requests to: `http://localhost:5000/api/`
+Read/relay only — all against the explorer base URL:
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/wallet/new` | GET | Generate new address |
-| `/wallet/balance` | GET | Get current balance |
-| `/mining/start` | POST | Start mining |
-| `/mining/status` | GET | Get mining progress |
-| `/mining/stop` | GET | Stop mining |
-| `/blockchain/info` | GET | Get chain info |
+| `/api/status` | GET | Chain tip + node summary |
+| `/api/address/<a>/utxos` | GET | Spendable outputs |
+| `/api/address/<a>/balance` | GET | Confirmed/unconfirmed/total balance |
+| `/api/fee` | GET | Suggested fee rate (MBITE/kB) |
+| `/api/tx/broadcast` | POST | Relay a signed raw tx (`{rawtx}`) |
+| `/api/tx/<txid>` | GET | Decoded transaction JSON |
+
+Balance shape: `{address, confirmed, unconfirmed, total, utxo_count, demo}`
+(amounts in whole MBITE).
 
 ## Build for Release
 
@@ -122,34 +115,37 @@ flutter build ios --release
 
 ## Important Notes
 
-- Educational project - never holds real funds
+- Non-custodial: keys and seed phrase never leave the device
+- No mining or wallet-generation server endpoints — that logic is on-device
 - Requires Flutter SDK 3.0.0 or later
-- Backend must be running for full functionality
-- JSON models use code generation - run build_runner after model changes
-- Default backend URL is localhost:5000
+- Default explorer URL: `https://moonbite-production.up.railway.app`
+- Pre-mainnet: `demo: true` in responses means placeholder chain data
 
 ## File Structure
 
 ```
 mobile/
-├── pubspec.yaml              # Project manifest & dependencies
+├── pubspec.yaml                  # Project manifest & dependencies
 ├── lib/
-│   ├── main.dart            # App entry & navigation
+│   ├── main.dart                 # App entry & routing (onboarding vs home)
 │   ├── services/
-│   │   └── api_service.dart # HTTP client for backend
+│   │   └── chain_service.dart    # Read/relay HTTP client (never sees keys)
 │   ├── models/
-│   │   └── wallet_model.dart # Data models
+│   │   └── chain_models.dart     # ChainStatus, Utxo, WalletBalance (hand-written)
+│   ├── wallet/                   # On-device key layer (BIP39, signing, secure store)
 │   └── screens/
+│       ├── onboarding_screen.dart
+│       ├── home_screen.dart
 │       ├── wallet_screen.dart
-│       ├── mining_screen.dart
+│       ├── send_screen.dart
 │       └── blockchain_screen.dart
-└── android/ & ios/          # Native projects (auto-generated)
+└── android/ & ios/               # Native projects
 ```
 
 ## Next Steps
 
 1. Install Flutter SDK
-2. Run `flutter pub get` in mobile directory
-3. Start web_app.py backend
-4. Run `flutter run` to launch app
-5. Test wallet, mining, and blockchain features
+2. `cd mobile && flutter pub get`
+3. `flutter run` to launch
+4. Complete onboarding (create/import seed phrase) and back it up
+5. Test wallet, send, and blockchain screens

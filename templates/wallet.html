@@ -69,12 +69,12 @@
         <div class="card-body">
             <div class="balance-summary">
                 <div class="balance-item">
-                    <div class="balance-label">Total Balance (Coins)</div>
+                    <div class="balance-label">Total Balance</div>
                     <div id="balanceCoins" class="balance-value">--</div>
                 </div>
                 <div class="balance-item">
-                    <div class="balance-label">Total Balance (Satoshis)</div>
-                    <div id="balanceSatoshis" class="balance-value">--</div>
+                    <div class="balance-label">Smallest units</div>
+                    <div id="balanceUnits" class="balance-value">--</div>
                 </div>
                 <div class="balance-item">
                     <div class="balance-label">UTXO Count</div>
@@ -200,9 +200,9 @@
 
             if (data.status === 'success') {
                 document.getElementById('balanceCoins').textContent =
-                    `${data.balance_coins} MBITE`;
-                document.getElementById('balanceSatoshis').textContent =
-                    `${data.balance_satoshis} satoshis`;
+                    `${data.balance_display} MBITE`;
+                document.getElementById('balanceUnits').textContent =
+                    `${data.balance_units.toLocaleString()} cents`;
                 document.getElementById('utxoCount').textContent =
                     `${data.utxo_count} UTXOs`;
                 showStatus('✓ Balance updated', 'success');

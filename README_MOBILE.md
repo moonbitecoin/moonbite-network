@@ -1,22 +1,28 @@
-# MyCoin Mobile App - Flutter
+# MoonBite Mobile Wallet - Flutter
 
-This is a cross-platform mobile application for MyCoin, an educational blockchain project. The app provides wallet management, mining capabilities, and blockchain information viewing on iOS and Android.
+A cross-platform, **non-custodial** mobile wallet for MoonBite (MBITE). Keys are
+generated and stored **on-device**; transactions are signed locally. The app only
+talks to a read-only explorer API to fetch chain state and relay already-signed
+transactions — it never sends your private keys or seed phrase anywhere.
 
-**EDUCATIONAL USE ONLY** - This app never holds real funds and is intended for learning purposes only.
+**Non-custodial by design** — your seed phrase and private keys stay in the
+device's encrypted secure storage (Keystore/Keychain). Lose the phrase, lose the
+coins; there is no server-side recovery.
 
 ## Features
 
-- **Wallet Management**: Generate new addresses, display QR codes, check balance
-- **Mining Interface**: Start/stop mining operations, monitor progress, view real-time status
-- **Blockchain Info**: View chain height, tip hash, money supply, transaction count
-- **Real-time Updates**: Polling-based status updates during mining operations
-- **Dark Theme**: Professional UI with dark mode optimized for blockchain apps
+- **On-device HD wallet**: BIP39 seed phrase, on-device key derivation and signing
+- **Balance & UTXOs**: fetches confirmed / unconfirmed / total balance per address
+- **Send**: builds and signs transactions locally, then broadcasts the raw tx
+- **Chain info**: chain tip, best block hash, difficulty, mempool, connections
+- **Secure unlock**: PIN / biometric via `local_auth`, keys in `flutter_secure_storage`
+- **Dark theme**: Material 3 dark UI
 
 ## Prerequisites
 
 ### Required Software
 
-1. **Flutter SDK** (version 3.0.0 or later)
+1. **Flutter SDK** (3.0.0 or later)
    - Download from: https://flutter.dev/docs/get-started/install
    - Ensure Flutter is added to your PATH
 
@@ -24,15 +30,15 @@ This is a cross-platform mobile application for MyCoin, an educational blockchai
    - **Android**: Android SDK, Android emulator or physical device
    - **iOS**: Xcode (macOS only), iPhone simulator or physical device
 
-3. **Backend**: MyCoin web app must be running
-   - Default expected at: `http://localhost:5000`
-   - See main README for web_app.py setup
+3. **Backend**: an explorer API endpoint. The app defaults to the hosted node at
+   `https://moonbite-production.up.railway.app`. No local backend is required —
+   the wallet is not tied to `web_app.py`.
 
 ## Installation
 
 ### 1. Install Flutter
 
-Follow the official Flutter installation guide for your operating system:
+Follow the official Flutter installation guide:
 https://flutter.dev/docs/get-started/install
 
 Verify installation:
@@ -41,7 +47,7 @@ flutter --version
 flutter doctor
 ```
 
-### 2. Clone/Navigate to Project
+### 2. Navigate to Project
 
 ```bash
 cd C:/Users/%USERNAME%/Desktop/BigCoinBB/mobile
@@ -53,24 +59,18 @@ cd C:/Users/%USERNAME%/Desktop/BigCoinBB/mobile
 flutter pub get
 ```
 
-This installs all Dart/Flutter dependencies defined in `pubspec.yaml`:
-- `http`: HTTP client for API calls
-- `provider`: State management
-- `qr_flutter`: QR code generation
-- `json_annotation` & `json_serializable`: JSON parsing
+Key dependencies from `pubspec.yaml`:
+- `http`: HTTP client for the explorer API
+- `provider`: state management
+- `bip39`: BIP39 mnemonic seed phrase
+- `coinslib`: HD wallet, secp256k1, address encoding, WIF (custom network params)
+- `flutter_secure_storage`: encrypted key storage (Keystore/Keychain)
+- `local_auth`: PIN / biometric unlock
+- `hex`, `bs58check`: script/address encoding helpers
+- `qr_flutter`: QR code display
 
-## Building JSON Models
-
-If you modify the model classes in `lib/models/wallet_model.dart`, regenerate the JSON serialization code:
-
-```bash
-flutter pub run build_runner build
-```
-
-Or with delete-conflicting-outputs:
-```bash
-flutter pub run build_runner build --delete-conflicting-outputs
-```
+> **Note:** the API data models in `lib/models/chain_models.dart` are hand-written
+> (no code generation), so you do **not** need to run `build_runner` for them.
 
 ## Running the App
 
@@ -81,152 +81,142 @@ flutter pub run build_runner build --delete-conflicting-outputs
 flutter run
 ```
 
-**Using Physical Device:**
-- Enable USB debugging on your Android device
-- Connect via USB
-- Run: `flutter run`
-
 **Build APK:**
 ```bash
-flutter build apk
-flutter build apk --release  # for release build
+flutter build apk --release
 ```
-
 Output: `build/app/outputs/flutter-apk/app-release.apk`
 
 ### iOS
 
-**Using Simulator:**
+**Using Simulator (macOS):**
 ```bash
 flutter run
 ```
 
-**Using Physical Device:**
-- Connect via Xcode or USB
-- Provisioning profile must be configured in Xcode
-- Run: `flutter run`
-
 **Build iOS App:**
 ```bash
-flutter build ios
 flutter build ios --release
 ```
 
 ## Configuration
 
-### Backend URL
+### Backend / Explorer URL
 
-By default, the app connects to `http://localhost:5000`. To change this:
-
-**Option 1: Edit at Build Time**
-Edit `lib/services/api_service.dart`:
+The default explorer URL is defined in `lib/services/chain_service.dart`:
 ```dart
-static const String defaultBaseUrl = 'http://your-server:5000';
+static const String defaultBaseUrl =
+    'https://moonbite-production.up.railway.app';
 ```
 
-**Option 2: Runtime Configuration (Future)**
-Currently the base URL is fixed at initialization. To add runtime configuration, add a Settings screen that calls:
+To point at a different node, either edit that constant or call at runtime:
 ```dart
-apiService.setBaseUrl('http://new-url:5000');
+chainService.setBaseUrl('https://your-node.example');
 ```
 
 ## Project Structure
 
 ```
 mobile/
-├── pubspec.yaml                    # Flutter project manifest
+├── pubspec.yaml                     # Flutter project manifest
 ├── lib/
-│   ├── main.dart                   # App entry point, BottomNavigationBar
+│   ├── main.dart                    # App entry; routes to onboarding vs home
 │   ├── services/
-│   │   └── api_service.dart        # HTTP client, all API calls
+│   │   └── chain_service.dart       # Read/relay HTTP client (NEVER sees keys)
 │   ├── models/
-│   │   └── wallet_model.dart       # Data models (Address, Balance, etc.)
+│   │   └── chain_models.dart        # ChainStatus, Utxo, WalletBalance (hand-written)
+│   ├── wallet/                      # On-device, non-custodial key layer
+│   │   ├── wallet_controller.dart   # Wallet state (ChangeNotifier)
+│   │   ├── hd_wallet_service.dart   # BIP39/HD derivation
+│   │   ├── secure_key_store.dart    # Encrypted key storage
+│   │   ├── tx_builder.dart          # Builds & signs transactions locally
+│   │   ├── address_script.dart      # Address <-> scriptPubKey
+│   │   └── moonbite_network.dart    # MoonBite network params
 │   └── screens/
-│       ├── wallet_screen.dart      # Wallet UI (address, balance, QR)
-│       ├── mining_screen.dart      # Mining UI (input, progress, status)
-│       └── blockchain_screen.dart  # Blockchain info UI (chain stats)
-├── android/                         # Android native project
-└── ios/                             # iOS native project
+│       ├── onboarding_screen.dart   # Create / import seed phrase
+│       ├── home_screen.dart         # Main tabbed shell
+│       ├── wallet_screen.dart       # Address, balance, receive
+│       ├── send_screen.dart         # Build/sign/broadcast a payment
+│       └── blockchain_screen.dart   # Chain status
+├── android/                          # Android native project
+└── ios/                              # iOS native project
 ```
 
 ## API Endpoints
 
-The app communicates with these backend endpoints:
+The app talks to a read-only explorer API (`ChainService`). It reads chain state
+and relays signed transactions only — there are **no** wallet-generation or mining
+endpoints on the server side (key generation and signing happen on-device).
 
 | Method | Endpoint | Purpose |
 |--------|----------|---------|
-| GET | `/api/wallet/new` | Generate new wallet address |
-| GET | `/api/wallet/balance` | Get current balance |
-| POST | `/api/mining/start` | Start mining blocks |
-| GET | `/api/mining/status` | Check mining progress |
-| GET | `/api/mining/stop` | Stop active mining |
-| GET | `/api/blockchain/info` | Get blockchain statistics |
+| GET | `/api/status` | Chain tip + node summary |
+| GET | `/api/address/<address>/utxos` | Spendable outputs for an address |
+| GET | `/api/address/<address>/balance` | Confirmed / unconfirmed / total balance |
+| GET | `/api/fee` | Suggested fee rate (MBITE per kB) |
+| POST | `/api/tx/broadcast` | Relay a fully-signed raw transaction (`{rawtx}`) |
+| GET | `/api/tx/<txid>` | Decoded transaction JSON |
 
-Ensure your `web_app.py` backend implements these endpoints and is running before using the app.
+### Balance response shape (`GET /api/address/<a>/balance`)
+
+```json
+{
+  "address": "M...",
+  "confirmed": 0.0,
+  "unconfirmed": 0.0,
+  "total": 0.0,
+  "utxo_count": 0,
+  "demo": true
+}
+```
+
+Amounts are in whole MBITE (1 MBITE = 1e8 base units). The `demo` flag is `true`
+while the explorer is serving placeholder data.
 
 ## Troubleshooting
 
-### App won't connect to backend
-- **Check backend is running**: Verify `web_app.py` is running on `localhost:5000`
-- **Check firewall**: Ensure port 5000 is accessible
-- **On mobile device**: If using physical device, ensure it's on the same network and use device's IP instead of localhost
-- **Edit API URL**: Update `defaultBaseUrl` in `api_service.dart`
+### App won't connect to the explorer
+- **Check the URL**: confirm `defaultBaseUrl` in `chain_service.dart` is reachable
+- **Check connectivity**: the default node is public over HTTPS; ensure the device is online
+- **Point elsewhere**: call `chainService.setBaseUrl(...)` to target another node
 
 ### Flutter doctor shows issues
 ```bash
 flutter doctor
 ```
-Follow the instructions to resolve any missing dependencies.
+Follow the instructions to resolve missing dependencies.
 
 ### App crashes on startup
-- Check that all dependencies installed: `flutter pub get`
-- Rebuild: `flutter clean && flutter pub get && flutter run`
-- Check Logcat (Android) or Xcode console (iOS) for error details
+- Ensure dependencies installed: `flutter pub get`
+- Clean rebuild: `flutter clean && flutter pub get && flutter run`
+- Check Logcat (Android) or Xcode console (iOS) for details
 
-### Mining doesn't start
-- Verify miner address is provided and valid (not empty)
-- Check blocks count is a positive number
-- Verify backend is running and accessible
+### Can't send a transaction
+- Confirm the address has confirmed UTXOs (`/api/address/<a>/balance`)
+- Confirm the device wallet is unlocked (PIN / biometric)
+- A broadcast error surfaces the node's reject reason via `ChainApiException`
 
 ## Development Notes
 
-- **State Management**: Uses Provider for state management across the app
-- **API Calls**: All HTTP requests are in `api_service.dart` for easy refactoring
-- **Models**: JSON serialization via `json_annotation` - regenerate models after changes
-- **Dark Theme**: Configured in `main.dart` with custom colors
-- **Error Handling**: All API calls include try-catch with user-friendly error messages
+- **Non-custodial**: `ChainService` never receives keys; all signing is in `wallet/`
+- **State management**: `provider` — `ChainService` + `WalletController` in `main.dart`
+- **Models**: hand-written in `chain_models.dart`; no `build_runner` needed
+- **Secure storage**: keys live in `flutter_secure_storage` (Keystore/Keychain)
+- **Dark theme**: configured in `main.dart` (Material 3)
 
 ## Testing
 
-Unit and widget tests can be run with:
 ```bash
 flutter test
 ```
 
-Integration tests (requires running app):
-```bash
-flutter drive --target=test_driver/app.dart
-```
+## Security Notes
 
-## Future Enhancements
-
-Potential features to add:
-- Transaction broadcasting UI
-- Wallet import/export
-- Settings screen with base URL configuration
-- Local notification support for mining completion
-- Biometric authentication for wallet security
-- Persistent wallet storage (SharedPreferences)
-- Network switching (testnet/mainnet)
+- The seed phrase shown during onboarding is the **only** backup — there is no
+  server-side recovery.
+- Private keys never leave the device and are never included in any API request.
+- Only fully-signed raw transactions are sent to the network, via `/api/tx/broadcast`.
 
 ## License
 
-Educational use only. Not intended for production blockchain applications.
-
-## Support
-
-For issues with the Flutter app, check:
-1. Flutter installation: `flutter doctor`
-2. Backend connectivity: Verify web_app.py is running
-3. Dependencies: `flutter pub get && flutter pub upgrade`
-4. Clean rebuild: `flutter clean && flutter pub get && flutter run`
+Educational / pre-mainnet project. Not investment advice; MBITE is not a security.
