@@ -1,0 +1,21 @@
+# MoonBite network seed nodes  -  SINGLE SOURCE OF TRUTH
+# ---------------------------------------------------------------------------
+# One "host:port" per line. Lines starting with # are ignored.
+# setup-node.sh reads this file and writes an `addnode=` line for each entry
+# into the node's moonbite.conf, so every new node bootstraps off the network.
+#
+# When you bring up a NEW permanent seed node, append its PUBLIC_IP:9444 here
+# and commit — that is how the seed set grows. Keep at least 3 live for
+# redundancy so no single host is a point of failure.
+#
+# Default P2P port is 9444. The Railway bootstrap uses a rotating proxy port.
+# ---------------------------------------------------------------------------
+
+# Live bootstrap seed (Railway TCP proxy -> internal :9444).
+# Non-standard rotating port; update if Railway reassigns the proxy.
+hayabusa.proxy.rlwy.net:14389
+
+# Permanent VPS seeds (append one line per host as you provision them):
+# 203.0.113.10:9444
+# 203.0.113.11:9444
+# 203.0.113.12:9444
