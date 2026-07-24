@@ -151,10 +151,17 @@ class Transaction:
         return sha256d(self._serialize(include_sigs=True)).hex()
 
     def sign_input(self, index: int, signing_key: SigningKey) -> None:
-        """Sign input `index`, recording the signer's pubkey and signature."""
+        """Sign input `index`, recording the signer's pubkey and signature.
+
+        Uses RFC 6979 deterministic nonces (SHA-256): the nonce is derived from
+        the private key and message, never from the RNG, so two signatures can
+        never reuse a nonce (which would leak the private key).
+        """
         vk: VerifyingKey = signing_key.get_verifying_key()
         self.inputs[index].pubkey = vk.to_string().hex()
-        self.inputs[index].signature = signing_key.sign(self.signing_bytes()).hex()
+        self.inputs[index].signature = signing_key.sign_deterministic(
+            self.signing_bytes(), hashfunc=hashlib.sha256
+        ).hex()
 
     def is_coinbase(self) -> bool:
         """A coinbase (Milestone 5) mints coins via a single null-prevout input."""
@@ -200,7 +207,9 @@ class Transaction:
                 vk = VerifyingKey.from_string(
                     bytes.fromhex(txin.pubkey), curve=SECP256k1
                 )
-                vk.verify(bytes.fromhex(txin.signature), message)
+                vk.verify(
+                    bytes.fromhex(txin.signature), message, hashfunc=hashlib.sha256
+                )
             except (BadSignatureError, ValueError):
                 return False
 
