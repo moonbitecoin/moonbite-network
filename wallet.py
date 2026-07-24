@@ -9,11 +9,11 @@ follows this: every send draws change to a freshly generated key, and callers
 are encouraged to call `new_key()` per incoming payment.
 
 Trade-offs vs. real Bitcoin (the "~10% difference"):
-  * Addresses are Base58Check over a *single* SHA-256 public-key hash. Real
-    Bitcoin uses RIPEMD-160(SHA-256(pubkey)) (a 20-byte HASH160). We avoid
-    RIPEMD-160 because it is missing from some OpenSSL 3 builds; the Base58Check
-    envelope (version byte + 4-byte double-SHA-256 checksum) is otherwise the
-    same idea as a Bitcoin P2PKH address.
+  * Addresses are MoonBite bech32 ("moon1…") over a *single* SHA-256 public-key
+    hash. Real Bitcoin uses RIPEMD-160(SHA-256(pubkey)) (a 20-byte HASH160). We
+    avoid RIPEMD-160 because it is missing from some OpenSSL 3 builds; the bech32
+    envelope carries the "moon" HRP plus a checksum, the same idea as a Bitcoin
+    native-segwit address. (Base58Check helpers are retained for internal use.)
   * Keys here are generated at random on each `new_key()` call and kept in
     memory. Real wallets use hierarchical-deterministic derivation (BIP32/39)
     so all keys stem from one recoverable seed. Here there is no seed and no
@@ -90,33 +90,116 @@ def base58_decode(s: str) -> bytes:
     return b"\x00" * n_leading_ones + body
 
 
-def address_from_pubkey_hash(pkh_hex: str, version: int = 0x00) -> str:
-    """Build a Base58Check address from a public-key hash (hex).
+# --------------------------------------------------------------------------- #
+# Bech32 address encoding (BIP173) — MoonBite "moon1…" addresses
+#
+# MoonBite's canonical human-readable address is bech32 with the "moon" HRP
+# (mainnet). Because this educational chain hashes public keys with 32-byte
+# SHA-256 rather than Bitcoin's 20-byte HASH160, a Base58Check version byte can
+# only ever yield a leading *digit*; bech32 gives a clean, branded "moon1…"
+# prefix instead, and round-trips the existing 32-byte hash with no consensus
+# change. Base58 helpers above are retained for internal use and tests.
+# --------------------------------------------------------------------------- #
+_BECH32_CHARSET = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
+_MOONBITE_HRP = "moon"
 
-    payload   = version_byte || pubkey_hash_bytes
-    checksum  = first 4 bytes of sha256d(payload)
-    address   = base58_encode(payload || checksum)
+
+def _bech32_polymod(values: list[int]) -> int:
+    generator = [0x3B6A57B2, 0x26508E6D, 0x1EA119FA, 0x3D4233DD, 0x2A1462B3]
+    chk = 1
+    for value in values:
+        top = chk >> 25
+        chk = (chk & 0x1FFFFFF) << 5 ^ value
+        for i in range(5):
+            chk ^= generator[i] if ((top >> i) & 1) else 0
+    return chk
+
+
+def _bech32_hrp_expand(hrp: str) -> list[int]:
+    return [ord(x) >> 5 for x in hrp] + [0] + [ord(x) & 31 for x in hrp]
+
+
+def _bech32_verify_checksum(hrp: str, data: list[int]) -> bool:
+    return _bech32_polymod(_bech32_hrp_expand(hrp) + data) == 1
+
+
+def _bech32_create_checksum(hrp: str, data: list[int]) -> list[int]:
+    values = _bech32_hrp_expand(hrp) + data
+    polymod = _bech32_polymod(values + [0, 0, 0, 0, 0, 0]) ^ 1
+    return [(polymod >> 5 * (5 - i)) & 31 for i in range(6)]
+
+
+def _bech32_encode(hrp: str, data: list[int]) -> str:
+    combined = data + _bech32_create_checksum(hrp, data)
+    return hrp + "1" + "".join(_BECH32_CHARSET[d] for d in combined)
+
+
+def _bech32_decode(bech: str):
+    if any(ord(x) < 33 or ord(x) > 126 for x in bech) or (
+        bech.lower() != bech and bech.upper() != bech
+    ):
+        return (None, None)
+    bech = bech.lower()
+    pos = bech.rfind("1")
+    if pos < 1 or pos + 7 > len(bech) or len(bech) > 90:
+        return (None, None)
+    if not all(x in _BECH32_CHARSET for x in bech[pos + 1:]):
+        return (None, None)
+    hrp = bech[:pos]
+    data = [_BECH32_CHARSET.find(x) for x in bech[pos + 1:]]
+    if not _bech32_verify_checksum(hrp, data):
+        return (None, None)
+    return (hrp, data[:-6])
+
+
+def _convertbits(data, frombits: int, tobits: int, pad: bool = True):
+    """Regroup a bit-stream between 8-bit bytes and 5-bit bech32 symbols."""
+    acc = 0
+    bits = 0
+    ret: list[int] = []
+    maxv = (1 << tobits) - 1
+    max_acc = (1 << (frombits + tobits - 1)) - 1
+    for value in data:
+        if value < 0 or (value >> frombits):
+            return None
+        acc = ((acc << frombits) | value) & max_acc
+        bits += frombits
+        while bits >= tobits:
+            bits -= tobits
+            ret.append((acc >> bits) & maxv)
+    if pad:
+        if bits:
+            ret.append((acc << (tobits - bits)) & maxv)
+    elif bits >= frombits or ((acc << (tobits - bits)) & maxv):
+        return None
+    return ret
+
+
+def address_from_pubkey_hash(pkh_hex: str, hrp: str = _MOONBITE_HRP) -> str:
+    """Build a MoonBite bech32 address ("moon1…") from a public-key hash (hex).
+
+    The pubkey-hash bytes are regrouped from 8-bit to 5-bit symbols and encoded
+    under the given human-readable prefix (default "moon" for mainnet) with a
+    bech32 checksum.
     """
-    payload = bytes([version]) + bytes.fromhex(pkh_hex)
-    checksum = sha256d(payload)[:4]
-    return base58_encode(payload + checksum)
+    data = _convertbits(bytes.fromhex(pkh_hex), 8, 5, True)
+    if data is None:
+        raise ValueError("cannot encode pubkey hash")
+    return _bech32_encode(hrp, data)
 
 
 def pubkey_hash_from_address(addr: str) -> str:
-    """Decode an address back to its public-key hash (hex), verifying checksum.
+    """Decode a bech32 address back to its public-key hash (hex).
 
-    Raises ValueError if the address is malformed or the checksum is wrong.
+    Raises ValueError if the address is malformed or the bech32 checksum fails.
     """
-    raw = base58_decode(addr)
-    if len(raw) < 5:  # need at least version(1) + checksum(4)
-        raise ValueError("address too short")
-
-    payload, checksum = raw[:-4], raw[-4:]
-    if sha256d(payload)[:4] != checksum:
-        raise ValueError("bad address checksum")
-
-    # Drop the leading version byte; the rest is the pubkey hash.
-    return payload[1:].hex()
+    hrp, data = _bech32_decode(addr)
+    if hrp is None or data is None:
+        raise ValueError("invalid address")
+    decoded = _convertbits(data, 5, 8, False)
+    if decoded is None:
+        raise ValueError("invalid address payload")
+    return bytes(decoded).hex()
 
 
 def is_valid_address(addr: str) -> bool:

@@ -84,8 +84,8 @@ class TestWalletAPI:
         address = data["address"]
         assert isinstance(address, str)
         assert len(address) > 10
-        # Base58Check addresses start with specific characters for version 0x00
-        assert address[0] in "13"  # Typical starting chars for version 0
+        # MoonBite addresses are bech32 with the "moon" HRP.
+        assert address.startswith("moon1")
 
     def test_wallet_new_multiple_calls(self, client):
         """Test multiple address generations produce different addresses."""
