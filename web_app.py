@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import sys
 import threading
 import time
 from typing import Optional
@@ -26,8 +27,17 @@ EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 import exchange
 import merchants
 from node import Node
+from store import BlockStore
 from transaction import generate_keypair, pubkey_hash
 from wallet import address_from_pubkey_hash, is_valid_address, pubkey_hash_from_address
+
+# Optional durable block store. When MOONBITE_CHAIN_DB points at a path, the demo
+# node persists every mined block and replays them on startup so the chain
+# survives restarts (e.g. a droplet redeploy). Unset (the default, and in tests)
+# keeps the node purely in-memory. Persistence never changes consensus: reload
+# replays each block through full validation.
+_CHAIN_DB = os.environ.get("MOONBITE_CHAIN_DB", "").strip() or None
+_chain_store: Optional["BlockStore"] = None
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
@@ -50,12 +60,108 @@ app.generated_addresses = {}  # pubkey_hash -> {"address": ..., "pubkey": ...}
 # Lock for thread-safe mining operations
 app.mining_lock = threading.Lock()
 
+# --------------------------------------------------------------------------- #
+# Lightweight in-process rate limiting (no external store, no third parties).
+#
+# A fixed-window counter per (client, endpoint) protects the write endpoints
+# (wallet minting, mining, notify, order/merchant creation) from casual abuse.
+# Trusted integrations can be issued an API key (MOONBITE_API_KEYS, comma-sep)
+# and pass it as X-API-Key to bypass the limits. This is deliberately simple:
+# it is anti-abuse for a single-node demo, not a distributed quota system.
+# --------------------------------------------------------------------------- #
+from functools import wraps
+from collections import defaultdict
+
+_API_KEYS = {
+    k.strip() for k in os.environ.get("MOONBITE_API_KEYS", "").split(",") if k.strip()
+}
+# Off under pytest (many calls share one client IP) and whenever explicitly
+# disabled; real deployments keep it on. A dedicated test flips it back on to
+# assert the limiter actually fires.
+_RATE_DISABLED = (
+    os.environ.get("MOONBITE_DISABLE_RATELIMIT", "") == "1"
+    or "PYTEST_CURRENT_TEST" in os.environ
+    or "pytest" in sys.modules
+)
+_rl_lock = threading.Lock()
+_rl_hits: "defaultdict[tuple, list]" = defaultdict(list)
+
+
+def _client_id() -> str:
+    """Best-effort caller identity. Behind nginx, honor the first XFF hop."""
+    xff = request.headers.get("X-Forwarded-For", "")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.remote_addr or "unknown"
+
+
+def rate_limit(max_calls: int, window_seconds: int = 60):
+    """Cap a route at `max_calls` per rolling `window_seconds` per client.
+
+    A valid X-API-Key (configured via MOONBITE_API_KEYS) bypasses the cap.
+    """
+    def decorator(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            has_valid_key = bool(_API_KEYS) and request.headers.get("X-API-Key", "") in _API_KEYS
+            if _RATE_DISABLED or has_valid_key:
+                return fn(*args, **kwargs)
+            key = (_client_id(), fn.__name__)
+            now = time.time()
+            with _rl_lock:
+                hits = _rl_hits[key]
+                cutoff = now - window_seconds
+                hits[:] = [t for t in hits if t > cutoff]
+                if len(hits) >= max_calls:
+                    retry = int(window_seconds - (now - hits[0])) + 1
+                    resp = jsonify({
+                        "status": "error",
+                        "message": f"rate limit exceeded ({max_calls}/{window_seconds}s)",
+                        "retry_after": retry,
+                    })
+                    resp.headers["Retry-After"] = str(retry)
+                    return resp, 429
+                hits.append(now)
+            return fn(*args, **kwargs)
+        return wrapper
+    return decorator
+
 
 def get_node() -> Node:
-    """Get or create the global node instance."""
+    """Get or create the global node instance.
+
+    When a durable store is configured (MOONBITE_CHAIN_DB), stored blocks are
+    replayed into the fresh node on first creation so the chain persists across
+    restarts. Each block is re-validated by `add_block`, so a tampered store is
+    rejected rather than trusted.
+    """
+    global _chain_store
     if app.node is None:
         app.node = Node("web-app", coinbase_maturity=0)
+        if _CHAIN_DB is not None:
+            _chain_store = BlockStore(_CHAIN_DB)
+            genesis_hash = app.node.chain.tip
+            replayed = 0
+            for block in _chain_store.load_blocks_in_height_order():
+                if block.hash == genesis_hash:
+                    continue
+                try:
+                    if app.node.chain.add_block(block):
+                        replayed += 1
+                except Exception as e:  # noqa: BLE001 — skip any invalid stored block
+                    print(f"Skipping unloadable block {block.hash[:12]}: {e}")
+            if replayed:
+                print(f"Replayed {replayed} persisted block(s); height={app.node.chain.height}")
     return app.node
+
+
+def _persist_block(block) -> None:
+    """Save a freshly mined block to the durable store, if one is configured."""
+    if _chain_store is not None and block is not None:
+        try:
+            _chain_store.save_block(block, get_node().chain.heights[block.hash])
+        except Exception as e:  # noqa: BLE001 — persistence must never break mining
+            print(f"Persist error for block {block.hash[:12]}: {e}")
 
 
 def received_at_address(address: str) -> int:
@@ -84,25 +190,38 @@ def received_at_address(address: str) -> int:
 def mining_worker(blocks_to_mine: int, miner_address: str) -> None:
     """Background worker thread for mining blocks."""
     node = get_node()
-    app.mining_state["blocks_mined"] = 0
-    app.mining_state["current_block_height"] = node.chain.height
+    # Bind the state dict once: this run should consistently update its own dict
+    # even if app.mining_state is later reassigned (e.g. by a test fixture reset).
+    state = app.mining_state
+    state["blocks_mined"] = 0
+    state["current_block_height"] = node.chain.height
+    state["hashes_tried"] = 0
+    state["hashrate"] = 0.0
+    state["started_at"] = time.time()
 
     for i in range(blocks_to_mine):
-        if not app.mining_state["is_mining"]:
+        if not state["is_mining"]:
             break
 
         try:
             block = node.mine_block(miner_address)
             if block is not None:
-                app.mining_state["blocks_mined"] = i + 1
-                app.mining_state["current_block_height"] = node.chain.height
+                _persist_block(block)
+                # `mine()` starts at nonce 0 and increments until a hash meets
+                # target, so nonce+1 is the real number of hashes tried for this
+                # block. Summing them over elapsed time is an honest hashrate.
+                state["hashes_tried"] += block.header.nonce + 1
+                elapsed = max(1e-6, time.time() - state["started_at"])
+                state["hashrate"] = state["hashes_tried"] / elapsed
+                state["blocks_mined"] = i + 1
+                state["current_block_height"] = node.chain.height
             else:
                 break
         except Exception as e:
             print(f"Mining error: {e}")
             break
 
-    app.mining_state["is_mining"] = False
+    state["is_mining"] = False
 
 
 # ============================================================================= #
@@ -195,6 +314,7 @@ def downloads(filename: str):
 
 
 @app.route("/api/notify", methods=["POST"])
+@rate_limit(10, 60)
 def api_notify():
     """Capture an email for the exchange-listing announcement."""
     data = request.get_json(silent=True) or {}
@@ -243,6 +363,7 @@ def api_exchange_orders():
 
 
 @app.route("/api/exchange/order", methods=["POST"])
+@rate_limit(30, 60)
 def api_exchange_create_order():
     """Post a new public order intent to the book."""
     data = request.get_json(silent=True) or {}
@@ -312,6 +433,7 @@ def api_merchants_list():
 
 
 @app.route("/api/merchants", methods=["POST"])
+@rate_limit(10, 60)
 def api_merchants_add():
     """Register a merchant that accepts MBITE (opt-in)."""
     data = request.get_json(silent=True) or {}
@@ -330,6 +452,7 @@ def api_merchants_add():
 
 
 @app.route("/api/merchant/invoice", methods=["POST"])
+@rate_limit(30, 60)
 def api_merchant_invoice_create():
     """Raise a non-custodial payment request against a merchant address."""
     data = request.get_json(silent=True) or {}
@@ -357,12 +480,51 @@ def api_merchant_invoice_status(invoice_id: str):
         return jsonify({"status": "error", "message": str(e)}), 404
 
 
+def _qr_svg(payload: str) -> Optional[str]:
+    """Render `payload` as an SVG QR code, or None if the encoder is unavailable.
+
+    Pure-Python (qrcode's SVG factory needs no Pillow). Kept optional so the app
+    still runs — the customer can always copy the payment URI — if the dependency
+    is not installed.
+    """
+    try:
+        import qrcode
+        import qrcode.image.svg as svg
+    except Exception:  # noqa: BLE001 — optional dependency
+        return None
+    import io
+    qr = qrcode.QRCode(box_size=8, border=2)
+    qr.add_data(payload)
+    qr.make(fit=True)
+    buf = io.BytesIO()
+    qr.make_image(image_factory=svg.SvgPathImage).save(buf)
+    return buf.getvalue().decode("utf-8")
+
+
+@app.route("/api/merchant/invoice/<invoice_id>/qr.svg", methods=["GET"])
+def api_merchant_invoice_qr(invoice_id: str):
+    """Serve a scannable QR of the invoice's BIP21-style payment URI.
+
+    Non-custodial: the QR just encodes moonbite:<address>?amount=… so the payer's
+    own wallet prefills the send. The server never touches funds.
+    """
+    try:
+        inv = merchants.invoice_status(invoice_id, received_at_address)
+    except ValueError:
+        return jsonify({"status": "error", "message": "invoice not found"}), 404
+    svg_doc = _qr_svg(inv["pay_uri"])
+    if svg_doc is None:
+        return jsonify({"status": "error", "message": "QR encoder unavailable"}), 501
+    return app.response_class(svg_doc, mimetype="image/svg+xml")
+
+
 # ============================================================================= #
 # API Routes — Wallet
 # ============================================================================= #
 
 
 @app.route("/api/wallet/new", methods=["GET"])
+@rate_limit(30, 60)
 def api_wallet_new():
     """Generate a new keypair and return address + pubkey_hash."""
     try:
@@ -405,18 +567,17 @@ def api_wallet_balance():
                     total_balance += out.amount
                     utxo_count += 1
 
-        # Convert satoshis to coins (assuming 100 satoshis = 1 coin)
-        # In real Bitcoin: 100,000,000 satoshis = 1 BTC
-        # For MyCoin: using simpler 100 satoshis = 1 coin for demo
-        balance_coins = total_balance // 100
-        balance_cents = (total_balance % 100)
+        # MoonBite's smallest unit is a "cent": 1 MBITE = 100,000,000 cents
+        # (same 8-decimal precision as Bitcoin). Report the real coin value.
+        from params import CENTS_PER_COIN
+        balance_coins = total_balance / CENTS_PER_COIN
 
         return jsonify(
             {
                 "status": "success",
-                "balance_satoshis": total_balance,
                 "balance_coins": balance_coins,
-                "balance_cents": balance_cents,
+                "balance_units": total_balance,
+                "balance_display": f"{balance_coins:.8f}".rstrip("0").rstrip(".") or "0",
                 "utxo_count": utxo_count,
             }
         ), 200
@@ -454,6 +615,8 @@ def api_blockchain_info():
         )
         total_money_coins = total_money_satoshis / 100_000_000
 
+        tip_bits = chain.blocks[chain.tip].header.bits if chain.tip else 0
+
         return jsonify(
             {
                 "status": "success",
@@ -463,6 +626,8 @@ def api_blockchain_info():
                 "total_money_coins": total_money_coins,
                 "tx_count": tx_count,
                 "mempool_size": len(chain.mempool),
+                "bits": tip_bits,
+                "difficulty": (1 << tip_bits) if tip_bits else 0,
             }
         ), 200
     except Exception as e:
@@ -475,6 +640,7 @@ def api_blockchain_info():
 
 
 @app.route("/api/mining/start", methods=["POST"])
+@rate_limit(20, 60)
 def api_mining_start():
     """Start mining blocks. Expects JSON: {"blocks": N, "address": "..."}"""
     with app.mining_lock:
@@ -539,14 +705,33 @@ def api_mining_start():
 def api_mining_status():
     """Get current mining status."""
     try:
+        from block import block_subsidy
+
         node = get_node()
+        chain = node.chain
+        next_bits = chain.next_bits()
+        # Difficulty = expected hashes to find a block = 2**bits (target is
+        # 2**(256-bits), so P(meet)=2**-bits). Report it two ways.
+        difficulty = 1 << next_bits
+        hashrate = float(app.mining_state.get("hashrate", 0.0))
+        # Estimated seconds to the next block at the measured hashrate.
+        eta_seconds = (difficulty / hashrate) if hashrate > 0 else None
+        next_height = chain.height + 1
+        block_reward = block_subsidy(next_height)
         return jsonify(
             {
                 "status": "mining" if app.mining_state["is_mining"] else "idle",
                 "blocks_mined": app.mining_state["blocks_mined"],
                 "total_blocks": app.mining_state["blocks_to_mine"],
-                "current_height": node.chain.height,
-                "tip_hash": node.chain.tip,
+                "current_height": chain.height,
+                "tip_hash": chain.tip,
+                "bits": next_bits,
+                "difficulty": difficulty,
+                "hashes_tried": app.mining_state.get("hashes_tried", 0),
+                "hashrate": round(hashrate, 2),
+                "eta_next_block_seconds": (round(eta_seconds, 2)
+                                           if eta_seconds is not None else None),
+                "next_block_reward_coins": block_reward / 100_000_000,
             }
         ), 200
     except Exception as e:

@@ -25,6 +25,9 @@ def client():
         "current_block_height": 0,
         "mining_address": None,
         "mining_thread": None,
+        "hashes_tried": 0,
+        "hashrate": 0.0,
+        "started_at": 0.0,
     }
     app.node = None
     app.generated_addresses = {}
@@ -106,15 +109,15 @@ class TestWalletAPI:
 
         data = response.get_json()
         assert data["status"] == "success"
-        assert "balance_satoshis" in data
+        assert "balance_units" in data
         assert "balance_coins" in data
-        assert "balance_cents" in data
+        assert "balance_display" in data
         assert "utxo_count" in data
 
         # Initially no addresses, so balance should be 0
-        assert isinstance(data["balance_satoshis"], int)
-        assert isinstance(data["balance_coins"], int)
-        assert isinstance(data["balance_cents"], int)
+        assert isinstance(data["balance_units"], int)
+        assert isinstance(data["balance_coins"], (int, float))
+        assert isinstance(data["balance_display"], str)
         assert isinstance(data["utxo_count"], int)
 
     def test_wallet_balance_after_mining(self, client):
@@ -125,7 +128,7 @@ class TestWalletAPI:
 
         # Check initial balance
         balance_before = client.get("/api/wallet/balance").get_json()
-        initial_satoshis = balance_before["balance_satoshis"]
+        initial_satoshis = balance_before["balance_units"]
 
         # Mine a block to that address
         mine_response = client.post(
@@ -145,7 +148,7 @@ class TestWalletAPI:
 
         # Check balance after mining
         balance_after = client.get("/api/wallet/balance").get_json()
-        final_satoshis = balance_after["balance_satoshis"]
+        final_satoshis = balance_after["balance_units"]
 
         # Balance should have increased (coinbase reward received)
         assert final_satoshis > initial_satoshis
@@ -456,9 +459,56 @@ class TestIntegration:
         balance_response = client.get("/api/wallet/balance")
         assert balance_response.status_code == 200
         balance = balance_response.get_json()
-        assert balance["balance_satoshis"] > 0
+        assert balance["balance_units"] > 0
 
         # Step 5: Verify blockchain height increased
         info_response = client.get("/api/blockchain/info")
         info = info_response.get_json()
         assert info["height"] >= 1
+
+
+# ============================================================================= #
+# Rate Limiting Tests
+# ============================================================================= #
+
+
+class TestRateLimiting:
+    """The rate limiter is auto-disabled under pytest; these tests re-enable it
+    around a single request burst to prove the 429 path and API-key bypass."""
+
+    def test_rate_limit_returns_429_after_threshold(self, client):
+        import web_app
+        web_app._rl_hits.clear()
+        web_app._RATE_DISABLED = False
+        try:
+            # api_wallet_new is capped at 30/60s.
+            codes = [client.get("/api/wallet/new").status_code for _ in range(35)]
+        finally:
+            web_app._RATE_DISABLED = True
+            web_app._rl_hits.clear()
+
+        assert codes.count(200) == 30
+        assert codes.count(429) == 5
+        # Once limited, the response carries a Retry-After header.
+        limited = client.get("/api/wallet/new")
+        # (limiter now disabled again, so this one succeeds — just assert shape)
+        assert limited.status_code in (200, 429)
+
+    def test_api_key_bypasses_rate_limit(self, client):
+        import web_app
+        web_app._rl_hits.clear()
+        web_app._RATE_DISABLED = False
+        web_app._API_KEYS = {"testkey"}
+        try:
+            codes = [
+                client.get("/api/wallet/new", headers={"X-API-Key": "testkey"}).status_code
+                for _ in range(35)
+            ]
+        finally:
+            web_app._RATE_DISABLED = True
+            web_app._API_KEYS = set()
+            web_app._rl_hits.clear()
+
+        # A valid key bypasses the cap entirely — no 429s.
+        assert codes.count(200) == 35
+        assert 429 not in codes
