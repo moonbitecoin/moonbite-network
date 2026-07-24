@@ -12,6 +12,7 @@ Educational use only — never holds real funds.
 
 from __future__ import annotations
 
+import hmac
 import json
 import os
 import re
@@ -26,6 +27,7 @@ from flask import Flask, jsonify, render_template, request, send_from_directory
 
 import exchange
 import merchants
+import swap_verifier
 from node import Node
 from store import BlockStore
 from transaction import generate_keypair, pubkey_hash
@@ -466,6 +468,55 @@ def api_exchange_swap_funded(order_id: str):
         return jsonify({"status": "success", "swap": swap}), 200
     except ValueError as e:
         return jsonify({"status": "error", "message": str(e)}), 400
+
+
+@app.route("/api/exchange/verify", methods=["POST"])
+def api_exchange_verify():
+    """Run one Phase 2b on-chain verification pass over pending swaps.
+
+    Read-only against the operator's node: confirms HTLC fundings/redemptions and
+    advances genuinely-settled trades (the only path that moves last_price). This
+    is an OPERATOR trigger, not a public endpoint — intended to be called on a
+    timer (cron/systemd). It is:
+      * disabled unless VERIFIER_ENABLED is set (a swap never settles otherwise);
+      * gated by a shared secret VERIFIER_TRIGGER_TOKEN (X-Verifier-Token header)
+        so the public cannot make the box hammer the node;
+      * safe when a chain is unreachable/unconfigured — it simply settles nothing
+        (the quote leg uses a NullAdapter until the Phase 2c quote adapter lands).
+    """
+    from explorer import config as ex_config
+
+    if not ex_config.VERIFIER_ENABLED:
+        return jsonify({"status": "error", "message": "verifier disabled"}), 403
+
+    expected = os.environ.get("VERIFIER_TRIGGER_TOKEN", "")
+    provided = request.headers.get("X-Verifier-Token", "")
+    if not expected or not hmac.compare_digest(expected, provided):
+        return jsonify({"status": "error", "message": "unauthorized"}), 403
+
+    # Only now touch the RPC client. explorer/rpc.py uses a bare ``import config``
+    # (it is designed to run with explorer/ on the path), so make that resolve.
+    _exp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "explorer")
+    if _exp_dir not in sys.path:
+        sys.path.insert(0, _exp_dir)
+    from explorer.rpc import RpcClient
+
+    base_adapter = swap_verifier.MoonNodeAdapter(RpcClient())
+    quote_adapter = swap_verifier.NullAdapter()  # Phase 2c wires a real quote leg
+    try:
+        applied = swap_verifier.run_verification_pass(
+            exchange, base_adapter, quote_adapter,
+            min_confs_base=ex_config.VERIFIER_MIN_CONFS_BASE,
+            min_confs_quote=ex_config.VERIFIER_MIN_CONFS_QUOTE,
+        )
+    except Exception as e:  # noqa: BLE001 - node unreachable etc. => 503, never 500
+        return jsonify({"status": "error", "message": f"node unavailable: {e}"}), 503
+
+    return jsonify({
+        "status": "success",
+        "verified": len(applied),
+        "results": [{"swap_id": sid, "status": u.get("status")} for sid, u in applied],
+    }), 200
 
 
 # ============================================================================= #

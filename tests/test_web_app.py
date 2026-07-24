@@ -524,3 +524,44 @@ class TestRateLimiting:
         # A valid key bypasses the cap entirely — no 429s.
         assert codes.count(200) == 35
         assert 429 not in codes
+
+
+# ============================================================================= #
+# Phase 2b — verifier trigger endpoint
+# ============================================================================= #
+
+
+class TestVerifierTrigger:
+    """POST /api/exchange/verify: operator-only, flag-gated, token-protected."""
+
+    def test_disabled_by_default_returns_403(self, client):
+        r = client.post("/api/exchange/verify")
+        assert r.status_code == 403
+        assert json.loads(r.data)["message"] == "verifier disabled"
+
+    def test_enabled_but_no_token_is_unauthorized(self, client, monkeypatch):
+        from explorer import config as ex_config
+        monkeypatch.setattr(ex_config, "VERIFIER_ENABLED", True)
+        monkeypatch.setenv("VERIFIER_TRIGGER_TOKEN", "s3cret")
+        r = client.post("/api/exchange/verify")  # no X-Verifier-Token header
+        assert r.status_code == 403
+        assert json.loads(r.data)["message"] == "unauthorized"
+
+    def test_enabled_with_bad_token_is_unauthorized(self, client, monkeypatch):
+        from explorer import config as ex_config
+        monkeypatch.setattr(ex_config, "VERIFIER_ENABLED", True)
+        monkeypatch.setenv("VERIFIER_TRIGGER_TOKEN", "s3cret")
+        r = client.post("/api/exchange/verify", headers={"X-Verifier-Token": "wrong"})
+        assert r.status_code == 403
+
+    def test_authorized_empty_pass_returns_zero_verified(self, client, monkeypatch):
+        import exchange
+        from explorer import config as ex_config
+        monkeypatch.setattr(ex_config, "VERIFIER_ENABLED", True)
+        monkeypatch.setenv("VERIFIER_TRIGGER_TOKEN", "s3cret")
+        # No swaps to verify => the node is never touched; a clean 200.
+        monkeypatch.setattr(exchange, "list_swaps_for_verification", lambda: [])
+        r = client.post("/api/exchange/verify", headers={"X-Verifier-Token": "s3cret"})
+        assert r.status_code == 200
+        body = json.loads(r.data)
+        assert body["verified"] == 0 and body["results"] == []

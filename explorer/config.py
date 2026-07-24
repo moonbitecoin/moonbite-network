@@ -61,6 +61,16 @@ MINING_CORS_ORIGINS = os.environ.get(
     "https://moonbite.org,https://www.moonbite.org,https://moonbitecoin.github.io",
 )
 
+# --- Phase 2b HTLC settlement verifier (read-only chain observer) ---
+# When enabled, the operator's node is polled to confirm atomic-swap HTLCs and
+# advance settled trades (the only path that lets last_price move). Off by
+# default: a swap never settles unless the operator opts into on-chain
+# verification against a node they trust.
+VERIFIER_ENABLED = _env_bool("VERIFIER_ENABLED", default=False)
+# Confirmation depth required before the verifier trusts a funding/redeem tx.
+VERIFIER_MIN_CONFS_BASE = int(os.environ.get("VERIFIER_MIN_CONFS_BASE", "6"))
+VERIFIER_MIN_CONFS_QUOTE = int(os.environ.get("VERIFIER_MIN_CONFS_QUOTE", "6"))
+
 
 # --- Webhooks (POST /api/webhooks) ---
 # A background poller watches the chain tip and delivers signed callbacks for

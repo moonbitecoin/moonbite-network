@@ -22,6 +22,8 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Optional
 
+from swap_verifier import VERIFIER_STATES
+
 # Pairs we support first. MBITE is always the base; the quote is what you pay/receive.
 # "ease" is an honest note surfaced in the UI: LTC/BTC swap natively with MoonBite
 # (shared Bitcoin script family); the stablecoin needs a smart-contract HTLC leg.
@@ -50,6 +52,24 @@ SWAP_STATES = (
     "quote_funded",  # quote-leg HTLC funding txid reported (unverified)
     "both_locked",   # both legs' funding txids reported (awaiting 2b verify)
 )
+
+# Phase 2b bolts the on-chain-verified tail onto the machine. These transitions
+# are driven ONLY by swap_verifier reading confirmed chain data — never by a
+# caller's report. See swap_verifier.VERIFIER_STATES for the definitions.
+ALL_SWAP_STATES = SWAP_STATES + VERIFIER_STATES
+
+# Columns swap_verifier is permitted to write back (whitelist: the status/txids/
+# preimage/confs/assurance it independently derives from chain data). Guards the
+# dynamic UPDATE in apply_swap_verification against arbitrary column writes.
+_VERIFIER_WRITABLE = frozenset(
+    {
+        "status", "preimage", "base_redeem_txid", "quote_redeem_txid",
+        "base_confs", "quote_confs", "settled_at", "quote_assurance",
+    }
+)
+
+# Swaps the verifier still needs to watch (everything before a terminal state).
+_VERIFIABLE_STATES = ("both_locked", "quote_redeemed", "base_redeemed")
 
 # Safety invariant: the party who redeems second must hold the longer refund
 # window, so the base (MBITE) timelock must exceed the quote timelock by at
@@ -122,6 +142,12 @@ def _connect() -> sqlite3.Connection:
             )
             """
         )
+        # Phase 2b migration: records HOW a settlement's quote leg was verified —
+        # 'node' (full-node read, fully trustless) vs 'explorer' (N-of-M explorer
+        # agreement, lower assurance). Surfaced so the UI never overstates trust.
+        swap_cols = {r["name"] for r in _conn.execute("PRAGMA table_info(swaps)")}
+        if "quote_assurance" not in swap_cols:
+            _conn.execute("ALTER TABLE swaps ADD COLUMN quote_assurance TEXT")
         _conn.commit()
     return _conn
 
@@ -591,3 +617,78 @@ def report_funding(order_id: str, cancel_token, leg: str, txid) -> dict:
             "SELECT * FROM swaps WHERE swap_id = ?", (row["swap_id"],)
         ).fetchone()
     return dict(final)
+
+
+# --------------------------------------------------------------------------- #
+# Phase 2b: on-chain verification hand-off.
+#
+# The verifier (swap_verifier.py) READS the chains and independently decides how
+# far a swap has genuinely progressed. exchange.py stays the sole DB owner: it
+# hands the verifier the swaps that still need watching and applies the verified
+# result. Only a swap the verifier drives to 'settled' marks its two orders
+# 'settled' — the single event that lets _last_trade_price (and thus last_price)
+# reflect a real, on-chain-proven trade. No caller can reach these transitions.
+# --------------------------------------------------------------------------- #
+
+
+def list_swaps_for_verification() -> list:
+    """Return swaps still awaiting on-chain progress (non-terminal, funded)."""
+    with _lock:
+        conn = _connect()
+        placeholders = ",".join("?" for _ in _VERIFIABLE_STATES)
+        rows = conn.execute(
+            f"SELECT * FROM swaps WHERE status IN ({placeholders})",
+            _VERIFIABLE_STATES,
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def apply_swap_verification(swap_id: str, updates: dict) -> Optional[dict]:
+    """Persist the verifier's independently-derived findings for one swap.
+
+    Only whitelisted, verifier-owned columns may be written. If the swap reaches
+    'settled', both underlying orders are marked 'settled' in the SAME
+    transaction so price discovery and settlement flip atomically. A no-op
+    ``updates`` leaves the row untouched.
+    """
+    clean = {k: v for k, v in (updates or {}).items() if k in _VERIFIER_WRITABLE}
+    if not clean:
+        return get_swap_by_id(swap_id)
+    if clean.get("status") is not None and clean["status"] not in ALL_SWAP_STATES:
+        raise ValueError(f"illegal swap status: {clean['status']}")
+
+    with _lock:
+        conn = _connect()
+        row = conn.execute(
+            "SELECT * FROM swaps WHERE swap_id = ?", (swap_id,)
+        ).fetchone()
+        if row is None:
+            raise ValueError("no such swap")
+
+        assignments = ", ".join(f"{col} = ?" for col in clean)  # cols are whitelisted
+        conn.execute(
+            f"UPDATE swaps SET {assignments} WHERE swap_id = ?",
+            (*clean.values(), swap_id),
+        )
+        if clean.get("status") == "settled":
+            # Atomically record the executed trade on both orders so the pair's
+            # last_price finally reflects an on-chain-proven fill.
+            conn.execute(
+                "UPDATE orders SET status = 'settled' WHERE id IN (?, ?)",
+                (row["buy_order_id"], row["sell_order_id"]),
+            )
+        conn.commit()
+        final = conn.execute(
+            "SELECT * FROM swaps WHERE swap_id = ?", (swap_id,)
+        ).fetchone()
+    return dict(final)
+
+
+def get_swap_by_id(swap_id: str) -> Optional[dict]:
+    """Fetch a swap by its primary key (verifier/introspection helper)."""
+    with _lock:
+        conn = _connect()
+        row = conn.execute(
+            "SELECT * FROM swaps WHERE swap_id = ?", (swap_id,)
+        ).fetchone()
+    return dict(row) if row else None
