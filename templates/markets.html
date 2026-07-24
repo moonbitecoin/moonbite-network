@@ -110,10 +110,10 @@
             <div class="mb-ex-formmsg" id="mbExMsg" role="status" aria-live="polite"></div>
         </form>
 
-        <p class="mb-ex-cancelnote mb-reveal">Made a mistake? Paste your order ID and the MBITE address you used to cancel it.</p>
+        <p class="mb-ex-cancelnote mb-reveal">Made a mistake? Paste your order ID and the cancel token shown when you posted it.</p>
         <form class="mb-ex-cancel mb-reveal" id="mbExCancelForm" autocomplete="off">
             <input type="text" id="mbExCancelId" placeholder="order id" required>
-            <input type="text" id="mbExCancelAddr" placeholder="your MBITE address" required>
+            <input type="text" id="mbExCancelToken" placeholder="cancel token" required>
             <button type="submit" class="btn btn-secondary">Cancel order</button>
             <span class="mb-ex-formmsg" id="mbExCancelMsg" role="status" aria-live="polite"></span>
         </form>
@@ -421,7 +421,9 @@
           .then(function (res) {
               if (!res.ok || res.d.status !== "success") throw new Error(res.d.message || "Could not post order");
               msg.className = "mb-ex-formmsg is-ok";
-              msg.textContent = "Order posted. ID: " + res.d.order.id + " — keep it to cancel later.";
+              msg.textContent = "Order posted. ID: " + res.d.order.id +
+                  " — cancel token: " + res.d.order.cancel_token +
+                  " (save both; the token is shown only once and is required to cancel).";
               document.getElementById("mbExPrice").value = "";
               document.getElementById("mbExAmount").value = "";
               updateFormTotal();
@@ -439,13 +441,13 @@
         e.preventDefault();
         var msg = document.getElementById("mbExCancelMsg");
         var id = document.getElementById("mbExCancelId").value.trim();
-        var addr = document.getElementById("mbExCancelAddr").value.trim();
+        var token = document.getElementById("mbExCancelToken").value.trim();
         msg.className = "mb-ex-formmsg";
         msg.textContent = "Cancelling…";
         fetch("/api/exchange/order/" + encodeURIComponent(id) + "/cancel", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ mbite_address: addr })
+            body: JSON.stringify({ cancel_token: token })
         }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
           .then(function (res) {
               if (!res.ok || res.d.status !== "success") throw new Error(res.d.message || "Could not cancel");

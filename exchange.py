@@ -12,6 +12,8 @@ withdrawal, or fiat handling here.
 
 from __future__ import annotations
 
+import hmac
+import secrets
 import sqlite3
 import threading
 import time
@@ -55,12 +57,24 @@ def _connect() -> sqlite3.Connection:
                 mbite_address TEXT NOT NULL,   -- maker's MBITE receive/send address
                 quote_address TEXT NOT NULL,   -- maker's address on the quote chain
                 status        TEXT NOT NULL DEFAULT 'open',
-                created_at    INTEGER NOT NULL
+                created_at    INTEGER NOT NULL,
+                cancel_token  TEXT             -- secret; returned once to the maker
             )
             """
         )
+        # Migration for databases created before cancel_token existed.
+        cols = {r["name"] for r in _conn.execute("PRAGMA table_info(orders)")}
+        if "cancel_token" not in cols:
+            _conn.execute("ALTER TABLE orders ADD COLUMN cancel_token TEXT")
         _conn.commit()
     return _conn
+
+
+def _public(order: Optional[dict]) -> Optional[dict]:
+    """Strip the secret cancel_token from any order shown on a read path."""
+    if order is not None:
+        order.pop("cancel_token", None)
+    return order
 
 
 def _pos_decimal(value, field: str) -> Decimal:
@@ -115,10 +129,11 @@ def create_order(
                 f"too many open orders for this address (max {MAX_OPEN_ORDERS_PER_ADDRESS})"
             )
         order_id = uuid.uuid4().hex
+        cancel_token = secrets.token_urlsafe(24)
         conn.execute(
             """INSERT INTO orders
-               (id, side, pair, price, amount, mbite_address, quote_address, status, created_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, 'open', ?)""",
+               (id, side, pair, price, amount, mbite_address, quote_address, status, created_at, cancel_token)
+               VALUES (?, ?, ?, ?, ?, ?, ?, 'open', ?, ?)""",
             (
                 order_id,
                 side,
@@ -128,10 +143,15 @@ def create_order(
                 mbite,
                 quote,
                 int(time.time()),
+                cancel_token,
             ),
         )
         conn.commit()
-    return get_order(order_id)
+    # Return the token ONCE, only to the maker who created the order. It is the
+    # secret proof-of-ownership required to cancel; it is never shown again.
+    order = get_order(order_id)
+    order["cancel_token"] = cancel_token
+    return order
 
 
 def list_orders(pair: Optional[str] = None, status: str = "open") -> dict:
@@ -145,7 +165,7 @@ def list_orders(pair: Optional[str] = None, status: str = "open") -> dict:
         if pair is not None:
             query += " AND pair = ?"
             params.append(pair)
-        rows = [dict(r) for r in conn.execute(query, params).fetchall()]
+        rows = [_public(dict(r)) for r in conn.execute(query, params).fetchall()]
 
     bids = sorted(
         (r for r in rows if r["side"] == "buy"),
@@ -164,11 +184,16 @@ def get_order(order_id: str) -> Optional[dict]:
     with _lock:
         conn = _connect()
         row = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
-    return dict(row) if row else None
+    return _public(dict(row)) if row else None
 
 
-def cancel_order(order_id: str, mbite_address: str) -> dict:
-    """Cancel an open order. Only the maker (proven by their MBITE address) may cancel."""
+def cancel_order(order_id: str, cancel_token: str) -> dict:
+    """Cancel an open order.
+
+    Authorization is the secret `cancel_token` minted at creation and returned
+    only to the maker — NOT the MBITE address, which is public in the order book
+    and so cannot serve as a secret.
+    """
     with _lock:
         conn = _connect()
         row = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
@@ -176,8 +201,10 @@ def cancel_order(order_id: str, mbite_address: str) -> dict:
             raise ValueError("order not found")
         if row["status"] != "open":
             raise ValueError(f"order is already {row['status']}")
-        if row["mbite_address"] != (mbite_address or "").strip():
-            raise ValueError("only the maker can cancel this order")
+        stored = row["cancel_token"] or ""
+        provided = (cancel_token or "").strip()
+        if not stored or not hmac.compare_digest(stored, provided):
+            raise ValueError("invalid or missing cancel token")
         conn.execute("UPDATE orders SET status = 'cancelled' WHERE id = ?", (order_id,))
         conn.commit()
     return get_order(order_id)

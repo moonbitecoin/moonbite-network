@@ -271,10 +271,10 @@ def api_exchange_get_order(order_id: str):
 
 @app.route("/api/exchange/order/<order_id>/cancel", methods=["POST"])
 def api_exchange_cancel_order(order_id: str):
-    """Cancel an open order — only the maker (by MBITE address) may do so."""
+    """Cancel an open order — requires the secret cancel_token from creation."""
     data = request.get_json(silent=True) or {}
     try:
-        order = exchange.cancel_order(order_id, str(data.get("mbite_address", "")))
+        order = exchange.cancel_order(order_id, str(data.get("cancel_token", "")))
         return jsonify({"status": "success", "order": order}), 200
     except ValueError as e:
         return jsonify({"status": "error", "message": str(e)}), 400
@@ -837,16 +837,35 @@ def server_error(error):
 
 
 # ============================================================================= #
-# CORS Headers (educational use — allow all origins)
+# CORS Headers — allow-listed origins only (no wildcard)
+#
+# Same-origin requests (the dashboard calling its own API) never need these
+# headers. This only scopes *cross-origin* access. Because the write APIs
+# consume application/json, browsers send a CORS preflight; refusing unknown
+# origins here blocks cross-site reads and cross-origin forged writes.
 # ============================================================================= #
+
+_DEFAULT_ALLOWED_ORIGINS = {
+    "https://moonbite.org",
+    "https://www.moonbite.org",
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
+}
+# Override/extend via ALLOWED_ORIGINS="https://a.example,https://b.example".
+ALLOWED_ORIGINS = {
+    o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "").split(",") if o.strip()
+} or _DEFAULT_ALLOWED_ORIGINS
 
 
 @app.after_request
 def add_cors_headers(response):
-    """Add CORS headers to all responses."""
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    """Reflect CORS headers only for allow-listed origins — never a wildcard."""
+    origin = request.headers.get("Origin")
+    if origin in ALLOWED_ORIGINS:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Vary"] = "Origin"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
     return response
 
 

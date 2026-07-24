@@ -400,11 +400,20 @@ class TestErrorHandling:
         data = response.get_json()
         assert data["status"] == "error"
 
-    def test_cors_headers_present(self, client):
-        """Test that CORS headers are present."""
-        response = client.get("/api/blockchain/info")
-        assert "Access-Control-Allow-Origin" in response.headers
-        assert response.headers["Access-Control-Allow-Origin"] == "*"
+    def test_cors_allows_listed_origin(self, client):
+        """An allow-listed origin is echoed back (never a wildcard)."""
+        response = client.get(
+            "/api/blockchain/info", headers={"Origin": "https://moonbite.org"}
+        )
+        assert response.headers.get("Access-Control-Allow-Origin") == "https://moonbite.org"
+        assert response.headers.get("Access-Control-Allow-Origin") != "*"
+
+    def test_cors_rejects_unlisted_origin(self, client):
+        """An unknown origin gets no CORS header, so cross-origin access is blocked."""
+        response = client.get(
+            "/api/blockchain/info", headers={"Origin": "https://evil.example"}
+        )
+        assert "Access-Control-Allow-Origin" not in response.headers
 
     def test_json_content_type(self, client):
         """Test that API responses have correct content type."""
