@@ -18,18 +18,21 @@ import re
 import sys
 import threading
 import time
+from collections import defaultdict
+from functools import wraps
 from typing import Optional
 
 from flask import Flask, jsonify, render_template, request, send_from_directory
 
-# Pragmatic email validation for the listing-notify capture.
-EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 import exchange
 import merchants
 from node import Node
 from store import BlockStore
 from transaction import generate_keypair, pubkey_hash
 from wallet import address_from_pubkey_hash, is_valid_address, pubkey_hash_from_address
+
+# Pragmatic email validation for the listing-notify capture.
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 # Optional durable block store. When MOONBITE_CHAIN_DB points at a path, the demo
 # node persists every mined block and replays them on startup so the chain
@@ -69,9 +72,6 @@ app.mining_lock = threading.Lock()
 # and pass it as X-API-Key to bypass the limits. This is deliberately simple:
 # it is anti-abuse for a single-node demo, not a distributed quota system.
 # --------------------------------------------------------------------------- #
-from functools import wraps
-from collections import defaultdict
-
 _API_KEYS = {
     k.strip() for k in os.environ.get("MOONBITE_API_KEYS", "").split(",") if k.strip()
 }

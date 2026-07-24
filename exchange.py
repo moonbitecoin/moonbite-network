@@ -135,7 +135,8 @@ def create_order(
         cancel_token = secrets.token_urlsafe(24)
         conn.execute(
             """INSERT INTO orders
-               (id, side, pair, price, amount, mbite_address, quote_address, status, created_at, cancel_token)
+               (id, side, pair, price, amount, mbite_address, quote_address,
+                status, created_at, cancel_token)
                VALUES (?, ?, ?, ?, ?, ?, ?, 'open', ?, ?)""",
             (
                 order_id,
@@ -277,7 +278,8 @@ def _last_trade_price(pair: str) -> Optional[str]:
     """Most recent settled trade price for a pair — the internal price discovery."""
     conn = _connect()
     row = conn.execute(
-        "SELECT price FROM orders WHERE pair = ? AND status = 'settled' ORDER BY created_at DESC LIMIT 1",
+        "SELECT price FROM orders WHERE pair = ? AND status = 'settled' "
+        "ORDER BY created_at DESC LIMIT 1",
         (pair,),
     ).fetchone()
     return row["price"] if row else None
