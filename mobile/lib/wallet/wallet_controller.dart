@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/chain_models.dart';
 import '../services/chain_service.dart';
-import 'bigcoin_network.dart';
+import 'moonbite_network.dart';
 import 'hd_wallet_service.dart';
 import 'secure_key_store.dart';
 import 'tx_builder.dart';
@@ -22,16 +22,16 @@ class WalletController extends ChangeNotifier {
     SecureKeyStore? store,
   }) : store = store ?? SecureKeyStore();
 
-  BigCoinNetwork _network = BigCoinNetwork.testnet;
+  MoonBiteNetwork _network = MoonBiteNetwork.testnet;
   String? _mnemonic;
-  BigCoinAccount? _account;
+  MoonBiteAccount? _account;
   WalletBalance? _balance;
   ChainStatus? _status;
   bool _busy = false;
   String? _error;
 
-  BigCoinNetwork get network => _network;
-  BigCoinAccount? get account => _account;
+  MoonBiteNetwork get network => _network;
+  MoonBiteAccount? get account => _account;
   WalletBalance? get balance => _balance;
   ChainStatus? get status => _status;
   bool get busy => _busy;
@@ -55,7 +55,7 @@ class WalletController extends ChangeNotifier {
     final mnemonic = await store.readMnemonic();
     final netId = await store.readNetworkId();
     if (mnemonic == null) return false;
-    _network = BigCoinNetwork.byId(netId);
+    _network = MoonBiteNetwork.byId(netId);
     _mnemonic = mnemonic;
     _account = _hd.deriveAccount(mnemonic, index: 0);
     notifyListeners();
@@ -64,7 +64,7 @@ class WalletController extends ChangeNotifier {
 
   /// Creates a brand-new wallet on [network] and persists it.
   Future<String> createNew({
-    BigCoinNetwork? network,
+    MoonBiteNetwork? network,
     int strengthBits = 128,
   }) async {
     _network = network ?? _network;
@@ -74,7 +74,7 @@ class WalletController extends ChangeNotifier {
   }
 
   /// Imports an existing BIP39 mnemonic. Throws [ArgumentError] if invalid.
-  Future<void> importExisting(String mnemonic, {BigCoinNetwork? network}) async {
+  Future<void> importExisting(String mnemonic, {MoonBiteNetwork? network}) async {
     _network = network ?? _network;
     final normalized = mnemonic.trim();
     if (!_hd.validateMnemonic(normalized)) {
@@ -135,9 +135,19 @@ class WalletController extends ChangeNotifier {
         feeRateSatPerVByte: feeSatPerVByte,
       );
 
-      final txid = await chain.broadcast(signed.rawHex);
+      final relayTxid = await chain.broadcast(signed.rawHex);
+      // Trust OUR locally-computed txid, never the relay's claim. A compromised
+      // or malicious relay could report a bogus txid (fake "success" while
+      // dropping the tx, or a value that doesn't match what we actually signed).
+      // For a valid tx the node's txid must equal ours; a mismatch is a failure.
+      if (relayTxid.isNotEmpty && relayTxid != signed.txid) {
+        throw StateError(
+          'Broadcast mismatch: relay returned "$relayTxid" but the signed '
+          'transaction id is "${signed.txid}". Treating as failed.',
+        );
+      }
       await refresh();
-      return txid;
+      return signed.txid;
     } finally {
       _set(busy: false);
     }
