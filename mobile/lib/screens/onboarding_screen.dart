@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../wallet/bigcoin_network.dart';
+import '../wallet/moonbite_network.dart';
 import '../wallet/secure_clipboard.dart';
 import '../wallet/wallet_controller.dart';
 
@@ -13,7 +13,7 @@ class OnboardingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Big Coin Wallet')),
+      appBar: AppBar(title: const Text('MoonBite Wallet')),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -57,7 +57,7 @@ class OnboardingScreen extends StatelessWidget {
   Future<void> _createWallet(BuildContext context) async {
     final controller = context.read<WalletController>();
     final phrase =
-        await controller.createNew(network: BigCoinNetwork.testnet);
+        await controller.createNew(network: MoonBiteNetwork.testnet);
     if (!context.mounted) return;
     await showDialog<void>(
       context: context,
@@ -152,7 +152,7 @@ class _ImportScreenState extends State<_ImportScreen> {
     try {
       await context
           .read<WalletController>()
-          .importExisting(_controller.text, network: BigCoinNetwork.testnet);
+          .importExisting(_controller.text, network: MoonBiteNetwork.testnet);
       if (mounted) {
         Navigator.of(context)
           ..pop()

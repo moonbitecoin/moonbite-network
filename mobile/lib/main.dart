@@ -7,11 +7,11 @@ import 'screens/onboarding_screen.dart';
 import 'wallet/wallet_controller.dart';
 
 void main() {
-  runApp(const BigCoinApp());
+  runApp(const MoonBiteApp());
 }
 
-class BigCoinApp extends StatelessWidget {
-  const BigCoinApp({super.key});
+class MoonBiteApp extends StatelessWidget {
+  const MoonBiteApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class BigCoinApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'Big Coin Wallet',
+        title: 'MoonBite Wallet',
         debugShowCheckedModeBanner: false,
         theme: ThemeData.dark(useMaterial3: true).copyWith(
           scaffoldBackgroundColor: const Color(0xFF121212),

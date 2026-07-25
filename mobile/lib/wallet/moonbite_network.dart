@@ -1,6 +1,6 @@
 import 'package:coinslib/coinslib.dart';
 
-/// Big Coin (MBITE) network parameters.
+/// MoonBite (MBITE) network parameters.
 ///
 /// Values mirror the C++ chain's `src/chainparams.cpp`:
 ///   mainnet: PUBKEY_ADDRESS=25, SCRIPT_ADDRESS=5, SECRET_KEY=176,

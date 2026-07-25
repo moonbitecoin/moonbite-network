@@ -5,7 +5,7 @@ import 'package:hex/hex.dart';
 
 import '../models/chain_models.dart';
 import 'address_script.dart';
-import 'bigcoin_network.dart';
+import 'moonbite_network.dart';
 
 /// A signed, ready-to-broadcast transaction.
 class SignedTx {
@@ -35,14 +35,14 @@ class InsufficientFundsException implements Exception {
       'InsufficientFundsException: need $neededSats sats, have $availableSats';
 }
 
-/// Builds and signs Big Coin P2WPKH (native SegWit) spends entirely on-device.
+/// Builds and signs MoonBite P2WPKH (native SegWit) spends entirely on-device.
 ///
 /// Coin selection is a simple largest-first accumulation with iterative fee
 /// estimation. All UTXOs are assumed to belong to a single key ([wif]) — the
 /// wallet currently derives one receive address, so that holds. Nothing here
 /// touches the network; the caller broadcasts the resulting [SignedTx.rawHex].
 class TxBuilder {
-  final BigCoinNetwork network;
+  final MoonBiteNetwork network;
 
   TxBuilder(this.network);
 

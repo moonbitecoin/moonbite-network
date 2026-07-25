@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 import '../models/chain_models.dart';
 
-/// Read/relay client for the Big Coin explorer JSON API.
+/// Read/relay client for the MoonBite explorer JSON API.
 ///
 /// This service NEVER sees private keys. The wallet derives keys and signs
 /// transactions on-device (see `wallet/`); this class only fetches chain state

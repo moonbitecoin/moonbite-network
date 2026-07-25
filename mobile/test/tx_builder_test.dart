@@ -1,22 +1,22 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:bigcoin_mobile/models/chain_models.dart';
-import 'package:bigcoin_mobile/wallet/bigcoin_network.dart';
-import 'package:bigcoin_mobile/wallet/hd_wallet_service.dart';
-import 'package:bigcoin_mobile/wallet/tx_builder.dart';
+import 'package:moonbite_mobile/models/chain_models.dart';
+import 'package:moonbite_mobile/wallet/moonbite_network.dart';
+import 'package:moonbite_mobile/wallet/hd_wallet_service.dart';
+import 'package:moonbite_mobile/wallet/tx_builder.dart';
 
 const _mnemonic =
     'abandon abandon abandon abandon abandon abandon '
     'abandon abandon abandon abandon abandon about';
 
-// Verified via `bigcoind -testnet validateaddress` for the index-0 test-vector
+// Verified via `moonbited -testnet validateaddress` for the index-0 test-vector
 // key: tbig1q6rz28mcfaxtmd6v789l9rrlrusdprr9pdc24tr => this scriptPubKey.
 const _spk0 = '0014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1';
 const _fakeTxid =
     '1111111111111111111111111111111111111111111111111111111111111111';
 
 void main() {
-  final net = BigCoinNetwork.testnet;
+  final net = MoonBiteNetwork.testnet;
   final svc = HdWalletService(net);
   final builder = TxBuilder(net);
 

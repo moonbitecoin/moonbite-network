@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:bigcoin_mobile/wallet/secure_clipboard.dart';
+import 'package:moonbite_mobile/wallet/secure_clipboard.dart';
 
 /// A recovery phrase copied to the clipboard must not linger there forever —
 /// SecureClipboard wipes it after a delay, but only if the user has not since
