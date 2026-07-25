@@ -260,3 +260,62 @@ body.mb-v2 .mb-footer-brand .mb-brand-name { -webkit-text-fill-color: var(--acce
 
 /* --------------------------------------------------------- page loader */
 body.mb-v2 .page-loader { background: var(--void); }
+
+/* ==========================================================================
+   Editorial unification — make every base-extending page read like the
+   home_v2 sting: a minimal fixed-feel top bar, a left-aligned cinematic hero,
+   and left-aligned section heads. One override layer, applied site-wide.
+   ========================================================================== */
+
+/* ---- top bar: drop the heavy glass box for the home_v2 gradient fade ---- */
+body.mb-v2 .mb-meganav {
+    background: linear-gradient(#04050a 42%, rgba(4, 5, 10, 0));
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: none;
+}
+body.mb-v2 .mb-nav-inner { height: 76px; }
+/* the primary CTA becomes the signature bordered mint pill with an arrow */
+body.mb-v2 .mb-nav-cta-btn.btn-secondary { border-color: rgba(242, 246, 255, 0.22); }
+
+/* ---- hero: left-aligned editorial sting, not a centered pill card ---- */
+body.mb-v2 .mb-hero { padding: clamp(6rem, 13vw, 10rem) 0 clamp(3rem, 6vw, 5rem); }
+body.mb-v2 .mb-hero-inner {
+    max-width: 1120px;
+    margin: 0;
+    text-align: left;
+}
+body.mb-v2 .mb-hero-title {
+    font-size: clamp(3rem, 8.5vw, 6.8rem);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+    margin-bottom: clamp(1.25rem, 3vw, 2rem);
+}
+body.mb-v2 .mb-hero-sub {
+    margin: 0;
+    max-width: 640px;
+    line-height: 1.6;
+}
+body.mb-v2 .mb-cta-row {
+    justify-content: flex-start;
+    margin-top: clamp(1.75rem, 4vw, 2.5rem);
+}
+body.mb-v2 .mb-badge { margin-bottom: clamp(1.25rem, 3vw, 2rem); }
+
+/* ---- section heads: left-aligned with the home_v2 hairline rule ---- */
+body.mb-v2 .mb-section-head {
+    text-align: left;
+    max-width: 860px;
+    margin-left: 0;
+    margin-right: 0;
+}
+body.mb-v2 .mb-eyebrow { margin-bottom: var(--spacing-md); }
+
+/* ---- footer: quieter, editorial — mint brand, hairline top only ---- */
+body.mb-v2 .mb-footer { margin-top: clamp(4rem, 9vw, 7rem); }
+
+/* Keep centered layouts (FAQ, roadmap, notify) genuinely centered even
+   though the global default is now left — these opt back in. */
+body.mb-v2 .mb-faq,
+body.mb-v2 .mb-timeline,
+body.mb-v2 .mb-notify { margin-left: auto; margin-right: auto; }
