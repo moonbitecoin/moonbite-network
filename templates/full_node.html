@@ -11,8 +11,8 @@
     <div class="mb-container">
         <div class="mb-hero-inner">
             <span class="mb-badge"><span class="mb-dot"></span> Infrastructure</span>
-            <h1 class="mb-hero-title">Don't trust. <span class="mb-gradient-text">Verify.</span></h1>
-            <p class="mb-hero-sub">A full node validates every transaction and block against the protocol rules — independently, on your own hardware. No third party required. When you run a node you're not relying on anyone else's word about the state of the chain.</p>
+            <h1 class="mb-hero-title">Don't trust us. <span class="mb-gradient-text">Check it.</span></h1>
+            <p class="mb-hero-sub">A full node checks every transaction and block against the rules, on your own hardware, with nobody in the loop. Run one and you stop taking anyone's word for the state of the chain — you know it, because you checked it.</p>
             <div class="mb-cta-row">
                 <a href="/developers#run-a-node" class="btn btn-primary mb-btn-xl">Setup Guide</a>
                 <a href="/moonbite-core" class="btn btn-secondary mb-btn-xl">MoonBite Core</a>
@@ -25,39 +25,39 @@
     <div class="mb-container">
         <div class="mb-section-head mb-reveal">
             <span class="mb-eyebrow">Why run a node</span>
-            <h2 class="mb-section-title">What a full node does for you</h2>
+            <h2 class="mb-section-title">What a node buys you</h2>
         </div>
         <div class="mb-grid mb-grid-3">
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">🔎</div>
-                <h3 class="mb-card-title">Verify your own balance</h3>
-                <p class="mb-card-text">Your node keeps a full copy of the UTXO set. You don't need to ask a block explorer — you can query your own node directly and know the answer is right.</p>
+                <h3 class="mb-card-title">Check your own balance</h3>
+                <p class="mb-card-text">Your node holds the full UTXO set. Stop asking a block explorer what you own — ask your own node, and know the answer is right.</p>
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">🛡️</div>
                 <h3 class="mb-card-title">Enforce the rules yourself</h3>
-                <p class="mb-card-text">Your node rejects any block or transaction that violates the consensus rules — invalid signatures, double spends, blocks over the size limit. It does this independently, not on the word of another node.</p>
+                <p class="mb-card-text">Bad signature, double spend, oversized block — your node throws it out. It makes that call on its own, not because another node told it to.</p>
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">🌐</div>
                 <h3 class="mb-card-title">Strengthen the network</h3>
-                <p class="mb-card-text">Every additional node makes the chain harder to censor or rewrite. Transactions you broadcast go to the peer-to-peer network directly — no intermediary can silently drop them.</p>
+                <p class="mb-card-text">Every node makes the chain harder to censor or rewrite. Your transactions hit the peer-to-peer network directly — no intermediary gets to quietly drop them.</p>
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">⛏️</div>
                 <h3 class="mb-card-title">Mine to your own node</h3>
-                <p class="mb-card-text">If you mine, pointing your miner at your own node means you're building on a chain you've verified yourself — not trusting a remote endpoint you don't control.</p>
+                <p class="mb-card-text">Point your miner at your own node and you build on a chain you checked yourself — not on some remote endpoint you don't control and can't see inside.</p>
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">🔌</div>
                 <h3 class="mb-card-title">Use the read-only API</h3>
-                <p class="mb-card-text">The node exposes a local REST API for block and transaction queries. Build tools, scripts, or integrations against your own chain data with no rate limits or third-party dependencies.</p>
+                <p class="mb-card-text">The node serves a local REST API for block and transaction queries. Build tools, scripts, and integrations against your own chain data — no rate limits, no third party to depend on.</p>
                 <a href="/developers" class="mb-card-link">API reference →</a>
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">📡</div>
                 <h3 class="mb-card-title">Relay transactions</h3>
-                <p class="mb-card-text">A node relays valid transactions to its peers. The more honest relay nodes there are, the faster a legitimate transaction reaches miners and gets confirmed.</p>
+                <p class="mb-card-text">A node passes valid transactions along to its peers. More honest relays means a legitimate transaction reaches miners faster and confirms sooner.</p>
             </div>
         </div>
     </div>
@@ -67,39 +67,39 @@
     <div class="mb-container">
         <div class="mb-section-head mb-reveal">
             <span class="mb-eyebrow">What you need</span>
-            <h2 class="mb-section-title">Requirements — no special hardware</h2>
-            <p class="mb-section-sub">A modest general-purpose machine is enough. MoonBite is still early, so the chain is small.</p>
+            <h2 class="mb-section-title">No special hardware</h2>
+            <p class="mb-section-sub">A plain, everyday machine does the job. MoonBite is early, so the chain is still small.</p>
         </div>
         <div class="mb-grid mb-grid-3">
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">💻</div>
                 <h3>Hardware</h3>
-                <p>Any reasonably modern desktop, laptop, or small server. The node process is light during normal operation — initial block download (IBD) is heavier but temporary.</p>
+                <p>Any halfway modern desktop, laptop, or small server. Day to day the node runs light. Initial block download (IBD) works it harder, but that's a one-time cost.</p>
             </div>
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">💾</div>
                 <h3>Disk</h3>
-                <p>The full chain data grows as the chain matures. On a young network the footprint is small. An SSD improves IBD speed noticeably, but a standard hard drive works.</p>
+                <p>Chain data grows as the network ages. On a young chain the footprint is tiny. An SSD makes IBD noticeably faster, but a plain hard drive gets there too.</p>
             </div>
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">🌐</div>
                 <h3>Bandwidth</h3>
-                <p>A stable broadband connection is all you need. The node uses bandwidth proportional to how many peers it connects to and how much transaction traffic flows. It is not a high-bandwidth workload during normal operation.</p>
+                <p>Steady broadband is all it takes. Usage scales with your peer count and how much traffic flows through — under normal conditions it's a light load, not a firehose.</p>
             </div>
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">🔒</div>
                 <h3>Ports</h3>
-                <p>The default peer-to-peer port should be reachable from the internet for you to contribute inbound connections to the network. Firewalling is your choice — a node behind NAT still validates locally.</p>
+                <p>Open the default peer-to-peer port to the internet if you want to take inbound connections and give back to the network. Prefer to stay firewalled? A node behind NAT still validates every block locally.</p>
             </div>
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">🐧</div>
                 <h3>Operating system</h3>
-                <p>Linux (including WSL), macOS, and Windows are all supported. The reference implementation follows Litecoin Core lineage and builds cleanly on all three platforms.</p>
+                <p>Linux (WSL included), macOS, and Windows all work. The reference implementation carries Litecoin Core lineage and builds cleanly on every one of them.</p>
             </div>
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">⏰</div>
                 <h3>Uptime</h3>
-                <p>A node is most useful when it stays online. Even modest uptime helps the peer-to-peer graph. The node picks up where it left off when restarted — no resync from scratch.</p>
+                <p>A node earns its keep by staying online, but even part-time uptime helps the peer-to-peer graph. Restart it and it picks up where it left off — no resync from zero.</p>
             </div>
         </div>
     </div>
@@ -110,42 +110,42 @@
         <div class="mb-section-head mb-reveal">
             <span class="mb-eyebrow">Getting started</span>
             <h2 class="mb-section-title">How to run a node</h2>
-            <p class="mb-section-sub">Full step-by-step instructions live in the developer docs and README. Here's a quick orientation.</p>
+            <p class="mb-section-sub">The full step-by-step lives in the developer docs and the README. Here's the quick lay of the land.</p>
         </div>
         <div class="mb-grid mb-grid-2">
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">📥</div>
                 <h3 class="mb-card-title">1 — Get the software</h3>
-                <p class="mb-card-text">Clone or download the MoonBite Core source from GitHub, or grab a pre-built binary from the releases page. Verify the checksum before running anything.</p>
+                <p class="mb-card-text">Clone or download the MoonBite Core source from GitHub, or grab a pre-built binary from releases. Check the checksum before you run a single thing.</p>
                 <a href="https://github.com/moonbitecoin/MoonBite-Coin" class="mb-card-link" target="_blank" rel="noopener">MoonBite Core on GitHub →</a>
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">📄</div>
                 <h3 class="mb-card-title">2 — Read the README</h3>
-                <p class="mb-card-text">The README covers build dependencies, configuration options, and how to start the node on mainnet, testnet, or regtest. Start with regtest to try things safely before joining the live network.</p>
+                <p class="mb-card-text">Build dependencies, config options, and how to start on mainnet, testnet, or regtest — it's all in the README. Start on regtest to break things safely before you join the live network.</p>
                 <a href="/downloads/README.txt" class="mb-card-link">README.txt →</a>
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">⚙️</div>
                 <h3 class="mb-card-title">3 — Configure and start</h3>
-                <p class="mb-card-text">A minimal config file is all you need to get going. The developer docs include an annotated example. Once started the node connects to peers, downloads the chain, and begins validating.</p>
+                <p class="mb-card-text">A tiny config file is enough to get moving — the developer docs have an annotated example. Once it starts, the node finds peers, pulls the chain, and starts validating.</p>
                 <a href="/developers#run-a-node" class="mb-card-link">Developer setup guide →</a>
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">🖥️</div>
                 <h3 class="mb-card-title">4 — Query your node</h3>
-                <p class="mb-card-text">Once synced, the local REST API is available for block and transaction queries. You can also point the MoonBite wallet at your own node to avoid relying on the public seed node.</p>
+                <p class="mb-card-text">Once it's synced, the local REST API answers block and transaction queries. Point the MoonBite wallet at your own node and you stop leaning on the public seed node entirely.</p>
                 <a href="/developers" class="mb-card-link">API reference →</a>
             </div>
         </div>
 
         <div class="mb-section-head mb-reveal" style="margin-top: var(--spacing-3xl);">
             <span class="mb-eyebrow">Example</span>
-            <h2 class="mb-section-title">Starting the node &amp; querying the API</h2>
-            <p class="mb-section-sub">These are illustrative examples. Actual flags and paths depend on your build and config — see the README for the full reference.</p>
+            <h2 class="mb-section-title">Start the node, query the API</h2>
+            <p class="mb-section-sub">Illustrative only. Real flags and paths depend on your build and config — the README is the reference that counts.</p>
         </div>
         <div class="mb-code mb-reveal">
-            <span class="mb-c-comment"># Start the node on testnet (safe to experiment)</span><br>
+            <span class="mb-c-comment"># Start the node on testnet (safe to break things)</span><br>
             ./moonbited -testnet -daemon<br>
             <br>
             <span class="mb-c-comment"># Check sync status via the read-only REST API (local node)</span><br>
@@ -165,37 +165,38 @@
         <div class="mb-section-head mb-reveal">
             <span class="mb-eyebrow">Resources</span>
             <h2 class="mb-section-title">Everything you need</h2>
+            <p class="mb-section-sub">Docs, source, and design records. Read before you run.</p>
         </div>
         <div class="mb-grid mb-grid-3">
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">📚</div>
                 <h3 class="mb-card-title">Developer docs</h3>
-                <p class="mb-card-text">The full setup guide, API reference, and how-to-contribute live in the developer section.</p>
+                <p class="mb-card-text">Setup guide, API reference, and how to contribute — all in the developer section.</p>
                 <a href="/developers" class="mb-card-link">Read the docs →</a>
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">🔬</div>
                 <h3 class="mb-card-title">MoonBite Core</h3>
-                <p class="mb-card-text">The reference node implementation. Source, releases, and issue tracker all in one place.</p>
+                <p class="mb-card-text">The reference node. Source, releases, and issue tracker, all in one place.</p>
                 <a href="/moonbite-core" class="mb-card-link">MoonBite Core →</a>
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">📝</div>
                 <h3 class="mb-card-title">Design records (ADRs)</h3>
-                <p class="mb-card-text">Architecture decision records document every major protocol and design choice — useful context for anyone operating a node.</p>
+                <p class="mb-card-text">Every major protocol and design choice, written down and reasoned out. Worth reading if you're going to run a node.</p>
                 <a href="https://github.com/moonbitecoin/MoonBite-Coin" class="mb-card-link" target="_blank" rel="noopener">Browse ADRs →</a>
             </div>
         </div>
         <div class="mb-banner mb-reveal" style="margin-top: var(--spacing-2xl);">
-            <span>Running a node is a technical task. If something doesn't work, check the README first, then the GitHub issue tracker. MoonBite is <strong>not an investment or a security</strong> — running a node is an act of network participation, not a financial activity.</span>
+            <span>Running a node is a technical job. When something breaks, read the README first, then the GitHub issue tracker. MoonBite is <strong>not an investment or a security</strong> — running a node is joining a network, not making a bet.</span>
         </div>
     </div>
 </section>
 
 <section class="mb-section">
     <div class="mb-container">
-        {% set notify_title = "Stay updated on node releases" %}
-        {% set notify_text = "Get one email when a new MoonBite Core release ships. No marketing, no price talk." %}
+        {% set notify_title = "Get told when a new node release ships" %}
+        {% set notify_text = "One email per MoonBite Core release. No marketing, no price talk, ever." %}
         {% set notify_source = "full-node" %}
         {% include "partials/notify_form.html" %}
     </div>

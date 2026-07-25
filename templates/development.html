@@ -11,8 +11,8 @@
     <div class="mb-container">
         <div class="mb-hero-inner">
             <span class="mb-badge"><span class="mb-dot"></span> Open source</span>
-            <h1 class="mb-hero-title">Build on <span class="mb-gradient-text">MoonBite.</span></h1>
-            <p class="mb-hero-sub">The code is open, the API is public, and contributions are welcome. Whether you want to build a tool on the chain, improve the node, write tests, or just understand how it works — start here.</p>
+            <h1 class="mb-hero-title">Read the code. <span class="mb-gradient-text">Build on it.</span></h1>
+            <p class="mb-hero-sub">The source is open, the API is public, and patches are welcome. Whether you want to ship a tool on the chain, sharpen the node, write tests, or just see how the thing works — this is where you start.</p>
             <div class="mb-cta-row">
                 <a href="https://github.com/moonbitecoin/MoonBite-Coin" class="btn btn-primary mb-btn-xl" target="_blank" rel="noopener">View Source on GitHub</a>
                 <a href="/developers" class="btn btn-secondary mb-btn-xl">API Reference</a>
@@ -25,31 +25,31 @@
     <div class="mb-container">
         <div class="mb-section-head mb-reveal">
             <span class="mb-eyebrow">What's available</span>
-            <h2 class="mb-section-title">Four ways to engage with the code</h2>
+            <h2 class="mb-section-title">Four ways in</h2>
         </div>
         <div class="mb-grid mb-grid-2">
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">🔌</div>
                 <h3 class="mb-card-title">Read-only REST API</h3>
-                <p class="mb-card-text">Query blocks, transactions, addresses, and network status over a simple JSON API. No authentication required for read-only endpoints. The API reference and live examples live in the developer docs.</p>
+                <p class="mb-card-text">Pull blocks, transactions, addresses, and network status over a plain JSON API. No auth on read-only endpoints. The full reference and live examples sit in the developer docs.</p>
                 <a href="/developers" class="mb-card-link">API docs →</a>
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">🖧</div>
                 <h3 class="mb-card-title">Run a node</h3>
-                <p class="mb-card-text">The full node is the foundation of everything. Run one locally on regtest, testnet, or — when ready — mainnet. Point your app or scripts at your own node to avoid depending on a shared endpoint.</p>
+                <p class="mb-card-text">The full node is what everything else stands on. Run one locally on regtest, testnet, or — when it's live — mainnet. Point your app at your own node and stop depending on a shared endpoint.</p>
                 <a href="/full-node" class="mb-card-link">Node setup guide →</a>
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">🧪</div>
                 <h3 class="mb-card-title">Source &amp; tests</h3>
-                <p class="mb-card-text">The full source is on GitHub. Clone it, run the test suite, open a pull request. Good first contributions include adding test coverage, filing well-reproduced bugs, and improving build documentation.</p>
+                <p class="mb-card-text">The full source is on GitHub. Clone it, run the tests, open a pull request. Good first moves: add test coverage, file a bug with a clean reproduction, or fix the build docs.</p>
                 <a href="https://github.com/moonbitecoin/MoonBite-Coin" class="mb-card-link" target="_blank" rel="noopener">GitHub →</a>
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">📐</div>
                 <h3 class="mb-card-title">Design records (ADRs)</h3>
-                <p class="mb-card-text">Architecture decision records document every major protocol choice — address format, fee cap, block time, emission schedule, and more. They're the right starting point before touching consensus-related code.</p>
+                <p class="mb-card-text">Architecture decision records capture every major protocol call — address format, fee cap, block time, emission schedule, and more, with the reasoning attached. Read them before you touch consensus code.</p>
                 <a href="https://github.com/moonbitecoin/MoonBite-Coin" class="mb-card-link" target="_blank" rel="noopener">Browse ADRs →</a>
             </div>
         </div>
@@ -61,7 +61,7 @@
         <div class="mb-section-head mb-reveal">
             <span class="mb-eyebrow">REST API</span>
             <h2 class="mb-section-title">Query the chain in one line</h2>
-            <p class="mb-section-sub">The public seed node exposes a read-only JSON API. No API key, no account — just HTTP. All responses follow the same <code>{"status": "success", ...}</code> envelope.</p>
+            <p class="mb-section-sub">The public seed node exposes a read-only JSON API. No API key, no account, just HTTP. Every response comes back in the same <code>{"status": "success", ...}</code> envelope.</p>
         </div>
         <div class="mb-code mb-reveal">
             <span class="mb-c-comment"># Network status — chain height, peer count, sync state</span><br>
@@ -79,7 +79,7 @@
             <span class="mb-c-comment"># Address balance &amp; history</span><br>
             <span class="mb-c-key">curl</span> https://moonbite.org/api/address/moon1youraddresshere
         </div>
-        <p class="mb-section-sub mb-reveal" style="margin-top: var(--spacing-xl);">The full endpoint list, request/response shapes, and error codes are documented in the <a href="/developers" class="link">developer reference</a>.</p>
+        <p class="mb-section-sub mb-reveal" style="margin-top: var(--spacing-xl);">The full endpoint list, request and response shapes, and error codes are all in the <a href="/developers" class="link">developer reference</a>.</p>
     </div>
 </section>
 
@@ -88,38 +88,38 @@
         <div class="mb-section-head mb-reveal">
             <span class="mb-eyebrow">Contributing</span>
             <h2 class="mb-section-title">How to contribute</h2>
-            <p class="mb-section-sub">MoonBite follows a standard open-source contribution model. Here's the short version.</p>
+            <p class="mb-section-sub">Standard open-source workflow, no surprises. Here's the short version.</p>
         </div>
         <div class="mb-grid mb-grid-3">
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">🍴</div>
                 <h3>Fork &amp; clone</h3>
-                <p>Fork the repository on GitHub, clone your fork locally, and create a feature branch. Keep branches focused — one concern per pull request.</p>
+                <p>Fork the repo on GitHub, clone it locally, cut a feature branch. Keep branches tight — one concern per pull request, not five.</p>
             </div>
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">🧪</div>
                 <h3>Run the tests</h3>
-                <p>The repo includes a test suite. Run it before and after your change. A patch that breaks existing tests won't be merged. New functionality should come with new tests.</p>
+                <p>There's a test suite. Run it before and after your change. A patch that breaks existing tests won't merge, and new behaviour should ship with new tests.</p>
             </div>
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">📝</div>
                 <h3>Open a pull request</h3>
-                <p>Describe what the change does and why. Reference any related issue. A concise, honest PR description gets reviewed faster than a vague one.</p>
+                <p>Say what the change does and why. Link the related issue. A tight, honest PR description gets reviewed a lot faster than a vague one.</p>
             </div>
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">🐛</div>
                 <h3>File bugs</h3>
-                <p>If you find something wrong, open a GitHub issue with a clear reproduction case. Include the platform, node version, and exact steps that trigger the bug.</p>
+                <p>Found something broken? Open a GitHub issue with a clear reproduction. Include the platform, the node version, and the exact steps that trigger it.</p>
             </div>
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">📖</div>
                 <h3>Improve docs</h3>
-                <p>Documentation PRs are just as welcome as code PRs. Clearer setup guides, better API examples, and corrected errors all have real value.</p>
+                <p>Docs PRs count just as much as code PRs. A clearer setup guide, a better API example, a fixed typo — all of it matters.</p>
             </div>
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">🔍</div>
                 <h3>Review open PRs</h3>
-                <p>Reviewing someone else's pull request — finding edge cases, checking the logic, testing it locally — is one of the most useful things a contributor can do.</p>
+                <p>Reviewing someone else's pull request — spotting edge cases, checking the logic, running it locally — is one of the most valuable things you can do here.</p>
             </div>
         </div>
     </div>
@@ -129,44 +129,44 @@
     <div class="mb-container">
         <div class="mb-section-head mb-reveal">
             <span class="mb-eyebrow">Where to start</span>
-            <h2 class="mb-section-title">Useful starting points</h2>
+            <h2 class="mb-section-title">Good places to begin</h2>
         </div>
         <div class="mb-grid mb-grid-2">
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">📚</div>
                 <h3 class="mb-card-title">Understand the design</h3>
-                <p class="mb-card-text">Before writing code that touches consensus or protocol logic, read the architecture decision records. They explain not just what was decided but why — important context for avoiding regressions.</p>
+                <p class="mb-card-text">Before you write code that touches consensus or protocol logic, read the ADRs. They tell you not just what was decided but why — and that context is how you avoid quietly reintroducing an old bug.</p>
                 <a href="https://github.com/moonbitecoin/MoonBite-Coin" class="mb-card-link" target="_blank" rel="noopener">ADRs on GitHub →</a>
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">🔬</div>
                 <h3 class="mb-card-title">Read the whitepaper</h3>
-                <p class="mb-card-text">The whitepaper covers the high-level goals and protocol properties MoonBite is built around. It's a useful companion to the ADRs for understanding intent.</p>
+                <p class="mb-card-text">The whitepaper lays out the high-level goals and protocol properties MoonBite is built around. Read it alongside the ADRs to get the intent behind the details.</p>
                 <a href="/whitepaper" class="mb-card-link">Whitepaper →</a>
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">🔌</div>
                 <h3 class="mb-card-title">Explore the API first</h3>
-                <p class="mb-card-text">If you're building an application rather than contributing to the node, the REST API is the fastest path to useful data. No build toolchain needed — just HTTP.</p>
+                <p class="mb-card-text">Building an app rather than hacking on the node? The REST API is the fastest path to real data. No build toolchain to fight — just HTTP.</p>
                 <a href="/developers" class="mb-card-link">Developer reference →</a>
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">🧱</div>
                 <h3 class="mb-card-title">Run regtest locally</h3>
-                <p class="mb-card-text">Regtest mode lets you mine blocks instantly and test transactions without touching the live network. It's the right environment for development and integration testing.</p>
+                <p class="mb-card-text">Regtest lets you mine blocks instantly and test transactions without ever touching the live network. It's the right sandbox for development and integration work.</p>
                 <a href="/full-node" class="mb-card-link">Node guide →</a>
             </div>
         </div>
         <div class="mb-banner mb-reveal" style="margin-top: var(--spacing-2xl);">
-            <span>MoonBite is an open-source technology project. It is <strong>not an investment or a security</strong>. Contributing code, running tests, or building tools on the chain is participation in a technical project — not a financial activity.</span>
+            <span>MoonBite is an open-source technology project. It is <strong>not an investment or a security</strong>. Writing code, running tests, or building tools on the chain is taking part in a technical project — not a financial one.</span>
         </div>
     </div>
 </section>
 
 <section class="mb-section">
     <div class="mb-container">
-        {% set notify_title = "Get updates on development milestones" %}
-        {% set notify_text = "One email when a significant technical milestone ships — new API endpoints, node releases, or mainnet launch. No noise in between." %}
+        {% set notify_title = "Get pinged on real milestones" %}
+        {% set notify_text = "One email when something technical actually ships — new API endpoints, node releases, mainnet launch. No noise in between." %}
         {% set notify_source = "development" %}
         {% include "partials/notify_form.html" %}
     </div>
