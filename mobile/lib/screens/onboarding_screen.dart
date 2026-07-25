@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../wallet/bigcoin_network.dart';
+import '../wallet/secure_clipboard.dart';
 import '../wallet/wallet_controller.dart';
 
 /// First-run flow: create a new wallet (shows the recovery phrase to back up)
@@ -96,11 +96,22 @@ class _BackupDialog extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            TextButton.icon(
-              icon: const Icon(Icons.copy, size: 18),
-              label: const Text('Copy phrase'),
-              onPressed: () =>
-                  Clipboard.setData(ClipboardData(text: phrase)),
+            Builder(
+              builder: (context) => TextButton.icon(
+                icon: const Icon(Icons.copy, size: 18),
+                label: const Text('Copy phrase (auto-clears in 30s)'),
+                onPressed: () {
+                  SecureClipboard().copyEphemeral(phrase);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Phrase copied. It will be cleared from the clipboard '
+                        'in 30 seconds — paste it somewhere safe now.',
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),
