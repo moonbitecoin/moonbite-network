@@ -112,6 +112,32 @@ class WalletController extends ChangeNotifier {
     }
   }
 
+  /// Fetches UTXOs + the current fee rate and builds (and signs, on-device) the
+  /// spend WITHOUT broadcasting it. Lets the UI show the exact fee and total
+  /// before the user commits. Throws [ExcessiveFeeRateException] if the node's
+  /// quoted fee rate is implausibly high, or [InsufficientFundsException].
+  Future<SignedTx> previewSpend({
+    required String toAddress,
+    required double amountBig,
+  }) async {
+    final account = _account;
+    if (account == null) {
+      throw StateError('No wallet loaded');
+    }
+    final amountSats = (amountBig * 1e8).round();
+    final utxos = await chain.getUtxos(account.bech32Address);
+    final feeBigPerKb = await chain.getFeeRate();
+    final feeSatPerVByte = feeBigPerKb * 1e8 / 1000;
+    return TxBuilder(_network).buildSpend(
+      utxos: utxos,
+      toAddress: toAddress,
+      amountSats: amountSats,
+      changeAddress: account.bech32Address,
+      wif: account.wif,
+      feeRateSatPerVByte: feeSatPerVByte,
+    );
+  }
+
   /// Builds, signs (on-device), and broadcasts a payment of [amountBig] BIG to
   /// [toAddress]. Returns the accepted txid.
   Future<String> send({
@@ -136,18 +162,9 @@ class WalletController extends ChangeNotifier {
     }
     _set(busy: true, clearError: true);
     try {
-      final amountSats = (amountBig * 1e8).round();
-      final utxos = await chain.getUtxos(account.bech32Address);
-      final feeBigPerKb = await chain.getFeeRate();
-      final feeSatPerVByte = feeBigPerKb * 1e8 / 1000;
-
-      final signed = TxBuilder(_network).buildSpend(
-        utxos: utxos,
+      final signed = await previewSpend(
         toAddress: toAddress,
-        amountSats: amountSats,
-        changeAddress: account.bech32Address,
-        wif: account.wif,
-        feeRateSatPerVByte: feeSatPerVByte,
+        amountBig: amountBig,
       );
 
       final relayTxid = await chain.broadcast(signed.rawHex);

@@ -60,12 +60,31 @@ class _SendScreenState extends State<SendScreen> {
     final amount = double.parse(_amountController.text.trim());
     final to = _addressController.text.trim();
 
+    // Build (and sign) the tx locally first so the confirmation shows the REAL
+    // fee and total. This also surfaces an implausible node-quoted fee rate
+    // (ExcessiveFeeRateException) before the user commits to anything.
+    final SignedTx preview;
+    try {
+      preview = await wallet.previewSpend(toAddress: to, amountBig: amount);
+    } catch (e) {
+      if (!mounted) return;
+      _showError(e);
+      return;
+    }
+    final feeBig = preview.feeSats / 1e8;
+    final totalBig = (preview.amountSats + preview.feeSats) / 1e8;
+
+    if (!mounted) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Confirm send'),
         content: Text(
-            'Send ${amount.toStringAsFixed(8)} BIG to:\n\n$to\n\nOn ${wallet.network.id}.'),
+          'Send ${amount.toStringAsFixed(8)} BIG to:\n\n$to\n\n'
+          'Network fee: ${feeBig.toStringAsFixed(8)} BIG\n'
+          'Total debited: ${totalBig.toStringAsFixed(8)} BIG\n\n'
+          'On ${wallet.network.id}.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -100,12 +119,21 @@ class _SendScreenState extends State<SendScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      final message = e is InsufficientFundsException
-          ? 'Insufficient funds for this amount + fee.'
-          : e.toString();
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(message)));
+      _showError(e);
     }
+  }
+
+  void _showError(Object e) {
+    final String message;
+    if (e is InsufficientFundsException) {
+      message = 'Insufficient funds for this amount + fee.';
+    } else if (e is ExcessiveFeeRateException) {
+      message = 'The network fee quoted is implausibly high; refusing to send.';
+    } else {
+      message = e.toString();
+    }
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override

@@ -9,6 +9,7 @@ import 'package:moonbite_mobile/services/chain_service.dart';
 import 'package:moonbite_mobile/wallet/authenticator.dart';
 import 'package:moonbite_mobile/wallet/moonbite_network.dart';
 import 'package:moonbite_mobile/wallet/secure_key_store.dart';
+import 'package:moonbite_mobile/wallet/tx_builder.dart';
 import 'package:moonbite_mobile/wallet/wallet_controller.dart';
 
 /// Deterministic stand-in for the biometric gate. [approve] decides whether a
@@ -221,6 +222,59 @@ void main() {
     expect(approver.calls, hasLength(1));
     expect(txid, matches(RegExp(r'^[0-9a-f]{64}$')));
     expect(lastBroadcastHex, isNotNull);
+  });
+
+  test('previewSpend reports the fee without broadcasting', () async {
+    final c = makeController();
+    await c.importExisting(_mnemonic, network: MoonBiteNetwork.testnet);
+    final preview = await c.previewSpend(toAddress: _dest, amountBig: 1.0);
+    expect(preview.feeSats, greaterThan(0));
+    expect(preview.amountSats, 100000000);
+    // A preview must never hit the broadcast endpoint.
+    expect(lastBroadcastHex, isNull);
+  });
+
+  test('send refuses an implausibly high node-quoted fee rate', () async {
+    // A hostile node quotes an absurd fee rate; the wallet must refuse rather
+    // than burn the UTXO as fee. Auth is approved so we prove the fee cap —
+    // not the auth gate — is what stops the send.
+    final c = WalletController(
+      chain: ChainService(
+        baseUrl: 'https://x',
+        httpClient: MockClient((req) async {
+          final path = req.url.path;
+          if (path.contains('/utxos')) {
+            return http.Response(
+                jsonEncode({
+                  'utxos': [
+                    {
+                      'txid':
+                          '1111111111111111111111111111111111111111111111111111111111111111',
+                      'vout': 0,
+                      'amount': 50.0,
+                      'scriptPubKey': _spk0,
+                      'height': 10,
+                      'confirmations': 120,
+                    }
+                  ],
+                }),
+                200);
+          }
+          if (path.endsWith('/api/fee')) {
+            // 1.0 BIG/kB => 100000 sat/vB, far above the safety cap.
+            return http.Response(jsonEncode({'feerate': 1.0}), 200);
+          }
+          return http.Response('{}', 200);
+        }),
+      ),
+      store: SecureKeyStore(),
+      authenticator: _FakeAuthenticator(true),
+    );
+    await c.importExisting(_mnemonic, network: MoonBiteNetwork.testnet);
+    await expectLater(
+      c.send(toAddress: _dest, amountBig: 1.0),
+      throwsA(isA<ExcessiveFeeRateException>()),
+    );
   });
 
   test('rejects an invalid mnemonic import', () async {

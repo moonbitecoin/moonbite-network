@@ -98,6 +98,34 @@ void main() {
     );
   });
 
+  test('rejects an implausibly high fee rate', () {
+    // A hostile node could quote an absurd fee rate; combined with the
+    // dust-fold this would burn most of the UTXO as fee. Refuse it.
+    expect(
+      () => builder.buildSpend(
+        utxos: [utxo(50.0)],
+        toAddress: acct1.bech32Address,
+        amountSats: 100000000,
+        changeAddress: acct0.bech32Address,
+        wif: acct0.wif,
+        feeRateSatPerVByte: TxBuilder.maxFeeRateSatPerVByte + 1,
+      ),
+      throwsA(isA<ExcessiveFeeRateException>()),
+    );
+  });
+
+  test('accepts a fee rate right at the safety cap', () {
+    final signed = builder.buildSpend(
+      utxos: [utxo(50.0)],
+      toAddress: acct1.bech32Address,
+      amountSats: 100000000,
+      changeAddress: acct0.bech32Address,
+      wif: acct0.wif,
+      feeRateSatPerVByte: TxBuilder.maxFeeRateSatPerVByte,
+    );
+    expect(signed.rawHex, isNotEmpty);
+  });
+
   test('drops dust change into the fee', () {
     // Pick an amount so the remainder after a normal fee is below dust.
     // 1 BIG utxo, send (1 BIG - 150 sats): change would be ~ (150 - fee) < dust.
