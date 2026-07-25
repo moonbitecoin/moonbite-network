@@ -1,0 +1,80 @@
+# CODEOWNERS — who must approve changes to the MoonBite canonical repo.
+#
+# GitHub uses the LAST matching pattern for a given file. Anything not matched
+# below falls through to the catch-all owner on the first line. Ownership only
+# has teeth when branch protection has "Require review from Code Owners"
+# enabled on the protected branch (see docs/BRANCH_PROTECTION.md).
+#
+# The goal: nobody can merge a change to consensus, proof-of-work, chain
+# parameters, key handling, or CI/release plumbing without the maintainer's
+# explicit review — even though anyone is free to fork and experiment.
+
+# ---------------------------------------------------------------------------
+# Catch-all: the maintainer owns everything by default.
+# ---------------------------------------------------------------------------
+*                               @moonbitecoin
+
+# ---------------------------------------------------------------------------
+# Consensus / proof-of-work / chain parameters — CRITICAL. A change here can
+# hard-fork the chain or silently alter money supply. Owner review required.
+# ---------------------------------------------------------------------------
+/pow.py                         @moonbitecoin
+/params.py                      @moonbitecoin
+/merkle.py                      @moonbitecoin
+/block.py                       @moonbitecoin
+/transaction.py                 @moonbitecoin
+/utxo.py                        @moonbitecoin
+/store.py                       @moonbitecoin
+/node.py                        @moonbitecoin
+/full_node.py                   @moonbitecoin
+/node_rpc_server.py             @moonbitecoin
+/calc.py                        @moonbitecoin
+/spv.py                         @moonbitecoin
+
+# ---------------------------------------------------------------------------
+# P2P / wire protocol — a divergent message format partitions the network.
+# ---------------------------------------------------------------------------
+/network.py                     @moonbitecoin
+/p2p.py                         @moonbitecoin
+/p2p_network.py                 @moonbitecoin
+/shared_state.py                @moonbitecoin
+/shared_client.py               @moonbitecoin
+
+# ---------------------------------------------------------------------------
+# Value-handling surfaces — wallet keys, swaps, exchange, merchant settlement.
+# ---------------------------------------------------------------------------
+/wallet.py                      @moonbitecoin
+/swap_verifier.py               @moonbitecoin
+/exchange.py                    @moonbitecoin
+/merchants.py                   @moonbitecoin
+
+# ---------------------------------------------------------------------------
+# Mobile wallet cryptography — on-device key derivation, signing, storage.
+# ---------------------------------------------------------------------------
+/mobile/lib/wallet/             @moonbitecoin
+/mobile/lib/services/cert_pinning.dart   @moonbitecoin
+/mobile/android/app/src/main/   @moonbitecoin
+
+# ---------------------------------------------------------------------------
+# Miner and explorer RPC bridge.
+# ---------------------------------------------------------------------------
+/miner/                         @moonbitecoin
+/explorer/api.py                @moonbitecoin
+/explorer/config.py             @moonbitecoin
+
+# ---------------------------------------------------------------------------
+# CI / release / deploy plumbing — a poisoned workflow can exfiltrate secrets
+# or ship a backdoored build. Lock it down.
+# ---------------------------------------------------------------------------
+/.github/                       @moonbitecoin
+/.github/workflows/             @moonbitecoin
+/deploy/                        @moonbitecoin
+/release/                       @moonbitecoin
+/railway.json                   @moonbitecoin
+/wsgi_server.py                 @moonbitecoin
+
+# ---------------------------------------------------------------------------
+# Security policy and this ownership map itself.
+# ---------------------------------------------------------------------------
+/SECURITY.md                    @moonbitecoin
+/.github/CODEOWNERS             @moonbitecoin
