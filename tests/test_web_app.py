@@ -435,6 +435,30 @@ class TestErrorHandling:
         response = client.get("/api/blockchain/info")
         assert "application/json" in response.content_type
 
+    def test_oversized_body_rejected_413(self, client):
+        """A hostile over-sized POST body is refused with 413 rather than being
+        buffered + parsed. Guards against the memory-exhaustion DoS where one
+        multi-hundred-MB request spikes the worker past 1 GB RAM."""
+        cap = app.config["MAX_CONTENT_LENGTH"]
+        assert cap is not None and cap <= 1024 * 1024  # sane cap is configured
+        oversized = b'{"email":"a@b.co","source":"' + b"X" * (cap + 1) + b'"}'
+        response = client.post(
+            "/api/notify",
+            data=oversized,
+            content_type="application/json",
+        )
+        assert response.status_code == 413
+        assert response.get_json()["status"] == "error"
+
+    def test_normal_body_still_accepted(self, client):
+        """A legitimately small body is unaffected by the cap."""
+        response = client.post(
+            "/api/notify",
+            json={"email": "real.user@example.com", "source": "test"},
+        )
+        # Not a 413 — the cap only rejects over-sized payloads.
+        assert response.status_code != 413
+
 
 # ============================================================================= #
 # Integration Tests

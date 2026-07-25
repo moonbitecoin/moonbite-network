@@ -62,6 +62,15 @@ if _TRUSTED_PROXY_COUNT > 0:
         app.wsgi_app, x_for=_TRUSTED_PROXY_COUNT, x_proto=1, x_host=1
     )
 
+# Hard cap on request body size. Flask/Werkzeug default to unlimited, so without
+# this a single POST with a multi-hundred-MB body forces the worker to buffer +
+# JSON-parse it — ~2.8x amplification measured, i.e. one 400 MB request spikes
+# the process past 1 GB RAM and OOM-kills a small container. Every legitimate
+# API body here (notify, orders, invoices, tx broadcast) is well under 256 KB,
+# so Werkzeug rejects anything larger with 413 BEFORE reading the payload.
+_MAX_CONTENT_LENGTH = int(os.environ.get("MOONBITE_MAX_BODY_BYTES", str(256 * 1024)))
+app.config["MAX_CONTENT_LENGTH"] = _MAX_CONTENT_LENGTH
+
 # Global state for mining operations
 app.mining_state = {
     "is_mining": False,
@@ -1300,6 +1309,13 @@ def api_explorer_search():
 def not_found(error):
     """Handle 404 errors."""
     return jsonify({"status": "error", "message": "Not found"}), 404
+
+
+@app.errorhandler(413)
+def payload_too_large(error):
+    """Reject over-sized request bodies (see MAX_CONTENT_LENGTH) with clean JSON
+    instead of buffering the payload."""
+    return jsonify({"status": "error", "message": "Request body too large"}), 413
 
 
 @app.errorhandler(500)
