@@ -38,6 +38,57 @@ def _err(message, status):
     return resp
 
 
+# MoonBite address prefixes per network. A wrong-network address is *well-formed*
+# but belongs to another chain, so the node rejects it with an unhelpful "invalid
+# address". We classify by prefix to explain the real problem to the miner.
+_ADDR_NETWORKS = (
+    # (network key, human label, bech32 HRPs, base58 leading chars)
+    ("main", "mainnet", ("moon1", "moonmweb1"), ("M", "3")),
+    ("test", "testnet", ("tmoon1", "tmoonmweb1"), ("m", "n", "2")),
+    ("regtest", "regtest", ("rmoon1", "rmoonmweb1"), ()),
+)
+
+# What getblockchaininfo's "chain" value maps to as a human label.
+_CHAIN_LABELS = {"main": "mainnet", "test": "testnet", "regtest": "regtest"}
+
+
+def _classify_address_network(address):
+    """Best-effort guess of which MoonBite network an address is for.
+
+    Returns a network key ('main'|'test'|'regtest') or None if the prefix is
+    unrecognized. Bech32 HRPs are unambiguous; base58 leading chars are a hint.
+    """
+    addr = address.strip()
+    lower = addr.lower()
+    for key, _label, hrps, _b58 in _ADDR_NETWORKS:
+        if any(lower.startswith(h) for h in hrps):
+            return key
+    for key, _label, _hrps, b58 in _ADDR_NETWORKS:
+        if b58 and addr[:1] in b58:
+            return key
+    return None
+
+
+def _wrong_network_hint(address, node_chain):
+    """If the address is for a different network than the node, explain it.
+
+    Returns a targeted error string, or None if there is no clear mismatch (in
+    which case the generic "invalid address" message stands).
+    """
+    guessed = _classify_address_network(address)
+    if guessed is None or node_chain is None or guessed == node_chain:
+        return None
+    addr_label = _CHAIN_LABELS.get(guessed, guessed)
+    node_label = _CHAIN_LABELS.get(node_chain, node_chain)
+    want_prefix = {"main": "moon1…", "test": "tmoon1…", "regtest": "rmoon1…"}.get(
+        node_chain, "the node's"
+    )
+    return (
+        f"wrong network: that looks like a {addr_label} address, but this node "
+        f"is {node_label}. Use a {node_label} address ({want_prefix})."
+    )
+
+
 def _allowed_origin(origin):
     """Return the value to echo in Access-Control-Allow-Origin, or None."""
     allow = [o.strip() for o in config.MINING_CORS_ORIGINS.split(",") if o.strip()]
@@ -221,7 +272,16 @@ def mine():
     try:
         info = client.validateaddress(address)
         if not info.get("isvalid"):
-            return _err("invalid MoonBite address", 400)
+            # A well-formed address for the wrong network is the common footgun
+            # (e.g. a tmoon1… testnet address sent to a mainnet node). Detect it
+            # and say so, instead of the bare "invalid address".
+            node_chain = None
+            try:
+                node_chain = (client.getblockchaininfo() or {}).get("chain")
+            except (RPCConnectionError, RPCError):
+                pass
+            hint = _wrong_network_hint(address, node_chain)
+            return _err(hint or "invalid MoonBite address", 400)
     except RPCConnectionError as exc:
         return _err(str(exc), 503)
     except RPCError as exc:
