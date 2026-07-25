@@ -40,6 +40,34 @@
   nav.site .links { display: flex; align-items: center; gap: 26px; font-size: 11px; letter-spacing: 2.2px; }
   nav.site .links a { color: rgba(242,246,255,0.55); }
   nav.site .links a:hover { color: #F2F6FF; }
+  nav.site .links .menu-btn { background: none; border: 0; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 2.2px;
+    color: rgba(242,246,255,0.55); padding: 0; transition: color .2s ease; }
+  nav.site .links .menu-btn:hover { color: #F2F6FF; }
+
+  /* ---------- full sitemap overlay ---------- */
+  .menu-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(4,5,10,0.92);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    opacity: 0; transition: opacity .25s ease; }
+  .menu-overlay.open { opacity: 1; }
+  .menu-panel { position: relative; max-width: 1080px; margin: 0 auto; padding: 120px 44px 60px; }
+  .menu-close { position: absolute; top: 26px; right: 40px; background: none; border: 0;
+    color: rgba(242,246,255,0.62); font-size: 34px; line-height: 1; cursor: pointer;
+    transition: color .2s ease; }
+  .menu-close:hover { color: #F2F6FF; }
+  .menu-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 34px; }
+  .menu-col h4 { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 2px;
+    text-transform: uppercase; color: rgba(242,246,255,0.42); margin: 0 0 16px; font-weight: 500; }
+  .menu-col a { display: block; padding: 6px 0; color: rgba(242,246,255,0.82);
+    font-size: 14px; transition: color .2s ease; }
+  .menu-col a:hover { color: var(--accent); }
+  @media (max-width: 860px) {
+    .menu-grid { grid-template-columns: 1fr 1fr; gap: 26px; }
+    .menu-panel { padding: 96px 24px 48px; }
+  }
+  @media (max-width: 480px) {
+    .menu-grid { grid-template-columns: 1fr; }
+  }
 
   .hero { position: relative; z-index: 10; display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 64px; align-items: center; padding: 56px 44px 84px; max-width: 1320px; margin: 0 auto; }
   .hero-copy { display: flex; flex-direction: column; gap: 28px; animation: mbRise 0.9s cubic-bezier(0.2,0,0.1,1) both; }
@@ -190,12 +218,72 @@
       <span>MOON<span style="color: var(--accent)">BITE</span></span>
     </div>
     <div class="links mono">
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false">MENU</button>
       <a href="#wall">THE WALL</a>
       <a href="/explorer">EXPLORER</a>
       <a href="#honest">RISKS</a>
       <a href="/get-wallet">WALLET</a>
     </div>
   </nav>
+
+  <!-- Full sitemap overlay: every page, in the same void/mono palette -->
+  <div class="menu-overlay" id="menuOverlay" hidden>
+    <div class="menu-panel">
+      <button class="menu-close" id="menuClose" type="button" aria-label="Close menu">&times;</button>
+      <div class="menu-grid">
+        <div class="menu-col">
+          <h4>Start</h4>
+          <a href="/getting-started">Getting Started</a>
+          <a href="/how-it-works">How It Works</a>
+          <a href="/take-a-bite">Take a Bite</a>
+          <a href="/individuals">For Individuals</a>
+          <a href="/businesses">For Businesses</a>
+          <a href="/you-need-to-know">You Need to Know</a>
+          <a href="/why">Why MoonBite</a>
+          <a href="/whitepaper">White Paper</a>
+        </div>
+        <div class="menu-col">
+          <h4>Get &amp; use MBITE</h4>
+          <a href="/get-wallet">Wallet</a>
+          <a href="/wallet">Web Wallet</a>
+          <a href="/mine">Mining</a>
+          <a href="/mining">Live Reactor</a>
+          <a href="/buy">Buy MBITE</a>
+          <a href="/sell">Sell MBITE</a>
+          <a href="/markets">Exchange</a>
+          <a href="/merchants">Accept MBITE</a>
+        </div>
+        <div class="menu-col">
+          <h4>Explore &amp; build</h4>
+          <a href="/explorer">Explorer</a>
+          <a href="/dashboard">Dashboard</a>
+          <a href="/exchanges">Exchanges</a>
+          <a href="/developers">Developers</a>
+          <a href="/full-node">Run a Full Node</a>
+          <a href="/moonbite-core">MoonBite Core</a>
+          <a href="/development">Development</a>
+        </div>
+        <div class="menu-col">
+          <h4>Learn &amp; community</h4>
+          <a href="/learn">Learn &amp; FAQ</a>
+          <a href="/resources">Resources</a>
+          <a href="/vocabulary">Vocabulary</a>
+          <a href="/community">Community</a>
+          <a href="/support">Support MoonBite</a>
+          <a href="/events">Events</a>
+          <a href="/blog">Blog</a>
+          <a href="/about">About</a>
+        </div>
+        <div class="menu-col">
+          <h4>Safety &amp; legal</h4>
+          <a href="/scams">Avoid Scams</a>
+          <a href="/press">Press</a>
+          <a href="/legal">Legal</a>
+          <a href="/privacy">Privacy</a>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <section class="hero">
     <div class="hero-copy">
@@ -567,6 +655,26 @@
 
   // the chain advances on its own, like a live tip
   chain = setInterval(function () { state.height += 1; render(); }, 9000);
+
+  // ---------- sitemap overlay ----------
+  var mBtn = $("menuBtn"), mOv = $("menuOverlay"), mClose = $("menuClose");
+  function openMenu() {
+    mOv.hidden = false;
+    void mOv.offsetWidth; // force reflow so the fade-in transition runs
+    mOv.classList.add("open");
+    mBtn.setAttribute("aria-expanded", "true");
+  }
+  function closeMenu() {
+    mOv.classList.remove("open");
+    mBtn.setAttribute("aria-expanded", "false");
+    setTimeout(function () { mOv.hidden = true; }, 260);
+  }
+  if (mBtn) mBtn.addEventListener("click", openMenu);
+  if (mClose) mClose.addEventListener("click", closeMenu);
+  if (mOv) mOv.addEventListener("click", function (e) { if (e.target === mOv) closeMenu(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && mOv && !mOv.hidden) closeMenu();
+  });
 
   render();
 })();
