@@ -1236,6 +1236,40 @@ def add_cors_headers(response):
     return response
 
 
+# CSP is intentionally conservative: the site serves all scripts/styles from its
+# own origin but uses a few inline <script>/<style> blocks (theme + reveal), so
+# script/style allow 'unsafe-inline'. Everything else is locked to 'self', no
+# framing, no plugins. Tightening to nonces is future work (see AUDIT_REPORT.md).
+_CSP = (
+    "default-src 'self'; "
+    "script-src 'self' 'unsafe-inline'; "
+    "style-src 'self' 'unsafe-inline'; "
+    "img-src 'self' data:; "
+    "font-src 'self'; "
+    "connect-src 'self'; "
+    "base-uri 'self'; "
+    "form-action 'self'; "
+    "frame-ancestors 'none'"
+)
+
+
+@app.after_request
+def add_security_headers(response):
+    """Baseline hardening headers on every response (see AUDIT_REPORT.md #4).
+
+    HSTS defends against SSL-strip downgrade; nosniff blocks MIME confusion;
+    frame-ancestors/X-Frame-Options stop clickjacking; Referrer-Policy limits
+    leakage. Safe to also set at the nginx edge — duplicates are harmless."""
+    response.headers.setdefault(
+        "Strict-Transport-Security", "max-age=63072000; includeSubDomains"
+    )
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Content-Security-Policy", _CSP)
+    return response
+
+
 # ============================================================================= #
 # App Initialization
 # ============================================================================= #
