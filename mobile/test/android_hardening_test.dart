@@ -75,10 +75,12 @@ void main() {
   });
 
   group('biometric host activity', () {
+    late String kt;
+    setUpAll(() => kt = _f(
+            'android/app/src/main/kotlin/org/moonbite/moonbite_mobile/MainActivity.kt')
+        .readAsStringSync());
+
     test('MainActivity extends FlutterFragmentActivity for local_auth', () {
-      final kt = _f(
-              'android/app/src/main/kotlin/org/moonbite/moonbite_mobile/MainActivity.kt')
-          .readAsStringSync();
       // local_auth's prompt is a Fragment; a plain FlutterActivity can't host
       // it and the biometric gate would crash at runtime.
       expect(kt.contains('FlutterFragmentActivity'), isTrue);
@@ -86,6 +88,15 @@ void main() {
         kt.contains(': FlutterActivity()'),
         isFalse,
         reason: 'must not extend the non-fragment FlutterActivity',
+      );
+    });
+
+    test('sets FLAG_SECURE to block screenshots of seed/balances', () {
+      expect(
+        kt.contains('FLAG_SECURE'),
+        isTrue,
+        reason: 'the recovery phrase and balances must not leak into screen '
+            'captures or the recent-apps thumbnail',
       );
     });
   });
