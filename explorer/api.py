@@ -18,6 +18,10 @@ The wallet builds and signs transactions ON DEVICE; the server only relays the
 finished hex and reports chain state. No keys ever reach this server.
 """
 import hmac
+import threading
+import time
+from collections import defaultdict
+from functools import wraps
 
 from flask import Blueprint, jsonify, request
 
@@ -36,6 +40,34 @@ def _err(message, status):
     resp = jsonify({"error": message})
     resp.status_code = status
     return resp
+
+
+# Minimal in-process anti-abuse limiter for the unauthenticated relay endpoints
+# (single-node explorer). Keyed on remote_addr so it fails closed if a proxy
+# hides the real client. Consensus validity is still enforced by the node.
+_rl_lock = threading.Lock()
+_rl_hits: "defaultdict[tuple, list]" = defaultdict(list)
+
+
+def _rate_limit(max_calls, window_seconds=60):
+    def decorator(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            key = (request.remote_addr or "unknown", fn.__name__)
+            now = time.time()
+            with _rl_lock:
+                hits = _rl_hits[key]
+                cutoff = now - window_seconds
+                hits[:] = [t for t in hits if t > cutoff]
+                if len(hits) >= max_calls:
+                    retry = int(window_seconds - (now - hits[0])) + 1
+                    resp = _err(f"rate limit exceeded ({max_calls}/{window_seconds}s)", 429)
+                    resp.headers["Retry-After"] = str(retry)
+                    return resp
+                hits.append(now)
+            return fn(*args, **kwargs)
+        return wrapper
+    return decorator
 
 
 # MoonBite address prefixes per network. A wrong-network address is *well-formed*
@@ -228,6 +260,7 @@ def fee():
 
 
 @api.route("/tx/broadcast", methods=["POST"])
+@_rate_limit(20, 60)
 def broadcast():
     client = _client()
     if client.is_demo():
