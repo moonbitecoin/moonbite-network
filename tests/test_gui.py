@@ -19,6 +19,7 @@ class TestGUIImports:
 
     def test_gui_module_imports(self):
         """Assert gui module can be imported."""
+        pytest.importorskip("PyQt6", reason="PyQt6 not installed (headless CI)")
         try:
             import gui
             assert hasattr(gui, "MainWindow")
@@ -183,6 +184,7 @@ class TestGUIIntegration:
 
     def test_wallet_address_generation(self):
         """Test wallet address generation via GUI."""
+        pytest.importorskip("PyQt6", reason="PyQt6 not installed (headless CI)")
         from node import Node
         from gui import WalletTab
 
