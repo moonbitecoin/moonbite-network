@@ -352,14 +352,175 @@ def mining_worker(blocks_to_mine: int, miner_address: str) -> None:
 
 @app.route("/")
 def home_page():
-    """Render the marketing homepage."""
+    """Render the marketing homepage (editorial/terminal home-v2 design)."""
+    return render_template("home_v2.html")
+
+
+@app.route("/home-classic")
+def home_classic_page():
+    """Render the previous cinematic film-scroll homepage (kept for reference)."""
     return render_template("home.html")
+
+
+@app.route("/take-a-bite")
+def take_a_bite_page():
+    """Render the "You can't buy MoonBite" cinematic mining-demo landing page."""
+    return render_template("take_a_bite.html")
+
+
+@app.route("/logo-sting")
+def logo_sting_page():
+    """Render the MoonBite logo animation (Boot -> Bite -> Lockup sting)."""
+    return render_template("logo_sting.html")
+
+
+@app.route("/home-v2")
+def home_v2_page():
+    """Preview the new editorial/terminal MoonBite home design."""
+    return render_template("home_v2.html")
 
 
 @app.route("/dashboard")
 def dashboard_page():
     """Render the live network dashboard."""
     return render_template("index.html")
+
+
+# --- bitcoin.org-style information architecture (marketing pages) ------------ #
+# Introduction
+@app.route("/individuals")
+def individuals_page():
+    """MoonBite for individuals."""
+    return render_template("individuals.html")
+
+
+@app.route("/businesses")
+def businesses_page():
+    """MoonBite for businesses."""
+    return render_template("businesses.html")
+
+
+@app.route("/getting-started")
+def getting_started_page():
+    """Step-by-step getting-started walkthrough."""
+    return render_template("getting_started.html")
+
+
+@app.route("/how-it-works")
+def how_it_works_page():
+    """Plain-language explanation of how MoonBite works."""
+    return render_template("how_it_works.html")
+
+
+@app.route("/you-need-to-know")
+def you_need_to_know_page():
+    """Honest caveats before using MoonBite."""
+    return render_template("you_need_to_know.html")
+
+
+@app.route("/whitepaper")
+def whitepaper_page():
+    """Protocol & design overview."""
+    return render_template("whitepaper.html")
+
+
+# Resources
+@app.route("/resources")
+def resources_page():
+    """Directory of MoonBite tools and docs."""
+    return render_template("resources.html")
+
+
+@app.route("/exchanges")
+def exchanges_page():
+    """Where to get MBITE (listings coming soon)."""
+    return render_template("exchanges.html")
+
+
+@app.route("/community")
+def community_page():
+    """Ways to participate in the MoonBite community."""
+    return render_template("community.html")
+
+
+@app.route("/vocabulary")
+def vocabulary_page():
+    """Glossary of MoonBite / crypto terms."""
+    return render_template("vocabulary.html")
+
+
+@app.route("/events")
+def events_page():
+    """MoonBite events and milestones."""
+    return render_template("events.html")
+
+
+@app.route("/moonbite-core")
+def moonbite_core_page():
+    """The MoonBite Core reference node software."""
+    return render_template("moonbite_core.html")
+
+
+# Participate
+@app.route("/support")
+def support_page():
+    """Support the MoonBite network."""
+    return render_template("support.html")
+
+
+@app.route("/buy")
+def buy_page():
+    """Getting MBITE (buying — coming soon)."""
+    return render_template("buy.html")
+
+
+@app.route("/sell")
+def sell_page():
+    """Selling MBITE (coming soon)."""
+    return render_template("sell.html")
+
+
+@app.route("/full-node")
+def full_node_page():
+    """Running a full node."""
+    return render_template("full_node.html")
+
+
+@app.route("/development")
+def development_page():
+    """Building on and contributing to MoonBite."""
+    return render_template("development.html")
+
+
+# Other
+@app.route("/scams")
+def scams_page():
+    """How to avoid MoonBite-related scams."""
+    return render_template("scams.html")
+
+
+@app.route("/legal")
+def legal_page():
+    """Plain-language legal disclaimer."""
+    return render_template("legal.html")
+
+
+@app.route("/privacy")
+def privacy_page():
+    """Plain-language privacy policy."""
+    return render_template("privacy.html")
+
+
+@app.route("/press")
+def press_page():
+    """Press and brand information."""
+    return render_template("press.html")
+
+
+@app.route("/blog")
+def blog_page():
+    """MoonBite build log."""
+    return render_template("blog.html")
 
 
 @app.route("/get-wallet")

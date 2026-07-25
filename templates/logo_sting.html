@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoonBite — Logo Sting</title>
+<meta name="description" content="The MoonBite logo animation: a bite carves the full moon into a crescent, then the MOONBITE wordmark locks up.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --accent: #5FE9D0; --ice: #F2F6FF; --void: #04050a; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--void); }
+  body {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    min-height: 100svh;
+    overflow: hidden;
+    font-family: "Space Grotesk", system-ui, sans-serif;
+  }
+  .sting-stage {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    height: 100svh;
+    background: var(--void);
+    overflow: hidden;
+  }
+  .sting-stage svg { display: block; width: 100%; height: 100%; }
+
+  /* Overlay controls */
+  .sting-skip {
+    position: absolute;
+    top: clamp(1rem, 3vw, 2rem);
+    right: clamp(1rem, 3vw, 2rem);
+    z-index: 4;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(242,246,255,0.5);
+    text-decoration: none;
+    padding: 0.5rem 0.85rem;
+    border: 1px solid rgba(242,246,255,0.16);
+    border-radius: 999px;
+    transition: color .25s ease, border-color .25s ease;
+  }
+  .sting-skip:hover { color: var(--ice); border-color: rgba(95,233,208,0.6); }
+
+  .sting-outro {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(2.2rem, 8vh, 6rem);
+    transform: translateX(-50%) translateY(12px);
+    z-index: 4;
+    display: flex;
+    gap: 0.85rem;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .7s ease, transform .7s cubic-bezier(.2,.8,.2,1);
+  }
+  .sting-outro.is-in { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+  .sting-btn {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    text-decoration: none;
+    padding: 0.85rem 1.6rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .sting-btn.primary {
+    color: #04121; color: #041210;
+    background: var(--accent);
+    box-shadow: 0 12px 40px rgba(95,233,208,0.35);
+  }
+  .sting-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 16px 52px rgba(95,233,208,0.5); }
+  .sting-btn.ghost {
+    color: var(--ice);
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(242,246,255,0.18);
+  }
+  .sting-btn.ghost:hover { transform: translateY(-2px); border-color: rgba(95,233,208,0.6); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sting-outro { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="sting-stage" id="stage">
+  <a class="sting-skip" href="/" id="skip">Skip intro →</a>
+
+  <svg id="sting" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid meet" aria-label="MoonBite logo animation">
+    <defs>
+      <radialGradient id="bloom">
+        <stop offset="0" stop-color="#F2F6FF" stop-opacity="0.10"/>
+        <stop offset="0.45" stop-color="#5FE9D0" stop-opacity="0.07"/>
+        <stop offset="1" stop-color="#5FE9D0" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="haze" cx="0.5" cy="0.5">
+        <stop offset="0" stop-color="#101a3a" stop-opacity="0.65"/>
+        <stop offset="1" stop-color="#04050a" stop-opacity="0"/>
+      </radialGradient>
+      <pattern id="scan" width="6" height="6" patternUnits="userSpaceOnUse">
+        <rect x="0" y="0" width="6" height="1" fill="#F2F6FF" opacity="0.05"/>
+      </pattern>
+      <mask id="markMask" maskUnits="userSpaceOnUse" x="-266.5" y="-266.5" width="533" height="533">
+        <rect id="sweepRect" x="-266.5" y="-209" width="533" height="418" fill="#fff"/>
+        <circle id="biteCircle" cx="102.5" cy="-26.65" r="172.2" fill="#000"/>
+      </mask>
+    </defs>
+
+    <!-- VOID -->
+    <g id="void">
+      <rect x="0" y="0" width="1920" height="1080" fill="#04050a"/>
+      <rect x="0" y="0" width="1920" height="1080" fill="url(#haze)"/>
+      <rect x="0" y="0" width="1920" height="1080" fill="url(#scan)" opacity="0.5"/>
+      <g id="motes"></g>
+      <g id="baseline"></g>
+    </g>
+
+    <!-- HUD -->
+    <g id="hud" font-family="JetBrains Mono, monospace" font-size="24" letter-spacing="4">
+      <text x="72" y="92" fill="#F2F6FF" opacity="0.5">MB//ORBIT-01</text>
+      <text id="hudSync" x="72" y="128" fill="#5FE9D0" opacity="0.75">SYNC 0.500</text>
+      <text x="1848" y="92" text-anchor="end" fill="#F2F6FF" opacity="0.5">PRE-MAINNET</text>
+      <text x="1848" y="128" text-anchor="end" fill="#F2F6FF" opacity="0.28">TESTNET LIVE</text>
+      <g stroke="#F2F6FF" stroke-width="2" opacity="0.22" fill="none">
+        <path d="M40 40 h44 M40 40 v44"/><path d="M1880 40 h-44 M1880 40 v44"/>
+        <path d="M40 1040 h44 M40 1040 v-44"/><path d="M1880 1040 h-44 M1880 1040 v-44"/>
+      </g>
+    </g>
+
+    <!-- ZOOM -->
+    <g id="zoomG">
+      <g id="groupG">
+
+        <g id="moonG">
+          <!-- MARK -->
+          <g id="markG">
+            <circle id="bloom" cx="0" cy="0" r="492" fill="url(#bloom)" opacity="1"/>
+
+            <!-- RING -->
+            <g id="ringG" opacity="0.95">
+              <circle cx="0" cy="0" r="307.5" fill="none" stroke="#F2F6FF" stroke-width="1.5" opacity="0.2"/>
+              <circle cx="0" cy="0" r="352.6" fill="none" stroke="#5FE9D0" stroke-width="1.5" opacity="0.3" stroke-dasharray="2 26"/>
+              <g id="ticks"></g>
+            </g>
+
+            <!-- DISCS (chroma split) -->
+            <g id="discA" mask="url(#markMask)" opacity="0.55" transform="translate(-12.6 0)"><circle cx="0" cy="0" r="205" fill="#5FE9D0"/></g>
+            <g id="discC" mask="url(#markMask)" opacity="0.55" transform="translate(12.6 0)"><circle cx="0" cy="0" r="205" fill="#5B7BFF"/></g>
+            <g id="discI" mask="url(#markMask)" opacity="1"><circle cx="0" cy="0" r="205" fill="#F2F6FF"/></g>
+
+            <!-- CRATERS -->
+            <g mask="url(#markMask)" opacity="0.5">
+              <circle cx="0" cy="0" r="139.4" fill="none" stroke="#04050a" stroke-width="1.5" opacity="0.35"/>
+              <circle cx="-77.9" cy="-61.5" r="11.3" fill="#04050a" opacity="0.3"/>
+              <circle cx="-32.8" cy="82" r="7.2" fill="#04050a" opacity="0.25"/>
+            </g>
+
+            <!-- SWEEP EDGE -->
+            <g id="sweepEdge" style="display:none">
+              <line id="sweepEdgeA" x1="-256.25" y1="0" x2="256.25" y2="0" stroke="#5FE9D0" stroke-width="4"/>
+              <line id="sweepEdgeB" x1="-256.25" y1="0" x2="256.25" y2="0" stroke="#F2F6FF" stroke-width="1.5" opacity="0.9"/>
+            </g>
+
+            <!-- FLASH -->
+            <circle id="flashRing" cx="0" cy="0" r="205" fill="none" stroke="#5FE9D0" stroke-width="1" opacity="0" style="display:none"/>
+          </g>
+
+          <!-- TARGET + SHARDS (scaled by moonScale) -->
+          <g id="moonScaleG">
+            <g id="target" style="display:none" stroke="#5FE9D0" stroke-width="3" fill="none"></g>
+            <g id="shards" style="display:none"></g>
+          </g>
+        </g>
+
+        <!-- WORDMARK -->
+        <clipPath id="wordClip"><rect id="wordClipRect" x="-262" y="-150" width="0" height="300"/></clipPath>
+        <g id="wordG" clip-path="url(#wordClip)" opacity="0">
+          <text x="-250" y="4" fill="#F2F6FF" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="132" letter-spacing="2" dominant-baseline="middle">MOON<tspan fill="#5FE9D0">BITE</tspan></text>
+        </g>
+        <line id="wordWipe" x1="0" y1="-150" x2="0" y2="150" stroke="#5FE9D0" stroke-width="3" opacity="0.9" style="display:none"/>
+
+        <!-- TAGLINE -->
+        <g id="tagG" opacity="0">
+          <rect id="tagRect" x="-248" y="86" width="0" height="1.5" fill="#F2F6FF" opacity="0.28"/>
+          <text x="-246" y="146" fill="#F2F6FF" opacity="0.6" font-family="JetBrains Mono, monospace" font-weight="400" font-size="30" letter-spacing="8">PROOF-OF-WORK · NO PREMINE</text>
+        </g>
+
+      </g>
+    </g>
+  </svg>
+
+  <div class="sting-outro" id="outro">
+    <a class="sting-btn primary" href="/">Enter MoonBite →</a>
+    <button class="sting-btn ghost" id="replay" type="button">Replay</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var W = 1920, H = 1080, R = 205;
+  var ICE = "#F2F6FF", COOL = "#5B7BFF", ACCENT = "#5FE9D0";
+  var svgNS = "http://www.w3.org/2000/svg";
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---- easing + tweening (ports of Easing / animate / interpolate) ---- */
+  function clamp(v, a, b) { a = a == null ? 0 : a; b = b == null ? 1 : b; return v < a ? a : v > b ? b : v; }
+  function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
+  function easeInOutCubic(x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
+  function linear(x) { return x; }
+
+  function animate(o) {
+    var from = o.from, to = o.to, start = o.start == null ? 0 : o.start,
+        end = o.end == null ? 1 : o.end, ease = o.ease || linear;
+    return function (t) { var u = clamp((t - start) / (end - start), 0, 1); return from + (to - from) * ease(u); };
+  }
+  function interpolate(stops, values, ease) {
+    ease = ease || linear;
+    return function (t) {
+      if (t <= stops[0]) return values[0];
+      if (t >= stops[stops.length - 1]) return values[values.length - 1];
+      for (var i = 0; i < stops.length - 1; i++) {
+        if (t >= stops[i] && t < stops[i + 1]) {
+          var u = (t - stops[i]) / (stops[i + 1] - stops[i]);
+          return values[i] + (values[i + 1] - values[i]) * ease(u);
+        }
+      }
+      return values[values.length - 1];
+    };
+  }
+
+  /* ---- deterministic randoms (same seed formula as the design) ---- */
+  function rnd(s) { var x = Math.sin(s * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
+
+  var MOTES = [];
+  for (var i = 0; i < 46; i++) MOTES.push({
+    x: rnd(i + 1) * W, y: rnd(i + 21) * H, r: 0.8 + rnd(i + 41) * 1.6,
+    ph: rnd(i + 61) * 6.283, sp: 0.7 + rnd(i + 81) * 1.6
+  });
+  var SHARDS = [];
+  for (var j = 0; j < 8; j++) SHARDS.push({
+    a: -1.0 + rnd(j + 5) * 1.9, d: 250 + rnd(j + 15) * 330,
+    r: 8 + rnd(j + 25) * 16, spin: (rnd(j + 35) - 0.5) * 760
+  });
+
+  /* ---- build repeated SVG bits once ---- */
+  function el(tag, attrs) { var e = document.createElementNS(svgNS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+
+  (function buildMotes() {
+    var g = $("motes");
+    MOTES.forEach(function (m, k) {
+      g.appendChild(el("rect", {
+        x: m.x, y: m.y, width: m.r * 2, height: m.r * 2,
+        fill: k % 7 === 0 ? ACCENT : ICE, opacity: 0.2
+      }));
+    });
+  })();
+
+  (function buildBaseline() {
+    var g = $("baseline");
+    g.appendChild(el("line", { x1: 0, y1: H - 118, x2: W, y2: H - 118, stroke: ICE, "stroke-width": 1, opacity: 0.1 }));
+    for (var k = 0; k < 33; k++) {
+      g.appendChild(el("line", {
+        x1: 60 + k * 56, y1: H - 118, x2: 60 + k * 56, y2: H - (k % 4 === 0 ? 100 : 108),
+        stroke: ICE, "stroke-width": 1, opacity: 0.16
+      }));
+    }
+  })();
+
+  (function buildTicks() {
+    var g = $("ticks");
+    for (var k = 0; k < 36; k++) {
+      var a = k * 10, rad = a * Math.PI / 180, long = k % 9 === 0;
+      g.appendChild(el("line", {
+        x1: Math.cos(rad) * R * 1.5, y1: Math.sin(rad) * R * 1.5,
+        x2: Math.cos(rad) * (R * 1.5 + (long ? 26 : 12)), y2: Math.sin(rad) * (R * 1.5 + (long ? 26 : 12)),
+        stroke: long ? ACCENT : ICE, "stroke-width": long ? 3 : 1.5, opacity: long ? 0.7 : 0.28
+      }));
+    }
+  })();
+
+  var shardEls = [];
+  (function buildShards() {
+    var g = $("shards");
+    SHARDS.forEach(function (c) {
+      var r = el("rect", { x: -c.r / 2, y: -c.r / 2, width: c.r, height: c.r, fill: "none",
+        stroke: ICE, "stroke-width": 2, opacity: 0.8 });
+      shardEls.push(r); g.appendChild(r);
+    });
+    // colour every 3rd shard with accent
+    for (var s = 0; s < shardEls.length; s++) if (s % 3 === 0) shardEls[s].setAttribute("stroke", ACCENT);
+  })();
+
+  /* ---- param presets ---- */
+  var BASE = {
+    moonX: 0, moonY: 0, moonScale: 1, squash: 0, groupX: 0, zoom: 1, sweep: 1, bite: 0,
+    chroma: 6, flash: 0, targetP: 0, crumbP: 0, ringOpacity: 0.95, ringScale: 1,
+    hudP: 1, wordP: 0, tagP: 0, wordX: -250
+  };
+  function merge() { var o = {}, a; for (var n = 0; n < arguments.length; n++) { a = arguments[n]; for (var k in a) o[k] = a[k]; } return o; }
+  var LOCKUP = merge(BASE, { bite: 1, moonX: -470, moonScale: 0.52, groupX: 50, wordP: 1, tagP: 1, ringScale: 1.05 });
+
+  /* ---- scenes ---- */
+  var SCENES = [
+    { name: "Boot", dur: 2.2, fn: function (t) {
+      return merge(BASE, {
+        sweep: animate({ from: 0, to: 1, start: 0.12, end: 0.72, ease: easeInOutCubic })(t),
+        chroma: interpolate([0.12, 0.72, 0.92], [34, 12, 6], easeOutCubic)(t),
+        hudP: animate({ from: 0, to: 1, start: 0.34, end: 0.86 })(t),
+        ringOpacity: animate({ from: 0, to: 0.95, start: 0.04, end: 0.5 })(t),
+        ringScale: animate({ from: 1.45, to: 1, start: 0.04, end: 0.62, ease: easeOutCubic })(t),
+        moonScale: interpolate([0.12, 0.72, 1], [0.96, 1.01, 1], easeOutCubic)(t),
+        zoom: animate({ from: 1.14, to: 1, start: 0, end: 1, ease: easeOutCubic })(t)
+      });
+    } },
+    { name: "Bite", dur: 1.7, fn: function (t) {
+      return merge(BASE, {
+        targetP: t < 0.04 ? 0 : clamp((t - 0.04) / 0.42, 0, 1),
+        bite: animate({ from: 0, to: 1, start: 0.32, end: 0.43, ease: easeOutCubic })(t),
+        flash: (t > 0.32 && t < 0.68) ? clamp((t - 0.32) / 0.36, 0, 1) : 0,
+        crumbP: t < 0.32 ? 0 : clamp((t - 0.32) / 0.6, 0, 1),
+        chroma: interpolate([0.24, 0.32, 0.43, 0.6, 0.86], [6, 14, 46, 16, 6], easeOutCubic)(t),
+        squash: interpolate([0.1, 0.26, 0.32, 0.43, 0.62, 0.8, 1], [0, 0.05, -0.02, 0.08, -0.035, 0.012, 0], easeInOutCubic)(t),
+        moonY: interpolate([0.22, 0.32, 0.46, 0.68, 1], [0, -20, 12, -3, 0], easeInOutCubic)(t),
+        ringScale: interpolate([0.3, 0.43, 0.75, 1], [1, 1.06, 0.99, 1], easeOutCubic)(t),
+        zoom: interpolate([0, 0.32, 0.43, 1], [1, 1.06, 1.11, 1], easeInOutCubic)(t)
+      });
+    } },
+    { name: "Lockup", dur: 2.3, fn: function (t) {
+      var move = { start: 0.05, end: 0.5, ease: easeInOutCubic };
+      return merge(LOCKUP, {
+        moonX: animate(merge({ from: 0, to: -470 }, move))(t),
+        moonScale: animate(merge({ from: 1, to: 0.52 }, move))(t),
+        groupX: animate(merge({ from: 0, to: 50 }, move))(t),
+        ringScale: animate(merge({ from: 1, to: 1.05 }, move))(t),
+        squash: interpolate([0.42, 0.54, 0.68, 1], [0, 0.03, -0.01, 0], easeInOutCubic)(t),
+        wordP: animate({ from: 0, to: 1, start: 0.32, end: 0.7 })(t),
+        tagP: animate({ from: 0, to: 1, start: 0.62, end: 0.86 })(t),
+        zoom: animate({ from: 1, to: 1.02, start: 0, end: 1, ease: easeInOutCubic })(t)
+      });
+    } }
+  ];
+  var TOTAL = SCENES.reduce(function (a, s) { return a + s.dur; }, 0);
+
+  /* ---- refs ---- */
+  var refs = {
+    hud: $("hud"), hudSync: $("hudSync"), motes: $("motes").children,
+    zoomG: $("zoomG"), groupG: $("groupG"), moonG: $("moonG"), markG: $("markG"),
+    ringG: $("ringG"), bloom: $("bloom"), discA: $("discA"), discC: $("discC"), discI: $("discI"),
+    sweepRect: $("sweepRect"), biteCircle: $("biteCircle"),
+    sweepEdge: $("sweepEdge"), sweepEdgeA: $("sweepEdgeA"), sweepEdgeB: $("sweepEdgeB"),
+    flashRing: $("flashRing"), moonScaleG: $("moonScaleG"), target: $("target"), shards: $("shards"),
+    wordG: $("wordG"), wordClipRect: $("wordClipRect"), wordWipe: $("wordWipe"),
+    tagG: $("tagG"), tagRect: $("tagRect"), outro: $("outro")
+  };
+
+  /* ---- render one composed frame ---- */
+  function render(p, tSec) {
+    var sx = p.moonScale * (1 + p.squash), sy = p.moonScale * (1 - p.squash);
+    var top = -R - 4, span = (2 * R + 8) * easeInOutCubic(clamp(p.sweep, 0, 1));
+    var biteCx = R * 0.5 + (1 - p.bite) * R * 3.1;
+
+    // stage transforms
+    refs.zoomG.setAttribute("transform", "translate(" + (W / 2) + " " + (H / 2) + ") scale(" + p.zoom + ") translate(" + (-W / 2) + " " + (-H / 2) + ")");
+    refs.groupG.setAttribute("transform", "translate(" + (W / 2 + p.groupX) + " " + (H / 2) + ")");
+    refs.moonG.setAttribute("transform", "translate(" + p.moonX + " " + p.moonY + ")");
+    refs.markG.setAttribute("transform", "scale(" + sx + " " + sy + ")");
+    refs.moonScaleG.setAttribute("transform", "scale(" + p.moonScale + ")");
+
+    // hud
+    refs.hud.setAttribute("opacity", p.hudP);
+    refs.hudSync.textContent = "SYNC " + (0.5 + 0.5 * Math.sin(tSec * 2.1)).toFixed(3);
+    for (var m = 0; m < refs.motes.length; m++) {
+      refs.motes[m].setAttribute("opacity", (0.1 + 0.3 * (0.5 + 0.5 * Math.sin(tSec * MOTES[m].sp + MOTES[m].ph))) * p.hudP);
+    }
+
+    // bloom + ring
+    refs.bloom.setAttribute("opacity", 0.4 + 0.6 * clamp(p.sweep, 0, 1));
+    refs.ringG.setAttribute("opacity", p.ringOpacity);
+    refs.ringG.setAttribute("transform", "scale(" + p.ringScale + ") rotate(" + (tSec * 7) + ")");
+
+    // mask (sweep + bite)
+    refs.sweepRect.setAttribute("y", top);
+    refs.sweepRect.setAttribute("height", Math.max(0, span));
+    refs.biteCircle.setAttribute("cx", biteCx);
+
+    // chroma discs
+    refs.discA.setAttribute("transform", "translate(" + (-9 - p.chroma * 0.6) + " 0)");
+    refs.discC.setAttribute("transform", "translate(" + (9 + p.chroma * 0.6) + " 0)");
+
+    // sweep edge line
+    if (p.sweep > 0.02 && p.sweep < 0.99) {
+      refs.sweepEdge.style.display = "";
+      var ey = top + span;
+      refs.sweepEdgeA.setAttribute("y1", ey); refs.sweepEdgeA.setAttribute("y2", ey);
+      refs.sweepEdgeB.setAttribute("y1", ey); refs.sweepEdgeB.setAttribute("y2", ey);
+    } else { refs.sweepEdge.style.display = "none"; }
+
+    // flash ring
+    if (p.flash > 0) {
+      refs.flashRing.style.display = "";
+      refs.flashRing.setAttribute("r", R * (1 + 0.34 * p.flash));
+      refs.flashRing.setAttribute("stroke-width", 4 * (1 - p.flash) + 1);
+      refs.flashRing.setAttribute("opacity", 0.85 * (1 - p.flash));
+    } else { refs.flashRing.style.display = "none"; }
+
+    // target reticle
+    if (p.targetP > 0) {
+      var pp = p.targetP;
+      var s = 1 + 0.5 * (1 - easeOutCubic(clamp(pp * 1.6, 0, 1)));
+      var b = R * 0.66 * s;
+      var op = clamp(pp * 2, 0, 1) * (pp > 0.8 ? (1 - pp) / 0.2 : 1);
+      refs.target.style.display = "";
+      refs.target.setAttribute("opacity", op);
+      refs.target.setAttribute("transform", "translate(" + (R * 0.5) + " " + (-R * 0.13) + ")");
+      refs.target.innerHTML =
+        '<path d="M' + (-b) + ' ' + (-b + 34) + ' v-34 h34 M' + (b - 34) + ' ' + (-b) + ' h34 v34 M' + b + ' ' + (b - 34) + ' v34 h-34 M' + (-b + 34) + ' ' + b + ' h-34 v-34"/>' +
+        '<line x1="' + (-b - 40) + '" y1="0" x2="' + (-b - 8) + '" y2="0" stroke-width="2" opacity="0.6"/>' +
+        '<line x1="' + (b + 8) + '" y1="0" x2="' + (b + 40) + '" y2="0" stroke-width="2" opacity="0.6"/>';
+    } else { refs.target.style.display = "none"; }
+
+    // shards
+    if (p.crumbP > 0 && p.crumbP < 1) {
+      var out = easeOutCubic(p.crumbP);
+      var fade = p.crumbP < 0.62 ? 1 : 1 - (p.crumbP - 0.62) / 0.38;
+      refs.shards.style.display = "";
+      refs.shards.setAttribute("opacity", fade);
+      refs.shards.setAttribute("transform", "translate(" + (R * 0.55) + " " + (-R * 0.2) + ")");
+      for (var sh = 0; sh < SHARDS.length; sh++) {
+        var c = SHARDS[sh], d = c.d * out;
+        var x = Math.cos(c.a) * d * 1.2, y = Math.sin(c.a) * d - 120 * out + 240 * out * out;
+        shardEls[sh].setAttribute("transform", "translate(" + x + " " + y + ") rotate(" + (c.spin * out) + ")");
+      }
+    } else { refs.shards.style.display = "none"; }
+
+    // wordmark
+    refs.wordG.setAttribute("opacity", p.wordP > 0 ? 1 : 0);
+    var ww = (760 + 12) * easeInOutCubic(clamp(p.wordP, 0, 1));
+    refs.wordClipRect.setAttribute("width", ww);
+    if (p.wordP > 0 && p.wordP < 0.99) {
+      refs.wordWipe.style.display = "";
+      var wx = p.wordX - 12 + ww;
+      refs.wordWipe.setAttribute("x1", wx); refs.wordWipe.setAttribute("x2", wx);
+    } else { refs.wordWipe.style.display = "none"; }
+
+    // tagline
+    refs.tagG.setAttribute("opacity", p.tagP);
+    refs.tagRect.setAttribute("width", 392 * p.tagP);
+  }
+
+  /* ---- playback ---- */
+  var startTime = null, done = false;
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function frameAt(elapsed) {
+    var e = clamp(elapsed, 0, TOTAL), acc = 0, p;
+    for (var s = 0; s < SCENES.length; s++) {
+      if (e < acc + SCENES[s].dur || s === SCENES.length - 1) {
+        p = SCENES[s].fn(clamp((e - acc) / SCENES[s].dur, 0, 1));
+        break;
+      }
+      acc += SCENES[s].dur;
+    }
+    return p;
+  }
+
+  function loop(now) {
+    if (startTime === null) startTime = now;
+    var elapsed = (now - startTime) / 1000;
+    render(frameAt(elapsed), elapsed);
+    if (elapsed >= TOTAL && !done) { done = true; refs.outro.classList.add("is-in"); }
+    // keep the ring + hud alive after lockup; motes/sync use tSec
+    requestAnimationFrame(loop);
+  }
+
+  function play() {
+    startTime = null; done = false; refs.outro.classList.remove("is-in");
+    if (reduce) { render(frameAt(TOTAL), TOTAL); refs.outro.classList.add("is-in"); return; }
+    requestAnimationFrame(loop);
+  }
+
+  $("replay").addEventListener("click", play);
+  play();
+})();
+</script>
+</body>
+</html>

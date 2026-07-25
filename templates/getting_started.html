@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}Getting Started with MoonBite — wallet, mining &amp; first MBITE{% endblock %}
+{% block meta_description %}A clear, numbered walkthrough: get a wallet, get an address, mine your first MBITE, and verify it on-chain. Everything you need to go from zero to your first confirmed block.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> Getting Started</span>
+            <h1 class="mb-hero-title">From zero to <span class="mb-gradient-text">first block.</span></h1>
+            <p class="mb-hero-sub">No premine means every MBITE in existence was mined by someone. These four steps walk you from a blank slate to a confirmed balance in the chain.</p>
+            <div class="mb-cta-row">
+                <a href="/get-wallet" class="btn btn-primary mb-btn-xl">Get the wallet</a>
+                <a href="/learn" class="btn btn-secondary mb-btn-xl">Learn the basics</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Step by step</span>
+            <h2 class="mb-section-title">Your first four actions</h2>
+            <p class="mb-section-sub">Each step links to the right tool. You can go as deep as you like at each stage.</p>
+        </div>
+
+        <div class="mb-timeline">
+            <div class="mb-milestone is-done mb-reveal">
+                <div class="mb-milestone-phase">Step 1</div>
+                <h3>Get a wallet</h3>
+                <p>Download and install the MoonBite wallet. Your wallet generates a private key locally — it never leaves your device. During setup you'll receive a seed phrase: write it down on paper, keep it somewhere safe, and never share it with anyone including this website.</p>
+                <a href="/get-wallet" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Download wallet →</a>
+            </div>
+            <div class="mb-milestone is-done mb-reveal">
+                <div class="mb-milestone-phase">Step 2</div>
+                <h3>Generate a receive address</h3>
+                <p>Inside the wallet, generate a new receive address. Mainnet addresses start with <code>moon1</code>; testnet addresses start with <code>tmoon1</code>. This is where your mining rewards will land. Copy the address — you'll need it in the next step.</p>
+                <a href="/wallet" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Open wallet →</a>
+            </div>
+            <div class="mb-milestone is-active mb-reveal">
+                <div class="mb-milestone-phase">Step 3</div>
+                <h3>Mine your first MBITE</h3>
+                <p>Open the miner and paste in your wallet address. The miner uses scrypt proof-of-work to compete for block rewards. When your miner finds a valid block, the full reward is paid directly to your address — no pool, no middleman. Testnet rewards are available to claim right now.</p>
+                <a href="/mine" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Start mining →</a>
+            </div>
+            <div class="mb-milestone mb-reveal">
+                <div class="mb-milestone-phase">Step 4</div>
+                <h3>Verify it in the explorer</h3>
+                <p>Paste your address into the block explorer and watch the balance update in real time. Each new block confirmation is recorded on-chain. You don't need an account, a login, or anyone's permission to verify your own balance — the chain is the record.</p>
+                <a href="/explorer" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Open explorer →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">What to expect</span>
+            <h2 class="mb-section-title">Honest expectations for new miners</h2>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">⏱️</div>
+                <h3>Block time: ~2.5 minutes</h3>
+                <p>The network targets a new block every 150 seconds. Your odds of finding a block depend on your share of the total network hash rate. On testnet with low competition, blocks come quickly.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🎁</div>
+                <h3>Current reward: 10 MBITE</h3>
+                <p>The genesis block reward is 10 MBITE. It halves every 1,000,000 blocks. The total supply is capped at 19,999,999.87 MBITE across all time.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">💰</div>
+                <h3>No market value yet</h3>
+                <p>MBITE is pre-mainnet and not listed on any exchange. Coins you mine now are real chain coins, but they carry no monetary value today. Mine because you want to participate, not because you expect a price.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔑</div>
+                <h3>Seed phrase = your coins</h3>
+                <p>Lose the seed phrase and the coins are gone — permanently. There is no support team that can recover them. Write it down, keep it offline, and back it up.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">⛏️</div>
+                <h3>Scrypt PoW</h3>
+                <p>MoonBite uses the scrypt proof-of-work algorithm. A standard CPU or GPU can participate. Dedicated scrypt ASICs (Litecoin miners) will also work on mainnet.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🌐</div>
+                <h3>Run a node to go deeper</h3>
+                <p>Running a full node lets you validate the entire chain locally. It's optional for individuals but gives you complete independence from third-party servers.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Quick reference</span>
+            <h2 class="mb-section-title">Useful terminal commands</h2>
+            <p class="mb-section-sub">If you prefer the command line, these snippets get you started on testnet.</p>
+        </div>
+        <div class="mb-code mb-reveal">
+            <span class="mb-c-comment"># Check your wallet balance on testnet</span><br>
+            <span class="mb-c-key">./moonbite-cli</span> -testnet getbalance<br>
+            <br>
+            <span class="mb-c-comment"># Generate a new receive address</span><br>
+            <span class="mb-c-key">./moonbite-cli</span> -testnet getnewaddress<br>
+            <br>
+            <span class="mb-c-comment"># Start the daemon and begin syncing</span><br>
+            <span class="mb-c-key">./moonbited</span> -testnet -daemon<br>
+            <br>
+            <span class="mb-c-comment"># Check how many blocks you've synced</span><br>
+            <span class="mb-c-key">./moonbite-cli</span> -testnet getblockcount
+        </div>
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="/developers" class="btn btn-secondary">Full CLI reference →</a>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Go further</span>
+            <h2 class="mb-section-title">Where to go next</h2>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📖</div>
+                <div class="mb-card-title">How it works</div>
+                <div class="mb-card-text">Understand the mechanics behind MoonBite — proof-of-work, the block chain, wallets and keys, and how nodes reach consensus without a central authority.</div>
+                <a href="/how-it-works" class="mb-card-link">How it works →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🎓</div>
+                <div class="mb-card-title">Learn &amp; FAQ</div>
+                <div class="mb-card-text">Straight answers to the most common MoonBite questions — what it is, what it isn't, how to get some, and how to keep it safe.</div>
+                <a href="/learn" class="mb-card-link">Read the FAQ →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        {% set notify_title = "Get notified when MBITE hits an exchange" %}
+        {% set notify_text = "We'll send one email when the first exchange listing goes live. No fluff, no price predictions." %}
+        {% set notify_source = "getting-started" %}
+        {% include "partials/notify_form.html" %}
+    </div>
+</section>
+{% endblock %}

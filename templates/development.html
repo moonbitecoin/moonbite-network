@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}Build on MoonBite — developer resources &amp; contribution guide{% endblock %}
+{% block meta_description %}MoonBite is open-source. Explore the REST API, run a node, contribute code and tests, or read the design records. Everything you need to build on or contribute to MoonBite.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> Open source</span>
+            <h1 class="mb-hero-title">Build on <span class="mb-gradient-text">MoonBite.</span></h1>
+            <p class="mb-hero-sub">The code is open, the API is public, and contributions are welcome. Whether you want to build a tool on the chain, improve the node, write tests, or just understand how it works — start here.</p>
+            <div class="mb-cta-row">
+                <a href="https://github.com/moonbitecoin/MoonBite-Coin" class="btn btn-primary mb-btn-xl" target="_blank" rel="noopener">View Source on GitHub</a>
+                <a href="/developers" class="btn btn-secondary mb-btn-xl">API Reference</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">What's available</span>
+            <h2 class="mb-section-title">Four ways to engage with the code</h2>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔌</div>
+                <h3 class="mb-card-title">Read-only REST API</h3>
+                <p class="mb-card-text">Query blocks, transactions, addresses, and network status over a simple JSON API. No authentication required for read-only endpoints. The API reference and live examples live in the developer docs.</p>
+                <a href="/developers" class="mb-card-link">API docs →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🖧</div>
+                <h3 class="mb-card-title">Run a node</h3>
+                <p class="mb-card-text">The full node is the foundation of everything. Run one locally on regtest, testnet, or — when ready — mainnet. Point your app or scripts at your own node to avoid depending on a shared endpoint.</p>
+                <a href="/full-node" class="mb-card-link">Node setup guide →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🧪</div>
+                <h3 class="mb-card-title">Source &amp; tests</h3>
+                <p class="mb-card-text">The full source is on GitHub. Clone it, run the test suite, open a pull request. Good first contributions include adding test coverage, filing well-reproduced bugs, and improving build documentation.</p>
+                <a href="https://github.com/moonbitecoin/MoonBite-Coin" class="mb-card-link" target="_blank" rel="noopener">GitHub →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📐</div>
+                <h3 class="mb-card-title">Design records (ADRs)</h3>
+                <p class="mb-card-text">Architecture decision records document every major protocol choice — address format, fee cap, block time, emission schedule, and more. They're the right starting point before touching consensus-related code.</p>
+                <a href="https://github.com/moonbitecoin/MoonBite-Coin" class="mb-card-link" target="_blank" rel="noopener">Browse ADRs →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">REST API</span>
+            <h2 class="mb-section-title">Query the chain in one line</h2>
+            <p class="mb-section-sub">The public seed node exposes a read-only JSON API. No API key, no account — just HTTP. All responses follow the same <code>{"status": "success", ...}</code> envelope.</p>
+        </div>
+        <div class="mb-code mb-reveal">
+            <span class="mb-c-comment"># Network status — chain height, peer count, sync state</span><br>
+            <span class="mb-c-key">curl</span> https://moonbite.org/api/status<br>
+            <br>
+            <span class="mb-c-comment"># Latest block</span><br>
+            <span class="mb-c-key">curl</span> https://moonbite.org/api/block/latest<br>
+            <br>
+            <span class="mb-c-comment"># Block by height</span><br>
+            <span class="mb-c-key">curl</span> https://moonbite.org/api/block/1000<br>
+            <br>
+            <span class="mb-c-comment"># Transaction by txid</span><br>
+            <span class="mb-c-key">curl</span> https://moonbite.org/api/tx/&lt;txid&gt;<br>
+            <br>
+            <span class="mb-c-comment"># Address balance &amp; history</span><br>
+            <span class="mb-c-key">curl</span> https://moonbite.org/api/address/moon1youraddresshere
+        </div>
+        <p class="mb-section-sub mb-reveal" style="margin-top: var(--spacing-xl);">The full endpoint list, request/response shapes, and error codes are documented in the <a href="/developers" class="link">developer reference</a>.</p>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Contributing</span>
+            <h2 class="mb-section-title">How to contribute</h2>
+            <p class="mb-section-sub">MoonBite follows a standard open-source contribution model. Here's the short version.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🍴</div>
+                <h3>Fork &amp; clone</h3>
+                <p>Fork the repository on GitHub, clone your fork locally, and create a feature branch. Keep branches focused — one concern per pull request.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🧪</div>
+                <h3>Run the tests</h3>
+                <p>The repo includes a test suite. Run it before and after your change. A patch that breaks existing tests won't be merged. New functionality should come with new tests.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📝</div>
+                <h3>Open a pull request</h3>
+                <p>Describe what the change does and why. Reference any related issue. A concise, honest PR description gets reviewed faster than a vague one.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🐛</div>
+                <h3>File bugs</h3>
+                <p>If you find something wrong, open a GitHub issue with a clear reproduction case. Include the platform, node version, and exact steps that trigger the bug.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📖</div>
+                <h3>Improve docs</h3>
+                <p>Documentation PRs are just as welcome as code PRs. Clearer setup guides, better API examples, and corrected errors all have real value.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔍</div>
+                <h3>Review open PRs</h3>
+                <p>Reviewing someone else's pull request — finding edge cases, checking the logic, testing it locally — is one of the most useful things a contributor can do.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Where to start</span>
+            <h2 class="mb-section-title">Useful starting points</h2>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📚</div>
+                <h3 class="mb-card-title">Understand the design</h3>
+                <p class="mb-card-text">Before writing code that touches consensus or protocol logic, read the architecture decision records. They explain not just what was decided but why — important context for avoiding regressions.</p>
+                <a href="https://github.com/moonbitecoin/MoonBite-Coin" class="mb-card-link" target="_blank" rel="noopener">ADRs on GitHub →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔬</div>
+                <h3 class="mb-card-title">Read the whitepaper</h3>
+                <p class="mb-card-text">The whitepaper covers the high-level goals and protocol properties MoonBite is built around. It's a useful companion to the ADRs for understanding intent.</p>
+                <a href="/whitepaper" class="mb-card-link">Whitepaper →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔌</div>
+                <h3 class="mb-card-title">Explore the API first</h3>
+                <p class="mb-card-text">If you're building an application rather than contributing to the node, the REST API is the fastest path to useful data. No build toolchain needed — just HTTP.</p>
+                <a href="/developers" class="mb-card-link">Developer reference →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🧱</div>
+                <h3 class="mb-card-title">Run regtest locally</h3>
+                <p class="mb-card-text">Regtest mode lets you mine blocks instantly and test transactions without touching the live network. It's the right environment for development and integration testing.</p>
+                <a href="/full-node" class="mb-card-link">Node guide →</a>
+            </div>
+        </div>
+        <div class="mb-banner mb-reveal" style="margin-top: var(--spacing-2xl);">
+            <span>MoonBite is an open-source technology project. It is <strong>not an investment or a security</strong>. Contributing code, running tests, or building tools on the chain is participation in a technical project — not a financial activity.</span>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        {% set notify_title = "Get updates on development milestones" %}
+        {% set notify_text = "One email when a significant technical milestone ships — new API endpoints, node releases, or mainnet launch. No noise in between." %}
+        {% set notify_source = "development" %}
+        {% include "partials/notify_form.html" %}
+    </div>
+</section>
+{% endblock %}

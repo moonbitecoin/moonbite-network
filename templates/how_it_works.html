@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}How MoonBite Works — blocks, mining, wallets &amp; nodes{% endblock %}
+{% block meta_description %}A plain-language guide to MoonBite mechanics: how proof-of-work mining secures the chain, how wallets and keys work, how nodes enforce the rules, and what the fixed emission schedule means.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> How It Works</span>
+            <h1 class="mb-hero-title">Under the <span class="mb-gradient-text">hood.</span></h1>
+            <p class="mb-hero-sub">MoonBite isn't magic — it's a set of open rules that every participant enforces independently. Here's what's actually happening when you mine, send, or verify a transaction.</p>
+            <div class="mb-cta-row">
+                <a href="/whitepaper" class="btn btn-primary mb-btn-xl">Read the protocol paper</a>
+                <a href="/getting-started" class="btn btn-secondary mb-btn-xl">Get started</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Proof-of-work</span>
+            <h2 class="mb-section-title">Mining: turning electricity into trust</h2>
+            <p class="mb-section-sub">Proof-of-work is the mechanism that lets strangers agree on a shared history without trusting each other.</p>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">⛏️</div>
+                <h3>What miners actually do</h3>
+                <p>A miner repeatedly hashes a candidate block header, tweaking a nonce value each time, until the result falls below a network-set target. Finding a valid hash requires real computational effort — you cannot fake it or shortcut it. The first miner to find a valid solution broadcasts the block and collects the reward.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🧂</div>
+                <h3>Why scrypt?</h3>
+                <p>MoonBite uses the scrypt hashing algorithm, the same one that has secured Litecoin since 2011. Scrypt is deliberately memory-hard, which raises the resource cost for any attacker trying to rewrite history. It also means consumer hardware — CPUs, GPUs, and scrypt ASICs — can all participate.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🎯</div>
+                <h3>Difficulty adjustment</h3>
+                <p>The network automatically recalculates the target difficulty so that blocks arrive at roughly the right rate even as more miners join or leave. MoonBite targets one new block every 150 seconds — about 2.5 minutes.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🛡️</div>
+                <h3>What makes it secure</h3>
+                <p>To rewrite a past transaction, an attacker would need to redo all the proof-of-work from that point forward — faster than the honest network is building on top of it. As the total hash rate grows, that attack becomes proportionally more expensive.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">The chain</span>
+            <h2 class="mb-section-title">Blocks &amp; the blockchain</h2>
+            <p class="mb-section-sub">Each block is a permanent, ordered record linked to every block before it.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📦</div>
+                <h3>A block is a batch</h3>
+                <p>A block contains a set of transactions waiting in the mempool, a reference (hash) of the previous block, and proof that valid mining work was done. Miners choose which transactions to include, typically prioritising those with higher fees.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔗</div>
+                <h3>Chaining creates permanence</h3>
+                <p>Each block contains the hash of the block before it. Change anything in block 1,000 and you break the hash that block 1,001 expects — then 1,002, and every block after. That chain of proof-of-work makes history tamper-evident without a central authority.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">⏳</div>
+                <h3>Confirmations &amp; finality</h3>
+                <p>Once a transaction lands in a block, each additional block mined on top is another "confirmation." More confirmations means more cumulative work an attacker would need to undo. For most purposes, 6 confirmations (~15 minutes) is considered practically final.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Wallets &amp; keys</span>
+            <h2 class="mb-section-title">Controlling coins with cryptography</h2>
+            <p class="mb-section-sub">There are no accounts on the MoonBite network — only keys and addresses.</p>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔑</div>
+                <h3>Private key</h3>
+                <p>A private key is a large random number generated on your device. It is the only proof of ownership of the coins at your address. Anyone with your private key can spend your coins; without it, nobody can — not even MoonBite developers. Guard it accordingly.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📬</div>
+                <h3>Address (public)</h3>
+                <p>Your address is derived from your private key through one-way cryptography. You can share your address freely — it is just a destination. MoonBite mainnet addresses start with <code>moon1</code> (bech32 format); testnet addresses start with <code>tmoon1</code>.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">✍️</div>
+                <h3>Signing a transaction</h3>
+                <p>When you send MBITE, your wallet uses your private key to produce a cryptographic signature that proves you authorised the spend — without ever revealing the key itself. Nodes check this signature before accepting the transaction.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🌱</div>
+                <h3>Seed phrase</h3>
+                <p>A seed phrase is a human-readable backup of your private key — typically 12 or 24 words. Write it down offline and keep it safe. If you lose your seed and your device fails, your coins are gone permanently.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Nodes</span>
+            <h2 class="mb-section-title">Nodes &amp; consensus</h2>
+            <p class="mb-section-sub">The rules of MoonBite are enforced by every node running the software — not by any single company or server.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🖧</div>
+                <h3>What a node does</h3>
+                <p>A full node downloads every block since genesis, validates each one against the protocol rules, and relays valid blocks and transactions to peers. It is the software that actually enforces what MoonBite is.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🗳️</div>
+                <h3>Consensus without a leader</h3>
+                <p>Nodes agree on the state of the chain by each following the same rules independently. There is no vote and no administrator. If a block breaks a rule, every node that sees it will reject it, regardless of who produced it.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔍</div>
+                <h3>Why run your own?</h3>
+                <p>Trusting someone else's node means trusting them to run the rules correctly. Running your own node gives you a direct, unmediated view of the real chain. You accept no block on faith — you verify it.</p>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="/developers#run-a-node" class="btn btn-primary">Node setup guide →</a>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Emission</span>
+            <h2 class="mb-section-title">The fixed supply schedule</h2>
+            <p class="mb-section-sub">Every MBITE that will ever exist is created by miners according to a schedule written into the protocol at launch.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🧮</div>
+                <h3>Hard cap: 19,999,999.87 MBITE</h3>
+                <p>The protocol will never produce more than this. The asymptotic cap is a result of halving: rewards halve every million blocks and approach zero but never reach it exactly.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🎁</div>
+                <h3>Block subsidy starts at 10 MBITE</h3>
+                <p>The genesis block carries a reward of 10 MBITE, paid entirely to the miner who found it. There was no premine: no coins were created before public mining began.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📉</div>
+                <h3>Halving every 1,000,000 blocks</h3>
+                <p>At the current 2.5-minute block target, one million blocks takes roughly 4.75 years. After each halving the block reward is cut in half, permanently reducing the rate of new issuance.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">The flow</span>
+            <h2 class="mb-section-title">A transaction, start to finish</h2>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">✍️</div>
+                <div class="mb-card-title">1. Sign &amp; broadcast</div>
+                <div class="mb-card-text">You sign a transaction with your private key and broadcast it to the network. It enters the mempool — a shared waiting room of unconfirmed transactions.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">⛏️</div>
+                <div class="mb-card-title">2. Miner includes it</div>
+                <div class="mb-card-text">A miner picks up your transaction from the mempool, includes it in a candidate block, and races to find a valid proof-of-work for that block.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📦</div>
+                <div class="mb-card-title">3. Block is found</div>
+                <div class="mb-card-text">The winning miner broadcasts the completed block. Every node validates it, and if it's valid, adds it to its copy of the chain. Your transaction is now confirmed.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔗</div>
+                <div class="mb-card-title">4. More blocks follow</div>
+                <div class="mb-card-text">Each subsequent block adds another layer of proof-of-work on top of yours. After six confirmations (~15 minutes), rewriting your transaction becomes computationally impractical.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔍</div>
+                <div class="mb-card-title">5. Verify independently</div>
+                <div class="mb-card-text">Look up your transaction in the block explorer or via your own node. The record is public and permanent — no account required to check it.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">✅</div>
+                <div class="mb-card-title">6. Receiver holds the coins</div>
+                <div class="mb-card-text">The recipient's wallet now shows the balance. Only their private key can sign the next transaction spending those coins — nobody else has that power.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Go deeper</span>
+            <h2 class="mb-section-title">Explore further</h2>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📄</div>
+                <div class="mb-card-title">Protocol paper</div>
+                <div class="mb-card-text">The MoonBite protocol document covers the design decisions, parameter choices, and the lineage from Bitcoin and Litecoin in detail.</div>
+                <a href="/whitepaper" class="mb-card-link">Read the paper →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🛠️</div>
+                <div class="mb-card-title">Developer docs</div>
+                <div class="mb-card-text">RPC reference, node setup, and integration guides for developers building on or with MoonBite.</div>
+                <a href="/developers" class="mb-card-link">Open docs →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">⛏️</div>
+                <div class="mb-card-title">Start mining</div>
+                <div class="mb-card-text">Put this into practice. Get a wallet, point the miner at your address, and watch your first confirmed block arrive.</div>
+                <a href="/mine" class="mb-card-link">Mine MBITE →</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
