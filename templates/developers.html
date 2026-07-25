@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block body_class %}mb-v2{% endblock %}
 
 {% block title %}MoonBite Developers — API, docs &amp; run a node{% endblock %}
 {% block meta_description %}Build on MoonBite: a read-only REST API for blocks, transactions and search, plus everything you need to run your own node.{% endblock %}
@@ -66,6 +67,85 @@
             <div class="mb-card mb-reveal">
                 <h3 class="mb-card-title"><code>GET /api/transactions</code></h3>
                 <p class="mb-card-text">The most recent transactions across the mempool and latest blocks.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" id="exchange" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Exchange API · Phase 2</span>
+            <h2 class="mb-section-title">Non-custodial order book &amp; atomic-swap settlement</h2>
+            <p class="mb-section-sub">The order book stores <em>intents</em> only — never coins, keys, or balances. Settlement is a cross-chain <abbr title="Hash Time-Locked Contract">HTLC</abbr> atomic swap between the two wallets; the server just coordinates the hand-off and, once enabled, <strong>verifies it on-chain</strong>. A trade only moves <code>last_price</code> after the verifier confirms both HTLC legs redeemed on-chain — there is no fabricated market data.</p>
+        </div>
+
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title"><code>POST /api/exchange/order</code></h3>
+                <p class="mb-card-text">Place a buy/sell order. Returns a one-time secret <code>cancel_token</code> — the only credential that can cancel the order or drive its swap. The public MBITE address cannot.</p>
+                <pre class="mb-code">{ <span class="mb-c-key">"side"</span>: "sell", <span class="mb-c-key">"pair"</span>: "MBITE/LTC",
+  <span class="mb-c-key">"price"</span>: "0.0005", <span class="mb-c-key">"amount"</span>: "100",
+  <span class="mb-c-key">"mbite_address"</span>: "moon1…",
+  <span class="mb-c-key">"quote_address"</span>: "ltc1…" }</pre>
+            </div>
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title"><code>GET /api/exchange/orders?pair=</code></h3>
+                <p class="mb-card-text">The public order book for a pair: bids, asks, and <code>last_price</code> (<code>null</code> until an on-chain-verified trade settles). The <code>cancel_token</code> is never exposed on any read path.</p>
+            </div>
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title"><code>POST /api/exchange/order/&lt;id&gt;/swap/init</code></h3>
+                <p class="mb-card-text">Register the HTLC hand-off for a matched pair. Auth: <code>cancel_token</code>. Records only <em>public</em> swap parameters — hashlock, recipient/refund pubkeys, and timelocks (base must out-live quote). No key or preimage is ever accepted.</p>
+                <pre class="mb-code">{ <span class="mb-c-key">"cancel_token"</span>: "…",
+  <span class="mb-c-key">"hashlock"</span>: "&lt;sha256(preimage)&gt;",
+  <span class="mb-c-key">"base_recipient_pubkey"</span>: "02…",
+  <span class="mb-c-key">"base_refund_pubkey"</span>: "02…",
+  <span class="mb-c-key">"quote_recipient_pubkey"</span>: "02…",
+  <span class="mb-c-key">"quote_refund_pubkey"</span>: "02…",
+  <span class="mb-c-key">"base_locktime"</span>: 172800,
+  <span class="mb-c-key">"quote_locktime"</span>: 86400 }</pre>
+            </div>
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title"><code>POST /api/exchange/order/&lt;id&gt;/swap/funded</code></h3>
+                <p class="mb-card-text">Report an HTLC funding txid for one leg (<code>base</code> | <code>quote</code>). Auth: <code>cancel_token</code>. This is only a <em>hint</em> telling the verifier where to look — the fact is re-checked on-chain, never trusted on your word. Advances the state machine toward <code>both_locked</code>.</p>
+            </div>
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title"><code>GET /api/exchange/order/&lt;id&gt;/swap</code></h3>
+                <p class="mb-card-text">The public swap state for a matched order: <code>swap_init → base_funded → quote_funded → both_locked → quote_redeemed → base_redeemed → settled</code> (or <code>expired</code> on refund/timeout). The <code>preimage</code> appears only once it is already public on-chain.</p>
+            </div>
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title"><code>POST /api/exchange/verify</code> <span class="mb-badge">operator</span></h3>
+                <p class="mb-card-text">Runs one <strong>read-only</strong> on-chain verification pass over pending swaps and settles any that fully redeemed. Off unless the operator sets <code>VERIFIER_ENABLED</code>, and gated by an <code>X-Verifier-Token</code> secret — intended for a cron/timer, not public traffic. The single event that lets <code>last_price</code> move.</p>
+            </div>
+        </div>
+
+        <p class="mb-section-sub mb-reveal" style="margin-top: 1.5rem;">The swap verifier assembles the HTLC redeemscript, derives its funding address, confirms both legs are funded to the agreed amount and depth, extracts the preimage from the public quote redemption, and confirms the base leg reused that same preimage. It builds, signs, and broadcasts nothing. See <code>swap_verifier.py</code> in the repo.</p>
+    </div>
+</section>
+
+<section class="mb-section" id="merchant">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Merchant API</span>
+            <h2 class="mb-section-title">Accept MBITE — payment observation, no custody</h2>
+            <p class="mb-section-sub">Raise an invoice against your own address; the server <em>observes</em> the chain for a matching inbound payment and marks it paid. Funds go wallet-to-wallet — the server never holds them.</p>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title"><code>POST /api/merchant/invoice</code></h3>
+                <p class="mb-card-text">Raise a payment request against a merchant address. Snapshots the address's prior receipts so only a <em>new</em> inbound payment settles this invoice. Returns a BIP21-style <code>pay_uri</code>.</p>
+            </div>
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title"><code>GET /api/merchant/invoice/&lt;id&gt;</code></h3>
+                <p class="mb-card-text">Poll one invoice — re-checks the chain for payment on every call and flips <code>pending → paid</code> / <code>expired</code>.</p>
+            </div>
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title"><code>GET /api/merchant/invoices?merchant_id=</code></h3>
+                <p class="mb-card-text">A shop dashboard read: list a merchant's invoices, each freshly checked on-chain. Listing also advances any that have been paid or expired since last seen.</p>
+            </div>
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title"><code>POST /api/merchant/invoices/poll</code></h3>
+                <p class="mb-card-text">Sweep all pending invoices in one pass, auto-marking paid/expired ones — so a shop (or a timer) need not poll each invoice by hand. Idempotent; observes only.</p>
             </div>
         </div>
     </div>

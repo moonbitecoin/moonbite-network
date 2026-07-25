@@ -1,7 +1,7 @@
 // Dev/verification tool (not part of the app build).
 //
 // Reads a JSON job from stdin and prints the on-device-signed raw transaction,
-// so an external bigcoind can validate what the wallet produces.
+// so an external moonbited can validate what the wallet produces.
 //
 // stdin JSON:
 // {
@@ -15,16 +15,16 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:bigcoin_mobile/models/chain_models.dart';
-import 'package:bigcoin_mobile/wallet/bigcoin_network.dart';
-import 'package:bigcoin_mobile/wallet/hd_wallet_service.dart';
-import 'package:bigcoin_mobile/wallet/tx_builder.dart';
+import 'package:moonbite_mobile/models/chain_models.dart';
+import 'package:moonbite_mobile/wallet/moonbite_network.dart';
+import 'package:moonbite_mobile/wallet/hd_wallet_service.dart';
+import 'package:moonbite_mobile/wallet/tx_builder.dart';
 
 Future<void> main() async {
   final raw = await stdin.transform(utf8.decoder).join();
   final cfg = jsonDecode(raw) as Map<String, dynamic>;
 
-  final net = BigCoinNetwork.byId(cfg['network'] as String);
+  final net = MoonBiteNetwork.byId(cfg['network'] as String);
   final svc = HdWalletService(net);
   final acct0 = svc.deriveAccount(cfg['mnemonic'] as String, index: 0);
 

@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}MoonBite for Individuals — be your own bank, no permission needed{% endblock %}
+{% block meta_description %}Mine MBITE on your own laptop, hold it in a wallet only you control, and verify every coin yourself. No bank, no sign-up, no gatekeeper — and real work you can do tonight.{% endblock %}
+
+{% block body_class %}mb-v2{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> Live testnet · No sign-up · No permission</span>
+            <h1 class="mb-hero-title">Be your own bank.<br><span class="mb-gradient-text">Starting tonight.</span></h1>
+            <p class="mb-hero-sub">You don't ask anyone for access to MoonBite — you take it. Mine MBITE on the laptop you already own, hold it with keys nobody else can touch, and verify every coin against the chain yourself. No account. No middleman. No one who can say no.</p>
+            <div class="mb-cta-row">
+                <a href="/mine" class="btn btn-primary mb-btn-xl">Mine your first MBITE →</a>
+                <a href="/get-wallet" class="btn btn-secondary mb-btn-xl">Get the wallet</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Do it today</span>
+            <h2 class="mb-section-title">Six things you can do before you go to sleep</h2>
+            <p class="mb-section-sub">MoonBite is pre-mainnet — but testnet and regtest are live. This isn't a waitlist. Every one of these works right now, tonight, for free.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">⛏️</div>
+                <div class="mb-card-title">Mine real coins</div>
+                <div class="mb-card-text">Point a miner at the network and earn the block reward directly to your address. No pool, no fee, no permission — just your machine and the chain.</div>
+                <a href="/mine" class="mb-card-link">Start mining →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">👛</div>
+                <div class="mb-card-title">Own your keys</div>
+                <div class="mb-card-text">The wallet is non-custodial. Your private key is born on your device and never leaves it. Nobody can freeze your balance or demand your seed phrase — including us.</div>
+                <a href="/get-wallet" class="mb-card-link">Get the wallet →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔍</div>
+                <div class="mb-card-title">Trust nothing, verify everything</div>
+                <div class="mb-card-text">Every claim on this site is checkable in the open explorer. Don't take our word — take the chain's. It can't spin, and it can't lie.</div>
+                <a href="/explorer" class="mb-card-link">Open explorer →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📤</div>
+                <div class="mb-card-title">Send money that can't be stopped</div>
+                <div class="mb-card-text">Move MBITE straight to any <code>moon1…</code> address — no bank, no processor, no account on either side. Just two people and the network between them.</div>
+                <a href="/wallet" class="mb-card-link">Open wallet →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🖧</div>
+                <div class="mb-card-title">Enforce the rules yourself</div>
+                <div class="mb-card-text">Run a full node and you stop trusting servers entirely — you validate every block against the rules on your own hardware. This is what "decentralised" actually means.</div>
+                <a href="/full-node" class="mb-card-link">Run a node →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📊</div>
+                <div class="mb-card-title">Watch it breathe</div>
+                <div class="mb-card-text">Hash rate, block times, mempool — live, on one screen. See the network as it actually is, not as anyone describes it.</div>
+                <a href="/dashboard" class="mb-card-link">Open dashboard →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">3 moves</span>
+            <h2 class="mb-section-title">Zero to your first coin in three moves</h2>
+            <p class="mb-section-sub">No forms. No KYC. No approval email. Here's the whole path.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">1</div>
+                <h3>Make a wallet</h3>
+                <p>Download the wallet and generate an address. Your keys are created locally — write the seed phrase on paper and keep it offline. That's your whole "account."</p>
+                <a href="/get-wallet" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Get the wallet</a>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">2</div>
+                <h3>Point &amp; mine</h3>
+                <p>Aim the miner at your address and let it run. When it finds a block, the reward lands straight in your wallet — no exchange, no third party, no cut.</p>
+                <a href="/mine" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Start mining</a>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">3</div>
+                <h3>Watch it confirm</h3>
+                <p>Paste your address into the explorer and watch the balance climb block by block. No login. No dashboard you don't own. The chain is the receipt.</p>
+                <a href="/explorer" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Open explorer</a>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="/getting-started" class="btn btn-primary btn-large">Walk me through it step by step →</a>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Self-custody</span>
+            <h2 class="mb-section-title">You hold the keys. Nobody else. Not even us.</h2>
+            <p class="mb-section-sub">"Be your own bank" isn't a slogan here — it's the architecture. Four things it means the moment you press generate.</p>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔑</div>
+                <h3>Your key never leaves the room</h3>
+                <p>The private key is generated on your device and never transmitted. MoonBite's servers — and this website — never see it. The flip side: if you lose your seed phrase, nobody can recover your coins. That responsibility is the price of real ownership.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🚫</div>
+                <h3>Nothing to freeze, nothing to close</h3>
+                <p>There's no account to be locked out of. A <code>moon1…</code> address is all you need to receive MBITE, and no one can block, reverse, or confiscate a confirmed transaction on the chain.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔗</div>
+                <h3>Addresses start with <code>moon1…</code></h3>
+                <p>Mainnet uses bech32 addresses prefixed <code>moon1</code> (testnet <code>tmoon1</code>). Readable, copy-paste friendly, with a built-in checksum that catches typos before you ever hit send.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🌐</div>
+                <h3>The network answers to no one</h3>
+                <p>Every rule is enforced by nodes, not by us. Run your own and you confirm every transaction independently. There's no company in the middle to trust — the network is its own authority.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-banner mb-reveal">
+            <span>Straight talk: MoonBite is pre-mainnet. Coins you mine today carry <strong>no market value</strong> and MBITE is not listed on any exchange. This is <strong>not an investment or a security</strong>. Mine because you want to own a piece of the network — not because you expect a payout.</span>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        {% set notify_title = "Be first through the door when MBITE lists" %}
+        {% set notify_text = "One email the day MoonBite reaches its first exchange listing. No hype in between, no spam, ever." %}
+        {% set notify_source = "individuals" %}
+        {% include "partials/notify_form.html" %}
+    </div>
+</section>
+{% endblock %}

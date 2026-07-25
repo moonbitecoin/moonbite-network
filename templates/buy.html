@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}Buy MBITE — not listed yet; mine it today{% endblock %}
+{% block meta_description %}MBITE is not on any exchange and has no price. The only way to get MoonBite right now is to mine it. Find out what will change when a listing happens.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> Pre-listing</span>
+            <h1 class="mb-hero-title">You can't buy MBITE <span class="mb-gradient-text">yet.</span></h1>
+            <p class="mb-hero-sub">MoonBite is not listed on any exchange. There is no price, no order book, no way to purchase MBITE with another currency today. The only way to get it right now is to earn it by mining — which is open to everyone.</p>
+            <div class="mb-cta-row">
+                <a href="/mine" class="btn btn-primary mb-btn-xl">Mine MBITE</a>
+                <a href="/take-a-bite" class="btn btn-secondary mb-btn-xl">Get Started</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-banner mb-reveal">
+            <span>MBITE has <strong>no market price</strong> and is not trading on any exchange. Pre-mainnet coins carry no market value. MoonBite is <strong>not an investment or a security</strong>, and nothing here is financial advice.</span>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">The honest situation</span>
+            <h2 class="mb-section-title">What is and isn't possible right now</h2>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">✅</div>
+                <h3 class="mb-card-title">What you can do today</h3>
+                <p class="mb-card-text">Mine MBITE on your own hardware and receive the block reward directly to an address you control. Get a self-custody wallet. Run a full node and verify the chain yourself. Explore confirmed transactions in the block explorer.</p>
+                <a href="/mine" class="mb-card-link">Start mining →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🕐</div>
+                <h3 class="mb-card-title">What requires a listing first</h3>
+                <p class="mb-card-text">Purchasing MBITE with another currency, selling MBITE for another currency, or any form of price discovery — none of these exist yet. They depend on an exchange listing that is on the roadmap but has no confirmed date.</p>
+                <a href="/about#roadmap" class="mb-card-link">See the roadmap →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">How to get MBITE</span>
+            <h2 class="mb-section-title">Mine it — step by step</h2>
+            <p class="mb-section-sub">Mining is the fair way in. The block reward goes straight to you. No middleman, no purchase, no trust required.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">①</div>
+                <h3 class="mb-card-title">Create an address</h3>
+                <p class="mb-card-text">Get a self-custody wallet and generate a MoonBite address (<code>moon1…</code>). That address is where block rewards land — the keys never leave your device.</p>
+                <a href="/get-wallet" class="mb-card-link">Get a wallet →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">②</div>
+                <h3 class="mb-card-title">Choose a miner</h3>
+                <p class="mb-card-text">Use the browser miner with nothing to install, download the one-click desktop app, or run the Python CLI miner. All three pay rewards directly to your address.</p>
+                <a href="/mine" class="mb-card-link">See miner options →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">③</div>
+                <h3 class="mb-card-title">Earn the block reward</h3>
+                <p class="mb-card-text">When your miner finds a valid block the subsidy — currently 10 MBITE — is paid to your address. You can verify it in the block explorer.</p>
+                <a href="/mining" class="mb-card-link">Open the live reactor →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Exchange listing — coming soon</span>
+            <h2 class="mb-section-title">Where MBITE might trade one day</h2>
+            <p class="mb-section-sub">No exchange has confirmed a listing. These placeholders show the kind of venues being explored — nothing here is a deal, promise, or partnership.</p>
+        </div>
+        <div class="mb-exchange-grid mb-reveal">
+            <div class="mb-exchange-card">
+                <div class="mb-exchange-logo">🔷</div>
+                <div class="mb-exchange-name">Spot Exchange A</div>
+                <span class="mb-soon-chip">Coming soon</span>
+            </div>
+            <div class="mb-exchange-card">
+                <div class="mb-exchange-logo">🔶</div>
+                <div class="mb-exchange-name">Spot Exchange B</div>
+                <span class="mb-soon-chip">Coming soon</span>
+            </div>
+            <div class="mb-exchange-card">
+                <div class="mb-exchange-logo">🟣</div>
+                <div class="mb-exchange-name">DEX / AMM</div>
+                <span class="mb-soon-chip">Coming soon</span>
+            </div>
+            <div class="mb-exchange-card">
+                <div class="mb-exchange-logo">🟡</div>
+                <div class="mb-exchange-name">P2P Marketplace</div>
+                <span class="mb-soon-chip">Coming soon</span>
+            </div>
+        </div>
+        <div class="mb-banner mb-reveal" style="margin-top: var(--spacing-2xl);">
+            <span>No exchange listing is live or confirmed. The grid above shows placeholder categories only. <strong>Do not treat these as real partnerships or price guarantees.</strong></span>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">What changes at listing</span>
+            <h2 class="mb-section-title">What a listing actually means</h2>
+            <p class="mb-section-sub">A listing makes MBITE tradable — it does not assign it an intrinsic value or make it an investment.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📊</div>
+                <h3>Price discovery begins</h3>
+                <p>For the first time, buyers and sellers will agree on prices in an open order book. Neither this project nor anyone else sets that price.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔄</div>
+                <h3>Trading becomes possible</h3>
+                <p>Miners who want to convert rewards to another currency will have a venue. People who want MBITE but don't mine will have a way to acquire it.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔑</div>
+                <h3>Self-custody still matters</h3>
+                <p>An exchange holds coins on your behalf. Keeping your MBITE in a self-custody wallet means you're never exposed to exchange risk — before or after any listing.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        {% set notify_title = "Get notified when MBITE lists" %}
+        {% set notify_text = "Drop your email and we'll tell you the moment a listing goes live. One email, no price predictions, no spam." %}
+        {% set notify_source = "buy" %}
+        {% include "partials/notify_form.html" %}
+    </div>
+</section>
+{% endblock %}

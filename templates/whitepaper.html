@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}The MoonBite Paper — protocol design &amp; parameters{% endblock %}
+{% block meta_description %}MoonBite's protocol design in original words: its lineage from Bitcoin and Litecoin, the parameter choices that define it, and where to find the canonical source-of-truth in code.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> Protocol Paper</span>
+            <h1 class="mb-hero-title">The MoonBite <span class="mb-gradient-text">design.</span></h1>
+            <p class="mb-hero-sub">MoonBite does not claim to have invented a new consensus mechanism. It stands on two proven foundations — Bitcoin's double-spend solution and Litecoin's scrypt proof-of-work — and defines its own parameters on top of them. This document describes those design choices in original terms.</p>
+            <div class="mb-cta-row">
+                <a href="/developers" class="btn btn-primary mb-btn-xl">Source code &amp; docs</a>
+                <a href="/how-it-works" class="btn btn-secondary mb-btn-xl">How it works</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Foundations</span>
+            <h2 class="mb-section-title">What MoonBite inherits</h2>
+            <p class="mb-section-sub">Good engineering builds on what works. MoonBite does not reinvent two solved problems.</p>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">₿</div>
+                <div class="mb-card-title">From Bitcoin: the double-spend solution</div>
+                <div class="mb-card-text">Satoshi Nakamoto's 2008 paper solved the double-spend problem for digital cash without a trusted third party. The key insight: a chain of proof-of-work blocks, where the longest valid chain is the canonical history. An attacker who wants to rewrite the past must outpace the honest network in computational work — a cost that grows with the network's total hash rate. MoonBite inherits this model entirely. The UTXO transaction model, the block structure, and the security argument all trace directly to Bitcoin's design.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">Ł</div>
+                <div class="mb-card-title">From Litecoin: scrypt proof-of-work</div>
+                <div class="mb-card-text">Litecoin (2011) introduced scrypt as an alternative to Bitcoin's SHA-256 for proof-of-work. Scrypt is memory-hard: completing a hash requires holding a large array in RAM throughout the computation. This increases the cost of building dedicated attack hardware and keeps the algorithm accessible to a broader range of consumer hardware. MoonBite uses scrypt for exactly these reasons — it is a battle-tested algorithm with over a decade of real-world security at scale.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Parameters</span>
+            <h2 class="mb-section-title">MoonBite's own design choices</h2>
+            <p class="mb-section-sub">These are the specific decisions that make MoonBite distinct from its parent chains.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">⏱️</div>
+                <h3>2.5-minute block target</h3>
+                <p>A new block is targeted every 150 seconds. This is faster than Bitcoin's 10-minute target, reducing average wait time for a first confirmation. The network adjusts difficulty automatically to hold this target as hash rate changes.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🎁</div>
+                <h3>10 MBITE genesis reward</h3>
+                <p>The block subsidy at launch is 10 MBITE per block. This is paid entirely to the miner who solves the block. There is no founder reward, no pre-allocated treasury, and no developer cut. The emission is pure miner pay.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📉</div>
+                <h3>Halving every 1,000,000 blocks</h3>
+                <p>After each million blocks (~4.75 years at the 2.5-minute target), the block subsidy is cut in half. This mirrors Bitcoin's halving mechanism but on a block-count schedule matched to MoonBite's faster block time.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🧮</div>
+                <h3>Cap: 19,999,999.87 MBITE</h3>
+                <p>The total supply is asymptotically bounded. Each halving halves the rate of new issuance; the sum of all halvings converges to a finite limit just under 20 million MBITE. No additional coins can be created outside this schedule.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">⚖️</div>
+                <h3>No premine — fair launch</h3>
+                <p>No MBITE was created before public mining began. The founders hold no privileged allocation. Every coin in existence was earned through open, competitive proof-of-work mining. Any early mining by the development team was publicly disclosed under ADR-006.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📬</div>
+                <h3>Bech32 address format</h3>
+                <p>MoonBite uses bech32 encoded addresses for all standard outputs. Mainnet addresses begin with <code>moon1</code>; testnet addresses begin with <code>tmoon1</code>. The format includes a built-in checksum that catches most copy-paste errors before a transaction is broadcast.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Parameter table</span>
+            <h2 class="mb-section-title">At a glance</h2>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔧</div>
+                <div class="mb-card-title">Consensus algorithm</div>
+                <div class="mb-card-text">Proof-of-work · scrypt hashing function</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">⏱️</div>
+                <div class="mb-card-title">Target block time</div>
+                <div class="mb-card-text">150 seconds (2 minutes 30 seconds)</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🎁</div>
+                <div class="mb-card-title">Initial block reward</div>
+                <div class="mb-card-text">10 MBITE per block — 100% to miner</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📉</div>
+                <div class="mb-card-title">Halving interval</div>
+                <div class="mb-card-text">Every 1,000,000 blocks (~4.75 years)</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🧮</div>
+                <div class="mb-card-title">Maximum supply</div>
+                <div class="mb-card-text">19,999,999.87 MBITE (asymptotic)</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">⚖️</div>
+                <div class="mb-card-title">Premine</div>
+                <div class="mb-card-text">None — fair launch from block 0</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📬</div>
+                <div class="mb-card-title">Mainnet address prefix</div>
+                <div class="mb-card-text"><code>moon1...</code> (bech32)</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🧪</div>
+                <div class="mb-card-title">Testnet address prefix</div>
+                <div class="mb-card-text"><code>tmoon1...</code> (bech32)</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🌿</div>
+                <div class="mb-card-title">Lineage</div>
+                <div class="mb-card-text">Litecoin Core fork · Bitcoin-lineage consensus rules</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔓</div>
+                <div class="mb-card-title">License</div>
+                <div class="mb-card-text">Open source — see repository for exact license terms</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Design rationale</span>
+            <h2 class="mb-section-title">Why these choices were made</h2>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🤝</div>
+                <h3>Why build on Litecoin's codebase?</h3>
+                <p>Litecoin is one of the oldest continuously operating blockchain codebases in the world. Its consensus rules are battle-tested, its security model is well-understood, and its scrypt PoW algorithm has faced sustained adversarial pressure for over a decade. Building on a proven base reduces the attack surface from novel implementation bugs. MoonBite adds its own parameters and address format on top, rather than rewriting everything from scratch.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🛡️</div>
+                <h3>Why scrypt over SHA-256?</h3>
+                <p>SHA-256 mining is now almost entirely dominated by ASICs designed and manufactured by a small number of companies. Scrypt's memory hardness makes ASIC advantage less extreme and keeps CPU and GPU participation viable longer, supporting a more distributed initial mining ecosystem before ASIC miners arrive at scale.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📉</div>
+                <h3>Why a lower initial supply cap?</h3>
+                <p>MoonBite's maximum supply of roughly 20 million — rather than Bitcoin's 21 million — results from the 10-MBITE genesis reward and the 1,000,000-block halving schedule. This was not an arbitrary choice but a consequence of designing the emission curve around a specific block time and halving period. The math is transparent and verifiable in the source code.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🌱</div>
+                <h3>Why no premine?</h3>
+                <p>A premine — where founders create coins before public launch — is the single most common source of hidden conflicts of interest in cryptocurrency projects. Eliminating it entirely means every MBITE in existence was earned through publicly verifiable computational work. It also means the founders cannot secretly dump a large allocation on a future market. The fair-launch design is documented in ADR-006.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Source of truth</span>
+            <h2 class="mb-section-title">The code is the spec</h2>
+            <p class="mb-section-sub">MoonBite does not maintain a separate academic PDF authored under pseudonyms. The authoritative specification is the running software. Every parameter described here is enforced in the node code, visible to anyone who audits it.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">💻</div>
+                <div class="mb-card-title">Source code</div>
+                <div class="mb-card-text">The full node source is open and auditable. Every consensus rule — block reward, halving schedule, difficulty algorithm, address encoding — is in the code. No closed-source components.</div>
+                <a href="https://github.com/moonbitecoin/MoonBite-Coin" class="mb-card-link" target="_blank" rel="noopener">Source on GitHub →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📐</div>
+                <div class="mb-card-title">Architecture decision records</div>
+                <div class="mb-card-text">Key design decisions — including the fair-launch ADR-006 — are documented as Architecture Decision Records in the repository. They explain the reasoning, not just the conclusion.</div>
+                <a href="https://github.com/moonbitecoin/MoonBite-Coin" class="mb-card-link" target="_blank" rel="noopener">View ADRs on GitHub →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔎</div>
+                <div class="mb-card-title">Verify it yourself</div>
+                <div class="mb-card-text">Run your own full node and check the chain independently. Every parameter described on this page is enforced by every honest node on the network — not by trusting this document.</div>
+                <a href="/developers#run-a-node" class="mb-card-link">Run a node →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Further reading</span>
+            <h2 class="mb-section-title">Go deeper</h2>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">⚙️</div>
+                <div class="mb-card-title">How it works</div>
+                <div class="mb-card-text">A plain-language walkthrough of every mechanism described here: mining, blocks, keys, nodes, and the emission schedule.</div>
+                <a href="/how-it-works" class="mb-card-link">How it works →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📊</div>
+                <div class="mb-card-title">Tokenomics</div>
+                <div class="mb-card-text">The full MBITE emission table, supply cap breakdown, and halving schedule visualised in the About page.</div>
+                <a href="/about#tokenomics" class="mb-card-link">Tokenomics →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🛠️</div>
+                <div class="mb-card-title">Developer docs</div>
+                <div class="mb-card-text">RPC reference, node setup, address formats, and integration guides for anyone building on top of MoonBite.</div>
+                <a href="/developers" class="mb-card-link">Developer docs →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-banner mb-reveal">
+            <span>MoonBite is pre-mainnet, open-source software. This document describes the protocol as designed and implemented — it is <strong>not an investment prospectus or a security offering</strong>. Coins carry no market value today. Nothing here is financial advice.</span>
+        </div>
+    </div>
+</section>
+{% endblock %}

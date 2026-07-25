@@ -1,22 +1,22 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:bigcoin_mobile/models/chain_models.dart';
-import 'package:bigcoin_mobile/wallet/bigcoin_network.dart';
-import 'package:bigcoin_mobile/wallet/hd_wallet_service.dart';
-import 'package:bigcoin_mobile/wallet/tx_builder.dart';
+import 'package:moonbite_mobile/models/chain_models.dart';
+import 'package:moonbite_mobile/wallet/moonbite_network.dart';
+import 'package:moonbite_mobile/wallet/hd_wallet_service.dart';
+import 'package:moonbite_mobile/wallet/tx_builder.dart';
 
 const _mnemonic =
     'abandon abandon abandon abandon abandon abandon '
     'abandon abandon abandon abandon abandon about';
 
-// Verified via `bigcoind -testnet validateaddress` for the index-0 test-vector
+// Verified via `moonbited -testnet validateaddress` for the index-0 test-vector
 // key: tbig1q6rz28mcfaxtmd6v789l9rrlrusdprr9pdc24tr => this scriptPubKey.
 const _spk0 = '0014d0c4a3ef09e997b6e99e397e518fe3e41a118ca1';
 const _fakeTxid =
     '1111111111111111111111111111111111111111111111111111111111111111';
 
 void main() {
-  final net = BigCoinNetwork.testnet;
+  final net = MoonBiteNetwork.testnet;
   final svc = HdWalletService(net);
   final builder = TxBuilder(net);
 
@@ -96,6 +96,34 @@ void main() {
       ),
       throwsA(isA<InsufficientFundsException>()),
     );
+  });
+
+  test('rejects an implausibly high fee rate', () {
+    // A hostile node could quote an absurd fee rate; combined with the
+    // dust-fold this would burn most of the UTXO as fee. Refuse it.
+    expect(
+      () => builder.buildSpend(
+        utxos: [utxo(50.0)],
+        toAddress: acct1.bech32Address,
+        amountSats: 100000000,
+        changeAddress: acct0.bech32Address,
+        wif: acct0.wif,
+        feeRateSatPerVByte: TxBuilder.maxFeeRateSatPerVByte + 1,
+      ),
+      throwsA(isA<ExcessiveFeeRateException>()),
+    );
+  });
+
+  test('accepts a fee rate right at the safety cap', () {
+    final signed = builder.buildSpend(
+      utxos: [utxo(50.0)],
+      toAddress: acct1.bech32Address,
+      amountSats: 100000000,
+      changeAddress: acct0.bech32Address,
+      wif: acct0.wif,
+      feeRateSatPerVByte: TxBuilder.maxFeeRateSatPerVByte,
+    );
+    expect(signed.rawHex, isNotEmpty);
   });
 
   test('drops dust change into the fee', () {

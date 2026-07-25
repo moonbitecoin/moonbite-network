@@ -1,0 +1,326 @@
+/* ============================================================================
+   MoonBite — COSMIC LAYER (reusable)
+   The homepage's cinematic deep-space treatment, generalised so ANY page can
+   opt in with  <body class="mb-cosmic">  +  this stylesheet.
+   Scoped entirely under .mb-cosmic / body.mb-cosmic. Reuses global tokens from
+   style.css — no new palette. Loaded AFTER site.css so it wins ties.
+   Mirrors the flagship + continuous-cosmos layers used on / (home.html), but
+   decoupled so it can never affect the bespoke homepage.
+   ========================================================================== */
+
+/* ---- Always-dark cinematic palette (re-assert even under the light theme so
+        the toggle can never produce dark-text-on-dark-space). ---- */
+html[data-theme="light"] body.mb-cosmic {
+    --bg-primary: #05060d;
+    --bg-secondary: #0a0d1a;
+    --bg-tertiary: #131a2e;
+    --text-primary: #f2f4fb;
+    --text-secondary: #8991b3;
+    --border-color: rgba(255, 255, 255, 0.09);
+    --card-bg: rgba(255, 255, 255, 0.035);
+    --card-bg-solid: #0e1220;
+    --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+    --glow-primary: 0 0 24px rgba(124, 92, 255, 0.45);
+}
+
+/* ---- Deep-space floor; every section floats in it (no more flat slabs). ---- */
+body.mb-cosmic { position: relative; background: #04050c; }
+.mb-cosmic main { background: transparent; }
+.mb-cosmic .mb-section,
+.mb-cosmic .mb-section-tight {
+    background: transparent !important;
+    border-top: 0 !important;
+    border-bottom: 0 !important;
+    position: relative;
+}
+
+/* FAR starfield — fixed, barely moves: the distant sky you fly past. */
+body.mb-cosmic::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-color: #04050c;
+    background-image:
+        radial-gradient(1.6px 1.6px at 40px 60px,  rgba(255,255,255,0.90), transparent),
+        radial-gradient(1.2px 1.2px at 130px 100px, rgba(200,210,255,0.70), transparent),
+        radial-gradient(1px 1px     at 90px 165px, rgba(255,255,255,0.55), transparent),
+        radial-gradient(1.4px 1.4px at 175px 40px,  rgba(180,220,255,0.65), transparent),
+        radial-gradient(1px 1px     at 20px 185px, rgba(255,255,255,0.50), transparent),
+        radial-gradient(1.2px 1.2px at 150px 150px, rgba(210,200,255,0.55), transparent);
+    background-size: 220px 220px;
+    background-repeat: repeat;
+}
+
+/* Aurora ambience woven behind the whole page. */
+body.mb-cosmic::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(60vw 50vh at 12% 18%, rgba(124, 92, 255, 0.10), transparent 60%),
+        radial-gradient(55vw 45vh at 88% 42%, rgba(52, 211, 255, 0.09), transparent 60%),
+        radial-gradient(50vw 45vh at 30% 82%, rgba(34, 229, 168, 0.07), transparent 62%);
+    background-size: 200% 200%, 200% 200%, 200% 200%;
+    animation: mbcAurora 34s ease-in-out infinite alternate;
+}
+
+/* NEAR starfield — scrolls with the page for real parallax depth. */
+.mb-cosmic main::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+        radial-gradient(2.2px 2.2px at 60px 80px,   rgba(124,92,255,0.55), transparent),
+        radial-gradient(1.8px 1.8px at 260px 220px, rgba(52,211,255,0.45), transparent),
+        radial-gradient(2px 2px     at 380px 60px,   rgba(255,255,255,0.55), transparent),
+        radial-gradient(1.6px 1.6px at 160px 300px, rgba(34,229,168,0.40), transparent);
+    background-size: 420px 420px;
+    background-repeat: repeat;
+    opacity: 0.9;
+}
+
+/* Content rides above the cosmos. */
+.mb-cosmic main,
+.mb-cosmic .mb-meganav,
+.mb-cosmic .mb-footer { position: relative; z-index: 1; }
+
+/* ---- Hero: let deep space show through, add an aura under the title. ---- */
+.mb-cosmic .mb-hero { background: transparent; }
+.mb-cosmic .mb-hero-glow { opacity: 0.9; }
+
+/* ---- Section header light source: reads as a designed scene, not a band. ---- */
+.mb-cosmic .mb-section-head { position: relative; }
+.mb-cosmic .mb-section-head::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -120px;
+    width: min(640px, 90vw);
+    height: 300px;
+    transform: translateX(-50%);
+    background: radial-gradient(closest-side, rgba(124, 92, 255, 0.16), transparent 72%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* ---- Eyebrow → crisp futuristic pill with a lit indicator dot. ---- */
+.mb-cosmic .mb-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.4rem 0.95rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary-color) 9%, transparent);
+    border: 1px solid color-mix(in srgb, var(--primary-color) 32%, transparent);
+    color: var(--primary-color-2);
+    box-shadow: 0 0 26px color-mix(in srgb, var(--primary-color) 16%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+.mb-cosmic .mb-eyebrow::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--primary-color-2) 85%, transparent);
+}
+
+/* ---- Cinematic headlines: bigger, tighter, faint aura. ---- */
+.mb-cosmic .mb-hero-title { text-shadow: 0 0 70px rgba(124, 92, 255, 0.28); }
+.mb-cosmic .mb-section-title {
+    font-size: clamp(2.1rem, 5vw, 3.7rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    text-shadow: 0 0 60px rgba(124, 92, 255, 0.25);
+}
+.mb-cosmic .mb-section-sub { font-size: clamp(1rem, 1.6vw, 1.15rem); }
+
+/* ---- Holographic glass cards: depth, a gradient-lit top edge, and a conic
+        aura that ignites on hover. The core "flagship" upgrade. ---- */
+.mb-cosmic .mb-card {
+    position: relative;
+    background:
+        linear-gradient(180deg,
+            color-mix(in srgb, var(--bg-secondary) 55%, transparent),
+            color-mix(in srgb, var(--card-bg-solid) 94%, transparent));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 24px 60px -34px rgba(0, 0, 0, 0.85);
+    overflow: hidden;
+    transition:
+        transform .34s cubic-bezier(.2,.8,.2,1),
+        border-color .34s ease,
+        box-shadow .34s ease;
+}
+.mb-cosmic .mb-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 2px;
+    background: var(--gradient-primary);
+    opacity: 0.35;
+    transition: opacity .34s ease;
+}
+.mb-cosmic .mb-card::after {
+    content: "";
+    position: absolute;
+    inset: -40%;
+    background: conic-gradient(from 0deg,
+        transparent 0deg,
+        rgba(124, 92, 255, 0.14) 60deg,
+        rgba(52, 211, 255, 0.12) 140deg,
+        transparent 220deg);
+    opacity: 0;
+    transition: opacity .5s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+.mb-cosmic .mb-card > * { position: relative; z-index: 1; }
+.mb-cosmic a.mb-card:hover,
+.mb-cosmic .mb-card.mb-hoverable:hover {
+    transform: translateY(-8px);
+    border-color: color-mix(in srgb, var(--primary-color) 60%, transparent);
+    box-shadow:
+        0 40px 70px -34px rgba(124, 92, 255, 0.55),
+        0 0 0 1px color-mix(in srgb, var(--primary-color) 35%, transparent),
+        var(--glow-primary);
+}
+.mb-cosmic a.mb-card:hover::before,
+.mb-cosmic .mb-card.mb-hoverable:hover::before { opacity: 1; }
+.mb-cosmic a.mb-card:hover::after,
+.mb-cosmic .mb-card.mb-hoverable:hover::after { opacity: 1; animation: mbcHolo 6s linear infinite; }
+
+/* ---- Feature blocks promoted to first-class glass cards. ---- */
+.mb-cosmic .mb-feature {
+    position: relative;
+    background:
+        linear-gradient(180deg,
+            color-mix(in srgb, var(--bg-secondary) 48%, transparent),
+            color-mix(in srgb, var(--card-bg-solid) 92%, transparent));
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: transform .34s cubic-bezier(.2,.8,.2,1), border-color .34s ease, box-shadow .34s ease;
+}
+.mb-cosmic .mb-feature::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 2px;
+    background: var(--gradient-primary);
+    opacity: 0;
+    transition: opacity .34s ease;
+}
+.mb-cosmic .mb-feature:hover {
+    transform: translateY(-6px);
+    border-color: color-mix(in srgb, var(--primary-color) 45%, transparent);
+    box-shadow: 0 34px 64px -36px rgba(0, 0, 0, 0.9), var(--glow-primary);
+}
+.mb-cosmic .mb-feature:hover::before { opacity: 1; }
+
+/* ---- Icon tiles: bare emoji → luminous gradient chips with inner light. ---- */
+.mb-cosmic .mb-card-icon,
+.mb-cosmic .mb-feature-icon {
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    font-size: 1.65rem;
+    border-radius: 16px;
+    background:
+        linear-gradient(150deg,
+            color-mix(in srgb, var(--primary-color) 30%, transparent),
+            color-mix(in srgb, var(--primary-color-2) 16%, transparent));
+    border: 1px solid color-mix(in srgb, var(--primary-color) 32%, transparent);
+    box-shadow:
+        0 10px 26px -12px color-mix(in srgb, var(--primary-color) 65%, transparent),
+        inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    margin-bottom: var(--spacing-xs);
+    transition: transform .34s cubic-bezier(.2,.8,.2,1);
+}
+.mb-cosmic a.mb-card:hover .mb-card-icon,
+.mb-cosmic .mb-feature:hover .mb-feature-icon {
+    transform: translateY(-3px) scale(1.06) rotate(-2deg);
+}
+
+/* ---- Card link → confident, warms to full white on hover. ---- */
+.mb-cosmic .mb-card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 700;
+    transition: color .25s ease, gap .25s ease;
+}
+.mb-cosmic a.mb-card:hover .mb-card-link,
+.mb-cosmic .mb-feature:hover .mb-card-link {
+    color: var(--text-primary);
+    gap: 0.6rem;
+}
+
+/* ---- Live stat band → mission-control readout: gradient rail + hover glow. ---- */
+.mb-cosmic .mb-statband {
+    position: relative;
+    box-shadow: 0 34px 80px -46px rgba(0, 0, 0, 0.95);
+}
+.mb-cosmic .mb-statband::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 2px;
+    z-index: 2;
+    background: var(--gradient-primary);
+    background-size: 200% auto;
+    animation: mbcShine 5s linear infinite;
+}
+.mb-cosmic .mb-stat { transition: background .3s ease; }
+.mb-cosmic .mb-stat:hover {
+    background: color-mix(in srgb, var(--primary-color) 8%, var(--card-bg-solid));
+}
+.mb-cosmic .mb-stat-value { font-size: clamp(1.5rem, 3vw, 2.2rem); letter-spacing: -0.02em; }
+
+/* ---- Code block → terminal from the future. ---- */
+.mb-cosmic .mb-code {
+    box-shadow: 0 30px 64px -40px rgba(0, 0, 0, 0.9), var(--glow-primary);
+    border-color: color-mix(in srgb, var(--primary-color) 22%, transparent);
+}
+
+/* ---- Honesty banner keeps its own surface but lifts above the starfield. ---- */
+.mb-cosmic .mb-banner { position: relative; z-index: 1; }
+
+/* ---- Reveal polish: mb-reveal (site.js-driven) gets a filmic entrance. ---- */
+.mb-cosmic .mb-reveal { transform: translateY(46px) scale(0.985); }
+.mb-cosmic .mb-reveal.is-visible,
+.mb-cosmic .mb-reveal.visible { transform: none; }
+.mb-cosmic .mb-grid > .mb-reveal:nth-child(2) { transition-delay: 0.08s; }
+.mb-cosmic .mb-grid > .mb-reveal:nth-child(3) { transition-delay: 0.16s; }
+.mb-cosmic .mb-grid > .mb-reveal:nth-child(4) { transition-delay: 0.24s; }
+.mb-cosmic .mb-grid > .mb-reveal:nth-child(5) { transition-delay: 0.32s; }
+.mb-cosmic .mb-grid > .mb-reveal:nth-child(6) { transition-delay: 0.40s; }
+
+/* ---- Motion safety. ---- */
+@media (prefers-reduced-motion: reduce) {
+    body.mb-cosmic::after,
+    .mb-cosmic .mb-statband::before,
+    .mb-cosmic .mb-card::after { animation: none !important; }
+    .mb-cosmic .mb-reveal { transform: none !important; }
+}
+
+@keyframes mbcAurora {
+    0%   { background-position: 0% 0%,   100% 0%,   50% 100%; }
+    100% { background-position: 100% 100%, 0% 100%, 0% 0%; }
+}
+@keyframes mbcHolo { to { transform: rotate(360deg); } }
+@keyframes mbcShine { to { background-position: 200% center; } }

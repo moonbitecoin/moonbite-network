@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}Sell MBITE — no market exists yet{% endblock %}
+{% block meta_description %}There is no exchange to sell MBITE into yet. Your coins stay in your own wallet under your own keys until a listing opens a public trading venue.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> Pre-listing</span>
+            <h1 class="mb-hero-title">No market to sell into <span class="mb-gradient-text">yet.</span></h1>
+            <p class="mb-hero-sub">MoonBite has no exchange listing and no public price. There is nowhere to sell MBITE right now. Your coins sit safely in your self-custody wallet — under your keys, under your control — until a trading venue opens.</p>
+            <div class="mb-cta-row">
+                <a href="/get-wallet" class="btn btn-primary mb-btn-xl">Get a Wallet</a>
+                <a href="/about#roadmap" class="btn btn-secondary mb-btn-xl">See the Roadmap</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-banner mb-reveal">
+            <span>MBITE has <strong>no market price</strong> and is not trading on any exchange. MoonBite is <strong>not an investment or a security</strong>. Nothing on this page is financial advice.</span>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">The honest situation</span>
+            <h2 class="mb-section-title">What selling actually requires</h2>
+            <p class="mb-section-sub">A sell venue needs two things that don't exist yet: an exchange listing and a willing buyer with a public price. Neither is in place.</p>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔑</div>
+                <h3 class="mb-card-title">You already control your coins</h3>
+                <p class="mb-card-text">If you mined MBITE, the reward landed in your self-custody wallet. You hold the private keys — not this site, not a custodian. Your coins cannot be frozen or seized by a third party. That is the state they're in right now, and it's the safest state to be in while there's no exchange.</p>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🕐</div>
+                <h3 class="mb-card-title">A listing is what unlocks trading</h3>
+                <p class="mb-card-text">When an exchange lists MBITE, sellers can post orders and buyers can fill them. Until that happens there's no public market mechanism and therefore no sell price. The roadmap covers this honestly — no date has been committed.</p>
+                <a href="/about#roadmap" class="mb-card-link">Read the roadmap →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Self-custody matters</span>
+            <h2 class="mb-section-title">Why holding your own keys is the right call now</h2>
+            <p class="mb-section-sub">During a pre-listing period there are no custodians to trust and no need to trust any. Here's what self-custody actually gives you.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🛡️</div>
+                <h3>No exchange risk</h3>
+                <p>Your MBITE lives in your wallet. No exchange insolvency, freeze, or hack can touch coins you hold yourself.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">⏳</div>
+                <h3>No deadline to act</h3>
+                <p>Self-custody doesn't expire. You can hold as long as you like, wait for a listing, and decide then — no pressure.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔎</div>
+                <h3>Verify your balance yourself</h3>
+                <p>Run your own node or use the block explorer to confirm your address balance. No one else's word required.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📤</div>
+                <h3>Send to any MBITE address</h3>
+                <p>Even without an exchange you can send MBITE peer-to-peer to another MBITE address. That's been possible from day one.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔐</div>
+                <h3>Timelock vault</h3>
+                <p>The node includes a timelock vault: lock coins until a future block, then spend normally. A useful tool for miners who want to keep coins safe for a set period.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🌐</div>
+                <h3>Part of the network</h3>
+                <p>Every wallet that holds MBITE and every address in the UTXO set is part of the ledger. You're not on a waiting list — you're already participating.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Internal order book</span>
+            <h2 class="mb-section-title">Peer-to-peer intent matching</h2>
+            <p class="mb-section-sub">There is a non-custodial internal order book where you can post a sell intent and let a willing buyer find it. Settlement is an atomic wallet-to-wallet swap — the server never holds coins. This is experimental pre-listing infrastructure, not a guarantee of liquidity.</p>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📝</div>
+                <h3 class="mb-card-title">Post a sell intent</h3>
+                <p class="mb-card-text">Name a price and amount in the internal order book. If someone matches your offer, you both run an atomic swap wallet-to-wallet. The server stores only the public intent — no coins ever pass through it.</p>
+                <a href="/markets#place" class="mb-card-link">Open the order book →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">⚠️</div>
+                <h3 class="mb-card-title">What this isn't</h3>
+                <p class="mb-card-text">The internal exchange is experimental. Automated swap coordination isn't built yet, so settlement requires both parties to run the swap manually. It is not a liquid market and not a guarantee that your order will fill.</p>
+                <a href="/markets" class="mb-card-link">How it works →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        {% set notify_title = "Get notified when a sell venue opens" %}
+        {% set notify_text = "We'll send one email when an exchange listing goes live. No price guesses, no noise in between." %}
+        {% set notify_source = "sell" %}
+        {% include "partials/notify_form.html" %}
+    </div>
+</section>
+{% endblock %}

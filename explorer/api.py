@@ -18,6 +18,10 @@ The wallet builds and signs transactions ON DEVICE; the server only relays the
 finished hex and reports chain state. No keys ever reach this server.
 """
 import hmac
+import threading
+import time
+from collections import defaultdict
+from functools import wraps
 
 from flask import Blueprint, jsonify, request
 
@@ -36,6 +40,89 @@ def _err(message, status):
     resp = jsonify({"error": message})
     resp.status_code = status
     return resp
+
+
+# Minimal in-process anti-abuse limiter for the unauthenticated relay endpoints
+# (single-node explorer). Keyed on remote_addr so it fails closed if a proxy
+# hides the real client. Consensus validity is still enforced by the node.
+_rl_lock = threading.Lock()
+_rl_hits: "defaultdict[tuple, list]" = defaultdict(list)
+
+
+def _rate_limit(max_calls, window_seconds=60):
+    def decorator(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            # CORS preflight is not a real call — never throttle it, or a browser
+            # miner's OPTIONS burst would spend the client's quota before it mines.
+            if request.method == "OPTIONS":
+                return fn(*args, **kwargs)
+            key = (request.remote_addr or "unknown", fn.__name__)
+            now = time.time()
+            with _rl_lock:
+                hits = _rl_hits[key]
+                cutoff = now - window_seconds
+                hits[:] = [t for t in hits if t > cutoff]
+                if len(hits) >= max_calls:
+                    retry = int(window_seconds - (now - hits[0])) + 1
+                    resp = _err(f"rate limit exceeded ({max_calls}/{window_seconds}s)", 429)
+                    resp.headers["Retry-After"] = str(retry)
+                    return resp
+                hits.append(now)
+            return fn(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
+# MoonBite address prefixes per network. A wrong-network address is *well-formed*
+# but belongs to another chain, so the node rejects it with an unhelpful "invalid
+# address". We classify by prefix to explain the real problem to the miner.
+_ADDR_NETWORKS = (
+    # (network key, human label, bech32 HRPs, base58 leading chars)
+    ("main", "mainnet", ("moon1", "moonmweb1"), ("M", "3")),
+    ("test", "testnet", ("tmoon1", "tmoonmweb1"), ("m", "n", "2")),
+    ("regtest", "regtest", ("rmoon1", "rmoonmweb1"), ()),
+)
+
+# What getblockchaininfo's "chain" value maps to as a human label.
+_CHAIN_LABELS = {"main": "mainnet", "test": "testnet", "regtest": "regtest"}
+
+
+def _classify_address_network(address):
+    """Best-effort guess of which MoonBite network an address is for.
+
+    Returns a network key ('main'|'test'|'regtest') or None if the prefix is
+    unrecognized. Bech32 HRPs are unambiguous; base58 leading chars are a hint.
+    """
+    addr = address.strip()
+    lower = addr.lower()
+    for key, _label, hrps, _b58 in _ADDR_NETWORKS:
+        if any(lower.startswith(h) for h in hrps):
+            return key
+    for key, _label, _hrps, b58 in _ADDR_NETWORKS:
+        if b58 and addr[:1] in b58:
+            return key
+    return None
+
+
+def _wrong_network_hint(address, node_chain):
+    """If the address is for a different network than the node, explain it.
+
+    Returns a targeted error string, or None if there is no clear mismatch (in
+    which case the generic "invalid address" message stands).
+    """
+    guessed = _classify_address_network(address)
+    if guessed is None or node_chain is None or guessed == node_chain:
+        return None
+    addr_label = _CHAIN_LABELS.get(guessed, guessed)
+    node_label = _CHAIN_LABELS.get(node_chain, node_chain)
+    want_prefix = {"main": "moon1…", "test": "tmoon1…", "regtest": "rmoon1…"}.get(
+        node_chain, "the node's"
+    )
+    return (
+        f"wrong network: that looks like a {addr_label} address, but this node "
+        f"is {node_label}. Use a {node_label} address ({want_prefix})."
+    )
 
 
 def _allowed_origin(origin):
@@ -170,13 +257,20 @@ def fee():
         est = client.estimatesmartfee(6)
         rate = est.get("feerate") if isinstance(est, dict) else None
         if rate and rate > 0:
-            return jsonify({"feerate": float(rate), "blocks": est.get("blocks"), "source": "estimatesmartfee", "demo": False})
+            return jsonify({
+                "feerate": float(rate), "blocks": est.get("blocks"),
+                "source": "estimatesmartfee", "demo": False,
+            })
     except (RPCError, RPCConnectionError):
         pass
-    return jsonify({"feerate": fallback, "blocks": None, "source": "default", "demo": client.is_demo()})
+    return jsonify({
+        "feerate": fallback, "blocks": None,
+        "source": "default", "demo": client.is_demo(),
+    })
 
 
 @api.route("/tx/broadcast", methods=["POST"])
+@_rate_limit(20, 60)
 def broadcast():
     client = _client()
     if client.is_demo():
@@ -198,6 +292,7 @@ def broadcast():
 
 
 @api.route("/mine", methods=["POST", "OPTIONS"])
+@_rate_limit(10, 60)
 def mine():
     """Trigger real mining of one block to `address`. The NODE performs the
     proof-of-work (generatetoaddress); this endpoint just relays the request so
@@ -221,7 +316,16 @@ def mine():
     try:
         info = client.validateaddress(address)
         if not info.get("isvalid"):
-            return _err("invalid MoonBite address", 400)
+            # A well-formed address for the wrong network is the common footgun
+            # (e.g. a tmoon1… testnet address sent to a mainnet node). Detect it
+            # and say so, instead of the bare "invalid address".
+            node_chain = None
+            try:
+                node_chain = (client.getblockchaininfo() or {}).get("chain")
+            except (RPCConnectionError, RPCError):
+                pass
+            hint = _wrong_network_hint(address, node_chain)
+            return _err(hint or "invalid MoonBite address", 400)
     except RPCConnectionError as exc:
         return _err(str(exc), 503)
     except RPCError as exc:
@@ -339,7 +443,7 @@ def block_json(identifier):
         block = client.getblock(block_hash, 1)
     except RPCConnectionError as exc:
         return _err(str(exc), 503)
-    except RPCError as exc:
+    except RPCError:
         return _err("block not found", 404)
 
     summary = _block_summary(block)

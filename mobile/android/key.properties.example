@@ -1,0 +1,15 @@
+# Release signing credentials for the MoonBite Android wallet.
+#
+# Copy this file to android/key.properties and fill in real values. The real
+# key.properties (and any *.keystore / *.jks) is gitignored and MUST NEVER be
+# committed — it is the private key that lets you publish updates to your app.
+#
+# Create an upload keystore with:
+#   keytool -genkey -v -keystore ~/moonbite-upload.jks \
+#     -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+#
+storePassword=CHANGE_ME
+keyPassword=CHANGE_ME
+keyAlias=upload
+# Absolute path to the keystore, or a path relative to android/app/.
+storeFile=/absolute/path/to/moonbite-upload.jks

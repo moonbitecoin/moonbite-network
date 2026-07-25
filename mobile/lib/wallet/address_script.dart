@@ -3,13 +3,13 @@ import 'dart:typed_data';
 import 'package:bs58check/bs58check.dart' as bs58check;
 import 'package:coinslib/bech32/bech32.dart';
 
-import 'bigcoin_network.dart';
+import 'moonbite_network.dart';
 
-/// Converts a Big Coin address into its output script (scriptPubKey) bytes.
+/// Converts a MoonBite address into its output script (scriptPubKey) bytes.
 ///
 /// coinslib's own `addressToOutputScript` can't be used here: its SegWit
 /// decoder hard-codes the set of allowed bech32 prefixes (`bc`, `tb`, ...) and
-/// rejects Big Coin's custom `big` / `tbig` HRPs on decode. So we decode the
+/// rejects MoonBite's custom `big` / `tbig` HRPs on decode. So we decode the
 /// address ourselves using the underlying (HRP-agnostic) bech32 codec and the
 /// base58check codec, then assemble the standard scripts:
 ///
@@ -20,7 +20,7 @@ import 'bigcoin_network.dart';
 class AddressScript {
   /// Returns the scriptPubKey for [address] on [network], or throws
   /// [FormatException] if the address is invalid for this network.
-  static Uint8List forAddress(String address, BigCoinNetwork network) {
+  static Uint8List forAddress(String address, MoonBiteNetwork network) {
     final net = network.coins;
     final addr = address.trim();
 
@@ -52,7 +52,7 @@ class AddressScript {
     try {
       decoded = bech32.decode(addr);
     } catch (e) {
-      throw FormatException('Not a valid Big Coin address: $addr');
+      throw FormatException('Not a valid MoonBite address: $addr');
     }
     if (decoded.hrp != net.bech32) {
       throw FormatException(

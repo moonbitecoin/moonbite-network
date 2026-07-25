@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}Resources — MoonBite{% endblock %}
+{% block meta_description %}Every MoonBite tool and document in one place: wallet, mining guides, block explorer, dashboard, API docs, downloads, vocabulary, and community links.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> Resources</span>
+            <h1 class="mb-hero-title">Everything you need to <span class="mb-gradient-text">get started.</span></h1>
+            <p class="mb-hero-sub">Wallets, mining tools, the block explorer, API docs, learning guides — all in one place. MoonBite is pre-mainnet and every tool listed here runs today on testnet.</p>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Wallets</span>
+            <h2 class="mb-section-title">Hold your own keys</h2>
+            <p class="mb-section-sub">MoonBite wallets are non-custodial — your seed phrase never leaves your device, and this site will never ask for it.</p>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">👛</div>
+                <h3 class="mb-card-title">Web Wallet</h3>
+                <p class="mb-card-text">Create an address, check your balance, and send MBITE directly in the browser. Keys are generated and stored locally — the server never sees them.</p>
+                <a href="/get-wallet" class="mb-card-link">Get the wallet →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔐</div>
+                <h3 class="mb-card-title">Wallet Dashboard</h3>
+                <p class="mb-card-text">A full-featured interface for managing addresses, viewing transaction history, and signing sends — all from your own keys.</p>
+                <a href="/wallet" class="mb-card-link">Open dashboard →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Mining</span>
+            <h2 class="mb-section-title">Earn MBITE by securing the network</h2>
+            <p class="mb-section-sub">MoonBite uses scrypt proof-of-work. The only way to get MBITE right now is to mine it — there's no presale, no ICO, no airdrop.</p>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">⛏️</div>
+                <h3 class="mb-card-title">Mining Guide</h3>
+                <p class="mb-card-text">Step-by-step setup for the browser miner, one-click desktop miner, and command-line miner. Start in minutes on testnet.</p>
+                <a href="/mine" class="mb-card-link">Start mining →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📊</div>
+                <h3 class="mb-card-title">Mining Dashboard</h3>
+                <p class="mb-card-text">Real-time hashrate, block finds, and reward history for connected miners on the testnet network.</p>
+                <a href="/mining" class="mb-card-link">View dashboard →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Chain data</span>
+            <h2 class="mb-section-title">Inspect the blockchain</h2>
+            <p class="mb-section-sub">Every block and transaction on the MoonBite testnet is publicly readable. You don't need an account.</p>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔍</div>
+                <h3 class="mb-card-title">Block Explorer</h3>
+                <p class="mb-card-text">Search blocks, transactions, and addresses. Verify that a payment confirmed without trusting anyone else.</p>
+                <a href="/explorer" class="mb-card-link">Open explorer →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📈</div>
+                <h3 class="mb-card-title">Network Dashboard</h3>
+                <p class="mb-card-text">Chain height, mempool depth, current difficulty, and mining stats for the live testnet node.</p>
+                <a href="/dashboard" class="mb-card-link">Open dashboard →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Developers</span>
+            <h2 class="mb-section-title">Build on MoonBite</h2>
+            <p class="mb-section-sub">A read-only JSON API for the chain, plus everything you need to run a node and integrate MBITE into your own tools.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🛠️</div>
+                <h3 class="mb-card-title">API Reference</h3>
+                <p class="mb-card-text">Documented REST endpoints for blocks, transactions, address balances, mempool, and search. No API key needed.</p>
+                <a href="/developers" class="mb-card-link">View API docs →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🖥️</div>
+                <h3 class="mb-card-title">Run a Full Node</h3>
+                <p class="mb-card-text">Download and run MoonBite Core to enforce the rules yourself. Don't trust the network — verify it.</p>
+                <a href="/developers#run-a-node" class="mb-card-link">Node setup guide →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📦</div>
+                <h3 class="mb-card-title">Downloads</h3>
+                <p class="mb-card-text">Pre-built binaries for the node daemon and CLI. Checksums included — always verify before running.</p>
+                <a href="/downloads/README.txt" class="mb-card-link">See download notes →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Learning</span>
+            <h2 class="mb-section-title">Understand what you're running</h2>
+            <p class="mb-section-sub">MoonBite is built on decades of open cryptography research. These resources help you understand the system from the inside.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📖</div>
+                <h3 class="mb-card-title">Learn MoonBite</h3>
+                <p class="mb-card-text">Start here if you're new. Honest answers to the most common questions about what MoonBite is and how to use it.</p>
+                <a href="/learn" class="mb-card-link">Start learning →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📚</div>
+                <h3 class="mb-card-title">Vocabulary</h3>
+                <p class="mb-card-text">Definitions for every technical term you'll encounter: blocks, nonces, UTXOs, bech32, scrypt, and more.</p>
+                <a href="/vocabulary" class="mb-card-link">Browse glossary →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🌐</div>
+                <h3 class="mb-card-title">Community</h3>
+                <p class="mb-card-text">Ask questions, share what you've built, and help others get started. MoonBite is open-source and early — your input shapes it.</p>
+                <a href="/community" class="mb-card-link">Join the community →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        {% set notify_title = "Stay informed as MoonBite grows." %}
+        {% set notify_text = "We'll notify you when mainnet launches and the first exchange listing goes live. Nothing else." %}
+        {% set notify_source = "resources" %}
+        {% include "partials/notify_form.html" %}
+    </div>
+</section>
+{% endblock %}

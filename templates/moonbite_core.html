@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}MoonBite Core — MoonBite{% endblock %}
+{% block meta_description %}MoonBite Core is the reference full-node implementation of the MoonBite network. Download it, run it, and verify the chain yourself — without trusting anyone.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> MoonBite Core</span>
+            <h1 class="mb-hero-title">Don't trust. <span class="mb-gradient-text">Verify.</span></h1>
+            <p class="mb-hero-sub">MoonBite Core is the reference implementation of the MoonBite full node. It validates every transaction, enforces every rule, and doesn't take anyone's word for it — including ours.</p>
+            <div class="mb-cta-row">
+                <a href="/developers#run-a-node" class="btn btn-primary mb-btn-xl">Setup guide</a>
+                <a href="https://github.com/moonbitecoin/MoonBite-Coin" class="btn btn-secondary mb-btn-xl" target="_blank" rel="noopener">Source on GitHub</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">What it is</span>
+            <h2 class="mb-section-title">The reference implementation</h2>
+            <p class="mb-section-sub">MoonBite Core is the authoritative software that defines what the MoonBite network is. Built on the Litecoin-lineage codebase — itself descended from Bitcoin Core — it carries decades of peer-reviewed cryptographic engineering.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">⛓️</div>
+                <h3>Litecoin lineage</h3>
+                <p>MoonBite Core forks from the Litecoin Core codebase, which descends from Bitcoin Core. The consensus rules, cryptographic primitives, and peer protocol are battle-tested across years of mainnet operation.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📜</div>
+                <h3>Defines the rules</h3>
+                <p>Every MBITE parameter lives in this code: the 10 MBITE genesis reward, the 1,000,000-block halving schedule, the 2.5-minute block target, and the 19,999,999.87 MBITE cap. The software is the spec.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔓</div>
+                <h3>Fully open source</h3>
+                <p>Every line of consensus-critical code is public. You can read it, build it from source, and run it without trusting a binary published by anyone — including the MoonBite team.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">What it does</span>
+            <h2 class="mb-section-title">What your node actually does</h2>
+            <p class="mb-section-sub">When you run MoonBite Core, you become an independent participant in the network — not a passive observer.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">✅</div>
+                <h3 class="mb-card-title">Validate every block</h3>
+                <p class="mb-card-text">Your node checks every transaction in every block against the full ruleset: signatures, script, supply schedule, double-spend protection. Nothing gets through unchecked.</p>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📡</div>
+                <h3 class="mb-card-title">Relay to peers</h3>
+                <p class="mb-card-text">Your node propagates valid blocks and transactions to the rest of the network. More nodes means faster propagation and a more resilient mesh — harder to silence or split.</p>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔌</div>
+                <h3 class="mb-card-title">Serve the RPC interface</h3>
+                <p class="mb-card-text">MoonBite Core exposes a JSON-RPC API on localhost. Wallets, miners, and custom tools use it to read chain state, submit transactions, and query address history.</p>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🧱</div>
+                <h3 class="mb-card-title">Maintain the UTXO set</h3>
+                <p class="mb-card-text">Every unspent coin output since genesis is tracked in a local database. When you receive MBITE, your node already knows — it doesn't have to ask a third-party server.</p>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🧮</div>
+                <h3 class="mb-card-title">Enforce the supply cap</h3>
+                <p class="mb-card-text">No node in the network — not even one run by the MoonBite developers — can create coins beyond the schedule. Your node would reject such a block outright.</p>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🕵️</div>
+                <h3 class="mb-card-title">Index for the explorer</h3>
+                <p class="mb-card-text">The block explorer on this site reads from a MoonBite Core node via RPC. Run your own node and you can query the same data without relying on this service at all.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Why run your own</span>
+            <h2 class="mb-section-title">The case for running a node</h2>
+            <p class="mb-section-sub">Every full node you trust instead of running yourself is a point of trust. Trust compounds. Running your own node removes the entire layer.</p>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🏠</div>
+                <h3>Sovereignty</h3>
+                <p>When your wallet connects to your own node, your transaction history and address balances never leave your machine. A third-party node can see every address you query.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🛡️</div>
+                <h3>Security</h3>
+                <p>A malicious or compromised public node could serve you a fake chain tip. Your own node compares proof-of-work directly — it cannot be tricked by a crafted response.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🌐</div>
+                <h3>Strengthening the network</h3>
+                <p>Each additional full node raises the cost of a network partition or eclipse attack. Running a node is the most direct contribution you can make to decentralisation.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">⚖️</div>
+                <h3>Voting with your node</h3>
+                <p>If a future upgrade is ever controversial, nodes that reject it are a real signal. Full-node operators are the ultimate check on protocol changes — no miner or developer can override them.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Quick start</span>
+            <h2 class="mb-section-title">Starting a node and hitting the API</h2>
+            <p class="mb-section-sub">Once you have the daemon binary (see <a href="/downloads/README.txt" class="link">download notes</a>), starting a testnet node is a single command. The RPC is then available on localhost.</p>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title">Start the node</h3>
+                <pre class="mb-code"><span class="mb-c-comment"># start moonbited on testnet</span>
+moonbited -testnet \
+  -daemon \
+  -rpcuser=rpcuser \
+  -rpcpassword=rpcpass
+
+<span class="mb-c-comment"># watch it sync</span>
+moonbite-cli -testnet getblockchaininfo</pre>
+            </div>
+            <div class="mb-card mb-reveal">
+                <h3 class="mb-card-title">Query the read-only REST API</h3>
+                <pre class="mb-code"><span class="mb-c-comment"># chain tip via the web API</span>
+curl https://moonbite.org/api/blockchain/info
+
+<span class="mb-c-comment"># response</span>
+{
+  <span class="mb-c-key">"status"</span>: "success",
+  <span class="mb-c-key">"height"</span>: 4210,
+  <span class="mb-c-key">"tip_hash"</span>: "0000…",
+  <span class="mb-c-key">"total_money_coins"</span>: 42100
+}</pre>
+            </div>
+        </div>
+        <div class="mb-grid mb-grid-3" style="margin-top: var(--spacing-xl);">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📖</div>
+                <h3 class="mb-card-title">Full setup guide</h3>
+                <p class="mb-card-text">Step-by-step instructions for Linux, macOS, and Windows — from binary download through firewall configuration.</p>
+                <a href="/developers#run-a-node" class="mb-card-link">Read the guide →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📦</div>
+                <h3 class="mb-card-title">Download the binaries</h3>
+                <p class="mb-card-text">Pre-built binaries for the node daemon (<code>moonbited</code>) and CLI tool (<code>moonbite-cli</code>), with SHA-256 checksums.</p>
+                <a href="/downloads/README.txt" class="mb-card-link">Download notes →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">💻</div>
+                <h3 class="mb-card-title">Build from source</h3>
+                <p class="mb-card-text">Clone the repository and follow the build instructions in the README. Compiling from source is the most trustless option.</p>
+                <a href="https://github.com/moonbitecoin/MoonBite-Coin" class="mb-card-link" target="_blank" rel="noopener">GitHub repository →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Also see</span>
+            <h2 class="mb-section-title">Related resources</h2>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔍</div>
+                <h3 class="mb-card-title">Block Explorer</h3>
+                <p class="mb-card-text">Browse the live testnet chain — the same data your node produces, served through the web interface.</p>
+                <a href="/explorer" class="mb-card-link">Open explorer →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🛠️</div>
+                <h3 class="mb-card-title">Developer API</h3>
+                <p class="mb-card-text">Full REST API documentation: every endpoint, parameter, and example response for building on top of MoonBite.</p>
+                <a href="/developers" class="mb-card-link">API reference →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🌐</div>
+                <h3 class="mb-card-title">Full node guide</h3>
+                <p class="mb-card-text">The dedicated guide for people who want to run a relay node without mining — less hardware, still sovereign.</p>
+                <a href="/full-node" class="mb-card-link">Full node guide →</a>
+            </div>
+        </div>
+        <div class="mb-banner mb-reveal" style="margin-top: var(--spacing-2xl);">
+            <span>MoonBite Core is pre-mainnet software. Testnet coins carry no value. Running a node does not entitle you to any future allocation or reward beyond normal block subsidies earned through mining. MoonBite is <strong>not an investment or a security</strong>.</span>
+        </div>
+    </div>
+</section>
+{% endblock %}

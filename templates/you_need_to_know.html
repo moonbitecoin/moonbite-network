@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}What You Need to Know About MoonBite — honest caveats{% endblock %}
+{% block meta_description %}The sober facts: MoonBite is pre-mainnet with no market value, losing your keys means losing your coins forever, transactions are irreversible, and this is experimental software. Read this before you start.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> What You Need to Know</span>
+            <h1 class="mb-hero-title">Before you <span class="mb-gradient-text">start.</span></h1>
+            <p class="mb-hero-sub">MoonBite is designed to give individuals real financial sovereignty. That power comes with real responsibility. This page tells you what that means in plain language — no hype, no sugar-coating.</p>
+            <div class="mb-cta-row">
+                <a href="/learn" class="btn btn-primary mb-btn-xl">Learn the basics</a>
+                <a href="/getting-started" class="btn btn-secondary mb-btn-xl">Getting started</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-banner mb-reveal">
+            <span>MoonBite is pre-mainnet, open-source software. It is <strong>not an investment or a security</strong>. Coins mined today carry no market value. There is no exchange listing yet. Nothing on this site is financial or legal advice.</span>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Status</span>
+            <h2 class="mb-section-title">Where MoonBite stands today</h2>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🚧</div>
+                <div class="mb-card-title">Pre-mainnet, not production</div>
+                <div class="mb-card-text">MoonBite's testnet and regtest chains are live and fully functional. Mainnet is not yet launched. The software is real, but the network is still in a hardening phase before public launch. Expect rough edges.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">💸</div>
+                <div class="mb-card-title">No market value today</div>
+                <div class="mb-card-text">MBITE is not listed on any exchange. It cannot be bought or sold for money today. Any coins you mine are real chain coins, but they currently carry zero monetary value. Do not make financial decisions based on expectations of a future price.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🧪</div>
+                <div class="mb-card-title">Experimental software</div>
+                <div class="mb-card-text">All cryptocurrency software — including MoonBite's — carries technical risk. Bugs, protocol changes, and unexpected behaviour are possible. The codebase is open source and auditable, but it is not infallible.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔮</div>
+                <div class="mb-card-title">No guaranteed future value</div>
+                <div class="mb-card-text">Nothing about MoonBite's design, capped supply, or roadmap guarantees that MBITE will ever have monetary value. The exchange listing is on the roadmap, but a listing is not a price floor and not a promise of value.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Self-custody</span>
+            <h2 class="mb-section-title">You are the bank — entirely</h2>
+            <p class="mb-section-sub">Self-custody means the responsibility rests with you. These are not abstract risks.</p>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔑</div>
+                <div class="mb-card-title">Lose your keys, lose your coins</div>
+                <div class="mb-card-text">Your private key (or seed phrase) is the only proof of ownership of your MBITE. If you lose it — through device failure, accidental deletion, or physical loss of a written backup — there is no recovery option. Not from us, not from anyone. Write your seed phrase down on paper, store it somewhere safe, and back it up in at least two locations.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">↩️</div>
+                <div class="mb-card-title">Transactions are irreversible</div>
+                <div class="mb-card-text">Once a transaction is confirmed on the chain, it cannot be reversed, recalled, or disputed. If you send MBITE to the wrong address, or if you're deceived into sending it, the coins are gone. Always double-check the full address before broadcasting a transaction — the first and last few characters are not enough.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🤫</div>
+                <div class="mb-card-title">Never share your seed phrase</div>
+                <div class="mb-card-text">No legitimate MoonBite service — including this website, the wallet, the miner, or the explorer — will ever ask for your seed phrase or private key. Any request for your seed phrase is a scam. Full stop.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🧾</div>
+                <div class="mb-card-title">Backups are your responsibility</div>
+                <div class="mb-card-text">MoonBite has no customer support team that can restore your wallet. Backing up your seed phrase is not a one-time task — it is an ongoing responsibility. If your backup is on a single piece of paper in one location, that is one fire, flood, or theft away from being gone.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Legal &amp; taxes</span>
+            <h2 class="mb-section-title">Your jurisdiction, your responsibility</h2>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">⚖️</div>
+                <h3>Tax obligations vary by country</h3>
+                <p>In many jurisdictions, mining cryptocurrency is a taxable event and spending or exchanging it may trigger additional tax obligations. MoonBite does not provide tax advice. Consult a qualified tax professional in your country before mining or transacting MBITE.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🌍</div>
+                <h3>Legal status varies by country</h3>
+                <p>Cryptocurrency is regulated differently — and in some places prohibited — in different jurisdictions. It is your responsibility to understand and comply with the laws where you live. MoonBite provides tools; you are responsible for how you use them.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📋</div>
+                <h3>Not financial advice</h3>
+                <p>Nothing on this website, in the wallet software, in the miner, or in the block explorer constitutes financial advice. MoonBite is a technology project. Decisions about whether or how to use it are entirely yours.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📄</div>
+                <h3>Read the legal page</h3>
+                <p>For the full terms and conditions under which MoonBite's software is provided, see the legal page. It is not long and it is worth reading.</p>
+                <a href="/legal" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Legal page →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Stay safe</span>
+            <h2 class="mb-section-title">How to protect yourself</h2>
+            <p class="mb-section-sub">The most common dangers are social engineering, fake software, and careless backups — not protocol bugs.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">⬇️</div>
+                <div class="mb-card-title">Download only from official sources</div>
+                <div class="mb-card-text">The wallet, miner, and node software are distributed from this site and the official source repository. Don't install MoonBite software from third-party sites, social media links, or unsolicited messages.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🎭</div>
+                <div class="mb-card-title">Impersonators are common</div>
+                <div class="mb-card-text">Scammers routinely impersonate cryptocurrency projects, including their developers and social accounts. MoonBite will never DM you to offer help, give you "free MBITE," or ask you to send coins to a wallet.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">✅</div>
+                <div class="mb-card-title">Verify addresses character by character</div>
+                <div class="mb-card-text">Some malware ("clipboard hijackers") replaces copied addresses with attacker-controlled ones. Before sending, verify the first and last several characters of the address match what you intended.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📡</div>
+                <div class="mb-card-title">Use your own node for high-value checks</div>
+                <div class="mb-card-text">A block explorer you don't control could theoretically show you false data. For any high-value transaction, confirm it via your own running node's RPC — the chain doesn't lie.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📵</div>
+                <div class="mb-card-title">Keep seed phrases offline</div>
+                <div class="mb-card-text">A seed phrase stored in a phone note, email draft, or cloud document is one data breach away from being stolen. Paper, metal stamp, or other offline media stored securely is the standard.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔗</div>
+                <div class="mb-card-title">Know what a scam looks like</div>
+                <div class="mb-card-text">Common crypto scams include "double your MBITE" giveaways, fake support staff asking for seed phrases, and phishing sites mimicking moonbite.org. Read the scams guide before you interact with anyone claiming to be MoonBite.</div>
+                <a href="/scams" class="mb-card-link">Scams guide →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Resources</span>
+            <h2 class="mb-section-title">Useful reading</h2>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🎓</div>
+                <div class="mb-card-title">Learn &amp; FAQ</div>
+                <div class="mb-card-text">Answers to the most common MoonBite questions in plain language.</div>
+                <a href="/learn" class="mb-card-link">Learn →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">⚠️</div>
+                <div class="mb-card-title">Scams</div>
+                <div class="mb-card-text">How to recognise and avoid the most common attacks targeting cryptocurrency users.</div>
+                <a href="/scams" class="mb-card-link">Scams guide →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📄</div>
+                <div class="mb-card-title">Legal</div>
+                <div class="mb-card-text">The terms under which MoonBite software is provided — short, readable, important.</div>
+                <a href="/legal" class="mb-card-link">Legal page →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-banner mb-reveal">
+            <span>MoonBite is experimental, pre-mainnet software with no guaranteed future value and no market listing today. It is <strong>not an investment or a security</strong>. Use it to learn, to build, and to participate — not as a financial instrument. Understand the risks before you hold real value in it.</span>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        {% set notify_title = "Stay informed as MoonBite matures" %}
+        {% set notify_text = "One email when the exchange listing happens. No noise before then." %}
+        {% set notify_source = "you-need-to-know" %}
+        {% include "partials/notify_form.html" %}
+    </div>
+</section>
+{% endblock %}

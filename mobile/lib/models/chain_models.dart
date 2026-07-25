@@ -1,4 +1,4 @@
-/// Plain data models for the Big Coin explorer JSON API (`/api/*`).
+/// Plain data models for the MoonBite explorer JSON API (`/api/*`).
 ///
 /// Hand-written (no codegen) to keep the build simple. Shapes mirror the
 /// Flask blueprint in `explorer/api.py`.

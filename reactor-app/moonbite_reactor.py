@@ -58,7 +58,7 @@ def _proxy_mine(payload, timeout=90):
         return exc.code, exc.read()
     except (TimeoutError, urllib.error.URLError, ConnectionError, OSError) as exc:
         reason = getattr(exc, "reason", exc)
-        return 502, json.dumps({"error": "cannot reach explorer (%s)" % reason}).encode("utf-8")
+        return 502, json.dumps({"error": f"cannot reach explorer ({reason})"}).encode("utf-8")
 
 
 def _health():
@@ -162,18 +162,20 @@ def main(argv=None):
 
     httpd = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
     host, port = httpd.server_address
-    url = "http://127.0.0.1:%d/" % port
+    url = f"http://127.0.0.1:{port}/"
 
     print("=" * 56)
     print(" MoonBite Reactor")
     print("=" * 56)
-    print(" UI        : %s" % url)
-    print(" Explorer  : %s" % EXPLORER)
-    print(" UI files  : %s" % UI_DIR)
+    print(f" UI        : {url}")
+    print(f" Explorer  : {EXPLORER}")
+    print(f" UI files  : {UI_DIR}")
     print("-" * 56)
 
     if not args.no_browser:
-        threading.Thread(target=lambda: (time.sleep(0.4), _open_app_window(url)), daemon=True).start()
+        threading.Thread(
+            target=lambda: (time.sleep(0.4), _open_app_window(url)), daemon=True
+        ).start()
         print(" Opening app window… (close this console to quit)")
     else:
         print(" Serving (no browser). Ctrl+C to quit.")

@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoonBite — Mine the moon. Fair-launch proof-of-work money (MBITE)</title>
+<meta name="description" content="You can't buy MBITE — it isn't listed anywhere, and that's the point. Proof-of-work money you mine on your own hardware, hold in your own wallet, and verify with your own node. No premine, no gatekeepers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --void:#04050a; --ice:#F2F6FF; --accent:#5FE9D0; --cool:#5B7BFF; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--void);
+    color: var(--ice);
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  .mono { font-family: "JetBrains Mono", monospace; }
+
+  /* ---------- animation keyframes (ported verbatim from the design) ---------- */
+  @keyframes mbFly {
+    0%, 55% { transform: translate(calc(50vw - 44px - 144px), calc(50vh - 40px - 24px)) scale(6); }
+    80%, 100% { transform: translate(0px, 0px) scale(1); }
+  }
+  @keyframes mbRing { 0% { opacity: 0; transform: scale(1.55) rotate(-28deg); } 18%, 100% { opacity: 1; transform: scale(1) rotate(0deg); } }
+  @keyframes mbSpin { to { transform: rotate(360deg); } }
+  @keyframes mbSweep { 0%, 6% { clip-path: inset(0 0 100% 0); } 26%, 100% { clip-path: inset(0 0 0 0); } }
+  @keyframes mbScanline { 0%, 6% { opacity: 1; transform: translateY(-108px); } 26% { opacity: 1; transform: translateY(108px); } 27%, 100% { opacity: 0; transform: translateY(108px); } }
+  @keyframes mbBite { 0%, 31% { transform: translateX(320px); } 36%, 100% { transform: translateX(0px); } }
+  @keyframes mbSquash { 0%, 27% { transform: scale(1,1); } 31% { transform: scale(1.05,0.95); } 36% { transform: scale(0.92,1.08); } 44% { transform: scale(1.03,0.97); } 54%, 100% { transform: scale(1,1); } }
+  @keyframes mbFlash { 0%, 31% { opacity: 0; transform: scale(1); } 34% { opacity: 0.9; transform: scale(1.04); } 48%, 100% { opacity: 0; transform: scale(1.36); } }
+  @keyframes mbWord { 0%, 80% { clip-path: inset(0 100% 0 0); } 95%, 100% { clip-path: inset(0 0 0 0); } }
+  @keyframes mbVeil { 0%, 58% { opacity: 1; } 80%, 100% { opacity: 0; } }
+  @keyframes mbRise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes mbFade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes mbPulseA { 0% { opacity: 0; transform: scale(0.92); } 26% { opacity: 1; } 100% { opacity: 0; transform: scale(1.52); } }
+  @keyframes mbPulseB { 0% { opacity: 0; transform: scale(0.92); } 26% { opacity: 1; } 100% { opacity: 0; transform: scale(1.52); } }
+  @keyframes mbRowIn { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes mbBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+  /* ---------- ambient background ---------- */
+  .bg-glow { position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(58% 52% at 50% 38%, #101a3a 0%, rgba(4,5,10,0) 72%); }
+  .bg-scan { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.5;
+    background: repeating-linear-gradient(to bottom, rgba(242,246,255,0.05) 0 1px, transparent 1px 6px); }
+
+  /* ---------- nav ---------- */
+  nav.top { position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+    display: flex; align-items: center; justify-content: flex-end; gap: 30px;
+    padding: 30px 44px; font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 2.2px;
+    background: linear-gradient(#04050a 40%, rgba(4,5,10,0)); animation: mbFade 0.9s ease-out 3.354s both; }
+  nav.top a { color: rgba(242,246,255,0.62); transition: color .2s ease, background .2s ease; }
+  nav.top a:hover { color: var(--ice); }
+  nav.top a.wallet { display: inline-flex; align-items: center; gap: 10px; padding: 11px 20px;
+    border: 1px solid var(--accent); color: var(--accent); border-radius: 2px; }
+  nav.top a.wallet:hover { background: var(--accent); color: var(--void); }
+  nav.top a.wallet span { opacity: 0.6; }
+
+  /* ---------- flying logo ---------- */
+  .flylogo { position: fixed; left: 44px; top: 40px; height: 48px; z-index: 45; transform-origin: left center;
+    animation: mbFly 3.9s cubic-bezier(0.68,0,0.18,1) 0.25s both; }
+  .flylogo-row { display: flex; align-items: center; gap: 14px; height: 48px; }
+  .flylogo-mark { position: relative; width: 48px; height: 48px; flex: none; }
+  .fl-ring { position: absolute; inset: -13px; animation: mbRing 3.9s cubic-bezier(0.2,0,0.1,1) 0.25s both; }
+  .fl-ring-spin { position: absolute; inset: 0; animation: mbSpin 26s linear infinite; }
+  .fl-ring-spin svg, .fl-disc svg { position: absolute; inset: 0; overflow: visible; }
+  .fl-squash { position: absolute; inset: 0; animation: mbSquash 3.9s cubic-bezier(0.4,0,0.3,1) 0.25s both; }
+  .fl-disc { position: absolute; inset: 0; animation: mbSweep 3.9s cubic-bezier(0.5,0,0.4,1) 0.25s both; }
+  .fl-bitecirc { animation: mbBite 3.9s cubic-bezier(0.35,0,0.2,1) 0.25s both; }
+  .fl-flash { animation: mbFlash 3.9s ease-out 0.25s both; }
+  .fl-scanline { position: absolute; left: -18%; right: -18%; top: 50%; height: 2.5px; background: var(--accent);
+    box-shadow: 0 0 12px var(--accent); animation: mbScanline 3.9s cubic-bezier(0.5,0,0.4,1) 0.25s both; }
+  .fl-word { animation: mbWord 3.9s cubic-bezier(0.6,0,0.2,1) 0.25s both; }
+  .fl-word div { font-size: 25px; font-weight: 700; letter-spacing: 0.4px; line-height: 1; white-space: nowrap; }
+  .fl-word span { color: var(--accent); }
+
+  .veil { position: fixed; inset: 0; z-index: 44; background: var(--void); pointer-events: none;
+    animation: mbVeil 3.9s ease-in-out 0.25s both; }
+
+  main { position: relative; z-index: 10; }
+
+  /* ---------- hero ---------- */
+  .hero { min-height: 100vh; display: grid; grid-template-rows: 1fr auto; padding: 200px 44px 34px; }
+  .hero-copy { display: flex; flex-direction: column; justify-content: center; gap: 32px; max-width: 1120px; }
+  .chip { display: flex; align-items: center; gap: 12px; font-family: "JetBrains Mono", monospace;
+    font-size: 12px; letter-spacing: 3px; color: rgba(242,246,255,0.5); animation: mbRise 0.9s ease-out 2.886s both; }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: mbBlink 2.4s ease-in-out infinite; }
+  h1.head { margin: 0; font-size: clamp(56px, 9vw, 158px); font-weight: 700; line-height: 0.9;
+    letter-spacing: -3px; text-wrap: balance; animation: mbRise 1.1s cubic-bezier(0.2,0,0.1,1) 3.042s both; }
+  .lead { margin: 0; max-width: 620px; font-size: 20px; line-height: 1.6; color: rgba(242,246,255,0.66);
+    text-wrap: pretty; animation: mbRise 1s ease-out 3.354s both; }
+  .hero-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; animation: mbRise 1s ease-out 3.588s both; }
+  .btn { display: inline-flex; align-items: center; gap: 12px; padding: 18px 30px;
+    font-family: "JetBrains Mono", monospace; font-size: 13px; letter-spacing: 2.4px; border-radius: 2px;
+    transition: filter .2s ease, border-color .2s ease, color .2s ease; }
+  .btn.solid { background: var(--accent); color: var(--void); }
+  .btn.solid:hover { filter: brightness(1.12); }
+  .btn.line { border: 1px solid rgba(242,246,255,0.24); color: rgba(242,246,255,0.8); }
+  .btn.line:hover { border-color: var(--ice); color: var(--ice); }
+  .btn.text { font-size: 12px; letter-spacing: 2.2px; color: rgba(242,246,255,0.45); padding-left: 8px; }
+  .btn.text:hover { color: var(--ice); }
+
+  .statgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1px;
+    background: rgba(242,246,255,0.1); border: 1px solid rgba(242,246,255,0.1); animation: mbFade 1.2s ease-out 3.588s both; }
+  .statcell { display: flex; flex-direction: column; gap: 8px; padding: 20px 22px; background: var(--void); }
+  .statcell .k { font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 2.6px; color: rgba(242,246,255,0.42); }
+  .statcell .v { font-size: 27px; font-weight: 500; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
+
+  /* ---------- generic section header ---------- */
+  section { position: relative; }
+  .eyebrow { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 3px; color: var(--accent); }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 24px;
+    border-bottom: 1px solid rgba(242,246,255,0.1); padding-bottom: 18px; }
+  .sec-head h2 { margin: 0; font-size: clamp(32px, 3.8vw, 60px); font-weight: 700; letter-spacing: -1.4px; }
+  .sec-head .note { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 2.6px; color: rgba(242,246,255,0.42); }
+
+  /* ---------- reactor ---------- */
+  .reactor { padding: 130px 44px; display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 70px; align-items: center; }
+  .reactor-copy { display: flex; flex-direction: column; gap: 26px; }
+  .reactor-copy h2 { margin: 0; font-size: clamp(36px, 4.6vw, 76px); font-weight: 700; line-height: 0.98; letter-spacing: -2px; }
+  .reactor-copy p { margin: 0; max-width: 520px; font-size: 18px; line-height: 1.62; color: rgba(242,246,255,0.62); text-wrap: pretty; }
+  .specs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 22px; padding-top: 6px; }
+  .spec { display: flex; flex-direction: column; gap: 7px; border-top: 1px solid rgba(242,246,255,0.14); padding-top: 14px; }
+  .spec .v { font-size: 21px; font-weight: 500; letter-spacing: -0.4px; }
+  .spec .k { font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 2.2px; color: rgba(242,246,255,0.42); }
+  .reactor-side { display: flex; flex-direction: column; gap: 26px; }
+  .bigmoon { position: relative; aspect-ratio: 1; max-width: 420px; margin: 0 auto; width: 100%; }
+  .bigmoon .spin { position: absolute; inset: 0; animation: mbSpin 60s linear infinite; }
+  .bigmoon svg { position: absolute; inset: 0; }
+  .feed { border: 1px solid rgba(242,246,255,0.12); border-radius: 3px; overflow: hidden; }
+  .feed-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 16px;
+    border-bottom: 1px solid rgba(242,246,255,0.12); font-family: "JetBrains Mono", monospace; font-size: 10.5px;
+    letter-spacing: 2.4px; color: rgba(242,246,255,0.5); }
+  .feed-head .live { display: inline-flex; align-items: center; gap: 9px; }
+  .feed-head .live .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: mbBlink 2s ease-in-out infinite; }
+  .feed-row { display: grid; grid-template-columns: 1fr 1.4fr auto; gap: 14px; padding: 13px 16px;
+    border-bottom: 1px solid rgba(242,246,255,0.07); font-family: "JetBrains Mono", monospace; font-size: 12px; }
+  .feed-row.newest { background: rgba(95,233,208,0.07); animation: mbRowIn 0.55s ease-out both; }
+  .feed-row .h { color: var(--ice); }
+  .feed-row .x { color: rgba(242,246,255,0.4); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .feed-row .r { color: var(--accent); }
+  .feed-empty { padding: 22px 16px; font-family: "JetBrains Mono", monospace; font-size: 11.5px; letter-spacing: 1.4px; color: rgba(242,246,255,0.4); }
+
+  /* ---------- ways in ---------- */
+  .waysin { padding: 40px 44px 130px; display: flex; flex-direction: column; gap: 40px; }
+  .cards2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 22px; }
+  .wcard { display: flex; flex-direction: column; gap: 16px; padding: 32px; border-radius: 3px; }
+  .wcard.open { border: 1px solid var(--accent); background: rgba(95,233,208,0.05); transition: background .2s ease; }
+  .wcard.open:hover { background: rgba(95,233,208,0.1); }
+  .wcard.soon { border: 1px solid rgba(242,246,255,0.12); }
+  .wcard .tag { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 2.6px; }
+  .wcard.open .tag { color: var(--accent); }
+  .wcard.soon .tag { color: rgba(242,246,255,0.42); }
+  .wcard .title { font-size: 30px; font-weight: 700; letter-spacing: -1px; }
+  .wcard.open .title { color: var(--ice); }
+  .wcard.soon .title { color: rgba(242,246,255,0.6); }
+  .wcard .desc { font-size: 17px; line-height: 1.6; text-wrap: pretty; }
+  .wcard.open .desc { color: rgba(242,246,255,0.68); }
+  .wcard.soon .desc { color: rgba(242,246,255,0.5); }
+  .wcard .go { font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 2.2px; }
+  .wcard.open .go { color: var(--accent); }
+  .wcard.soon .go { color: rgba(242,246,255,0.6); }
+  .wcard.soon .go:hover { color: var(--ice); }
+
+  /* ---------- proof ---------- */
+  .proof { padding: 0 44px 130px; display: flex; flex-direction: column; gap: 40px; }
+  .cards3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; }
+  .pcard { display: flex; flex-direction: column; gap: 14px; padding: 28px; border: 1px solid rgba(242,246,255,0.12);
+    border-radius: 3px; background: rgba(242,246,255,0.02); }
+  .pcard .tag { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 2.6px; color: var(--accent); }
+  .pcard .title { font-size: 23px; font-weight: 500; letter-spacing: -0.6px; }
+  .pcard .body { font-size: 16px; line-height: 1.62; color: rgba(242,246,255,0.58); text-wrap: pretty; }
+
+  /* ---------- first bite ---------- */
+  .firstbite { padding: 0 44px 140px; }
+  .fb-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 60px; align-items: center;
+    border: 1px solid rgba(242,246,255,0.12); border-radius: 4px; padding: 56px 44px;
+    background: radial-gradient(70% 120% at 88% 50%, rgba(95,233,208,0.07), rgba(4,5,10,0)); }
+  .fb-copy { display: flex; flex-direction: column; gap: 22px; }
+  .fb-copy h2 { margin: 0; font-size: clamp(34px, 4.2vw, 66px); font-weight: 700; line-height: 1; letter-spacing: -1.8px; }
+  .fb-copy p { margin: 0; max-width: 460px; font-size: 17px; line-height: 1.62; color: rgba(242,246,255,0.62); text-wrap: pretty; }
+  .fb-cta { display: flex; flex-wrap: wrap; gap: 12px; }
+  .fb-cta a { display: inline-flex; align-items: center; gap: 10px; padding: 16px 26px;
+    font-family: "JetBrains Mono", monospace; font-size: 12.5px; letter-spacing: 2.4px; border-radius: 2px; }
+  .fb-cta a.solid { background: var(--accent); color: var(--void); }
+  .fb-cta a.solid:hover { filter: brightness(1.12); }
+  .fb-cta a.line { border: 1px solid rgba(242,246,255,0.24); color: rgba(242,246,255,0.78); }
+  .fb-cta a.line:hover { border-color: var(--ice); color: var(--ice); }
+  .receipt { display: flex; flex-direction: column; border: 1px solid rgba(242,246,255,0.18); border-radius: 3px;
+    background: #06070f; max-width: 440px; width: 100%; justify-self: end; font-family: "JetBrains Mono", monospace; }
+  .receipt-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 20px;
+    border-bottom: 1px dashed rgba(242,246,255,0.18); font-size: 10.5px; letter-spacing: 2.6px; color: rgba(242,246,255,0.5); }
+  .receipt-body { display: flex; align-items: center; gap: 20px; padding: 26px 20px; }
+  .receipt-body .mk { position: relative; width: 74px; height: 74px; flex: none; }
+  .receipt-body .mk svg { position: absolute; inset: 0; }
+  .receipt-body .blk { display: flex; flex-direction: column; gap: 6px; }
+  .receipt-body .blk .k { font-size: 11px; letter-spacing: 2.4px; color: rgba(242,246,255,0.45); }
+  .receipt-body .blk .v { font-family: "Space Grotesk", sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -1px;
+    color: var(--ice); font-variant-numeric: tabular-nums; }
+  .receipt-rows { display: flex; flex-direction: column; gap: 12px; padding: 0 20px 22px; font-size: 11.5px; }
+  .receipt-rows .row { display: flex; justify-content: space-between; gap: 14px; }
+  .receipt-rows .row .k { color: rgba(242,246,255,0.42); letter-spacing: 2px; }
+  .receipt-rows .row .a { color: var(--accent); }
+  .receipt-rows .row .t { color: rgba(242,246,255,0.72); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
+  .receipt-foot { padding: 14px 20px; border-top: 1px dashed rgba(242,246,255,0.18); font-size: 10.5px; letter-spacing: 2.4px; color: rgba(242,246,255,0.4); }
+
+  /* ---------- footer ---------- */
+  footer.site { padding: 0 44px 70px; display: flex; flex-direction: column; gap: 26px; }
+  footer.site .rule { border-top: 1px solid rgba(242,246,255,0.1); }
+  footer.site .row { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 30px; }
+  footer.site p { margin: 0; max-width: 620px; font-size: 15px; line-height: 1.66; color: rgba(242,246,255,0.5); text-wrap: pretty; }
+  footer.site .links { display: flex; flex-wrap: wrap; gap: 26px; font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 2.4px; }
+  footer.site .links a { color: rgba(242,246,255,0.55); }
+  footer.site .links a:hover { color: var(--ice); }
+
+  .replay { position: fixed; right: 26px; bottom: 26px; z-index: 50; display: inline-flex; align-items: center; gap: 9px;
+    padding: 11px 16px; background: rgba(4,5,10,0.7); border: 1px solid rgba(242,246,255,0.2); color: rgba(242,246,255,0.7);
+    font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 2.2px; border-radius: 2px; cursor: pointer;
+    backdrop-filter: blur(6px); transition: border-color .2s ease, color .2s ease; }
+  .replay:hover { border-color: var(--ice); color: var(--ice); }
+
+  @media (max-width: 640px) {
+    nav.top { gap: 16px; padding: 22px 20px; font-size: 11px; }
+    nav.top a.supply, nav.top a.proof, nav.top a.firstbite { display: none; }
+    .hero { padding: 150px 20px 24px; }
+    .reactor, .waysin, .proof, .firstbite { padding-left: 20px; padding-right: 20px; }
+    .flylogo { left: 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flylogo, .fl-ring, .fl-squash, .fl-disc, .fl-bitecirc, .fl-flash, .fl-scanline, .fl-word,
+    .veil, nav.top, .chip, h1.head, .lead, .hero-cta, .statgrid { animation: none !important; }
+    .veil { display: none; }
+    .fl-disc { clip-path: inset(0 0 0 0) !important; }
+    .fl-bitecirc { transform: translateX(0) !important; }
+    .chip, h1.head, .lead, .hero-cta, .statgrid, nav.top { opacity: 1 !important; transform: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div class="bg-scan"></div>
+
+  <nav class="top">
+    <a href="/mine">MINE</a>
+    <a class="supply" href="#supply">SUPPLY</a>
+    <a class="proof" href="#proof">PROOF</a>
+    <a class="firstbite" href="#firstbite">FIRST BITE</a>
+    <a class="wallet" href="/get-wallet">GET WALLET<span>&#8599;</span></a>
+  </nav>
+
+  <!-- Flying logo splash -->
+  <div class="flylogo" id="flylogo">
+    <div class="flylogo-row">
+      <div class="flylogo-mark">
+        <div class="fl-ring">
+          <div class="fl-ring-spin">
+            <svg viewBox="-100 -100 200 200">
+              <circle cx="0" cy="0" r="86" fill="none" stroke="#F2F6FF" stroke-opacity="0.2" stroke-width="2.4"/>
+              <circle cx="0" cy="0" r="99" fill="none" stroke="#5FE9D0" stroke-opacity="0.34" stroke-width="2.4" stroke-dasharray="3 30"/>
+              <g stroke="#F2F6FF" stroke-opacity="0.3" stroke-width="2.4">
+                <path d="M86 0 h16 M-86 0 h-16 M0 86 v16 M0 -86 v-16" stroke="#5FE9D0" stroke-opacity="0.75" stroke-width="4"/>
+                <path d="M60.8 60.8 l11 11 M-60.8 60.8 l-11 11 M60.8 -60.8 l11 -11 M-60.8 -60.8 l-11 -11"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="fl-squash">
+          <div class="fl-disc">
+            <svg viewBox="-100 -100 200 200">
+              <mask id="mbNavBite" maskUnits="userSpaceOnUse" x="-130" y="-130" width="260" height="260">
+                <rect x="-130" y="-130" width="260" height="260" fill="#fff"/>
+                <circle class="fl-bitecirc" cx="50" cy="-13" r="84" fill="#000"/>
+              </mask>
+              <g mask="url(#mbNavBite)">
+                <circle cx="-6" cy="0" r="96" fill="#5FE9D0" opacity="0.55"/>
+                <circle cx="6" cy="0" r="96" fill="#5B7BFF" opacity="0.55"/>
+                <circle cx="0" cy="0" r="96" fill="#F2F6FF"/>
+                <circle cx="0" cy="0" r="64" fill="none" stroke="#04050a" stroke-opacity="0.16" stroke-width="2"/>
+                <circle cx="-36" cy="-29" r="6" fill="#04050a" opacity="0.14"/>
+              </g>
+              <circle class="fl-flash" cx="0" cy="0" r="96" fill="none" stroke="#5FE9D0" stroke-width="3" opacity="0"/>
+            </svg>
+          </div>
+          <div class="fl-scanline"></div>
+        </div>
+      </div>
+      <div class="fl-word"><div>MOON<span>BITE</span></div></div>
+    </div>
+  </div>
+
+  <div class="veil"></div>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="chip"><span class="dot"></span><span>PRE-MAINNET &middot; LIVE TESTNET &middot; MBITE</span></div>
+        <h1 class="head">Mine the moon.</h1>
+        <p class="lead">You can't buy MBITE. It isn't listed anywhere &mdash; and that's the point. Proof-of-work money you mine on your own hardware, hold in your own wallet, and verify with your own node. No premine. No gatekeepers.</p>
+        <div class="hero-cta">
+          <a href="/mine" class="btn solid">START MINING<span>&#8599;</span></a>
+          <a href="/get-wallet" class="btn line">GET THE WALLET</a>
+          <a href="#reactor" class="btn text">or watch blocks get mined &rarr;</a>
+        </div>
+      </div>
+      <div class="statgrid" id="statgrid">
+        <div class="statcell"><span class="k">BLOCK HEIGHT</span><span class="v" id="stHeight">&mdash;</span></div>
+        <div class="statcell"><span class="k">MBITE MINED</span><span class="v" id="stMined">&mdash;</span></div>
+        <div class="statcell"><span class="k">TRANSACTIONS</span><span class="v" id="stTx">&mdash;</span></div>
+        <div class="statcell"><span class="k">MEMPOOL</span><span class="v" id="stMempool">&mdash;</span></div>
+      </div>
+    </section>
+
+    <!-- REACTOR -->
+    <section id="reactor" class="reactor">
+      <div class="reactor-copy" id="supply">
+        <span class="eyebrow">THE MECHANIC</span>
+        <h2>Every block is a bite.</h2>
+        <p>The supply is fixed and public. Each block mined takes a piece out of it &mdash; one published emission schedule, no insider allocation, nothing held back. The mark isn't decoration: it's the ledger, mid-bite.</p>
+        <div class="specs">
+          <div class="spec"><span class="v">19,999,999.87</span><span class="k">MAX SUPPLY</span></div>
+          <div class="spec"><span class="v">10 MBITE</span><span class="k">GENESIS REWARD</span></div>
+          <div class="spec"><span class="v">1,000,000</span><span class="k">BLOCKS PER HALVING</span></div>
+          <div class="spec"><span class="v">2.5 min</span><span class="k">TARGET BLOCK TIME</span></div>
+        </div>
+      </div>
+      <div class="reactor-side">
+        <div class="bigmoon">
+          <div class="spin">
+            <svg viewBox="-120 -120 240 240">
+              <circle cx="0" cy="0" r="112" fill="none" stroke="#F2F6FF" stroke-opacity="0.14" stroke-width="0.8"/>
+              <circle cx="0" cy="0" r="104" fill="none" stroke="#5FE9D0" stroke-opacity="0.3" stroke-width="0.8" stroke-dasharray="1 9"/>
+            </svg>
+          </div>
+          <svg viewBox="-120 -120 240 240">
+            <mask id="mbBigBite" maskUnits="userSpaceOnUse" x="-120" y="-120" width="240" height="240">
+              <rect x="-120" y="-120" width="240" height="240" fill="#fff"/>
+              <circle cx="45" cy="-12" r="76" fill="#000"/>
+            </mask>
+            <g mask="url(#mbBigBite)">
+              <circle cx="-4" cy="0" r="86" fill="#5FE9D0" opacity="0.5"/>
+              <circle cx="4" cy="0" r="86" fill="#5B7BFF" opacity="0.5"/>
+              <circle cx="0" cy="0" r="86" fill="#F2F6FF"/>
+              <circle cx="0" cy="0" r="57" fill="none" stroke="#04050a" stroke-opacity="0.14" stroke-width="1.4"/>
+              <circle cx="-32" cy="-26" r="5" fill="#04050a" opacity="0.13"/>
+              <circle cx="-14" cy="34" r="3" fill="#04050a" opacity="0.11"/>
+            </g>
+            <circle id="reactorPulse" cx="0" cy="0" r="86" fill="none" stroke="#5FE9D0" stroke-width="1.6" opacity="0"/>
+          </svg>
+        </div>
+        <div class="feed">
+          <div class="feed-head">
+            <span class="live"><span class="dot"></span>LIVE REACTOR</span>
+            <span id="feedNote">TESTNET &middot; CONNECTING&hellip;</span>
+          </div>
+          <div id="feedRows">
+            <div class="feed-empty" id="feedEmpty">Waiting for the node&hellip;</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WAYS IN -->
+    <section id="mine" class="waysin">
+      <div class="sec-head">
+        <h2>Two honest ways in.</h2>
+        <span class="note">ONE OF THEM WORKS TODAY</span>
+      </div>
+      <div class="cards2">
+        <a href="/mine" class="wcard open">
+          <span class="tag">01 &middot; OPEN NOW</span>
+          <span class="title">Mine it</span>
+          <span class="desc">Point a miner at the network and earn the block reward directly. Windows, macOS, Linux &mdash; or watch it happen in your browser first.</span>
+          <span class="go">DOWNLOAD THE MINER &rarr;</span>
+        </a>
+        <div class="wcard soon">
+          <span class="tag">02 &middot; NOT YET</span>
+          <span class="title">Buy it</span>
+          <span class="desc">MBITE isn't trading on any exchange. When that changes we'll say so once, in plain language. No countdowns, no price talk.</span>
+          <a href="/markets" class="go">TELL ME WHEN IT LISTS &rarr;</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROOF -->
+    <section id="proof" class="proof">
+      <div class="sec-head">
+        <h2>Proof, not promises.</h2>
+        <a href="/whitepaper">READ THE DESIGN RECORDS &rarr;</a>
+      </div>
+      <div class="cards3">
+        <div class="pcard">
+          <span class="tag">NO PREMINE</span>
+          <span class="title">Fair launch, in the open</span>
+          <span class="body">Every MBITE is mined under one published emission schedule. No insider allocation, no head start, nothing reserved.</span>
+        </div>
+        <div class="pcard">
+          <span class="tag">SELF-CUSTODY</span>
+          <span class="title">Your keys, your coins</span>
+          <span class="body">Non-custodial by default. This site will never ask you for a seed phrase or a private key &mdash; and never needs to.</span>
+        </div>
+        <div class="pcard">
+          <span class="tag">VERIFY</span>
+          <span class="title">Don't trust, check</span>
+          <span class="body">An open explorer and a read-only API. Every claim on this page can be tested against the chain by you, right now.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIRST BITE -->
+    <section id="firstbite" class="firstbite">
+      <div class="fb-box">
+        <div class="fb-copy">
+          <span class="eyebrow">THE RITUAL</span>
+          <h2>Take your first bite.</h2>
+          <p>Mine your first block and the wallet issues a receipt: height, timestamp, hash. It can't be bought and it can't be faked &mdash; anyone can check it against the chain. That's the only membership card this network has.</p>
+          <div class="fb-cta">
+            <a href="/mine" class="solid">MINE MY FIRST BLOCK<span>&#8599;</span></a>
+            <a href="/explorer" class="line">VERIFY A RECEIPT</a>
+          </div>
+        </div>
+        <div class="receipt">
+          <div class="receipt-top"><span>FIRST BITE &middot; RECEIPT</span><span>MBITE</span></div>
+          <div class="receipt-body">
+            <div class="mk">
+              <svg viewBox="-100 -100 200 200">
+                <mask id="mbReceiptBite" maskUnits="userSpaceOnUse" x="-100" y="-100" width="200" height="200">
+                  <rect x="-100" y="-100" width="200" height="200" fill="#fff"/>
+                  <circle cx="50" cy="-13" r="84" fill="#000"/>
+                </mask>
+                <g mask="url(#mbReceiptBite)"><circle cx="0" cy="0" r="92" fill="#F2F6FF"/></g>
+              </svg>
+            </div>
+            <div class="blk"><span class="k">BLOCK</span><span class="v" id="receiptHeight">&mdash;</span></div>
+          </div>
+          <div class="receipt-rows">
+            <div class="row"><span class="k">REWARD</span><span class="a">+10.00000000</span></div>
+            <div class="row"><span class="k">HASH</span><span class="t" id="receiptHash">&mdash;</span></div>
+            <div class="row"><span class="k">MINED BY</span><span class="t">you</span></div>
+          </div>
+          <div class="receipt-foot">VERIFIABLE IN THE EXPLORER</div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="site">
+      <div class="rule"></div>
+      <div class="row">
+        <p>MoonBite is pre-mainnet and open source. It is not an investment or a security, it carries no promise of future value, and it isn't trading anywhere yet. Nothing here is a price prediction &mdash; only what you can verify today. No trackers, no ads.</p>
+        <div class="links">
+          <a href="/get-wallet">WALLET</a>
+          <a href="/mine">MINING</a>
+          <a href="/explorer">EXPLORER</a>
+          <a href="/developers">DOCS</a>
+          <a href="/markets">NOTIFY ME</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <button class="replay" id="replay" type="button">&#8635; REPLAY SPLASH</button>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  function num(n) { return Number(n).toLocaleString("en-US"); }
+
+  /* ---- replay the splash sting ---- */
+  function restartSplash() {
+    var root = document.body;
+    root.querySelectorAll(".flylogo, .fl-ring, .fl-ring-spin, .fl-squash, .fl-disc, .fl-bitecirc, .fl-flash, .fl-scanline, .fl-word, .veil, nav.top, .chip, h1.head, .lead, .hero-cta, .statgrid").forEach(function (el) {
+      var orig = getComputedStyle(el).animationName;
+      if (!orig || orig === "none") return;
+      var css = el.style.animation;
+      el.style.animation = "none";
+      void el.offsetWidth;
+      el.style.animation = css;
+    });
+  }
+  $("replay").addEventListener("click", restartSplash);
+
+  /* ---- live network data (real endpoints, honest empty state) ---- */
+  function subsidyFor(height) {
+    var halvings = Math.floor(height / 1000000);
+    return 10 / Math.pow(2, halvings);
+  }
+  function shortHash(h) {
+    if (!h) return "\u2014";
+    return h.length > 26 ? h.slice(0, 20) + "\u2026" + h.slice(-4) : h;
+  }
+
+  var newestSeen = null;
+
+  function loadInfo() {
+    fetch("/api/blockchain/info").then(function (r) { return r.json(); }).then(function (d) {
+      if (!d || d.status !== "success") throw new Error("bad");
+      $("stHeight").textContent = num(d.height);
+      $("stMined").textContent = num(Math.round(d.total_money_coins || 0));
+      $("stTx").textContent = num(d.tx_count || 0);
+      $("stMempool").textContent = num(d.mempool_size || 0) + " tx";
+    }).catch(function () { /* leave the em-dashes: never fabricate */ });
+  }
+
+  function loadBlocks() {
+    fetch("/api/explorer/blocks?limit=4").then(function (r) { return r.json(); }).then(function (d) {
+      if (!d || d.status !== "success" || !d.blocks) throw new Error("bad");
+      var blocks = d.blocks;
+      $("feedNote").innerHTML = "TESTNET &middot; LIVE";
+      if (!blocks.length) {
+        $("feedRows").innerHTML = '<div class="feed-empty">No blocks yet &mdash; be the first to mine one.</div>';
+        return;
+      }
+      var isNew = newestSeen !== null && blocks[0] && blocks[0].height > newestSeen;
+      var html = blocks.map(function (b, i) {
+        var cls = (i === 0 && isNew) ? "feed-row newest" : "feed-row";
+        return '<div class="' + cls + '">' +
+          '<span class="h">#' + num(b.height) + '</span>' +
+          '<span class="x">' + shortHash(b.hash) + '</span>' +
+          '<span class="r">+' + subsidyFor(b.height).toFixed(2) + '</span>' +
+        '</div>';
+      }).join("");
+      $("feedRows").innerHTML = html;
+      if (blocks[0]) newestSeen = blocks[0].height;
+
+      // pulse the reactor moon when a new block lands
+      if (isNew) {
+        var pulse = $("reactorPulse");
+        pulse.style.animation = "none"; void pulse.offsetWidth;
+        pulse.style.animation = "mbPulseA 1.5s ease-out";
+      }
+
+      // fill the "first bite" receipt from the oldest visible real block
+      var recv = blocks[blocks.length - 1];
+      if (recv) {
+        $("receiptHeight").textContent = "#" + num(recv.height);
+        $("receiptHash").textContent = shortHash(recv.hash);
+      }
+    }).catch(function () {
+      $("feedNote").innerHTML = "TESTNET &middot; OFFLINE";
+      $("feedRows").innerHTML = '<div class="feed-empty">Node unreachable &mdash; start it to see live blocks.</div>';
+    });
+  }
+
+  function tick() { loadInfo(); loadBlocks(); }
+  tick();
+  setInterval(tick, 5000);
+})();
+</script>
+</body>
+</html>
