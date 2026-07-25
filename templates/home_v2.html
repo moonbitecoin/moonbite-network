@@ -21,6 +21,9 @@
   }
   a { color: var(--accent); text-decoration: none; }
   .mono { font-family: "JetBrains Mono", monospace; }
+  img, svg { max-width: 100%; }
+  /* keep the vector splash + marks razor-sharp at any DPI / scale-up */
+  svg { shape-rendering: geometricPrecision; text-rendering: geometricPrecision; }
 
   /* ---------- animation keyframes (ported verbatim from the design) ---------- */
   @keyframes mbFly {
@@ -53,7 +56,7 @@
   nav.top { position: fixed; top: 0; left: 0; right: 0; z-index: 40;
     display: flex; align-items: center; justify-content: flex-end; gap: 30px;
     padding: 30px 44px; font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 2.2px;
-    background: linear-gradient(#04050a 40%, rgba(4,5,10,0)); animation: mbFade 0.9s ease-out 3.354s both; }
+    background: linear-gradient(#04050a 40%, rgba(4,5,10,0)); animation: mbFade 0.9s ease-out 0.92s both; }
   nav.top a { color: rgba(242,246,255,0.62); transition: color .2s ease, background .2s ease; }
   nav.top a:hover { color: var(--ice); }
   nav.top a.wallet { display: inline-flex; align-items: center; gap: 10px; padding: 11px 20px;
@@ -63,24 +66,24 @@
 
   /* ---------- flying logo ---------- */
   .flylogo { position: fixed; left: 44px; top: 40px; height: 48px; z-index: 45; transform-origin: left center;
-    animation: mbFly 3.9s cubic-bezier(0.68,0,0.18,1) 0.25s both; }
+    animation: mbFly 1.2s cubic-bezier(0.68,0,0.18,1) 0.05s both; }
   .flylogo-row { display: flex; align-items: center; gap: 14px; height: 48px; }
   .flylogo-mark { position: relative; width: 48px; height: 48px; flex: none; }
-  .fl-ring { position: absolute; inset: -13px; animation: mbRing 3.9s cubic-bezier(0.2,0,0.1,1) 0.25s both; }
+  .fl-ring { position: absolute; inset: -13px; animation: mbRing 1.2s cubic-bezier(0.2,0,0.1,1) 0.05s both; }
   .fl-ring-spin { position: absolute; inset: 0; animation: mbSpin 26s linear infinite; }
   .fl-ring-spin svg, .fl-disc svg { position: absolute; inset: 0; overflow: visible; }
-  .fl-squash { position: absolute; inset: 0; animation: mbSquash 3.9s cubic-bezier(0.4,0,0.3,1) 0.25s both; }
-  .fl-disc { position: absolute; inset: 0; animation: mbSweep 3.9s cubic-bezier(0.5,0,0.4,1) 0.25s both; }
-  .fl-bitecirc { animation: mbBite 3.9s cubic-bezier(0.35,0,0.2,1) 0.25s both; }
-  .fl-flash { animation: mbFlash 3.9s ease-out 0.25s both; }
+  .fl-squash { position: absolute; inset: 0; animation: mbSquash 1.2s cubic-bezier(0.4,0,0.3,1) 0.05s both; }
+  .fl-disc { position: absolute; inset: 0; animation: mbSweep 1.2s cubic-bezier(0.5,0,0.4,1) 0.05s both; }
+  .fl-bitecirc { animation: mbBite 1.2s cubic-bezier(0.35,0,0.2,1) 0.05s both; }
+  .fl-flash { animation: mbFlash 1.2s ease-out 0.05s both; }
   .fl-scanline { position: absolute; left: -18%; right: -18%; top: 50%; height: 2.5px; background: var(--accent);
-    box-shadow: 0 0 12px var(--accent); animation: mbScanline 3.9s cubic-bezier(0.5,0,0.4,1) 0.25s both; }
-  .fl-word { animation: mbWord 3.9s cubic-bezier(0.6,0,0.2,1) 0.25s both; }
+    box-shadow: 0 0 12px var(--accent); animation: mbScanline 1.2s cubic-bezier(0.5,0,0.4,1) 0.05s both; }
+  .fl-word { animation: mbWord 1.2s cubic-bezier(0.6,0,0.2,1) 0.05s both; }
   .fl-word div { font-size: 25px; font-weight: 700; letter-spacing: 0.4px; line-height: 1; white-space: nowrap; }
   .fl-word span { color: var(--accent); }
 
   .veil { position: fixed; inset: 0; z-index: 44; background: var(--void); pointer-events: none;
-    animation: mbVeil 3.9s ease-in-out 0.25s both; }
+    animation: mbVeil 1.2s ease-in-out 0.05s both; }
 
   main { position: relative; z-index: 10; }
 
@@ -88,13 +91,13 @@
   .hero { min-height: 100vh; display: grid; grid-template-rows: 1fr auto; padding: 200px 44px 34px; }
   .hero-copy { display: flex; flex-direction: column; justify-content: center; gap: 32px; max-width: 1120px; }
   .chip { display: flex; align-items: center; gap: 12px; font-family: "JetBrains Mono", monospace;
-    font-size: 12px; letter-spacing: 3px; color: rgba(242,246,255,0.5); animation: mbRise 0.9s ease-out 2.886s both; }
+    font-size: 12px; letter-spacing: 3px; color: rgba(242,246,255,0.5); animation: mbRise 0.7s ease-out 0.78s both; }
   .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: mbBlink 2.4s ease-in-out infinite; }
   h1.head { margin: 0; font-size: clamp(56px, 9vw, 158px); font-weight: 700; line-height: 0.9;
-    letter-spacing: -3px; text-wrap: balance; animation: mbRise 1.1s cubic-bezier(0.2,0,0.1,1) 3.042s both; }
+    letter-spacing: -3px; text-wrap: balance; animation: mbRise 0.8s cubic-bezier(0.2,0,0.1,1) 0.84s both; }
   .lead { margin: 0; max-width: 620px; font-size: 20px; line-height: 1.6; color: rgba(242,246,255,0.66);
-    text-wrap: pretty; animation: mbRise 1s ease-out 3.354s both; }
-  .hero-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; animation: mbRise 1s ease-out 3.588s both; }
+    text-wrap: pretty; animation: mbRise 1s ease-out 0.92s both; }
+  .hero-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; animation: mbRise 1s ease-out 1.0s both; }
   .btn { display: inline-flex; align-items: center; gap: 12px; padding: 18px 30px;
     font-family: "JetBrains Mono", monospace; font-size: 13px; letter-spacing: 2.4px; border-radius: 2px;
     transition: filter .2s ease, border-color .2s ease, color .2s ease; }
@@ -106,7 +109,7 @@
   .btn.text:hover { color: var(--ice); }
 
   .statgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1px;
-    background: rgba(242,246,255,0.1); border: 1px solid rgba(242,246,255,0.1); animation: mbFade 1.2s ease-out 3.588s both; }
+    background: rgba(242,246,255,0.1); border: 1px solid rgba(242,246,255,0.1); animation: mbFade 1.2s ease-out 1.0s both; }
   .statcell { display: flex; flex-direction: column; gap: 8px; padding: 20px 22px; background: var(--void); }
   .statcell .k { font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 2.6px; color: rgba(242,246,255,0.42); }
   .statcell .v { font-size: 27px; font-weight: 500; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
@@ -225,12 +228,47 @@
     backdrop-filter: blur(6px); transition: border-color .2s ease, color .2s ease; }
   .replay:hover { border-color: var(--ice); color: var(--ice); }
 
+  /* ---------- tablet ---------- */
+  @media (max-width: 1024px) {
+    nav.top { padding: 26px 32px; gap: 24px; }
+    .flylogo { left: 32px; }
+    .hero { padding: 150px 32px 30px; }
+    .reactor { padding: 96px 32px; gap: 46px; }
+    .waysin { padding: 40px 32px 96px; }
+    .proof { padding: 0 32px 96px; }
+    .firstbite { padding: 0 32px 100px; }
+    .fb-box { padding: 44px 32px; gap: 40px; }
+    footer.site { padding: 0 32px 60px; }
+    .receipt { justify-self: stretch; max-width: 100%; }
+  }
+
+  /* ---------- mobile ---------- */
   @media (max-width: 640px) {
     nav.top { gap: 16px; padding: 22px 20px; font-size: 11px; }
     nav.top a.supply, nav.top a.proof, nav.top a.firstbite { display: none; }
-    .hero { padding: 150px 20px 24px; }
-    .reactor, .waysin, .proof, .firstbite { padding-left: 20px; padding-right: 20px; }
     .flylogo { left: 20px; }
+    .hero { padding: 132px 20px 24px; }
+    h1.head { letter-spacing: -1.5px; }
+    .lead { font-size: 17px; }
+    .reactor { padding: 70px 20px; gap: 40px; }
+    .waysin { padding: 32px 20px 70px; }
+    .proof { padding: 0 20px 70px; }
+    .firstbite { padding: 0 20px 84px; }
+    .sec-head { flex-wrap: wrap; }
+    .fb-box { padding: 32px 20px; gap: 30px; }
+    .wcard { padding: 26px; }
+    footer.site { padding: 0 20px 54px; }
+    footer.site .row { flex-direction: column; gap: 22px; }
+    .replay { right: 14px; bottom: 14px; }
+  }
+
+  /* ---------- small phones ---------- */
+  @media (max-width: 400px) {
+    nav.top { padding: 18px 16px; gap: 12px; }
+    .flylogo { left: 16px; }
+    .hero { padding: 120px 16px 20px; }
+    .reactor, .waysin, .proof, .firstbite, footer.site { padding-left: 16px; padding-right: 16px; }
+    .btn { padding: 15px 22px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
