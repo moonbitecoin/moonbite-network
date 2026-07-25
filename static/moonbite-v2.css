@@ -132,6 +132,26 @@ body.mb-v2 .btn-secondary {
     color: rgba(242, 246, 255, 0.82);
 }
 body.mb-v2 .btn-secondary:hover { border-color: var(--ice); color: var(--ice); background: none; }
+/* tool-page button variants (wallet/mining/dashboard) */
+body.mb-v2 .btn-success {
+    background: var(--accent);
+    color: var(--void);
+    border: 1px solid var(--accent);
+    box-shadow: none;
+}
+body.mb-v2 .btn-success:hover { filter: brightness(1.12); box-shadow: 0 0 24px rgba(95, 233, 208, 0.28); }
+body.mb-v2 .btn-info {
+    background: none;
+    border: 1px solid var(--cool);
+    color: var(--cool);
+}
+body.mb-v2 .btn-info:hover { background: var(--cool); color: var(--void); }
+body.mb-v2 .btn-danger {
+    background: none;
+    border: 1px solid var(--danger-color);
+    color: var(--danger-color);
+}
+body.mb-v2 .btn-danger:hover { background: var(--danger-color); color: var(--void); }
 body.mb-v2 .mb-btn-xl { padding: 17px 32px; font-size: 0.86rem; }
 body.mb-v2 .btn-large { padding: 16px 30px; }
 
