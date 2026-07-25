@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'services/chain_service.dart';
 import 'screens/home_screen.dart';
+import 'screens/lock_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'wallet/wallet_controller.dart';
 
@@ -57,13 +58,30 @@ class _Root extends StatefulWidget {
   State<_Root> createState() => _RootState();
 }
 
-class _RootState extends State<_Root> {
+class _RootState extends State<_Root> with WidgetsBindingObserver {
   late final Future<bool> _loaded;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loaded = context.read<WalletController>().loadExisting();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Re-engage the lock whenever the app leaves the foreground so a stored
+    // wallet always requires a fresh unlock on return.
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      context.read<WalletController>().lock();
+    }
   }
 
   @override
@@ -77,9 +95,12 @@ class _RootState extends State<_Root> {
           );
         }
         final controller = context.watch<WalletController>();
-        return controller.hasWallet
-            ? const HomeScreen()
-            : const OnboardingScreen();
+        if (!controller.hasWallet) {
+          return const OnboardingScreen();
+        }
+        return controller.requiresUnlock
+            ? const LockScreen()
+            : const HomeScreen();
       },
     );
   }

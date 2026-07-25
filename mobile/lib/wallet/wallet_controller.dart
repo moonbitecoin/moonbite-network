@@ -33,6 +33,7 @@ class WalletController extends ChangeNotifier {
   ChainStatus? _status;
   bool _busy = false;
   String? _error;
+  bool _unlocked = false;
 
   MoonBiteNetwork get network => _network;
   MoonBiteAccount? get account => _account;
@@ -41,6 +42,11 @@ class WalletController extends ChangeNotifier {
   bool get busy => _busy;
   String? get error => _error;
   bool get hasWallet => _account != null;
+
+  /// True when a wallet exists on the device but the owner has not proven
+  /// presence yet this session. The UI must show a lock gate and refuse to
+  /// display balances / addresses until [unlock] succeeds.
+  bool get requiresUnlock => hasWallet && !_unlocked;
 
   String get receiveAddress => _account?.bech32Address ?? '';
 
@@ -62,8 +68,34 @@ class WalletController extends ChangeNotifier {
     _network = MoonBiteNetwork.byId(netId);
     _mnemonic = mnemonic;
     _account = _hd.deriveAccount(mnemonic, index: 0);
+    // A wallet restored from storage starts LOCKED: the owner must prove
+    // presence (biometric / device PIN) before the app reveals it. This blocks
+    // someone who picks up an already-unlocked phone from seeing balances or
+    // the receive address.
+    _unlocked = false;
     notifyListeners();
     return true;
+  }
+
+  /// Proves presence to reveal a stored wallet. Returns true on success; on
+  /// failure or cancellation the wallet stays locked and the UI keeps the gate.
+  Future<bool> unlock() async {
+    if (_unlocked) return true;
+    if (!hasWallet) return false;
+    final ok = await authenticator.authenticate('Unlock your MoonBite wallet');
+    if (ok) {
+      _unlocked = true;
+      notifyListeners();
+    }
+    return ok;
+  }
+
+  /// Re-engages the lock (e.g. when the app is backgrounded). The next reveal
+  /// requires [unlock] again.
+  void lock() {
+    if (!_unlocked) return;
+    _unlocked = false;
+    notifyListeners();
   }
 
   /// Creates a brand-new wallet on [network] and persists it.
@@ -91,6 +123,9 @@ class WalletController extends ChangeNotifier {
     await store.saveWallet(mnemonic: mnemonic, networkId: _network.id);
     _mnemonic = mnemonic;
     _account = _hd.deriveAccount(mnemonic, index: 0);
+    // Just created/imported through the active onboarding flow, so the owner is
+    // already present — start unlocked rather than immediately re-prompting.
+    _unlocked = true;
     notifyListeners();
   }
 
@@ -192,6 +227,7 @@ class WalletController extends ChangeNotifier {
     _account = null;
     _balance = null;
     _status = null;
+    _unlocked = false;
     notifyListeners();
   }
 }

@@ -284,4 +284,71 @@ void main() {
       throwsArgumentError,
     );
   });
+
+  group('app-open lock', () {
+    test('a wallet restored from storage starts locked', () async {
+      // Seed storage via one controller, then load it in a fresh one.
+      final seed = makeController();
+      await seed.importExisting(_mnemonic, network: MoonBiteNetwork.testnet);
+
+      final c = makeController();
+      expect(await c.loadExisting(), isTrue);
+      expect(c.hasWallet, isTrue);
+      expect(c.requiresUnlock, isTrue,
+          reason: 'a restored wallet must require a fresh unlock');
+    });
+
+    test('createNew and importExisting start unlocked (active onboarding)',
+        () async {
+      final created = makeController();
+      await created.createNew(network: MoonBiteNetwork.testnet);
+      expect(created.requiresUnlock, isFalse);
+
+      final imported = makeController();
+      await imported.importExisting(_mnemonic,
+          network: MoonBiteNetwork.testnet);
+      expect(imported.requiresUnlock, isFalse);
+    });
+
+    test('unlock clears the gate when authentication is approved', () async {
+      final seed = makeController();
+      await seed.importExisting(_mnemonic, network: MoonBiteNetwork.testnet);
+
+      final approver = _FakeAuthenticator(true);
+      final c = makeController(auth: approver);
+      await c.loadExisting();
+      expect(c.requiresUnlock, isTrue);
+
+      final ok = await c.unlock();
+      expect(ok, isTrue);
+      expect(c.requiresUnlock, isFalse);
+      expect(approver.calls, hasLength(1));
+      expect(approver.calls.single, contains('Unlock'));
+    });
+
+    test('unlock keeps the wallet locked when authentication is denied',
+        () async {
+      final seed = makeController();
+      await seed.importExisting(_mnemonic, network: MoonBiteNetwork.testnet);
+
+      final denier = _FakeAuthenticator(false);
+      final c = makeController(auth: denier);
+      await c.loadExisting();
+
+      final ok = await c.unlock();
+      expect(ok, isFalse);
+      expect(c.requiresUnlock, isTrue);
+      expect(denier.calls, hasLength(1));
+    });
+
+    test('lock re-engages the gate after a successful unlock', () async {
+      final c = makeController();
+      await c.importExisting(_mnemonic, network: MoonBiteNetwork.testnet);
+      expect(c.requiresUnlock, isFalse);
+
+      c.lock();
+      expect(c.requiresUnlock, isTrue,
+          reason: 'backgrounding must re-lock a stored wallet');
+    });
+  });
 }
