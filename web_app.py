@@ -79,6 +79,11 @@ app.node: Optional[Node] = None
 # /api/wallet/new), capped so the cookie cannot grow without bound.
 _MAX_SESSION_ADDRESSES = 25
 
+# Upper bound on blocks a single /api/mining/start request may enqueue. Without
+# a cap, one request could ask for billions of blocks and tie up a worker's CPU
+# indefinitely (a self-inflicted DoS). 100 is plenty for the demo reactor.
+_MAX_MINE_BLOCKS = 100
+
 # Lock for thread-safe mining operations
 app.mining_lock = threading.Lock()
 
@@ -814,11 +819,22 @@ def api_mining_start():
             blocks_to_mine = data.get("blocks", 1)
             miner_address = data.get("address")
 
-            if not miner_address or blocks_to_mine <= 0:
+            # Reject a non-integer or out-of-range block count (bool is an int
+            # subclass, so exclude it explicitly). Capping at _MAX_MINE_BLOCKS
+            # stops a single request from pinning a worker on unbounded PoW.
+            if isinstance(blocks_to_mine, bool) or not isinstance(blocks_to_mine, int):
                 return jsonify(
                     {
                         "status": "error",
-                        "message": "Invalid blocks or address",
+                        "message": "'blocks' must be an integer",
+                    }
+                ), 400
+
+            if not miner_address or blocks_to_mine <= 0 or blocks_to_mine > _MAX_MINE_BLOCKS:
+                return jsonify(
+                    {
+                        "status": "error",
+                        "message": f"Invalid blocks (1-{_MAX_MINE_BLOCKS}) or address",
                     }
                 ), 400
 

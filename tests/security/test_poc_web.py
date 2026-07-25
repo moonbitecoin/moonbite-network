@@ -135,3 +135,52 @@ def test_security_headers_present(client):
     assert r.headers.get("X-Frame-Options") == "DENY"
     assert "default-src 'self'" in r.headers.get("Content-Security-Policy", "")
     assert r.headers.get("Referrer-Policy")
+
+
+# --------------------------------------------------------------------------- #
+# FINDING #5 (FIXED) — /api/mining/start caps the block count (no CPU-DoS)
+# --------------------------------------------------------------------------- #
+@pytest.mark.parametrize(
+    "blocks", [10**9, web_app._MAX_MINE_BLOCKS + 1, 0, -5],
+)
+def test_mining_start_rejects_out_of_range_block_count(client, blocks):
+    """An in-range int is fine; anything <=0 or above the cap is refused BEFORE a
+    mining thread spins up, so one request can't pin a worker on endless PoW."""
+    web_app.app.mining_state["is_mining"] = False
+    r = client.post(
+        "/api/mining/start",
+        json={"address": "moon1validlooking", "blocks": blocks},
+    )
+    assert r.status_code == 400, f"blocks={blocks!r} was accepted"
+    # The guard must reject before mining starts.
+    assert web_app.app.mining_state["is_mining"] is False
+
+
+@pytest.mark.parametrize("blocks", ["100", 1.5, True, None, [1]])
+def test_mining_start_rejects_non_integer_block_count(client, blocks):
+    """A string/float/bool/None/list 'blocks' is rejected as a type error — it can
+    no longer slip past the <=0 check and crash (or mistype) the worker loop."""
+    web_app.app.mining_state["is_mining"] = False
+    r = client.post(
+        "/api/mining/start",
+        json={"address": "moon1validlooking", "blocks": blocks},
+    )
+    assert r.status_code == 400, f"blocks={blocks!r} was accepted"
+    assert web_app.app.mining_state["is_mining"] is False
+
+
+def test_mining_start_accepts_valid_capped_count(client, monkeypatch):
+    """Positive control: a legitimate in-range count (the cap itself) is accepted.
+    The worker is stubbed so the test asserts the guard, not real PoW."""
+    web_app.app.mining_state["is_mining"] = False
+    monkeypatch.setattr(web_app, "mining_worker", lambda *a, **k: None)
+    addr = client.get("/api/wallet/new").get_json()["address"]
+
+    r = client.post(
+        "/api/mining/start",
+        json={"address": addr, "blocks": web_app._MAX_MINE_BLOCKS},
+    )
+    assert r.status_code == 200
+    assert r.get_json()["blocks_to_mine"] == web_app._MAX_MINE_BLOCKS
+
+    web_app.app.mining_state["is_mining"] = False  # reset shared state
