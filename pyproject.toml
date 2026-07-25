@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "MyCoin — an educational cryptocurrency implementing the Bitcoin whitepaper (never holds real funds)."
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["ecdsa>=0.19"]
+dependencies = ["ecdsa>=0.19", "flask>=3.0", "qrcode>=7.4"]
 
 [project.scripts]
 mycoin = "cli:main"
@@ -38,3 +38,4 @@ py-modules = [
 # GUI launcher scripts at the repo root (e.g. gui_test.py, which calls
 # app.exec() at import time and would otherwise crash collection).
 testpaths = ["tests"]
+pythonpath = ["."]

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}Blog / Build Log — MoonBite{% endblock %}
+{% block meta_description %}MoonBite is building in the open. No posts yet — the real build log is in the GitHub commit history and ADRs. Follow along to catch the first post when it lands.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> Blog</span>
+            <h1 class="mb-hero-title">Build log, <span class="mb-gradient-text">in the open.</span></h1>
+            <p class="mb-hero-sub">No posts yet — MoonBite is pre-mainnet and shipping. The real-time build log is the commit history on GitHub. Written posts will land here when there is something worth saying.</p>
+        </div>
+    </div>
+</section>
+
+<!-- HONESTY BANNER -->
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-banner mb-reveal">
+            <span>This page has <strong>no published posts yet.</strong> The placeholder cards below are topics we intend to write about — they are not real articles. No dates, authors, or content have been fabricated.</span>
+        </div>
+    </div>
+</section>
+
+<!-- WHERE THE REAL LOG LIVES -->
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Right now</span>
+            <h2 class="mb-section-title">The build log is on GitHub</h2>
+            <p class="mb-section-sub">Every decision, change, and tradeoff is recorded in commits and Architecture Decision Records (ADRs) — publicly readable, no account required.</p>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📋</div>
+                <h3>Commit history</h3>
+                <p>The most detailed build log available is the repository's commit history. Every change to the node, the wallet, the site, and the tooling is recorded there with a description. It is messy, granular, and honest — which is exactly the point.</p>
+                <a href="https://github.com/moonbitecoin/MoonBite-Coin/commits/main" class="link" target="_blank" rel="noopener">Browse commits on GitHub ↗</a>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📐</div>
+                <h3>Architecture Decision Records (ADRs)</h3>
+                <p>Bigger decisions — emission schedule, fee model, fair-launch policy, founder allocation — are documented in ADR files in the repository. These are the closest thing to long-form writing about MoonBite that currently exists.</p>
+                <a href="https://github.com/moonbitecoin/MoonBite-Coin/tree/main/docs" class="link" target="_blank" rel="noopener">Read the ADRs ↗</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- UPCOMING TOPICS (PLACEHOLDER CARDS — CLEARLY MARKED) -->
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Coming up</span>
+            <h2 class="mb-section-title">What we plan to write about</h2>
+            <p class="mb-section-sub">These are topics we intend to cover — not published posts. No dates, no authors, no previews. When a post is live, it will replace these cards.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">⛏️</div>
+                <div class="mb-card-title">How MoonBite mining works <span style="font-size: 0.7em; opacity: 0.55; font-weight: 400;">— upcoming</span></div>
+                <div class="mb-card-text">A technical walkthrough of scrypt proof-of-work, how block difficulty is set, and what your miner is actually computing. Written for curious non-experts.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">⚖️</div>
+                <div class="mb-card-title">Why fair launch? <span style="font-size: 0.7em; opacity: 0.55; font-weight: 400;">— upcoming</span></div>
+                <div class="mb-card-text">The reasoning behind no premine, no ICO, and no founder allocation — and how those decisions were written into consensus code rather than a blog post nobody can enforce.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔑</div>
+                <div class="mb-card-title">Self-custody without fear <span style="font-size: 0.7em; opacity: 0.55; font-weight: 400;">— upcoming</span></div>
+                <div class="mb-card-text">A practical guide to managing your own keys — backing up a seed phrase, verifying addresses, and why "not your keys, not your coins" is a security statement, not a slogan.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔗</div>
+                <div class="mb-card-title">From Litecoin Core to MoonBite <span style="font-size: 0.7em; opacity: 0.55; font-weight: 400;">— upcoming</span></div>
+                <div class="mb-card-text">What we changed from the upstream codebase, what we kept, and why forking a proven codebase is not cutting corners — it is standing on tested ground.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🛡️</div>
+                <div class="mb-card-title">Security hardening: what we shipped <span style="font-size: 0.7em; opacity: 0.55; font-weight: 400;">— upcoming</span></div>
+                <div class="mb-card-text">A review of the security measures built into the MoonBite node, wallet, and explorer — TLS pinning, authentication requirements, fee caps, and the SOS vault. Written candidly about what is and is not yet audited.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📡</div>
+                <div class="mb-card-title">The path to mainnet <span style="font-size: 0.7em; opacity: 0.55; font-weight: 400;">— upcoming</span></div>
+                <div class="mb-card-text">What has to be true before MoonBite launches mainnet — a candid accounting of what is done, what is not, and what we are watching for. No hype dates, just a checklist.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- NOTIFY -->
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        {% set notify_title = "Follow along when posts land" %}
+        {% set notify_text = "We'll email you when MBITE lists on an exchange. That same email will mention the blog if it's live by then — nothing else." %}
+        {% set notify_source = "blog" %}
+        {% include "partials/notify_form.html" %}
+    </div>
+</section>
+
+<!-- CONTRIBUTE -->
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Open source</span>
+            <h2 class="mb-section-title">Want to contribute a write-up?</h2>
+            <p class="mb-section-sub">MoonBite is built in the open. If you have run the node, written a tool, or have something technically accurate and honest to share about the project, open a discussion on GitHub.</p>
+        </div>
+        <div style="text-align: center;">
+            <a href="https://github.com/moonbitecoin/MoonBite-Coin" class="btn btn-secondary btn-large mb-reveal" target="_blank" rel="noopener">Open a discussion on GitHub</a>
+            &nbsp;
+            <a href="/developers" class="btn btn-secondary btn-large mb-reveal">Developer docs</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

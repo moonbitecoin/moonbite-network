@@ -12,9 +12,11 @@ Educational use only — never holds real funds.
 
 from __future__ import annotations
 
+import hmac
 import json
 import os
 import re
+import secrets
 import sys
 import threading
 import time
@@ -22,10 +24,12 @@ from collections import defaultdict
 from functools import wraps
 from typing import Optional
 
-from flask import Flask, jsonify, render_template, request, send_from_directory
+from flask import Flask, jsonify, render_template, request, send_from_directory, session
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 import exchange
 import merchants
+import swap_verifier
 from node import Node
 from store import BlockStore
 from transaction import generate_keypair, pubkey_hash
@@ -44,6 +48,29 @@ _chain_store: Optional["BlockStore"] = None
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
+# Signs the session cookie that scopes per-visitor wallet state. Set SECRET_KEY
+# in production so sessions survive restarts; a random key is a safe default.
+app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
+
+# Trust exactly TRUSTED_PROXY_COUNT reverse-proxy hop(s) in front (nginx = 1).
+# ProxyFix rewrites request.remote_addr to the client IP that our OWN proxy
+# observed (the rightmost X-Forwarded-For hop it appended), so a client cannot
+# forge its identity by sending extra XFF hops. Set to 0 if no proxy is present.
+_TRUSTED_PROXY_COUNT = int(os.environ.get("TRUSTED_PROXY_COUNT", "1"))
+if _TRUSTED_PROXY_COUNT > 0:
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app, x_for=_TRUSTED_PROXY_COUNT, x_proto=1, x_host=1
+    )
+
+# Hard cap on request body size. Flask/Werkzeug default to unlimited, so without
+# this a single POST with a multi-hundred-MB body forces the worker to buffer +
+# JSON-parse it — ~2.8x amplification measured, i.e. one 400 MB request spikes
+# the process past 1 GB RAM and OOM-kills a small container. Every legitimate
+# API body here (notify, orders, invoices, tx broadcast) is well under 256 KB,
+# so Werkzeug rejects anything larger with 413 BEFORE reading the payload.
+_MAX_CONTENT_LENGTH = int(os.environ.get("MOONBITE_MAX_BODY_BYTES", str(256 * 1024)))
+app.config["MAX_CONTENT_LENGTH"] = _MAX_CONTENT_LENGTH
+
 # Global state for mining operations
 app.mining_state = {
     "is_mining": False,
@@ -57,8 +84,14 @@ app.mining_state = {
 # Global node instance (initialized once per app instance)
 app.node: Optional[Node] = None
 
-# Generated addresses for wallet operations (in-memory storage for demo)
-app.generated_addresses = {}  # pubkey_hash -> {"address": ..., "pubkey": ...}
+# Per-visitor wallet addresses are stored in the signed session cookie (see
+# /api/wallet/new), capped so the cookie cannot grow without bound.
+_MAX_SESSION_ADDRESSES = 25
+
+# Upper bound on blocks a single /api/mining/start request may enqueue. Without
+# a cap, one request could ask for billions of blocks and tie up a worker's CPU
+# indefinitely (a self-inflicted DoS). 100 is plenty for the demo reactor.
+_MAX_MINE_BLOCKS = 100
 
 # Lock for thread-safe mining operations
 app.mining_lock = threading.Lock()
@@ -88,10 +121,9 @@ _rl_hits: "defaultdict[tuple, list]" = defaultdict(list)
 
 
 def _client_id() -> str:
-    """Best-effort caller identity. Behind nginx, honor the first XFF hop."""
-    xff = request.headers.get("X-Forwarded-For", "")
-    if xff:
-        return xff.split(",")[0].strip()
+    """Caller identity for rate limiting. ProxyFix has already resolved
+    request.remote_addr to the client IP our trusted proxy observed, so we do NOT
+    parse X-Forwarded-For here — a client cannot spoof this by adding XFF hops."""
     return request.remote_addr or "unknown"
 
 
@@ -187,6 +219,95 @@ def received_at_address(address: str) -> int:
     return total
 
 
+# --------------------------------------------------------------------------- #
+# Merchant payment observation — production node (JSON-RPC) backend
+#
+# The merchant layer needs a received_lookup(address) -> base units. In the demo
+# it reads the in-process educational chain (received_at_address above). Against
+# the real moonbited node we ask it directly. A stock node has no address index,
+# so we use `scantxoutset`, which reports the address's *current unspent* balance.
+# That is enough to detect a fresh invoice payment (a new inbound total over the
+# baseline snapshotted when the invoice was raised), provided the merchant does
+# not spend from the receive address mid-invoice — so give each invoice/merchant
+# a dedicated receive address.
+# --------------------------------------------------------------------------- #
+_merchant_rpc_client = None
+_merchant_rpc_lock = threading.Lock()
+_merchant_recv_cache: dict = {}
+# scantxoutset walks the whole UTXO set (seconds, single-scan-at-a-time), so a
+# short cache keeps rapid invoice-status polls from hammering the node.
+_MERCHANT_RECV_TTL = float(os.environ.get("MOONBITE_MERCHANT_SCAN_TTL", "5"))
+
+
+def _merchant_use_rpc() -> bool:
+    """True when the operator has pointed us at a real node (RPC creds/URL set)
+    and has not forced demo mode. Unset in dev/tests -> stay on the demo chain.
+
+    NOTE: production should also set DEMO_MODE=0 so the RPC client keeps retrying
+    the node on a transient outage instead of latching into demo sample data.
+    """
+    if os.environ.get("DEMO_MODE", "").strip().lower() in ("1", "true", "yes", "on"):
+        return False
+    return bool(
+        os.environ.get("BIGCOIN_RPC_URL")
+        or os.environ.get("BIGCOIN_RPC_USER")
+        or os.environ.get("BIGCOIN_RPC_PASSWORD")
+    )
+
+
+def _get_merchant_rpc():
+    """Lazily build the explorer RPC client. explorer/rpc.py uses a bare
+    ``import config``, so the explorer dir must be on sys.path (mirrors the
+    settlement-verifier route)."""
+    global _merchant_rpc_client
+    if _merchant_rpc_client is None:
+        _exp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "explorer")
+        if _exp_dir not in sys.path:
+            sys.path.insert(0, _exp_dir)
+        from explorer.rpc import RpcClient
+
+        _merchant_rpc_client = RpcClient()
+    return _merchant_rpc_client
+
+
+def received_at_address_rpc(address: str) -> int:
+    """Current unspent balance at `address` from the production node, in base
+    units (merchants.UNITS_PER_COIN). Fail-safe: ANY error returns 0 so an
+    invoice is never falsely marked paid — it just stays pending and is retried
+    on the next poll."""
+    from decimal import Decimal
+
+    now = time.time()
+    with _merchant_rpc_lock:
+        hit = _merchant_recv_cache.get(address)
+        if hit is not None and now - hit[0] < _MERCHANT_RECV_TTL:
+            return hit[1]
+        try:
+            client = _get_merchant_rpc()
+            result = client.scantxoutset("start", [{"desc": f"addr({address})"}])
+        except Exception:  # noqa: BLE001 — node down/auth/demo => observe nothing
+            return 0
+        if not isinstance(result, dict) or not result.get("success", True):
+            return 0
+        try:
+            units = int(
+                (Decimal(str(result.get("total_amount", 0))) * merchants.UNITS_PER_COIN)
+                .to_integral_value()
+            )
+        except Exception:  # noqa: BLE001 — malformed amount
+            return 0
+        _merchant_recv_cache[address] = (time.time(), units)
+        return units
+
+
+def merchant_received_lookup(address: str) -> int:
+    """The received_lookup handed to the merchant layer: production node when
+    configured, else the in-process educational chain."""
+    if _merchant_use_rpc():
+        return received_at_address_rpc(address)
+    return received_at_address(address)
+
+
 def mining_worker(blocks_to_mine: int, miner_address: str) -> None:
     """Background worker thread for mining blocks."""
     node = get_node()
@@ -231,14 +352,175 @@ def mining_worker(blocks_to_mine: int, miner_address: str) -> None:
 
 @app.route("/")
 def home_page():
-    """Render the marketing homepage."""
+    """Render the marketing homepage (editorial/terminal home-v2 design)."""
+    return render_template("home_v2.html")
+
+
+@app.route("/home-classic")
+def home_classic_page():
+    """Render the previous cinematic film-scroll homepage (kept for reference)."""
     return render_template("home.html")
+
+
+@app.route("/take-a-bite")
+def take_a_bite_page():
+    """Render the "You can't buy MoonBite" cinematic mining-demo landing page."""
+    return render_template("take_a_bite.html")
+
+
+@app.route("/logo-sting")
+def logo_sting_page():
+    """Render the MoonBite logo animation (Boot -> Bite -> Lockup sting)."""
+    return render_template("logo_sting.html")
+
+
+@app.route("/home-v2")
+def home_v2_page():
+    """Preview the new editorial/terminal MoonBite home design."""
+    return render_template("home_v2.html")
 
 
 @app.route("/dashboard")
 def dashboard_page():
     """Render the live network dashboard."""
     return render_template("index.html")
+
+
+# --- bitcoin.org-style information architecture (marketing pages) ------------ #
+# Introduction
+@app.route("/individuals")
+def individuals_page():
+    """MoonBite for individuals."""
+    return render_template("individuals.html")
+
+
+@app.route("/businesses")
+def businesses_page():
+    """MoonBite for businesses."""
+    return render_template("businesses.html")
+
+
+@app.route("/getting-started")
+def getting_started_page():
+    """Step-by-step getting-started walkthrough."""
+    return render_template("getting_started.html")
+
+
+@app.route("/how-it-works")
+def how_it_works_page():
+    """Plain-language explanation of how MoonBite works."""
+    return render_template("how_it_works.html")
+
+
+@app.route("/you-need-to-know")
+def you_need_to_know_page():
+    """Honest caveats before using MoonBite."""
+    return render_template("you_need_to_know.html")
+
+
+@app.route("/whitepaper")
+def whitepaper_page():
+    """Protocol & design overview."""
+    return render_template("whitepaper.html")
+
+
+# Resources
+@app.route("/resources")
+def resources_page():
+    """Directory of MoonBite tools and docs."""
+    return render_template("resources.html")
+
+
+@app.route("/exchanges")
+def exchanges_page():
+    """Where to get MBITE (listings coming soon)."""
+    return render_template("exchanges.html")
+
+
+@app.route("/community")
+def community_page():
+    """Ways to participate in the MoonBite community."""
+    return render_template("community.html")
+
+
+@app.route("/vocabulary")
+def vocabulary_page():
+    """Glossary of MoonBite / crypto terms."""
+    return render_template("vocabulary.html")
+
+
+@app.route("/events")
+def events_page():
+    """MoonBite events and milestones."""
+    return render_template("events.html")
+
+
+@app.route("/moonbite-core")
+def moonbite_core_page():
+    """The MoonBite Core reference node software."""
+    return render_template("moonbite_core.html")
+
+
+# Participate
+@app.route("/support")
+def support_page():
+    """Support the MoonBite network."""
+    return render_template("support.html")
+
+
+@app.route("/buy")
+def buy_page():
+    """Getting MBITE (buying — coming soon)."""
+    return render_template("buy.html")
+
+
+@app.route("/sell")
+def sell_page():
+    """Selling MBITE (coming soon)."""
+    return render_template("sell.html")
+
+
+@app.route("/full-node")
+def full_node_page():
+    """Running a full node."""
+    return render_template("full_node.html")
+
+
+@app.route("/development")
+def development_page():
+    """Building on and contributing to MoonBite."""
+    return render_template("development.html")
+
+
+# Other
+@app.route("/scams")
+def scams_page():
+    """How to avoid MoonBite-related scams."""
+    return render_template("scams.html")
+
+
+@app.route("/legal")
+def legal_page():
+    """Plain-language legal disclaimer."""
+    return render_template("legal.html")
+
+
+@app.route("/privacy")
+def privacy_page():
+    """Plain-language privacy policy."""
+    return render_template("privacy.html")
+
+
+@app.route("/press")
+def press_page():
+    """Press and brand information."""
+    return render_template("press.html")
+
+
+@app.route("/blog")
+def blog_page():
+    """MoonBite build log."""
+    return render_template("blog.html")
 
 
 @app.route("/get-wallet")
@@ -410,6 +692,113 @@ def api_exchange_settle_hint(order_id: str):
         return jsonify({"status": "error", "message": str(e)}), 404
 
 
+# --- Phase 2a: atomic-swap settlement coordination (non-custodial) ---------- #
+# Records the HTLC hand-off and self-reported funding for a matched pair. The
+# server verifies nothing on-chain yet (Phase 2b) and moves no funds; a swap
+# progresses no further than 'both_locked' and no trade is marked settled here.
+
+
+@app.route("/api/exchange/order/<order_id>/swap", methods=["GET"])
+def api_exchange_get_swap(order_id: str):
+    """Return the settlement-coordination swap for a matched order, if any."""
+    swap = exchange.get_swap(order_id)
+    if swap is None:
+        return jsonify({"status": "error", "message": "no swap for this order"}), 404
+    return jsonify({"status": "success", "swap": swap}), 200
+
+
+@app.route("/api/exchange/order/<order_id>/swap/init", methods=["POST"])
+@rate_limit(30, 60)
+def api_exchange_swap_init(order_id: str):
+    """Register the HTLC hand-off for a matched order pair. Auth: cancel_token."""
+    data = request.get_json(silent=True) or {}
+    try:
+        swap = exchange.init_swap(
+            order_id=order_id,
+            cancel_token=str(data.get("cancel_token", "")),
+            hashlock=data.get("hashlock", ""),
+            base_recipient_pk=data.get("base_recipient_pubkey", ""),
+            base_refund_pk=data.get("base_refund_pubkey", ""),
+            quote_recipient_pk=data.get("quote_recipient_pubkey", ""),
+            quote_refund_pk=data.get("quote_refund_pubkey", ""),
+            base_locktime=data.get("base_locktime"),
+            quote_locktime=data.get("quote_locktime"),
+        )
+        return jsonify({"status": "success", "swap": swap}), 201
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
+@app.route("/api/exchange/order/<order_id>/swap/funded", methods=["POST"])
+@rate_limit(30, 60)
+def api_exchange_swap_funded(order_id: str):
+    """Report an HTLC funding txid for one leg (base|quote). Auth: cancel_token.
+
+    Phase 2a records the report and advances the state machine; it does NOT
+    verify the tx on-chain (Phase 2b) and never treats it as settlement.
+    """
+    data = request.get_json(silent=True) or {}
+    try:
+        swap = exchange.report_funding(
+            order_id=order_id,
+            cancel_token=str(data.get("cancel_token", "")),
+            leg=str(data.get("leg", "")).strip(),
+            txid=data.get("txid", ""),
+        )
+        return jsonify({"status": "success", "swap": swap}), 200
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
+@app.route("/api/exchange/verify", methods=["POST"])
+def api_exchange_verify():
+    """Run one Phase 2b on-chain verification pass over pending swaps.
+
+    Read-only against the operator's node: confirms HTLC fundings/redemptions and
+    advances genuinely-settled trades (the only path that moves last_price). This
+    is an OPERATOR trigger, not a public endpoint — intended to be called on a
+    timer (cron/systemd). It is:
+      * disabled unless VERIFIER_ENABLED is set (a swap never settles otherwise);
+      * gated by a shared secret VERIFIER_TRIGGER_TOKEN (X-Verifier-Token header)
+        so the public cannot make the box hammer the node;
+      * safe when a chain is unreachable/unconfigured — it simply settles nothing
+        (the quote leg uses a NullAdapter until the Phase 2c quote adapter lands).
+    """
+    from explorer import config as ex_config
+
+    if not ex_config.VERIFIER_ENABLED:
+        return jsonify({"status": "error", "message": "verifier disabled"}), 403
+
+    expected = os.environ.get("VERIFIER_TRIGGER_TOKEN", "")
+    provided = request.headers.get("X-Verifier-Token", "")
+    if not expected or not hmac.compare_digest(expected, provided):
+        return jsonify({"status": "error", "message": "unauthorized"}), 403
+
+    # Only now touch the RPC client. explorer/rpc.py uses a bare ``import config``
+    # (it is designed to run with explorer/ on the path), so make that resolve.
+    _exp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "explorer")
+    if _exp_dir not in sys.path:
+        sys.path.insert(0, _exp_dir)
+    from explorer.rpc import RpcClient
+
+    base_adapter = swap_verifier.MoonNodeAdapter(RpcClient())
+    quote_adapter = swap_verifier.NullAdapter()  # Phase 2c wires a real quote leg
+    try:
+        applied = swap_verifier.run_verification_pass(
+            exchange, base_adapter, quote_adapter,
+            min_confs_base=ex_config.VERIFIER_MIN_CONFS_BASE,
+            min_confs_quote=ex_config.VERIFIER_MIN_CONFS_QUOTE,
+        )
+    except Exception as e:  # noqa: BLE001 - node unreachable etc. => 503, never 500
+        return jsonify({"status": "error", "message": f"node unavailable: {e}"}), 503
+
+    return jsonify({
+        "status": "success",
+        "verified": len(applied),
+        "results": [{"swap_id": sid, "status": u.get("status")} for sid, u in applied],
+    }), 200
+
+
 # ============================================================================= #
 # API Routes — Merchant adoption (non-custodial "Accept MBITE")
 #
@@ -460,7 +849,7 @@ def api_merchant_invoice_create():
         inv = merchants.create_invoice(
             address=data.get("address", ""),
             amount=data.get("amount"),
-            received_lookup=received_at_address,
+            received_lookup=merchant_received_lookup,
             merchant_id=data.get("merchant_id"),
             memo=data.get("memo", ""),
             address_validator=is_valid_address,
@@ -474,7 +863,7 @@ def api_merchant_invoice_create():
 def api_merchant_invoice_status(invoice_id: str):
     """Poll an invoice — re-checks the chain for payment each call."""
     try:
-        inv = merchants.invoice_status(invoice_id, received_at_address)
+        inv = merchants.invoice_status(invoice_id, merchant_received_lookup)
         return jsonify({"status": "success", "invoice": inv}), 200
     except ValueError as e:
         return jsonify({"status": "error", "message": str(e)}), 404
@@ -501,6 +890,36 @@ def _qr_svg(payload: str) -> Optional[str]:
     return buf.getvalue().decode("utf-8")
 
 
+@app.route("/api/merchant/invoices", methods=["GET"])
+def api_merchant_invoices_list():
+    """List invoices (optionally for one merchant), each freshly checked on-chain.
+
+    A shop dashboard read: pass ?merchant_id=… to scope to one seller. Listing
+    also advances any invoice that has been paid or expired since last seen.
+    """
+    merchant_id = request.args.get("merchant_id")
+    try:
+        rows = merchants.list_invoices(merchant_received_lookup, merchant_id=merchant_id)
+        return jsonify({"status": "success", "invoices": rows}), 200
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
+@app.route("/api/merchant/invoices/poll", methods=["POST"])
+@rate_limit(10, 60)
+def api_merchant_invoices_poll():
+    """Sweep all pending invoices once, auto-marking paid/expired ones.
+
+    The automation a shop (or a timer) uses so it need not poll each invoice by
+    hand. Non-custodial: only observes the chain and records the result.
+    """
+    try:
+        summary = merchants.poll_pending_invoices(merchant_received_lookup)
+        return jsonify({"status": "success", **summary}), 200
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
 @app.route("/api/merchant/invoice/<invoice_id>/qr.svg", methods=["GET"])
 def api_merchant_invoice_qr(invoice_id: str):
     """Serve a scannable QR of the invoice's BIP21-style payment URI.
@@ -509,7 +928,7 @@ def api_merchant_invoice_qr(invoice_id: str):
     own wallet prefills the send. The server never touches funds.
     """
     try:
-        inv = merchants.invoice_status(invoice_id, received_at_address)
+        inv = merchants.invoice_status(invoice_id, merchant_received_lookup)
     except ValueError:
         return jsonify({"status": "error", "message": "invoice not found"}), 404
     svg_doc = _qr_svg(inv["pay_uri"])
@@ -532,12 +951,14 @@ def api_wallet_new():
         pkh = pubkey_hash(pubkey_hex)
         address = address_from_pubkey_hash(pkh)
 
-        # Store for potential balance checking
-        app.generated_addresses[pkh] = {
-            "address": address,
-            "pubkey": pubkey_hex,
-            "pubkey_hash": pkh,
-        }
+        # Scope generated addresses to THIS visitor's signed session cookie — not
+        # a process-global dict — so one user's /balance never aggregates another
+        # user's addresses, and the server holds no unbounded in-memory state.
+        # Persist only the pubkey_hash (all /balance needs); keep it well under
+        # the ~4KB cookie limit and bounded so it cannot grow without limit.
+        pkhs = [h for h in session.get("wallet_pkhs", []) if h != pkh]
+        pkhs.append(pkh)
+        session["wallet_pkhs"] = pkhs[-_MAX_SESSION_ADDRESSES:]
 
         return jsonify(
             {
@@ -559,8 +980,8 @@ def api_wallet_balance():
         total_balance = 0
         utxo_count = 0
 
-        # Check all generated addresses
-        for pkh in app.generated_addresses.keys():
+        # Only this visitor's own session-scoped addresses (see /api/wallet/new).
+        for pkh in session.get("wallet_pkhs", []):
             # Iterate through all UTXOs and find those matching this pubkey_hash
             for _txid, _idx, out in node.chain.utxo.items():
                 if out.pubkey_hash == pkh:
@@ -657,11 +1078,22 @@ def api_mining_start():
             blocks_to_mine = data.get("blocks", 1)
             miner_address = data.get("address")
 
-            if not miner_address or blocks_to_mine <= 0:
+            # Reject a non-integer or out-of-range block count (bool is an int
+            # subclass, so exclude it explicitly). Capping at _MAX_MINE_BLOCKS
+            # stops a single request from pinning a worker on unbounded PoW.
+            if isinstance(blocks_to_mine, bool) or not isinstance(blocks_to_mine, int):
                 return jsonify(
                     {
                         "status": "error",
-                        "message": "Invalid blocks or address",
+                        "message": "'blocks' must be an integer",
+                    }
+                ), 400
+
+            if not miner_address or blocks_to_mine <= 0 or blocks_to_mine > _MAX_MINE_BLOCKS:
+                return jsonify(
+                    {
+                        "status": "error",
+                        "message": f"Invalid blocks (1-{_MAX_MINE_BLOCKS}) or address",
                     }
                 ), 400
 
@@ -1040,6 +1472,13 @@ def not_found(error):
     return jsonify({"status": "error", "message": "Not found"}), 404
 
 
+@app.errorhandler(413)
+def payload_too_large(error):
+    """Reject over-sized request bodies (see MAX_CONTENT_LENGTH) with clean JSON
+    instead of buffering the payload."""
+    return jsonify({"status": "error", "message": "Request body too large"}), 413
+
+
 @app.errorhandler(500)
 def server_error(error):
     """Handle 500 errors."""
@@ -1076,6 +1515,40 @@ def add_cors_headers(response):
         response.headers["Vary"] = "Origin"
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
         response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
+
+
+# CSP is intentionally conservative: the site serves all scripts/styles from its
+# own origin but uses a few inline <script>/<style> blocks (theme + reveal), so
+# script/style allow 'unsafe-inline'. Everything else is locked to 'self', no
+# framing, no plugins. Tightening to nonces is future work (see AUDIT_REPORT.md).
+_CSP = (
+    "default-src 'self'; "
+    "script-src 'self' 'unsafe-inline'; "
+    "style-src 'self' 'unsafe-inline'; "
+    "img-src 'self' data:; "
+    "font-src 'self'; "
+    "connect-src 'self'; "
+    "base-uri 'self'; "
+    "form-action 'self'; "
+    "frame-ancestors 'none'"
+)
+
+
+@app.after_request
+def add_security_headers(response):
+    """Baseline hardening headers on every response (see AUDIT_REPORT.md #4).
+
+    HSTS defends against SSL-strip downgrade; nosniff blocks MIME confusion;
+    frame-ancestors/X-Frame-Options stop clickjacking; Referrer-Policy limits
+    leakage. Safe to also set at the nginx edge — duplicates are harmless."""
+    response.headers.setdefault(
+        "Strict-Transport-Security", "max-age=63072000; includeSubDomains"
+    )
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Content-Security-Policy", _CSP)
     return response
 
 

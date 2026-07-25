@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}MoonBite for Businesses — accept, hold &amp; verify MBITE{% endblock %}
+{% block meta_description %}Get your business ready to accept MoonBite payments, hold treasury in self-custody, and run your own node for trustless verification — start integrating on testnet today.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> For Businesses</span>
+            <h1 class="mb-hero-title">Get ready <span class="mb-gradient-text">before the crowd.</span></h1>
+            <p class="mb-hero-sub">MoonBite is pre-mainnet — which means the window to integrate before launch is open right now. Testnet is live: set up your payment flow, test your node, and be ready from day one.</p>
+            <div class="mb-cta-row">
+                <a href="/merchants" class="btn btn-primary mb-btn-xl">Accept payments</a>
+                <a href="/developers" class="btn btn-secondary mb-btn-xl">Developer docs</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Why now</span>
+            <h2 class="mb-section-title">Benefits built into the protocol</h2>
+            <p class="mb-section-sub">MoonBite's design choices directly affect how a business can hold and move money.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">⚡</div>
+                <div class="mb-card-title">2.5-minute confirmations</div>
+                <div class="mb-card-text">MoonBite targets a new block every 150 seconds — roughly twice as fast as Bitcoin. Faster confirmation times mean less customer wait at the point of acceptance.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔐</div>
+                <div class="mb-card-title">Non-custodial treasury</div>
+                <div class="mb-card-text">Hold MBITE in a wallet you control. No exchange account needed, no counterparty risk from a third-party custodian. Your keys, your balance.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📋</div>
+                <div class="mb-card-title">Address-based invoicing</div>
+                <div class="mb-card-text">Generate a unique bech32 address per order and monitor it on-chain. No API key required to receive funds — just a wallet and a block explorer.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🖧</div>
+                <div class="mb-card-title">Run your own node</div>
+                <div class="mb-card-text">A local MoonBite node confirms transactions against the full chain history. You verify every payment yourself instead of trusting a third-party API.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📉</div>
+                <div class="mb-card-title">Predictable emission</div>
+                <div class="mb-card-text">The supply is capped, the halving schedule is public, and there was no premine. No sudden inflation from a hidden founder allocation.</div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🌐</div>
+                <div class="mb-card-title">Open-source infrastructure</div>
+                <div class="mb-card-text">Every piece of MoonBite's stack — node, wallet, miner, explorer — is open source. Audit the code, run it yourself, fork it if you need to.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Accept payments</span>
+            <h2 class="mb-section-title">Start accepting MBITE</h2>
+            <p class="mb-section-sub">The merchant integration is designed to be simple. Testnet is live — you can simulate the full payment flow before mainnet launches.</p>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">1</div>
+                <h3>List your business</h3>
+                <p>Add your business to the MoonBite merchant directory so customers know you accept MBITE. Takes a few minutes and costs nothing.</p>
+                <a href="/merchants" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Merchant directory →</a>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">2</div>
+                <h3>Generate a receive address</h3>
+                <p>Create a unique bech32 address for each customer order. When the customer pays, the blockchain confirms receipt directly — no intermediary.</p>
+                <a href="/wallet" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Open wallet →</a>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">3</div>
+                <h3>Verify on-chain</h3>
+                <p>Check the transaction status in the explorer or via your own node's RPC. Once confirmed in the chain, the payment is final and irreversible.</p>
+                <a href="/explorer" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Block explorer →</a>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">4</div>
+                <h3>Automate with the API</h3>
+                <p>For higher volumes, use the developer API to generate addresses, watch for payments, and query balances programmatically from your backend.</p>
+                <a href="/developers" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">API docs →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Infrastructure</span>
+            <h2 class="mb-section-title">Run your own MBITE infrastructure</h2>
+            <p class="mb-section-sub">Businesses that need reliable, private access to the chain should run their own node. It's the trustless option.</p>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🖧</div>
+                <h3>Full node</h3>
+                <p>A full MoonBite node downloads and validates the entire chain. You get an independent view of every confirmed transaction — no third-party API, no trust required. The setup guide walks you through it step by step.</p>
+                <a href="/full-node" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Full-node guide →</a>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🛠️</div>
+                <h3>Developer integration</h3>
+                <p>The MoonBite RPC interface is compatible with Bitcoin Core tooling. If your team already works with Bitcoin or Litecoin integrations, the migration is minimal. Start with the developer docs.</p>
+                <a href="/developers" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Developer docs →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-banner mb-reveal">
+            <span>MoonBite is pre-mainnet software. Integrating on testnet is risk-free, but mainnet is not yet live and MBITE carries <strong>no market value</strong> today. This is <strong>not an investment or a security</strong>. No exchange listing exists yet. Plan your integration timeline accordingly and consult your own legal and financial advisors before making business decisions around any cryptocurrency.</span>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        {% set notify_title = "Know before the launch" %}
+        {% set notify_text = "Get notified when MoonBite moves from testnet to mainnet and when the first exchange listing goes live. One email only." %}
+        {% set notify_source = "businesses" %}
+        {% include "partials/notify_form.html" %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}Vocabulary — MoonBite{% endblock %}
+{% block meta_description %}A plain-language glossary of cryptocurrency terms used in MoonBite: blocks, proof-of-work, scrypt, UTXOs, bech32, self-custody, halvings, and more.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> Vocabulary</span>
+            <h1 class="mb-hero-title">Words worth <span class="mb-gradient-text">knowing.</span></h1>
+            <p class="mb-hero-sub">Every technical term you'll encounter in MoonBite, defined plainly. If a word in the docs or UI confuses you, it belongs here.</p>
+            <div class="mb-cta-row">
+                <a href="/learn" class="btn btn-secondary mb-btn-xl">Back to basics</a>
+                <a href="/how-it-works" class="btn btn-secondary mb-btn-xl">How it works</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">A – C</span>
+            <h2 class="mb-section-title">Addresses, blocks &amp; consensus</h2>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📍</div>
+                <h3>Address</h3>
+                <p>A shareable identifier you give to receive payments. Derived from your public key — sharing it reveals nothing about your private key.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📐</div>
+                <h3>bech32</h3>
+                <p>The address format MoonBite uses. Starts with <code>moon1…</code> on mainnet, <code>tmoon1…</code> on testnet. Case-insensitive with built-in error detection.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">⛓️</div>
+                <h3>Block</h3>
+                <p>A batch of transactions bundled together and permanently added to the chain by a miner who found the valid proof-of-work. MoonBite produces one roughly every 2.5 minutes.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔗</div>
+                <h3>Blockchain</h3>
+                <p>The ordered, append-only ledger of every block ever mined. Each block includes the hash of the previous one, making the chain tamper-evident from the genesis block forward.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🏆</div>
+                <h3>Block reward</h3>
+                <p>The MBITE paid to the miner who successfully mines a block. MoonBite starts at 10 MBITE per block and halves every 1,000,000 blocks.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🤝</div>
+                <h3>Consensus</h3>
+                <p>The agreement among all nodes about which chain is valid. In MoonBite, the chain with the most accumulated proof-of-work is the consensus chain.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">✅</div>
+                <h3>Confirmation</h3>
+                <p>A block mined on top of the one containing your transaction. More confirmations means it's increasingly expensive for anyone to reverse the transaction.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">D – H</span>
+            <h2 class="mb-section-title">Difficulty, forks &amp; hashing</h2>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🎯</div>
+                <h3>Difficulty</h3>
+                <p>A number that controls how hard it is to find a valid block hash. The network adjusts it periodically to keep blocks arriving every ~2.5 minutes regardless of total hashrate.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🌿</div>
+                <h3>Fork</h3>
+                <p>A divergence in the chain. A soft fork tightens the rules (old nodes still accept new blocks). A hard fork changes rules in a way that requires all nodes to upgrade.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔢</div>
+                <h3>Full node</h3>
+                <p>A node that downloads every block since genesis and validates each one against the full ruleset. Full nodes are the enforcers of the protocol — they don't trust anyone else's word.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📉</div>
+                <h3>Halving</h3>
+                <p>A scheduled event where the block reward is cut in half. MoonBite halves every 1,000,000 blocks (~4.75 years). This limits the total supply to 19,999,999.87 MBITE.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">#️⃣</div>
+                <h3>Hash</h3>
+                <p>The fixed-length output of a one-way cryptographic function. Blocks are identified by their hash. Changing even one byte of a block produces a completely different hash.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📊</div>
+                <h3>Hashrate</h3>
+                <p>How many hash computations a miner (or the whole network) performs per second. Higher total hashrate means more security — attacking the chain costs more work.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">M – N</span>
+            <h2 class="mb-section-title">Mining, mempool &amp; nodes</h2>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🧾</div>
+                <h3>Mempool</h3>
+                <p>The waiting room where unconfirmed transactions sit before a miner picks them up and includes them in a block. A full mempool usually means higher fee competition.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">⛏️</div>
+                <h3>Mining</h3>
+                <p>The process of repeatedly hashing a block header (varying the nonce) until the hash meets the current difficulty target. The miner who succeeds adds the block and earns the reward.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🖧</div>
+                <h3>Node</h3>
+                <p>Any computer running MoonBite software and connected to the peer-to-peer network. Nodes share blocks and transactions, each independently validating what they receive.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔢</div>
+                <h3>Nonce</h3>
+                <p>"Number used once." A field in each block header that miners increment (or randomise) with every hash attempt, looking for a result that meets the difficulty target.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🚫</div>
+                <h3>No premine</h3>
+                <p>MoonBite has no premine — the developers did not create coins for themselves before the public could mine. Every MBITE is earned through the same open proof-of-work process.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">P – R</span>
+            <h2 class="mb-section-title">Proof-of-work, keys &amp; regtest</h2>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔑</div>
+                <h3>Private key</h3>
+                <p>A secret 256-bit number that authorises spending from your address. Anyone who has it can move your coins. Never share it — not even with this website.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">💪</div>
+                <h3>Proof-of-work</h3>
+                <p>The mechanism that secures MoonBite. To add a block, a miner must demonstrate they performed real computational work — making it expensive to rewrite history.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔐</div>
+                <h3>Public key</h3>
+                <p>Derived from the private key via an irreversible elliptic-curve operation. Your address is a hash of the public key. Sharing an address or public key is safe.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔬</div>
+                <h3>Regtest</h3>
+                <p>Regression-test mode. A private, local network where blocks can be mined instantly. Used for development and testing — coins have no value and are not on a shared network.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">S – W</span>
+            <h2 class="mb-section-title">Scrypt, self-custody &amp; wallets</h2>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🧠</div>
+                <h3>Scrypt</h3>
+                <p>The proof-of-work hashing algorithm used by MoonBite (and Litecoin). Memory-hard by design, which means ASICs and CPUs both participate — it's not easily monopolised.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🌱</div>
+                <h3>Seed phrase</h3>
+                <p>A list of 12 or 24 words that encodes your private key in a human-readable backup. Anyone who has your seed phrase controls your coins. Store it offline and never type it online.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🏠</div>
+                <h3>Self-custody</h3>
+                <p>Holding your own keys rather than leaving coins in an exchange or custodial service. The MoonBite wallet is non-custodial — your keys stay on your device.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🏝️</div>
+                <h3>Testnet</h3>
+                <p>A public test network that runs in parallel with mainnet. Coins have no market value. MoonBite is currently pre-mainnet — everything runs on testnet today.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📦</div>
+                <h3>UTXO</h3>
+                <p>Unspent Transaction Output. Your balance is not a single number — it's a collection of coin parcels (UTXOs) you have received and not yet spent, each with its own amount and locking script.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">👛</div>
+                <h3>Wallet</h3>
+                <p>Software that manages your keys, tracks your UTXOs, and constructs transactions. The MoonBite web wallet is non-custodial — keys are generated and held locally by you.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Keep learning</span>
+            <h2 class="mb-section-title">Dig deeper</h2>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📖</div>
+                <h3 class="mb-card-title">Learn MoonBite</h3>
+                <p class="mb-card-text">FAQ-style answers to the most common questions about MoonBite — a gentler starting point than the full vocabulary.</p>
+                <a href="/learn" class="mb-card-link">Read the guide →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">⚙️</div>
+                <h3 class="mb-card-title">How it works</h3>
+                <p class="mb-card-text">A deeper technical walkthrough of proof-of-work, block production, and how the MoonBite network reaches agreement.</p>
+                <a href="/how-it-works" class="mb-card-link">Technical overview →</a>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📄</div>
+                <h3 class="mb-card-title">White paper</h3>
+                <p class="mb-card-text">The foundational design document describing MoonBite's goals, parameters, and architecture.</p>
+                <a href="/whitepaper" class="mb-card-link">Read the white paper →</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

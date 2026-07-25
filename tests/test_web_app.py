@@ -435,6 +435,30 @@ class TestErrorHandling:
         response = client.get("/api/blockchain/info")
         assert "application/json" in response.content_type
 
+    def test_oversized_body_rejected_413(self, client):
+        """A hostile over-sized POST body is refused with 413 rather than being
+        buffered + parsed. Guards against the memory-exhaustion DoS where one
+        multi-hundred-MB request spikes the worker past 1 GB RAM."""
+        cap = app.config["MAX_CONTENT_LENGTH"]
+        assert cap is not None and cap <= 1024 * 1024  # sane cap is configured
+        oversized = b'{"email":"a@b.co","source":"' + b"X" * (cap + 1) + b'"}'
+        response = client.post(
+            "/api/notify",
+            data=oversized,
+            content_type="application/json",
+        )
+        assert response.status_code == 413
+        assert response.get_json()["status"] == "error"
+
+    def test_normal_body_still_accepted(self, client):
+        """A legitimately small body is unaffected by the cap."""
+        response = client.post(
+            "/api/notify",
+            json={"email": "real.user@example.com", "source": "test"},
+        )
+        # Not a 413 — the cap only rejects over-sized payloads.
+        assert response.status_code != 413
+
 
 # ============================================================================= #
 # Integration Tests
@@ -524,3 +548,104 @@ class TestRateLimiting:
         # A valid key bypasses the cap entirely — no 429s.
         assert codes.count(200) == 35
         assert 429 not in codes
+
+
+# ============================================================================= #
+# Phase 2b — verifier trigger endpoint
+# ============================================================================= #
+
+
+class TestVerifierTrigger:
+    """POST /api/exchange/verify: operator-only, flag-gated, token-protected."""
+
+    def test_disabled_by_default_returns_403(self, client):
+        r = client.post("/api/exchange/verify")
+        assert r.status_code == 403
+        assert json.loads(r.data)["message"] == "verifier disabled"
+
+    def test_enabled_but_no_token_is_unauthorized(self, client, monkeypatch):
+        from explorer import config as ex_config
+        monkeypatch.setattr(ex_config, "VERIFIER_ENABLED", True)
+        monkeypatch.setenv("VERIFIER_TRIGGER_TOKEN", "s3cret")
+        r = client.post("/api/exchange/verify")  # no X-Verifier-Token header
+        assert r.status_code == 403
+        assert json.loads(r.data)["message"] == "unauthorized"
+
+    def test_enabled_with_bad_token_is_unauthorized(self, client, monkeypatch):
+        from explorer import config as ex_config
+        monkeypatch.setattr(ex_config, "VERIFIER_ENABLED", True)
+        monkeypatch.setenv("VERIFIER_TRIGGER_TOKEN", "s3cret")
+        r = client.post("/api/exchange/verify", headers={"X-Verifier-Token": "wrong"})
+        assert r.status_code == 403
+
+    def test_authorized_empty_pass_returns_zero_verified(self, client, monkeypatch):
+        import exchange
+        from explorer import config as ex_config
+        monkeypatch.setattr(ex_config, "VERIFIER_ENABLED", True)
+        monkeypatch.setenv("VERIFIER_TRIGGER_TOKEN", "s3cret")
+        # No swaps to verify => the node is never touched; a clean 200.
+        monkeypatch.setattr(exchange, "list_swaps_for_verification", lambda: [])
+        r = client.post("/api/exchange/verify", headers={"X-Verifier-Token": "s3cret"})
+        assert r.status_code == 200
+        body = json.loads(r.data)
+        assert body["verified"] == 0 and body["results"] == []
+
+
+class TestMerchantReceivedLookup:
+    """The merchant payment observer, wired to the production node via scantxoutset."""
+
+    class _FakeRpc:
+        def __init__(self, total_amount, *, fail=False):
+            self.total_amount = total_amount
+            self.fail = fail
+            self.calls = 0
+
+        def scantxoutset(self, action, scanobjects):
+            self.calls += 1
+            if self.fail:
+                raise RuntimeError("node unreachable")
+            return {"success": True, "total_amount": self.total_amount}
+
+    def _reset(self, monkeypatch, fake, *, units_per_coin=100000000):
+        import web_app
+        import merchants
+        monkeypatch.setattr(merchants, "UNITS_PER_COIN", units_per_coin)
+        monkeypatch.setattr(web_app, "_get_merchant_rpc", lambda: fake)
+        monkeypatch.setattr(web_app, "_MERCHANT_RECV_TTL", 0)  # disable cache
+        web_app._merchant_recv_cache.clear()
+
+    def test_selects_rpc_when_node_configured(self, monkeypatch):
+        import web_app
+        monkeypatch.delenv("DEMO_MODE", raising=False)
+        monkeypatch.setenv("BIGCOIN_RPC_USER", "u")
+        assert web_app._merchant_use_rpc() is True
+
+    def test_forced_demo_mode_uses_local_chain(self, monkeypatch):
+        import web_app
+        monkeypatch.setenv("DEMO_MODE", "1")
+        monkeypatch.setenv("BIGCOIN_RPC_USER", "u")
+        assert web_app._merchant_use_rpc() is False
+
+    def test_scantxoutset_amount_converts_to_base_units(self, monkeypatch):
+        import web_app
+        fake = self._FakeRpc("2.50000000")
+        self._reset(monkeypatch, fake, units_per_coin=100000000)
+        # 2.5 coins * 1e8 sats/coin == 250_000_000 base units.
+        assert web_app.received_at_address_rpc("moon1abc") == 250000000
+
+    def test_node_error_is_fail_safe_zero(self, monkeypatch):
+        import web_app
+        fake = self._FakeRpc("9.9", fail=True)
+        self._reset(monkeypatch, fake)
+        # A node outage must never fabricate a balance -> invoice stays pending.
+        assert web_app.received_at_address_rpc("moon1abc") == 0
+
+    def test_result_is_cached_within_ttl(self, monkeypatch):
+        import web_app
+        fake = self._FakeRpc("1.0")
+        self._reset(monkeypatch, fake)
+        monkeypatch.setattr(web_app, "_MERCHANT_RECV_TTL", 60)  # long TTL
+        web_app._merchant_recv_cache.clear()
+        web_app.received_at_address_rpc("moon1abc")
+        web_app.received_at_address_rpc("moon1abc")
+        assert fake.calls == 1  # second read served from cache

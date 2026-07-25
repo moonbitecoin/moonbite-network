@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:bigcoin_mobile/models/chain_models.dart';
+import 'package:moonbite_mobile/models/chain_models.dart';
 
 void main() {
   group('ChainStatus', () {
@@ -14,7 +14,7 @@ void main() {
         'verificationprogress': 1.0,
         'mempool_txs': 2,
         'connections': 8,
-        'subversion': '/BigCoin:2.5.0/',
+        'subversion': '/MoonBite:2.5.0/',
         'demo': true,
       });
       expect(s.chain, 'main');

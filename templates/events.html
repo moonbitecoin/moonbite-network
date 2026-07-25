@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}Events — MoonBite{% endblock %}
+{% block meta_description %}There are no scheduled MoonBite events yet — the project is pre-mainnet and built in the open. Sign up to be notified about mainnet launch and the first exchange listing.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> Events</span>
+            <h1 class="mb-hero-title">Nothing <span class="mb-gradient-text">scheduled yet.</span></h1>
+            <p class="mb-hero-sub">MoonBite is pre-mainnet and built in the open. There are no conferences, meetups, or press events on the calendar. When milestones arrive, you'll know — sign up below.</p>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-banner mb-reveal">
+            <span>MoonBite does not organise paid conferences, token sale events, or promotional launches. It is an open-source project — <strong>not an investment or a security</strong>. Any event claiming to sell MBITE or offer early access is a scam.</span>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">What to watch for</span>
+            <h2 class="mb-section-title">The milestones ahead</h2>
+            <p class="mb-section-sub">These are the real things to track. No dates are set — we'll publish them publicly on GitHub and here when they are.</p>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🚀</div>
+                <h3 class="mb-card-title">Mainnet launch</h3>
+                <p class="mb-card-text">The switch from testnet to a permanent, public main chain. The genesis block will be broadcast publicly. Every coin will be mined from that block forward — no presale, no allocation.</p>
+                <span style="display: inline-block; margin-top: var(--spacing-sm); font-size: 0.85rem; color: var(--text-muted);">Status: not yet scheduled</span>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📋</div>
+                <h3 class="mb-card-title">First exchange listing</h3>
+                <p class="mb-card-text">When MBITE appears on a public exchange for the first time. This creates the first real market price — set entirely by buyers and sellers, not by us. Signed-up users will be notified first.</p>
+                <span style="display: inline-block; margin-top: var(--spacing-sm); font-size: 0.85rem; color: var(--text-muted);">Status: post-mainnet</span>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔄</div>
+                <h3 class="mb-card-title">Atomic swap coordinator</h3>
+                <p class="mb-card-text">The Phase 2 upgrade that automates wallet-to-wallet settlement on the internal markets page. Currently in design — the order book already works, but settlement is still manual.</p>
+                <span style="display: inline-block; margin-top: var(--spacing-sm); font-size: 0.85rem; color: var(--text-muted);">Status: in development</span>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">📦</div>
+                <h3 class="mb-card-title">Stable binary releases</h3>
+                <p class="mb-card-text">Versioned, signed node and wallet binaries with checksums, published as GitHub releases. Makes running a full node or building on top of MoonBite significantly easier.</p>
+                <span style="display: inline-block; margin-top: var(--spacing-sm); font-size: 0.85rem; color: var(--text-muted);">Status: pre-mainnet priority</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Participate now</span>
+            <h2 class="mb-section-title">You don't have to wait</h2>
+            <p class="mb-section-sub">The testnet is live. You can mine blocks, explore the chain, and run a node today. The community is small — your participation matters now, not just after mainnet.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">⛏️</div>
+                <h3>Mine on testnet</h3>
+                <p>Run the miner, find blocks, and get a feel for the protocol before mainnet. Testnet rewards have no value — that's fine, mining is how you learn the system.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🖥️</div>
+                <h3>Run a node</h3>
+                <p>Download MoonBite Core, sync the testnet chain, and validate blocks independently. The more nodes that exist before mainnet, the stronger the launch.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">💻</div>
+                <h3>Follow on GitHub</h3>
+                <p>Watch the repository to get notified of commits, releases, and discussion. Everything happens in the open — there's no private roadmap.</p>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: var(--spacing-2xl);">
+            <a href="/community" class="btn btn-primary btn-large mb-reveal">Join the community</a>
+        </div>
+    </div>
+</section>
+
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        {% set notify_title = "Tell me when something happens." %}
+        {% set notify_text = "One email when mainnet launches. One email when the first exchange listing goes live. Nothing in between." %}
+        {% set notify_source = "events" %}
+        {% include "partials/notify_form.html" %}
+    </div>
+</section>
+
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Scam warning</span>
+            <h2 class="mb-section-title">Watch out for impersonators</h2>
+            <p class="mb-section-sub">As MoonBite grows, fake accounts and scam events will appear. Here's how to tell them apart from the real project.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🚫</div>
+                <h3>We never sell early access</h3>
+                <p>There are no presale events, no VIP tiers, and no early investor rounds. Anyone claiming to sell MBITE before mainnet is running a scam.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">🔑</div>
+                <h3>We never ask for your seed</h3>
+                <p>No MoonBite event, website, or representative will ever ask for your seed phrase or private key. If they do, stop and leave immediately.</p>
+            </div>
+            <div class="mb-feature mb-reveal">
+                <div class="mb-feature-icon">📌</div>
+                <h3>Official sources only</h3>
+                <p>The canonical sources are this site and the GitHub repository. Treat anything else with scepticism until you can verify it traces back to one of those two.</p>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: var(--spacing-2xl);">
+            <a href="/scams" class="btn btn-secondary btn-large mb-reveal">Scam awareness guide →</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

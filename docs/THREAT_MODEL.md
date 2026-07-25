@@ -36,10 +36,11 @@ concrete kill-chains.
   (random `k`), not RFC 6979. Nonce reuse (low entropy, VM fork/snapshot, RNG
   bug) → private-key recovery from two signatures. **FIXED 2026-07-24**: now uses
   `sign_deterministic(..., hashfunc=sha256)` with matching verify; 152 tests pass.
-- **[ ] Founder identity in git metadata** — commit `6f7bc27` carries author
-  `usafdar@aqtardev.com`; `000b690` leaks the `usmanskills` username. Both are
-  reachable from HEAD and pushed to GitHub, so `git log --format='%ae'` on the
+- **[ ] Founder identity in git metadata** — commit `6f7bc27` carries the
+  founder's real author email; `000b690` leaks the founder's old username. Both
+  are reachable from HEAD and pushed to GitHub, so `git log --format='%ae'` on the
   public repo deanonymizes the founder. The content scrub missed commit metadata.
+  (Identifiers intentionally not repeated here — see private opsec notes.)
   *Fix needs a history rewrite + force-push (sanctioned exception) + account
   rotation — owner action.*
 - **[ ] Railway node RPC world-bindable with a live wallet** —
@@ -199,8 +200,8 @@ projects lose everyone's funds at once.
 - [ ] **Force `FLASK_DEBUG=0`** by default; never expose the dev server — 1.5.
 
 ### Tier 4 — Infrastructure & operations
-- [ ] **Rewrite git history** to purge `usafdar@aqtardev.com` / `usmanskills`
-      from commit metadata; rotate linked accounts — new Critical (5.2).
+- [ ] **Rewrite git history** to purge the founder's real author email / old
+      username from commit metadata (see 5.2); rotate linked accounts — new Critical.
 - [ ] **Un-track leaked operational state**: `git rm --cached`
       `CURRENT_TUNNEL_URL.txt` + `notify_signups.jsonl`, then `.gitignore` them.
 - [ ] **Stop binding Railway RPC to `0.0.0.0`**; scope `rpcallowip`, move the

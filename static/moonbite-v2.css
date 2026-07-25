@@ -1,0 +1,262 @@
+/* ==========================================================================
+   MoonBite — "home-v2" skin (moonbite-v2.css)
+   Loaded AFTER style.css + site.css. Everything is scoped under `body.mb-v2`
+   so the tool pages (dashboard, wallet, mining reactor, explorer) — which do
+   NOT carry that class — are never touched.
+
+   Strategy: the whole `.mb-*` marketing system is token-driven, so redefining
+   style.css's custom properties to the home-v2 palette re-skins every page at
+   once. A thin component layer then sharpens the signature home-v2 details
+   (terminal mono labels, editorial headlines, mint/void glass, static top nav).
+   ========================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap");
+
+/* ---------------------------------------------------------------- palette */
+/* Force the always-dark home-v2 palette regardless of the theme toggle.     */
+body.mb-v2,
+html[data-theme="light"] body.mb-v2,
+html[data-theme="dark"] body.mb-v2 {
+    --void: #04050a;
+    --ice: #F2F6FF;
+    --accent: #5FE9D0;
+    --cool: #5B7BFF;
+
+    --bg-primary: #04050a;
+    --bg-secondary: #070912;
+    --bg-tertiary: #0b0e1a;
+    --card-bg: rgba(242, 246, 255, 0.02);
+    --card-bg-solid: #06070f;
+    --border-color: rgba(242, 246, 255, 0.12);
+
+    --text-primary: #F2F6FF;
+    --text-secondary: rgba(242, 246, 255, 0.62);
+
+    --primary-color: #5FE9D0;
+    --primary-color-2: #5FE9D0;
+    --success-color: #5FE9D0;
+    --warning-color: #F2C879;
+    --danger-color: #ff6b81;
+
+    --gradient-primary: linear-gradient(90deg, #5FE9D0, #5B7BFF);
+    --glow-primary: 0 0 0 1px rgba(95, 233, 208, 0.35), 0 0 26px rgba(95, 233, 208, 0.16);
+    --glass-blur: blur(10px);
+
+    --font-sans: "Space Grotesk", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+    --border-radius-sm: 2px;
+    --border-radius: 3px;
+    --border-radius-lg: 4px;
+}
+
+body.mb-v2 {
+    background: var(--void);
+    color: var(--ice);
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    overflow-x: hidden;
+}
+
+/* ---------------------------------------------------------- ambient floor */
+body.mb-v2::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(58% 52% at 50% 30%, #101a3a 0%, rgba(4, 5, 10, 0) 72%);
+}
+body.mb-v2::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    background: repeating-linear-gradient(to bottom, rgba(242, 246, 255, 0.05) 0 1px, transparent 1px 6px);
+}
+body.mb-v2 main,
+body.mb-v2 .mb-meganav,
+body.mb-v2 .mb-footer,
+body.mb-v2 .page-loader { position: relative; z-index: 1; }
+
+/* --------------------------------------------------------------- headings */
+body.mb-v2 h1, body.mb-v2 h2, body.mb-v2 h3 { font-family: "Space Grotesk", sans-serif; }
+body.mb-v2 code, body.mb-v2 .mono { font-family: "JetBrains Mono", monospace; color: var(--accent); }
+
+/* --------------------------------------------------------------- mega nav */
+body.mb-v2 .mb-meganav {
+    background: linear-gradient(#04050a 55%, rgba(4, 5, 10, 0.55));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(242, 246, 255, 0.08);
+}
+body.mb-v2 .mb-brand { color: var(--ice); letter-spacing: 0.4px; }
+body.mb-v2 .mb-brand .mb-brand-name {
+    -webkit-text-fill-color: var(--accent);
+    background: none;
+    color: var(--accent);
+}
+body.mb-v2 .mb-nav-trigger {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(242, 246, 255, 0.6);
+}
+body.mb-v2 .mb-nav-trigger:hover,
+body.mb-v2 .mb-nav-item.is-open .mb-nav-trigger { color: var(--ice); background: rgba(242, 246, 255, 0.05); }
+body.mb-v2 .mb-dropdown { background: #06070f; border: 1px solid rgba(242, 246, 255, 0.12); border-radius: 3px; }
+body.mb-v2 .mb-theme-btn { display: none; }
+
+/* --------------------------------------------------------------- buttons */
+body.mb-v2 .btn {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-radius: 2px;
+    font-weight: 500;
+}
+body.mb-v2 .btn-primary,
+body.mb-v2 .mb-notify-form .btn-primary {
+    background: var(--accent);
+    color: var(--void);
+    border: 1px solid var(--accent);
+    box-shadow: none;
+}
+body.mb-v2 .btn-primary:hover { filter: brightness(1.12); box-shadow: 0 0 24px rgba(95, 233, 208, 0.28); }
+body.mb-v2 .btn-secondary {
+    background: none;
+    border: 1px solid rgba(242, 246, 255, 0.24);
+    color: rgba(242, 246, 255, 0.82);
+}
+body.mb-v2 .btn-secondary:hover { border-color: var(--ice); color: var(--ice); background: none; }
+body.mb-v2 .mb-btn-xl { padding: 17px 32px; font-size: 0.86rem; }
+body.mb-v2 .btn-large { padding: 16px 30px; }
+
+/* ------------------------------------------------------------- hero band */
+body.mb-v2 .mb-hero { padding: clamp(6rem, 12vw, 9rem) 0 clamp(3rem, 6vw, 4.5rem); }
+body.mb-v2 .mb-hero-glow {
+    background: radial-gradient(circle at center, rgba(95, 233, 208, 0.16), rgba(91, 123, 255, 0.08) 45%, transparent 70%);
+}
+body.mb-v2 .mb-badge {
+    border-radius: 2px;
+    background: rgba(95, 233, 208, 0.06);
+    border: 1px solid rgba(95, 233, 208, 0.3);
+    color: var(--accent);
+    font-size: 0.68rem;
+    letter-spacing: 2.4px;
+}
+body.mb-v2 .mb-badge .mb-dot { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+body.mb-v2 .mb-hero-title {
+    font-size: clamp(2.8rem, 8vw, 6.2rem);
+    line-height: 0.94;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+}
+body.mb-v2 .mb-gradient-text {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+            background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+body.mb-v2 .mb-hero-sub { color: rgba(242, 246, 255, 0.66); font-size: clamp(1.05rem, 2vw, 1.3rem); }
+
+/* --------------------------------------------------------- section heads */
+body.mb-v2 .mb-eyebrow {
+    font-family: "JetBrains Mono", monospace;
+    letter-spacing: 3px;
+    color: var(--accent);
+}
+body.mb-v2 .mb-section-title {
+    font-size: clamp(1.9rem, 4vw, 3.2rem);
+    letter-spacing: -0.03em;
+    font-weight: 700;
+}
+body.mb-v2 .mb-section-sub { color: rgba(242, 246, 255, 0.6); }
+
+/* --------------------------------------------------------- glass cards */
+body.mb-v2 .mb-card,
+body.mb-v2 .mb-download-card,
+body.mb-v2 .mb-notify,
+body.mb-v2 .mb-faq-item,
+body.mb-v2 .mb-exchange-card {
+    background: rgba(242, 246, 255, 0.02);
+    border: 1px solid rgba(242, 246, 255, 0.12);
+    border-radius: 3px;
+}
+body.mb-v2 a.mb-card:hover,
+body.mb-v2 .mb-card.mb-hoverable:hover {
+    transform: translateY(-4px);
+    border-color: rgba(95, 233, 208, 0.55);
+    box-shadow: 0 0 0 1px rgba(95, 233, 208, 0.25), 0 18px 50px rgba(4, 5, 12, 0.6);
+}
+body.mb-v2 .mb-card-icon {
+    border-radius: 2px;
+    background: rgba(95, 233, 208, 0.08);
+    border: 1px solid rgba(95, 233, 208, 0.22);
+}
+body.mb-v2 .mb-card-title { letter-spacing: -0.02em; }
+body.mb-v2 .mb-card-link { color: var(--accent); font-family: "JetBrains Mono", monospace; font-size: 0.76rem; letter-spacing: 1.6px; text-transform: uppercase; }
+body.mb-v2 .mb-feature-icon { filter: none; }
+body.mb-v2 .mb-feature h3 { letter-spacing: -0.01em; }
+
+/* --------------------------------------------------------- stat band */
+body.mb-v2 .mb-statband {
+    border-radius: 3px;
+    background: rgba(242, 246, 255, 0.1);
+    border: 1px solid rgba(242, 246, 255, 0.1);
+}
+body.mb-v2 .mb-stat { background: var(--void); }
+body.mb-v2 .mb-stat-value { color: var(--ice); font-family: "JetBrains Mono", monospace; }
+body.mb-v2 .mb-stat-label { color: rgba(242, 246, 255, 0.42); }
+
+/* --------------------------------------------------------- roadmap dots */
+body.mb-v2 .mb-milestone.is-done::before { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px var(--accent); }
+body.mb-v2 .mb-milestone.is-active::before { background: var(--accent); box-shadow: 0 0 12px rgba(95, 233, 208, 0.5); }
+body.mb-v2 .mb-milestone-phase { color: var(--accent); }
+
+/* --------------------------------------------------------- honesty strip */
+body.mb-v2 .mb-banner {
+    border-radius: 3px;
+    background: rgba(242, 200, 121, 0.06);
+    border: 1px solid rgba(242, 200, 121, 0.28);
+}
+body.mb-v2 .mb-banner strong { color: var(--warning-color); }
+body.mb-v2 .mb-soon-chip { color: var(--warning-color); border-radius: 2px; }
+
+/* --------------------------------------------------------- exchange soon */
+body.mb-v2 .mb-exchange-card { border-style: dashed; }
+body.mb-v2 .mb-exchange-logo { background: rgba(95, 233, 208, 0.06); border: 1px solid rgba(242, 246, 255, 0.12); }
+
+/* --------------------------------------------------------- code / dev */
+body.mb-v2 .mb-code { background: #06070f; border: 1px solid rgba(242, 246, 255, 0.12); border-radius: 3px; color: #cdd6ff; }
+body.mb-v2 .mb-code .mb-c-key { color: var(--accent); }
+
+/* --------------------------------------------------------- notify form */
+body.mb-v2 .mb-notify-form input,
+body.mb-v2 .mb-ex-field input,
+body.mb-v2 .mb-ex-field select,
+body.mb-v2 .mb-mrc-field input,
+body.mb-v2 .mb-mrc-field select {
+    background: #0b0e1a;
+    border: 1px solid rgba(242, 246, 255, 0.14);
+    border-radius: 2px;
+    color: var(--ice);
+}
+body.mb-v2 .mb-notify-form input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+body.mb-v2 .mb-notify-ok { color: var(--accent); }
+
+/* --------------------------------------------------------- footer */
+body.mb-v2 .mb-footer {
+    background: transparent;
+    border-top: 1px solid rgba(242, 246, 255, 0.1);
+}
+body.mb-v2 .mb-footer-col h4 { color: rgba(242, 246, 255, 0.5); font-family: "JetBrains Mono", monospace; letter-spacing: 2px; }
+body.mb-v2 .mb-footer-col a { color: rgba(242, 246, 255, 0.6); }
+body.mb-v2 .mb-footer-col a:hover { color: var(--ice); }
+body.mb-v2 .mb-footer-brand .mb-brand-name { -webkit-text-fill-color: var(--accent); color: var(--accent); background: none; }
+
+/* --------------------------------------------------------- page loader */
+body.mb-v2 .page-loader { background: var(--void); }

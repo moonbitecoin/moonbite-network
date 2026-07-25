@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A wallet must never send RPC or seed-derived traffic in the clear. This
+     forbids cleartext (plain HTTP) for every domain, so a misconfigured node
+     URL fails loudly instead of leaking over an unencrypted socket. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+</network-security-config>

@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../models/chain_models.dart';
+import 'cert_pinning.dart';
 
-/// Read/relay client for the Big Coin explorer JSON API.
+/// Read/relay client for the MoonBite explorer JSON API.
 ///
 /// This service NEVER sees private keys. The wallet derives keys and signs
 /// transactions on-device (see `wallet/`); this class only fetches chain state
@@ -23,10 +24,26 @@ class ChainService {
     http.Client? httpClient,
     this.timeout = const Duration(seconds: 15),
   })  : baseUrl = (baseUrl ?? defaultBaseUrl).replaceAll(RegExp(r'/+$'), ''),
-        _http = httpClient ?? http.Client();
+        // Default to the certificate-pinned client so production traffic can't
+        // be MITM'd via a rogue CA. Tests inject their own mock client.
+        _http = httpClient ?? createPinnedHttpClient() {
+    _requireHttps(this.baseUrl);
+  }
 
-  void setBaseUrl(String url) =>
-      baseUrl = url.replaceAll(RegExp(r'/+$'), '');
+  static void _requireHttps(String url) {
+    if (Uri.parse(url).scheme != 'https') {
+      throw ArgumentError(
+        'ChainService requires an https base URL (no cleartext / downgrade); '
+        'refusing "$url".',
+      );
+    }
+  }
+
+  void setBaseUrl(String url) {
+    final cleaned = url.replaceAll(RegExp(r'/+$'), '');
+    _requireHttps(cleaned);
+    baseUrl = cleaned;
+  }
 
   Uri _u(String path) => Uri.parse('$baseUrl$path');
 

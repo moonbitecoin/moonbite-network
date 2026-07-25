@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Belt-and-braces with android:allowBackup="false": on Android 12+ these
+     rules govern cloud backup and device-to-device transfer. We exclude the
+     entire app sandbox so a wallet's secure-storage (seed/keys) is never
+     copied off-device by the OS backup system. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" path="."/>
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" path="."/>
+    </device-transfer>
+</data-extraction-rules>

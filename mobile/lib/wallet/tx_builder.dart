@@ -5,7 +5,7 @@ import 'package:hex/hex.dart';
 
 import '../models/chain_models.dart';
 import 'address_script.dart';
-import 'bigcoin_network.dart';
+import 'moonbite_network.dart';
 
 /// A signed, ready-to-broadcast transaction.
 class SignedTx {
@@ -35,14 +35,28 @@ class InsufficientFundsException implements Exception {
       'InsufficientFundsException: need $neededSats sats, have $availableSats';
 }
 
-/// Builds and signs Big Coin P2WPKH (native SegWit) spends entirely on-device.
+/// Thrown when the requested fee rate is implausibly high. The wallet fetches
+/// the fee rate from a remote node; a compromised node could return an absurd
+/// value that, combined with the dust-fold, would burn most of a UTXO as fee.
+/// Refuse rather than silently overpay.
+class ExcessiveFeeRateException implements Exception {
+  final double feeRateSatPerVByte;
+  final double maxSatPerVByte;
+  ExcessiveFeeRateException(this.feeRateSatPerVByte, this.maxSatPerVByte);
+  @override
+  String toString() =>
+      'ExcessiveFeeRateException: fee rate $feeRateSatPerVByte sat/vB exceeds '
+      'the safety cap of $maxSatPerVByte sat/vB';
+}
+
+/// Builds and signs MoonBite P2WPKH (native SegWit) spends entirely on-device.
 ///
 /// Coin selection is a simple largest-first accumulation with iterative fee
 /// estimation. All UTXOs are assumed to belong to a single key ([wif]) — the
 /// wallet currently derives one receive address, so that holds. Nothing here
 /// touches the network; the caller broadcasts the resulting [SignedTx.rawHex].
 class TxBuilder {
-  final BigCoinNetwork network;
+  final MoonBiteNetwork network;
 
   TxBuilder(this.network);
 
@@ -55,6 +69,11 @@ class TxBuilder {
   /// Dust threshold for a P2WPKH output (sats). Change below this is dropped
   /// into the fee instead of creating an unspendable output.
   static const int dustSats = 294;
+
+  /// Hard ceiling on the accepted fee rate (sats/vByte). MoonBite has no fee
+  /// market pressure, so anything above this is a bug or a hostile node trying
+  /// to make the wallet overpay; [buildSpend] refuses it outright.
+  static const double maxFeeRateSatPerVByte = 1000.0;
 
   int _estimateVsize(int nIn, int nOut) =>
       _vbOverhead + _vbPerInput * nIn + _vbPerOutput * nOut;
@@ -74,6 +93,10 @@ class TxBuilder {
   }) {
     if (amountSats <= 0) {
       throw ArgumentError('amount must be positive');
+    }
+    if (feeRateSatPerVByte > maxFeeRateSatPerVByte) {
+      throw ExcessiveFeeRateException(
+          feeRateSatPerVByte, maxFeeRateSatPerVByte);
     }
     final feeRate = feeRateSatPerVByte <= 0 ? 1.0 : feeRateSatPerVByte;
 

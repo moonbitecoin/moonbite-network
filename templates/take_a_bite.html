@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>You can't buy MoonBite (MBITE) — mine it in this tab</title>
+<meta name="description" content="No listing, no presale, no allocation. Every MBITE in existence was mined — so we made it minable right here, in this tab. Pre-mainnet, open source, not an investment or a security.">
+<link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --accent: #5FE9D0; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: #04050a; color: #F2F6FF; font-family: 'Space Grotesk', sans-serif; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: #F2F6FF; }
+  input::placeholder { color: rgba(242,246,255,0.3); }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  @keyframes mbSpin { to { transform: rotate(360deg); } }
+  @keyframes mbBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+  @keyframes mbRise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes mbFade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes mbSweep { 0% { transform: translateY(-100px); opacity: 0; } 14% { opacity: 1; } 86% { opacity: 1; } 100% { transform: translateY(100px); opacity: 0; } }
+  @keyframes mbInvertA { 0% { opacity: 0; } 7% { opacity: 1; } 46% { opacity: 1; } 100% { opacity: 0; } }
+  @keyframes mbInvertB { 0% { opacity: 0; } 7% { opacity: 1; } 46% { opacity: 1; } 100% { opacity: 0; } }
+  @keyframes mbChompA { 0% { transform: translateX(300px); } 100% { transform: translateX(0); } }
+  @keyframes mbChompB { 0% { transform: translateX(300px); } 100% { transform: translateX(0); } }
+  @keyframes mbPop { 0% { opacity: 0; transform: translateY(26px) scale(0.97); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+
+  .bg-glow { position: fixed; inset: 0; pointer-events: none; z-index: 0; background: radial-gradient(48% 46% at 72% 26%, #121c40 0%, rgba(4,5,10,0) 72%); }
+  .bg-scan { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.4; background: repeating-linear-gradient(to bottom, rgba(242,246,255,0.05) 0 1px, transparent 1px 6px); }
+  .wrap { position: relative; min-height: 100vh; overflow-x: hidden; }
+
+  nav.site { position: relative; z-index: 30; display: flex; align-items: center; justify-content: space-between; gap: 26px; padding: 24px 44px; animation: mbFade 0.7s ease-out both; }
+  nav.site .brand { display: flex; align-items: center; gap: 11px; }
+  nav.site .brand span { font-size: 17px; font-weight: 700; }
+  nav.site .links { display: flex; align-items: center; gap: 26px; font-size: 11px; letter-spacing: 2.2px; }
+  nav.site .links a { color: rgba(242,246,255,0.55); }
+  nav.site .links a:hover { color: #F2F6FF; }
+
+  .hero { position: relative; z-index: 10; display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 64px; align-items: center; padding: 56px 44px 84px; max-width: 1320px; margin: 0 auto; }
+  .hero-copy { display: flex; flex-direction: column; gap: 28px; animation: mbRise 0.9s cubic-bezier(0.2,0,0.1,1) both; }
+  .hero-side { display: flex; flex-direction: column; gap: 22px; animation: mbRise 1s cubic-bezier(0.2,0,0.1,1) 0.1s both; }
+
+  .warm-banner { display: flex; flex-direction: column; gap: 18px; border-left: 2px solid var(--accent); padding: 4px 0 4px 20px; }
+  .warm-banner .lbl { font-size: 11px; letter-spacing: 2.6px; color: var(--accent); }
+  .warm-banner .row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; font-size: 13px; color: rgba(242,246,255,0.62); }
+  .warm-banner .row .blk { color: #F2F6FF; font-size: 15px; }
+  .warm-banner .row a { font-size: 11px; letter-spacing: 2px; }
+
+  h1.headline { margin: 0; font-size: clamp(46px, 6.4vw, 92px); font-weight: 700; line-height: 0.92; letter-spacing: -2.8px; text-wrap: balance; }
+  p.subhead { margin: 0; max-width: 27em; font-size: 19px; line-height: 1.55; color: rgba(242,246,255,0.66); text-wrap: pretty; }
+  p.subhead:empty { display: none; }
+
+  .idle-block { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+  .bite-btn { display: inline-flex; align-items: center; gap: 14px; padding: 22px 42px; background: var(--accent); color: #04050a; border: none; border-radius: 3px; font-family: 'Space Grotesk', sans-serif; font-size: 21px; font-weight: 700; letter-spacing: -0.3px; cursor: pointer; }
+  .bite-btn:hover { filter: brightness(1.12); }
+  .bite-btn .arrow { font-family: 'JetBrains Mono', monospace; font-size: 15px; opacity: 0.6; }
+  .idle-note { font-size: 10.5px; letter-spacing: 2.2px; color: rgba(242,246,255,0.42); }
+  .idle-lineage { font-size: 10.5px; letter-spacing: 2px; color: rgba(242,246,255,0.34); }
+
+  .mining-block { display: flex; flex-direction: column; gap: 20px; max-width: 520px; animation: mbFade 0.4s ease-out both; }
+  .mining-head { display: flex; align-items: center; gap: 12px; font-size: 11px; letter-spacing: 3px; color: var(--accent); }
+  .dot-pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: mbBlink 1.1s ease-in-out infinite; }
+  .rate-row { display: flex; align-items: flex-end; gap: 14px; }
+  .rate-num { font-size: clamp(48px, 7vw, 84px); font-weight: 700; letter-spacing: -3px; line-height: 0.88; font-variant-numeric: tabular-nums; }
+  .rate-unit { font-size: 12.5px; letter-spacing: 2.4px; color: rgba(242,246,255,0.5); padding-bottom: 10px; }
+  .prog-wrap { display: flex; flex-direction: column; gap: 9px; }
+  .prog-labels { display: flex; justify-content: space-between; font-size: 10.5px; letter-spacing: 2.2px; color: rgba(242,246,255,0.5); }
+  .prog-bar { height: 4px; background: rgba(242,246,255,0.12); border-radius: 2px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--accent); width: 0%; }
+  .prog-foot { display: flex; justify-content: space-between; font-size: 10.5px; letter-spacing: 2.2px; color: rgba(242,246,255,0.35); }
+  .prog-foot a { color: rgba(242,246,255,0.45); }
+  .prog-foot a:hover { color: #F2F6FF; }
+
+  .found-block { display: flex; flex-direction: column; gap: 22px; max-width: 540px; animation: mbPop 0.7s cubic-bezier(0.2,0,0.1,1) both; }
+  .found-block > p { margin: 0; font-size: 17px; line-height: 1.6; color: rgba(242,246,255,0.66); text-wrap: pretty; }
+  .claim { display: flex; flex-direction: column; gap: 12px; }
+  .claim .lbl { font-size: 10.5px; letter-spacing: 2.4px; color: rgba(242,246,255,0.5); }
+  .claim-input { display: flex; align-items: center; gap: 12px; border: 1px solid rgba(242,246,255,0.2); border-radius: 2px; padding: 4px 4px 4px 16px; }
+  .claim-input .at { font-size: 15px; color: var(--accent); }
+  .claim-input input { flex: 1; background: transparent; border: none; outline: none; color: #F2F6FF; font-family: 'JetBrains Mono', monospace; font-size: 15px; padding: 12px 0; }
+  .claim-input button { padding: 14px 22px; background: var(--accent); color: #04050a; border: none; border-radius: 2px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 2.2px; cursor: pointer; white-space: nowrap; }
+  .claim-input button:hover { filter: brightness(1.12); }
+  .claim .verify { font-size: 10.5px; letter-spacing: 1.8px; color: rgba(242,246,255,0.52); }
+  .found-cta { display: flex; flex-wrap: wrap; gap: 12px; }
+  .found-cta .real { display: inline-flex; align-items: center; gap: 10px; padding: 16px 26px; border: 1px solid rgba(242,246,255,0.24); color: rgba(242,246,255,0.82); font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 2.2px; border-radius: 2px; }
+  .found-cta .real:hover { border-color: #F2F6FF; color: #F2F6FF; }
+  .found-cta .again { display: inline-flex; align-items: center; padding: 16px 20px; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 2.2px; color: rgba(242,246,255,0.45); }
+  .found-cta .again:hover { color: #F2F6FF; }
+
+  .ring-graphic { position: relative; width: 100%; max-width: 380px; aspect-ratio: 1; margin: 0 auto; }
+  .ring-spin { position: absolute; inset: 0; animation: mbSpin 48s linear infinite; }
+  .ring-spin svg, .moon-mask svg { position: absolute; inset: 0; }
+  .moon-mask { position: absolute; inset: 12%; overflow: hidden; }
+  .sweep-line { position: absolute; left: -8%; right: -8%; top: 50%; height: 2px; background: var(--accent); box-shadow: 0 0 14px var(--accent); opacity: 0.28; animation: mbSweep 4.8s linear infinite; }
+
+  .net-card { border: 1px solid rgba(242,246,255,0.14); border-radius: 3px; overflow: hidden; max-width: 440px; width: 100%; margin: 0 auto; background: rgba(6,7,15,0.6); }
+  .net-card .cap { display: flex; align-items: center; justify-content: space-between; padding: 13px 16px; border-bottom: 1px solid rgba(242,246,255,0.12); font-size: 10px; letter-spacing: 2.4px; color: rgba(242,246,255,0.5); }
+  .net-card .cap .live { display: inline-flex; align-items: center; gap: 8px; }
+  .net-card .cap .live span { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: mbBlink 2s ease-in-out infinite; }
+  .net-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; border-bottom: 1px solid rgba(242,246,255,0.06); font-size: 11.5px; }
+  .net-row .k { color: rgba(242,246,255,0.42); letter-spacing: 2px; }
+  .net-foot { padding: 12px 16px; font-size: 10px; letter-spacing: 2.2px; color: rgba(242,246,255,0.5); }
+
+  .stats-band { position: relative; z-index: 10; display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 1px; background: rgba(242,246,255,0.1); border-top: 1px solid rgba(242,246,255,0.1); border-bottom: 1px solid rgba(242,246,255,0.1); }
+  .stat-cell { display: flex; flex-direction: column; gap: 6px; padding: 18px 24px; background: #04050a; }
+  .stat-cell:hover { background: #080a16; }
+  .stat-cell .k { font-size: 9.5px; letter-spacing: 2.6px; color: rgba(242,246,255,0.42); }
+  .stat-cell .v { font-size: 23px; font-weight: 500; letter-spacing: -0.6px; font-variant-numeric: tabular-nums; }
+
+  .wall { position: relative; z-index: 10; padding: 104px 44px; max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 60px; align-items: start; }
+  .wall-copy { display: flex; flex-direction: column; gap: 22px; }
+  .wall-copy .eyebrow { font-size: 10.5px; letter-spacing: 3px; color: var(--accent); }
+  .wall-copy h2 { margin: 0; font-size: clamp(30px, 3.6vw, 54px); font-weight: 700; letter-spacing: -1.5px; line-height: 1; }
+  .wall-copy .lead { margin: 0; max-width: 30em; font-size: 16.5px; line-height: 1.62; color: rgba(242,246,255,0.62); text-wrap: pretty; }
+  .loop-rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; border-top: 1px solid rgba(242,246,255,0.14); padding-top: 22px; }
+  .loop-rule { display: flex; flex-direction: column; gap: 8px; }
+  .loop-rule .n { font-size: 10px; letter-spacing: 2.4px; color: var(--accent); }
+  .loop-rule .t { font-size: 18px; font-weight: 500; letter-spacing: -0.3px; }
+  .loop-rule .b { font-size: 14.5px; line-height: 1.55; color: rgba(242,246,255,0.55); text-wrap: pretty; }
+  .no-referral { margin: 4px 0 0; font-size: 15.5px; line-height: 1.6; color: rgba(242,246,255,0.45); text-wrap: pretty; }
+  .wall-list { border: 1px solid rgba(242,246,255,0.12); border-radius: 3px; overflow: hidden; }
+  .wall-list .cap { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid rgba(242,246,255,0.12); font-size: 10px; letter-spacing: 2.4px; color: rgba(242,246,255,0.5); }
+  .wall-list .cap .live { display: inline-flex; align-items: center; gap: 8px; }
+  .wall-list .cap .live span { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: mbBlink 2s ease-in-out infinite; }
+  .wall-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 15px 18px; border-bottom: 1px solid rgba(242,246,255,0.06); font-size: 11.5px; }
+  .wall-row .tag { color: #F2F6FF; }
+  .wall-row .via { font-size: 9.5px; letter-spacing: 1.8px; color: rgba(242,246,255,0.38); }
+  .wall-row .blk { color: var(--accent); }
+  .wall-foot { padding: 13px 18px; font-size: 9.5px; letter-spacing: 2.2px; color: rgba(242,246,255,0.34); }
+
+  .honest { position: relative; z-index: 10; padding: 0 44px 110px; max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; }
+  .honest-card { display: flex; flex-direction: column; gap: 18px; padding: 36px; border: 1px solid rgba(242,246,255,0.13); border-radius: 3px; }
+  .honest-card .eyebrow { font-size: 10.5px; letter-spacing: 3px; color: var(--accent); }
+  .honest-card h2 { margin: 0; font-size: clamp(24px, 2.6vw, 34px); font-weight: 700; letter-spacing: -0.9px; line-height: 1.1; }
+  .check-row { display: flex; justify-content: space-between; gap: 16px; border-top: 1px solid rgba(242,246,255,0.12); padding-top: 13px; font-size: 15.5px; color: rgba(242,246,255,0.72); }
+  .check-row:hover { color: #F2F6FF; }
+  .check-row .a { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--accent); white-space: nowrap; }
+  .risk { margin: 0; border-top: 1px solid rgba(242,246,255,0.12); padding-top: 13px; font-size: 15px; line-height: 1.55; color: rgba(242,246,255,0.6); text-wrap: pretty; }
+  .col-gap { display: flex; flex-direction: column; gap: 14px; }
+  .col-gap.tight { gap: 13px; }
+
+  footer.site { position: relative; z-index: 10; padding: 0 44px 60px; max-width: 1320px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+  footer.site .rule { border-top: 1px solid rgba(242,246,255,0.1); }
+  footer.site .cols { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 28px; }
+  footer.site p { margin: 0; max-width: 620px; font-size: 14.5px; line-height: 1.65; color: rgba(242,246,255,0.48); text-wrap: pretty; }
+  footer.site .flinks { display: flex; flex-wrap: wrap; gap: 22px; font-size: 11px; letter-spacing: 2.4px; }
+  footer.site .flinks a { color: rgba(242,246,255,0.55); }
+  footer.site .flinks a:hover { color: #F2F6FF; }
+
+  .arriving { position: fixed; right: 26px; bottom: 26px; z-index: 55; display: flex; align-items: center; gap: 1px; background: rgba(242,246,255,0.16); border-radius: 2px; overflow: hidden; font-size: 10px; letter-spacing: 2px; }
+  .arriving .lbl { padding: 10px 12px; background: #06070f; color: rgba(242,246,255,0.4); }
+  .arriving button { padding: 10px 14px; border: none; cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px; }
+  .flash { position: fixed; inset: 0; z-index: 60; pointer-events: none; background: var(--accent); opacity: 0; }
+
+  @media (max-width: 640px) {
+    nav.site { flex-wrap: wrap; gap: 14px; padding: 20px 22px; }
+    nav.site .links { gap: 16px; flex-wrap: wrap; }
+    .hero { padding: 40px 22px 64px; gap: 44px; }
+    .wall, .honest { padding-left: 22px; padding-right: 22px; }
+    footer.site { padding-left: 22px; padding-right: 22px; }
+    .arriving { right: 12px; bottom: 12px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ring-spin, .sweep-line, .dot-pulse, .net-card .cap .live span, .wall-list .cap .live span { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="bg-scan"></div>
+<div class="wrap">
+
+  <nav class="site">
+    <div class="brand">
+      <div style="position: relative; width: 28px; height: 28px; flex: none">
+        <svg viewBox="-100 -100 200 200" style="position: absolute; inset: 0">
+          <mask id="mbNavMask" maskUnits="userSpaceOnUse" x="-100" y="-100" width="200" height="200">
+            <rect x="-100" y="-100" width="200" height="200" fill="#fff" />
+            <circle cx="50" cy="-13" r="84" fill="#000" />
+          </mask>
+          <g mask="url(#mbNavMask)"><circle cx="0" cy="0" r="93" fill="#F2F6FF" /></g>
+        </svg>
+      </div>
+      <span>MOON<span style="color: var(--accent)">BITE</span></span>
+    </div>
+    <div class="links mono">
+      <a href="#wall">THE WALL</a>
+      <a href="/explorer">EXPLORER</a>
+      <a href="#honest">RISKS</a>
+      <a href="/get-wallet">WALLET</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="warm-banner mono" id="warmBanner" hidden>
+        <span class="lbl"><span id="warmInviter"></span> SENT YOU A BLOCK</span>
+        <div class="row">
+          <span class="blk" id="warmBlock"></span>
+          <span>+10.00000000 MBITE</span>
+          <a href="/explorer">VERIFY IT →</a>
+        </div>
+      </div>
+
+      <h1 class="headline" id="headline">You can't buy MoonBite.</h1>
+      <p class="subhead" id="subhead"></p>
+
+      <div class="idle-block" id="idleBlock">
+        <button class="bite-btn" id="biteBtn" type="button">Take a bite<span class="arrow mono">↗</span></button>
+        <span class="idle-note mono">FREE · NO WALLET · NO INSTALL · RUNS IN THIS TAB</span>
+        <span class="idle-lineage mono" id="lineageNote">NO ACCOUNT · NOTHING TO SIGN</span>
+      </div>
+
+      <div class="mining-block" id="miningBlock" hidden>
+        <div class="mining-head mono">
+          <span class="dot-pulse"></span>
+          <span>HASHING · BROWSER DEMO ON TESTNET</span>
+        </div>
+        <div class="rate-row">
+          <span class="rate-num" id="rateNum">0</span>
+          <span class="rate-unit mono">KH/S</span>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-labels mono"><span>WORK TOWARD YOUR BITE</span><span id="progLabel">0%</span></div>
+          <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+          <div class="prog-foot mono"><span id="hashesLabel">0 HASHES</span><a href="#stop" id="stopLink">STOP</a></div>
+        </div>
+      </div>
+
+      <div class="found-block" id="foundBlock" hidden>
+        <p>Nobody sold you that. Put your name on it, then send the receipt — whoever opens it lands on a page like this one, with your handle on the block.</p>
+        <div class="claim">
+          <span class="lbl mono">CLAIM THE HANDLE ON YOUR BLOCK</span>
+          <div class="claim-input">
+            <span class="at mono">@</span>
+            <input id="handleInput" placeholder="yourhandle" autocomplete="off" spellcheck="false">
+            <button id="shareBtn" type="button" class="mono">COPY MY LINK</button>
+          </div>
+          <span class="verify mono" id="verifyUrl"></span>
+        </div>
+        <div class="found-cta">
+          <a href="/mine" class="real mono">NOW GET THE REAL MINER</a>
+          <a href="#reset" id="resetLink" class="again mono">RUN IT AGAIN</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-side">
+      <div class="ring-graphic">
+        <div class="ring-spin" id="ringSpin">
+          <svg viewBox="-120 -120 240 240">
+            <circle cx="0" cy="0" r="110" fill="none" stroke="#F2F6FF" stroke-opacity="0.14" stroke-width="0.8" />
+            <circle cx="0" cy="0" r="116" fill="none" stroke="var(--accent)" stroke-opacity="0.36" stroke-width="1.2" stroke-dasharray="1.6 20" />
+            <g stroke="var(--accent)" stroke-opacity="0.75" stroke-width="2.6"><path d="M110 0 h9 M-110 0 h-9 M0 110 v9 M0 -110 v-9" /></g>
+          </svg>
+        </div>
+        <div class="moon-mask">
+          <svg viewBox="-100 -100 200 200">
+            <mask id="mbHeroMask" maskUnits="userSpaceOnUse" x="-100" y="-100" width="200" height="200">
+              <rect x="-100" y="-100" width="200" height="200" fill="#fff" />
+              <circle id="chompCircle" cx="48" cy="-12" r="80" fill="#000" />
+            </mask>
+            <g mask="url(#mbHeroMask)">
+              <circle cx="-5" cy="0" r="90" fill="var(--accent)" opacity="0.5" />
+              <circle cx="5" cy="0" r="90" fill="#5B7BFF" opacity="0.5" />
+              <circle cx="0" cy="0" r="90" fill="#F2F6FF" />
+              <circle cx="0" cy="0" r="60" fill="none" stroke="#04050a" stroke-opacity="0.13" stroke-width="1.4" />
+              <circle cx="-34" cy="-27" r="5" fill="#04050a" opacity="0.12" />
+              <circle cx="-15" cy="36" r="3.4" fill="#04050a" opacity="0.1" />
+            </g>
+          </svg>
+          <div class="sweep-line" id="sweepLine"></div>
+        </div>
+      </div>
+
+      <div class="net-card">
+        <div class="cap mono">
+          <span class="live"><span></span><span id="cardTitle">NETWORK</span></span>
+          <span id="cardMeta">TESTNET</span>
+        </div>
+        <div id="cardRows"></div>
+        <div class="net-foot mono" id="cardFoot">SIMULATED FOR THIS DEMO · REAL DATA IN THE EXPLORER</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="stats-band" id="statsBand"></div>
+
+  <section class="wall" id="wall">
+    <div class="wall-copy">
+      <span class="eyebrow mono">THE WALL</span>
+      <h2><span id="bitesTaken">1,284</span> bites taken. None of them bought.</h2>
+      <p class="lead">Every line below is a block on the chain, so this list can't be padded, botted or paid for — appearing on it costs electricity. <span id="bitesLeft">851,116</span> blocks remain before the reward halves.</p>
+      <div class="loop-rules">
+        <div class="loop-rule"><span class="n mono">01</span><span class="t">Claim</span><span class="b">Put a handle on the block you mined. It is yours because you did the work.</span></div>
+        <div class="loop-rule"><span class="n mono">02</span><span class="t">Show</span><span class="b">Send the receipt. It links to the chain, so the proof travels with it.</span></div>
+        <div class="loop-rule"><span class="n mono">03</span><span class="t">Bring</span><span class="b">Whoever mines after opening your link is stamped to you, permanently.</span></div>
+      </div>
+      <p class="no-referral">There is no referral payment and there never will be. Paying people to recruit fills a network with people who don't care — and looks exactly like the thing we're not. Lineage is public credit, nothing more.</p>
+    </div>
+    <div class="wall-list">
+      <div class="cap mono">
+        <span class="live"><span></span>MOST RECENT FIRST BITES</span>
+        <span>BLOCK</span>
+      </div>
+      <div id="wallRows"></div>
+      <div class="wall-foot mono">HANDLES ARE SELF-CLAIMED · BLOCKS ARE NOT</div>
+    </div>
+  </section>
+
+  <section class="honest" id="honest">
+    <div class="honest-card">
+      <span class="eyebrow mono">BREAK OUR CLAIMS</span>
+      <h2>Everything here is checkable in two clicks.</h2>
+      <div class="col-gap">
+        <a class="check-row" href="/explorer"><span>Read block one and count the premine</span><span class="a">EXPLORER →</span></a>
+        <a class="check-row" href="/about"><span>Diff the emission schedule against the chain</span><span class="a">SCHEDULE →</span></a>
+        <a class="check-row" href="/developers"><span>Pull these numbers from the read-only API</span><span class="a">API →</span></a>
+      </div>
+    </div>
+    <div class="honest-card">
+      <span class="eyebrow mono">THE HONEST HALF</span>
+      <h2>What could go wrong, in our own words.</h2>
+      <div class="col-gap tight">
+        <p class="risk">The network is small, and small networks are easier to attack than large ones.</p>
+        <p class="risk">MBITE has no price because it has no market. It may never have one.</p>
+        <p class="risk">Lose your keys and the coins are gone. We cannot recover them, and neither can anyone else.</p>
+        <p class="risk">The roadmap is a plan, not a promise. Phase 3 has no date attached to it.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site">
+    <div class="rule"></div>
+    <div class="cols">
+      <p>MoonBite is pre-mainnet and open source. It is not an investment or a security, carries no promise of future value, and is not trading on any exchange. The in-page miner is a testnet demonstration. Nothing here is a price prediction — only what you can verify today. No trackers, no ads.</p>
+      <div class="flinks mono">
+        <a href="/mine">MINER</a>
+        <a href="/get-wallet">WALLET</a>
+        <a href="/explorer">EXPLORER</a>
+        <a href="/developers">DOCS</a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="arriving mono">
+    <span class="lbl">ARRIVING AS</span>
+    <button id="coldBtn" type="button">COLD</button>
+    <button id="warmBtn" type="button">SHARED LINK</button>
+  </div>
+
+  <div class="flash" id="flash"></div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var INVITER = "nocturne";
+  var DEMO_SPEED = 1;      // 0.4–3; higher = faster demo
+  var GENESIS_HEIGHT = 148920;
+
+  var state = {
+    view: "cold", mode: "idle", rate: 0, hashes: 0, progress: 0,
+    height: GENESIS_HEIGHT, handle: "", copied: false, flash: 0, bite: 0
+  };
+
+  var $ = function (id) { return document.getElementById(id); };
+  function num(n) { return Math.round(n).toLocaleString("en-US"); }
+  function inviterTag() { return "@" + INVITER; }
+
+  function hashFor(h) {
+    var x = (h * 2654435761) % 4294967296, out = "";
+    for (var i = 0; i < 3; i++) { x = (x * 1103515245 + 12345) % 4294967296; out += x.toString(16).padStart(8, "0").slice(0, 8); }
+    return "0000" + out.slice(0, 12) + "…";
+  }
+
+  var chompTimer = null, sweepReset = null, copyTimer = null, loop = null, chain = null, t0 = 0;
+
+  function setChomp() {
+    var c = $("chompCircle");
+    var name = (state.bite % 2 ? "mbChompA" : "mbChompB");
+    c.style.animation = "none";
+    // force reflow so re-adding the animation restarts it
+    void c.getBBox;
+    c.style.animation = name + " 0.5s cubic-bezier(0.3,0,0.2,1) both";
+  }
+  function fireFlash() {
+    var f = $("flash");
+    var name = (state.flash % 2 ? "mbInvertA" : "mbInvertB");
+    f.style.animation = "none";
+    void f.offsetWidth;
+    f.style.animation = name + " 0.55s ease-out both";
+  }
+
+  function render() {
+    var s = state;
+    var warm = s.view === "warm", mining = s.mode === "mining", found = s.mode === "found", idle = s.mode === "idle";
+    var inviter = inviterTag();
+    var tag = s.handle ? "@" + s.handle : "@you";
+
+    // headline + subhead
+    $("headline").textContent = found ? "You took a bite."
+      : mining ? "Work in progress."
+      : warm ? "Now take yours."
+      : "You can't buy MoonBite.";
+    $("subhead").textContent = found ? ""
+      : mining ? "Your tab is hashing against the network. A browser will not out-mine a real machine — this is the demonstration, not the competition."
+      : warm ? inviter + " mined that block on hardware they own. Nobody sold it to them, and nobody can sell one to you — the only way in is to do the same. Start here, in this tab, for free."
+      : "No listing, no presale, no allocation. Every MBITE in existence was mined — so we made it minable right here, in this tab.";
+
+    // warm banner
+    var wb = $("warmBanner");
+    if (warm) {
+      wb.hidden = false;
+      $("warmInviter").textContent = inviter;
+      $("warmBlock").textContent = "#" + num(148912);
+    } else { wb.hidden = true; }
+
+    // hero state blocks
+    $("idleBlock").hidden = !idle;
+    $("miningBlock").hidden = !mining;
+    $("foundBlock").hidden = !found;
+
+    $("lineageNote").textContent = warm
+      ? "YOUR BITE WILL BE STAMPED · BROUGHT BY " + inviter.toUpperCase()
+      : "NO ACCOUNT · NOTHING TO SIGN";
+
+    // mining readouts
+    $("rateNum").textContent = num(s.rate);
+    $("progFill").style.width = Math.min(100, s.progress) + "%";
+    $("progLabel").textContent = Math.min(99, Math.floor(s.progress)) + "%";
+    $("hashesLabel").textContent = num(s.hashes) + " HASHES";
+
+    // found readouts
+    var handleForUrl = num(s.height).replace(/,/g, "");
+    $("verifyUrl").textContent = "MOONBITE.ORG/BITE/" + handleForUrl + " · ANYONE CAN CHECK IT";
+    $("shareBtn").textContent = s.copied ? "COPIED ✓" : "COPY MY LINK";
+    if ($("handleInput").value !== s.handle) $("handleInput").value = s.handle;
+
+    // ring + sweep tempo
+    $("ringSpin").style.animationDuration = mining ? "8s" : "48s";
+    var sweep = $("sweepLine");
+    sweep.style.animationDuration = mining ? "0.9s" : "4.8s";
+    sweep.style.opacity = mining ? "0.95" : "0.28";
+
+    // network / receipt card
+    $("cardTitle").textContent = found ? "YOUR RECEIPT" : "NETWORK";
+    $("cardMeta").textContent = found ? "SHAREABLE" : "TESTNET";
+    $("cardFoot").textContent = found
+      ? "THIS IS THE PAGE THEY LAND ON WHEN YOU SEND IT"
+      : "SIMULATED FOR THIS DEMO · REAL DATA IN THE EXPLORER";
+
+    var rows = found ? [
+      { k: "BLOCK", v: "#" + num(s.height), color: "#F2F6FF" },
+      { k: "REWARD", v: "+10.00000000", color: "var(--accent)" },
+      { k: "HASH", v: hashFor(s.height), color: "rgba(242,246,255,0.72)" },
+      { k: "MINED BY", v: tag, color: "rgba(242,246,255,0.72)" },
+      { k: "BROUGHT BY", v: warm ? inviter : "came in cold", color: "rgba(242,246,255,0.72)" }
+    ] : [
+      { k: "HEIGHT", v: num(s.height), color: "#F2F6FF" },
+      { k: "PREMINE", v: "0", color: "var(--accent)" },
+      { k: "NEXT BLOCK IN", v: "~2.5 min", color: "rgba(242,246,255,0.72)" },
+      { k: "REWARD", v: "10 MBITE", color: "rgba(242,246,255,0.72)" }
+    ];
+    var cardHtml = "";
+    for (var i = 0; i < rows.length; i++) {
+      cardHtml += '<div class="net-row mono"><span class="k">' + rows[i].k +
+        '</span><span style="color:' + rows[i].color + '">' + rows[i].v + "</span></div>";
+    }
+    $("cardRows").innerHTML = cardHtml;
+
+    // stats band
+    var stats = [
+      { label: "BLOCK HEIGHT", value: num(s.height) },
+      { label: "PREMINE", value: "0" },
+      { label: "MAX SUPPLY", value: "19,999,999.87" },
+      { label: "BLOCK TIME", value: "2.5 min" }
+    ];
+    var sb = "";
+    for (var j = 0; j < stats.length; j++) {
+      sb += '<a class="stat-cell" href="/explorer"><span class="k mono">' + stats[j].label +
+        '</span><span class="v">' + stats[j].value + "</span></a>";
+    }
+    $("statsBand").innerHTML = sb;
+
+    // wall counters
+    $("bitesTaken").textContent = num(1284 + Math.floor((s.height - GENESIS_HEIGHT) / 3) + (found ? 1 : 0));
+    $("bitesLeft").textContent = num(851116 - (s.height - GENESIS_HEIGHT));
+
+    // wall list
+    var wall = (found ? [{ tag: tag, block: num(s.height), via: warm ? "brought by " + inviter : "came in cold", bg: "rgba(95,233,208,0.07)" }] : []).concat([
+      { tag: "@rk_idlebox", block: num(s.height - 5), via: "brought by @nocturne", bg: "transparent" },
+      { tag: "@nocturne", block: num(148912), via: "brought by @sedna_ops", bg: "transparent" },
+      { tag: "@sedna_ops", block: num(148897), via: "came in cold", bg: "transparent" },
+      { tag: "@atticfarm", block: num(148885), via: "brought by @rk_idlebox", bg: "transparent" }
+    ]);
+    var wh = "";
+    for (var k = 0; k < wall.length; k++) {
+      wh += '<div class="wall-row" style="background:' + wall[k].bg + '"><span style="display:flex;flex-direction:column;gap:5px">' +
+        '<span class="tag">' + wall[k].tag + '</span><span class="via">' + wall[k].via + "</span></span>" +
+        '<span class="blk">#' + wall[k].block + "</span></div>";
+    }
+    $("wallRows").innerHTML = wh;
+
+    // arriving toggle colors
+    var accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#5FE9D0";
+    $("coldBtn").style.background = warm ? "#06070f" : accent;
+    $("coldBtn").style.color = warm ? "rgba(242,246,255,0.6)" : "#04050a";
+    $("warmBtn").style.background = warm ? accent : "#06070f";
+    $("warmBtn").style.color = warm ? "#04050a" : "rgba(242,246,255,0.6)";
+  }
+
+  function start() {
+    clearInterval(loop);
+    var target = 8000 / DEMO_SPEED;
+    t0 = Date.now();
+    state.mode = "mining"; state.rate = 0; state.hashes = 0; state.progress = 0;
+    render();
+    loop = setInterval(function () {
+      if (state.mode !== "mining") return;
+      var el = Date.now() - t0;
+      var rate = 412 * (1 - Math.exp(-el / 1400));
+      var progress = (el / target) * 100;
+      var hashes = Math.round((el / 1000) * rate * 1000);
+      if (progress >= 100) {
+        clearInterval(loop);
+        state.mode = "found"; state.progress = 100; state.rate = rate; state.hashes = hashes;
+        state.flash += 1; state.bite += 1; state.height += 1;
+        render(); setChomp(); fireFlash();
+        return;
+      }
+      state.rate = rate; state.progress = progress; state.hashes = hashes;
+      render();
+    }, 220);
+  }
+  function stop() { clearInterval(loop); state.mode = "idle"; state.progress = 0; state.rate = 0; render(); }
+  function reset() { clearInterval(loop); state.mode = "idle"; state.progress = 0; state.rate = 0; state.handle = ""; render(); }
+
+  // wiring
+  $("biteBtn").addEventListener("click", start);
+  $("stopLink").addEventListener("click", function (e) { e.preventDefault(); stop(); });
+  $("resetLink").addEventListener("click", function (e) { e.preventDefault(); reset(); });
+  $("handleInput").addEventListener("input", function (e) {
+    state.handle = e.target.value.replace(/[^a-zA-Z0-9_]/g, "").slice(0, 16);
+    render();
+  });
+  $("shareBtn").addEventListener("click", function () {
+    var url = "moonbite.org/bite/" + num(state.height).replace(/,/g, "");
+    if (navigator.clipboard) navigator.clipboard.writeText(url).catch(function () {});
+    state.copied = true; render();
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(function () { state.copied = false; render(); }, 2200);
+  });
+  $("coldBtn").addEventListener("click", function () { state.view = "cold"; state.mode = "idle"; state.progress = 0; render(); });
+  $("warmBtn").addEventListener("click", function () { state.view = "warm"; state.mode = "idle"; state.progress = 0; render(); });
+
+  // a shared link (?from=handle) arrives "warm"
+  var params = new URLSearchParams(location.search);
+  var from = params.get("from");
+  if (from) { INVITER = from.replace(/[^a-zA-Z0-9_]/g, "").slice(0, 16) || INVITER; state.view = "warm"; }
+
+  // the chain advances on its own, like a live tip
+  chain = setInterval(function () { state.height += 1; render(); }, 9000);
+
+  render();
+})();
+</script>
+</body>
+</html>
