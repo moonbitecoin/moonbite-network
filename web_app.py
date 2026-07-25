@@ -16,6 +16,7 @@ import hmac
 import json
 import os
 import re
+import secrets
 import sys
 import threading
 import time
@@ -23,7 +24,7 @@ from collections import defaultdict
 from functools import wraps
 from typing import Optional
 
-from flask import Flask, jsonify, render_template, request, send_from_directory
+from flask import Flask, jsonify, render_template, request, send_from_directory, session
 
 import exchange
 import merchants
@@ -46,6 +47,10 @@ _chain_store: Optional["BlockStore"] = None
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
+# Signs the session cookie that scopes per-visitor wallet state. Set SECRET_KEY
+# in production so sessions survive restarts; a random key is a safe default.
+app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
+
 # Global state for mining operations
 app.mining_state = {
     "is_mining": False,
@@ -59,8 +64,9 @@ app.mining_state = {
 # Global node instance (initialized once per app instance)
 app.node: Optional[Node] = None
 
-# Generated addresses for wallet operations (in-memory storage for demo)
-app.generated_addresses = {}  # pubkey_hash -> {"address": ..., "pubkey": ...}
+# Per-visitor wallet addresses are stored in the signed session cookie (see
+# /api/wallet/new), capped so the cookie cannot grow without bound.
+_MAX_SESSION_ADDRESSES = 25
 
 # Lock for thread-safe mining operations
 app.mining_lock = threading.Lock()
@@ -671,12 +677,14 @@ def api_wallet_new():
         pkh = pubkey_hash(pubkey_hex)
         address = address_from_pubkey_hash(pkh)
 
-        # Store for potential balance checking
-        app.generated_addresses[pkh] = {
-            "address": address,
-            "pubkey": pubkey_hex,
-            "pubkey_hash": pkh,
-        }
+        # Scope generated addresses to THIS visitor's signed session cookie — not
+        # a process-global dict — so one user's /balance never aggregates another
+        # user's addresses, and the server holds no unbounded in-memory state.
+        # Persist only the pubkey_hash (all /balance needs); keep it well under
+        # the ~4KB cookie limit and bounded so it cannot grow without limit.
+        pkhs = [h for h in session.get("wallet_pkhs", []) if h != pkh]
+        pkhs.append(pkh)
+        session["wallet_pkhs"] = pkhs[-_MAX_SESSION_ADDRESSES:]
 
         return jsonify(
             {
@@ -698,8 +706,8 @@ def api_wallet_balance():
         total_balance = 0
         utxo_count = 0
 
-        # Check all generated addresses
-        for pkh in app.generated_addresses.keys():
+        # Only this visitor's own session-scoped addresses (see /api/wallet/new).
+        for pkh in session.get("wallet_pkhs", []):
             # Iterate through all UTXOs and find those matching this pubkey_hash
             for _txid, _idx, out in node.chain.utxo.items():
                 if out.pubkey_hash == pkh:
