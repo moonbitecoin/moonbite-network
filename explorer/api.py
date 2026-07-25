@@ -257,10 +257,16 @@ def fee():
         est = client.estimatesmartfee(6)
         rate = est.get("feerate") if isinstance(est, dict) else None
         if rate and rate > 0:
-            return jsonify({"feerate": float(rate), "blocks": est.get("blocks"), "source": "estimatesmartfee", "demo": False})
+            return jsonify({
+                "feerate": float(rate), "blocks": est.get("blocks"),
+                "source": "estimatesmartfee", "demo": False,
+            })
     except (RPCError, RPCConnectionError):
         pass
-    return jsonify({"feerate": fallback, "blocks": None, "source": "default", "demo": client.is_demo()})
+    return jsonify({
+        "feerate": fallback, "blocks": None,
+        "source": "default", "demo": client.is_demo(),
+    })
 
 
 @api.route("/tx/broadcast", methods=["POST"])
@@ -437,7 +443,7 @@ def block_json(identifier):
         block = client.getblock(block_hash, 1)
     except RPCConnectionError as exc:
         return _err(str(exc), 503)
-    except RPCError as exc:
+    except RPCError:
         return _err("block not found", 404)
 
     summary = _block_summary(block)

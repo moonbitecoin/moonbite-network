@@ -69,7 +69,9 @@ class RpcConn:
             except (ValueError, AttributeError):
                 pass
             if exc.code in (401, 403):
-                raise RpcError(f"authentication failed (HTTP {exc.code}) -- check --rpc-user/--rpc-pass")
+                raise RpcError(
+                    f"authentication failed (HTTP {exc.code}) -- check --rpc-user/--rpc-pass"
+                )
             raise RpcError(f"HTTP error {exc.code}")
         except (TimeoutError, urllib.error.URLError, ConnectionError, OSError) as exc:
             raise RpcError(f"cannot reach node at {self.url} ({getattr(exc, 'reason', exc)})")

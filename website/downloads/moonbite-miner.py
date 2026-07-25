@@ -50,7 +50,9 @@ def mine_once(explorer, address, timeout=60):
 
 
 def main(argv=None):
-    p = argparse.ArgumentParser(description="MoonBite desktop miner (mines the live chain via the explorer)")
+    p = argparse.ArgumentParser(
+        description="MoonBite desktop miner (mines the live chain via the explorer)"
+    )
     p.add_argument("--address", default=os.environ.get("MINE_ADDRESS", ""),
                    help="MoonBite address to receive rewards (required)")
     p.add_argument("--explorer", default=os.environ.get("MOONBITE_EXPLORER", DEFAULT_EXPLORER),

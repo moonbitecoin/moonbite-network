@@ -142,7 +142,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send(502, _rpc_error(None, f"upstream unreachable: {exc}", -32603))
 
     def log_message(self, fmt, *args):
-        sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
+        sys.stderr.write(f"{self.address_string()} - {fmt % args}\n")
 
 
 def main():
@@ -151,7 +151,7 @@ def main():
         ("NODE_RPC_USER", NODE_RPC_USER), ("NODE_RPC_PASSWORD", NODE_RPC_PASSWORD),
     ) if not v]
     if missing:
-        sys.stderr.write("FATAL: missing env vars: %s\n" % ", ".join(missing))
+        sys.stderr.write(f"FATAL: missing env vars: {', '.join(missing)}\n")
         sys.exit(1)
 
     srv = ThreadingHTTPServer((PROXY_BIND, PROXY_PORT), Handler)
