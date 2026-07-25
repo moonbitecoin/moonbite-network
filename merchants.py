@@ -15,6 +15,7 @@ the local educational node; in production it points at the MoonBite node.
 
 from __future__ import annotations
 
+import os
 import re
 import sqlite3
 import threading
@@ -27,9 +28,12 @@ from typing import Callable, Optional
 # Categories a merchant can pick. Kept small and honest — no fake taxonomy.
 CATEGORIES = ("goods", "services", "food", "digital", "donation", "other")
 
-# App unit: the educational chain uses 100 base units == 1 coin. Invoice amounts
-# are entered in MBITE (decimal) and converted to base units for on-chain checks.
-UNITS_PER_COIN = 100
+# App unit: base units per coin. The educational chain uses 100; the production
+# Litecoin-fork node uses 1e8 (sats). Configurable so a production deployment can
+# match its chain's precision (set MOONBITE_UNITS_PER_COIN=100000000) while the
+# in-process demo keeps 100. The invoiced amount and the injected received_lookup
+# MUST share this basis — that pairing is wired in web_app.py.
+UNITS_PER_COIN = int(os.environ.get("MOONBITE_UNITS_PER_COIN", "100"))
 
 # An invoice is payable for this long, then it expires (seconds).
 DEFAULT_INVOICE_TTL = 60 * 60  # 1 hour

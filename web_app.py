@@ -210,6 +210,95 @@ def received_at_address(address: str) -> int:
     return total
 
 
+# --------------------------------------------------------------------------- #
+# Merchant payment observation — production node (JSON-RPC) backend
+#
+# The merchant layer needs a received_lookup(address) -> base units. In the demo
+# it reads the in-process educational chain (received_at_address above). Against
+# the real moonbited node we ask it directly. A stock node has no address index,
+# so we use `scantxoutset`, which reports the address's *current unspent* balance.
+# That is enough to detect a fresh invoice payment (a new inbound total over the
+# baseline snapshotted when the invoice was raised), provided the merchant does
+# not spend from the receive address mid-invoice — so give each invoice/merchant
+# a dedicated receive address.
+# --------------------------------------------------------------------------- #
+_merchant_rpc_client = None
+_merchant_rpc_lock = threading.Lock()
+_merchant_recv_cache: dict = {}
+# scantxoutset walks the whole UTXO set (seconds, single-scan-at-a-time), so a
+# short cache keeps rapid invoice-status polls from hammering the node.
+_MERCHANT_RECV_TTL = float(os.environ.get("MOONBITE_MERCHANT_SCAN_TTL", "5"))
+
+
+def _merchant_use_rpc() -> bool:
+    """True when the operator has pointed us at a real node (RPC creds/URL set)
+    and has not forced demo mode. Unset in dev/tests -> stay on the demo chain.
+
+    NOTE: production should also set DEMO_MODE=0 so the RPC client keeps retrying
+    the node on a transient outage instead of latching into demo sample data.
+    """
+    if os.environ.get("DEMO_MODE", "").strip().lower() in ("1", "true", "yes", "on"):
+        return False
+    return bool(
+        os.environ.get("BIGCOIN_RPC_URL")
+        or os.environ.get("BIGCOIN_RPC_USER")
+        or os.environ.get("BIGCOIN_RPC_PASSWORD")
+    )
+
+
+def _get_merchant_rpc():
+    """Lazily build the explorer RPC client. explorer/rpc.py uses a bare
+    ``import config``, so the explorer dir must be on sys.path (mirrors the
+    settlement-verifier route)."""
+    global _merchant_rpc_client
+    if _merchant_rpc_client is None:
+        _exp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "explorer")
+        if _exp_dir not in sys.path:
+            sys.path.insert(0, _exp_dir)
+        from explorer.rpc import RpcClient
+
+        _merchant_rpc_client = RpcClient()
+    return _merchant_rpc_client
+
+
+def received_at_address_rpc(address: str) -> int:
+    """Current unspent balance at `address` from the production node, in base
+    units (merchants.UNITS_PER_COIN). Fail-safe: ANY error returns 0 so an
+    invoice is never falsely marked paid — it just stays pending and is retried
+    on the next poll."""
+    from decimal import Decimal
+
+    now = time.time()
+    with _merchant_rpc_lock:
+        hit = _merchant_recv_cache.get(address)
+        if hit is not None and now - hit[0] < _MERCHANT_RECV_TTL:
+            return hit[1]
+        try:
+            client = _get_merchant_rpc()
+            result = client.scantxoutset("start", [{"desc": f"addr({address})"}])
+        except Exception:  # noqa: BLE001 — node down/auth/demo => observe nothing
+            return 0
+        if not isinstance(result, dict) or not result.get("success", True):
+            return 0
+        try:
+            units = int(
+                (Decimal(str(result.get("total_amount", 0))) * merchants.UNITS_PER_COIN)
+                .to_integral_value()
+            )
+        except Exception:  # noqa: BLE001 — malformed amount
+            return 0
+        _merchant_recv_cache[address] = (time.time(), units)
+        return units
+
+
+def merchant_received_lookup(address: str) -> int:
+    """The received_lookup handed to the merchant layer: production node when
+    configured, else the in-process educational chain."""
+    if _merchant_use_rpc():
+        return received_at_address_rpc(address)
+    return received_at_address(address)
+
+
 def mining_worker(blocks_to_mine: int, miner_address: str) -> None:
     """Background worker thread for mining blocks."""
     node = get_node()
@@ -590,7 +679,7 @@ def api_merchant_invoice_create():
         inv = merchants.create_invoice(
             address=data.get("address", ""),
             amount=data.get("amount"),
-            received_lookup=received_at_address,
+            received_lookup=merchant_received_lookup,
             merchant_id=data.get("merchant_id"),
             memo=data.get("memo", ""),
             address_validator=is_valid_address,
@@ -604,7 +693,7 @@ def api_merchant_invoice_create():
 def api_merchant_invoice_status(invoice_id: str):
     """Poll an invoice — re-checks the chain for payment each call."""
     try:
-        inv = merchants.invoice_status(invoice_id, received_at_address)
+        inv = merchants.invoice_status(invoice_id, merchant_received_lookup)
         return jsonify({"status": "success", "invoice": inv}), 200
     except ValueError as e:
         return jsonify({"status": "error", "message": str(e)}), 404
@@ -640,7 +729,7 @@ def api_merchant_invoices_list():
     """
     merchant_id = request.args.get("merchant_id")
     try:
-        rows = merchants.list_invoices(received_at_address, merchant_id=merchant_id)
+        rows = merchants.list_invoices(merchant_received_lookup, merchant_id=merchant_id)
         return jsonify({"status": "success", "invoices": rows}), 200
     except ValueError as e:
         return jsonify({"status": "error", "message": str(e)}), 400
@@ -655,7 +744,7 @@ def api_merchant_invoices_poll():
     hand. Non-custodial: only observes the chain and records the result.
     """
     try:
-        summary = merchants.poll_pending_invoices(received_at_address)
+        summary = merchants.poll_pending_invoices(merchant_received_lookup)
         return jsonify({"status": "success", **summary}), 200
     except ValueError as e:
         return jsonify({"status": "error", "message": str(e)}), 400
@@ -669,7 +758,7 @@ def api_merchant_invoice_qr(invoice_id: str):
     own wallet prefills the send. The server never touches funds.
     """
     try:
-        inv = merchants.invoice_status(invoice_id, received_at_address)
+        inv = merchants.invoice_status(invoice_id, merchant_received_lookup)
     except ValueError:
         return jsonify({"status": "error", "message": "invoice not found"}), 404
     svg_doc = _qr_svg(inv["pay_uri"])
