@@ -6,9 +6,24 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:moonbite_mobile/services/chain_service.dart';
+import 'package:moonbite_mobile/wallet/authenticator.dart';
 import 'package:moonbite_mobile/wallet/moonbite_network.dart';
 import 'package:moonbite_mobile/wallet/secure_key_store.dart';
 import 'package:moonbite_mobile/wallet/wallet_controller.dart';
+
+/// Deterministic stand-in for the biometric gate. [approve] decides whether a
+/// spend is allowed; [calls] records every reason string it was asked with so
+/// tests can assert the gate ran (or didn't) exactly when expected.
+class _FakeAuthenticator implements Authenticator {
+  _FakeAuthenticator(this.approve);
+  final bool approve;
+  final List<String> calls = [];
+  @override
+  Future<bool> authenticate(String reason) async {
+    calls.add(reason);
+    return approve;
+  }
+}
 
 const _mnemonic =
     'abandon abandon abandon abandon abandon abandon '
@@ -88,9 +103,10 @@ void main() {
         return http.Response('{"error":"unexpected ${req.url}"}', 404);
       });
 
-  WalletController makeController() => WalletController(
+  WalletController makeController({Authenticator? auth}) => WalletController(
         chain: ChainService(baseUrl: 'https://x', httpClient: fakeHttp()),
         store: SecureKeyStore(),
+        authenticator: auth ?? _FakeAuthenticator(true),
       );
 
   setUp(() {
@@ -174,12 +190,37 @@ void main() {
         }),
       ),
       store: SecureKeyStore(),
+      authenticator: _FakeAuthenticator(true),
     );
     await c.importExisting(_mnemonic, network: MoonBiteNetwork.testnet);
     await expectLater(
       c.send(toAddress: _dest, amountBig: 1.0),
       throwsA(isA<StateError>()),
     );
+  });
+
+  test('send aborts before broadcast when authentication is denied', () async {
+    final denier = _FakeAuthenticator(false);
+    final c = makeController(auth: denier);
+    await c.importExisting(_mnemonic, network: MoonBiteNetwork.testnet);
+    await expectLater(
+      c.send(toAddress: _dest, amountBig: 1.0),
+      throwsA(isA<AuthenticationException>()),
+    );
+    // The gate was consulted, and nothing was signed or broadcast.
+    expect(denier.calls, hasLength(1));
+    expect(lastBroadcastHex, isNull);
+  });
+
+  test('send proceeds and broadcasts when authentication is approved',
+      () async {
+    final approver = _FakeAuthenticator(true);
+    final c = makeController(auth: approver);
+    await c.importExisting(_mnemonic, network: MoonBiteNetwork.testnet);
+    final txid = await c.send(toAddress: _dest, amountBig: 1.0);
+    expect(approver.calls, hasLength(1));
+    expect(txid, matches(RegExp(r'^[0-9a-f]{64}$')));
+    expect(lastBroadcastHex, isNotNull);
   });
 
   test('rejects an invalid mnemonic import', () async {

@@ -65,6 +65,29 @@ void main() {
         isTrue,
       );
     });
+
+    test('declares the biometric permission for the spend gate', () {
+      expect(
+        manifest.contains('android.permission.USE_BIOMETRIC'),
+        isTrue,
+      );
+    });
+  });
+
+  group('biometric host activity', () {
+    test('MainActivity extends FlutterFragmentActivity for local_auth', () {
+      final kt = _f(
+              'android/app/src/main/kotlin/org/moonbite/moonbite_mobile/MainActivity.kt')
+          .readAsStringSync();
+      // local_auth's prompt is a Fragment; a plain FlutterActivity can't host
+      // it and the biometric gate would crash at runtime.
+      expect(kt.contains('FlutterFragmentActivity'), isTrue);
+      expect(
+        kt.contains(': FlutterActivity()'),
+        isFalse,
+        reason: 'must not extend the non-fragment FlutterActivity',
+      );
+    });
   });
 
   group('network security config', () {

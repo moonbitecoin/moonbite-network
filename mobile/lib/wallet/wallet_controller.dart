@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/chain_models.dart';
 import '../services/chain_service.dart';
+import 'authenticator.dart';
 import 'moonbite_network.dart';
 import 'hd_wallet_service.dart';
 import 'secure_key_store.dart';
@@ -16,11 +17,14 @@ import 'tx_builder.dart';
 class WalletController extends ChangeNotifier {
   final ChainService chain;
   final SecureKeyStore store;
+  final Authenticator authenticator;
 
   WalletController({
     required this.chain,
     SecureKeyStore? store,
-  }) : store = store ?? SecureKeyStore();
+    Authenticator? authenticator,
+  })  : store = store ?? SecureKeyStore(),
+        authenticator = authenticator ?? LocalAuthenticator();
 
   MoonBiteNetwork _network = MoonBiteNetwork.testnet;
   String? _mnemonic;
@@ -118,6 +122,17 @@ class WalletController extends ChangeNotifier {
     final mnemonic = _mnemonic;
     if (account == null || mnemonic == null) {
       throw StateError('No wallet loaded');
+    }
+    // Presence check BEFORE anything is built, signed, or broadcast. If the
+    // device is unlocked and left unattended, this blocks an attacker from
+    // draining funds without the owner's biometric/PIN.
+    final ok = await authenticator.authenticate(
+      'Authenticate to send ${amountBig.toStringAsFixed(8)} BIG',
+    );
+    if (!ok) {
+      throw const AuthenticationException(
+        'Authentication failed or was cancelled; the payment was not sent.',
+      );
     }
     _set(busy: true, clearError: true);
     try {
