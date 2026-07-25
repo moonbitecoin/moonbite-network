@@ -53,6 +53,10 @@ def _rate_limit(max_calls, window_seconds=60):
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
+            # CORS preflight is not a real call — never throttle it, or a browser
+            # miner's OPTIONS burst would spend the client's quota before it mines.
+            if request.method == "OPTIONS":
+                return fn(*args, **kwargs)
             key = (request.remote_addr or "unknown", fn.__name__)
             now = time.time()
             with _rl_lock:
@@ -282,6 +286,7 @@ def broadcast():
 
 
 @api.route("/mine", methods=["POST", "OPTIONS"])
+@_rate_limit(10, 60)
 def mine():
     """Trigger real mining of one block to `address`. The NODE performs the
     proof-of-work (generatetoaddress); this endpoint just relays the request so
