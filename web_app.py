@@ -25,6 +25,7 @@ from functools import wraps
 from typing import Optional
 
 from flask import Flask, jsonify, render_template, request, send_from_directory, session
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 import exchange
 import merchants
@@ -50,6 +51,16 @@ app = Flask(__name__, template_folder="templates", static_folder="static")
 # Signs the session cookie that scopes per-visitor wallet state. Set SECRET_KEY
 # in production so sessions survive restarts; a random key is a safe default.
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
+
+# Trust exactly TRUSTED_PROXY_COUNT reverse-proxy hop(s) in front (nginx = 1).
+# ProxyFix rewrites request.remote_addr to the client IP that our OWN proxy
+# observed (the rightmost X-Forwarded-For hop it appended), so a client cannot
+# forge its identity by sending extra XFF hops. Set to 0 if no proxy is present.
+_TRUSTED_PROXY_COUNT = int(os.environ.get("TRUSTED_PROXY_COUNT", "1"))
+if _TRUSTED_PROXY_COUNT > 0:
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app, x_for=_TRUSTED_PROXY_COUNT, x_proto=1, x_host=1
+    )
 
 # Global state for mining operations
 app.mining_state = {
@@ -96,10 +107,9 @@ _rl_hits: "defaultdict[tuple, list]" = defaultdict(list)
 
 
 def _client_id() -> str:
-    """Best-effort caller identity. Behind nginx, honor the first XFF hop."""
-    xff = request.headers.get("X-Forwarded-For", "")
-    if xff:
-        return xff.split(",")[0].strip()
+    """Caller identity for rate limiting. ProxyFix has already resolved
+    request.remote_addr to the client IP our trusted proxy observed, so we do NOT
+    parse X-Forwarded-For here — a client cannot spoof this by adding XFF hops."""
     return request.remote_addr or "unknown"
 
 
