@@ -63,6 +63,9 @@
     border: 1px solid var(--accent); color: var(--accent); border-radius: 2px; }
   nav.top a.wallet:hover { background: var(--accent); color: var(--void); }
   nav.top a.wallet span { opacity: 0.6; }
+  /* these nav links reuse the section class names (#supply/#proof/#firstbite);
+     reset so the section layout rules below don't inflate the nav links */
+  nav.top a.supply, nav.top a.proof, nav.top a.firstbite { display: inline; padding: 0; }
   nav.top .menu-btn { margin-right: auto; background: none; border: 0; cursor: pointer;
     font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 2.2px;
     color: rgba(242,246,255,0.62); padding: 0; transition: color .2s ease; }
