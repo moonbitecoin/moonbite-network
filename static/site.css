@@ -812,6 +812,39 @@ a.mb-card:hover, .mb-card.mb-hoverable:hover {
 .mb-mrc-checkout-note { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
 .mb-mrc-checkout-note strong { color: var(--text-primary); }
 
+/* --------------------------------------------------------------- forum */
+.mb-forum-wrap { max-width: 860px; margin: 0 auto; }
+.mb-forum-bar { display: flex; align-items: baseline; justify-content: space-between; gap: var(--spacing-md); flex-wrap: wrap; margin-bottom: var(--spacing-lg); }
+.mb-forum-count { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 1px; color: var(--text-secondary); }
+.mb-forum-error { margin-bottom: var(--spacing-lg); padding: 12px 16px; border-radius: var(--border-radius); background: color-mix(in srgb, var(--danger-color, #ff5c72) 12%, transparent); border: 1px solid color-mix(in srgb, var(--danger-color, #ff5c72) 35%, transparent); color: var(--danger-color, #ff5c72); font-size: 0.9rem; }
+
+.mb-forum-list { display: flex; flex-direction: column; gap: var(--spacing-md); }
+.mb-forum-thread { display: block; text-decoration: none; color: inherit; padding: var(--spacing-lg); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); background: var(--card-bg); transition: border-color 0.2s ease, transform 0.2s ease; }
+.mb-forum-thread:hover { border-color: var(--primary-color); transform: translateY(-2px); }
+.mb-forum-thread h3 { margin: 0 0 6px; font-size: 1.12rem; line-height: 1.35; }
+.mb-forum-meta { font-size: 0.8rem; color: var(--text-secondary); display: flex; gap: var(--spacing-md); flex-wrap: wrap; align-items: center; }
+.mb-forum-meta .mb-forum-author { color: var(--primary-color-2); font-weight: 600; }
+.mb-forum-pill { font-family: var(--font-mono); font-size: 0.72rem; padding: 2px 9px; border-radius: 999px; background: var(--bg-tertiary); border: 1px solid var(--border-color); }
+.mb-forum-empty { text-align: center; color: var(--text-secondary); padding: var(--spacing-2xl); border: 1px dashed var(--border-color); border-radius: var(--border-radius-lg); }
+
+.mb-forum-form { display: flex; flex-direction: column; gap: var(--spacing-md); background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: var(--spacing-xl); }
+.mb-forum-form label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px; }
+.mb-forum-form input, .mb-forum-form textarea { width: 100%; padding: 12px 14px; border-radius: var(--border-radius); background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary); font: inherit; }
+.mb-forum-form textarea { min-height: 120px; resize: vertical; }
+.mb-forum-form input:focus, .mb-forum-form textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: var(--glow-primary); }
+.mb-forum-form-actions { display: flex; align-items: center; gap: var(--spacing-md); flex-wrap: wrap; }
+.mb-forum-hint { font-size: 0.78rem; color: var(--text-secondary); }
+
+.mb-forum-op { padding: var(--spacing-xl); border: 1px solid var(--primary-color); border-radius: var(--border-radius-lg); background: var(--card-bg); box-shadow: var(--glow-primary); margin-bottom: var(--spacing-xl); }
+.mb-forum-op h1 { font-size: clamp(1.4rem, 3vw, 2rem); margin: 0 0 var(--spacing-sm); }
+.mb-forum-body { white-space: pre-wrap; word-wrap: break-word; line-height: 1.6; color: var(--text-primary); margin-top: var(--spacing-md); }
+.mb-forum-reply { padding: var(--spacing-lg); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); background: var(--card-bg); }
+.mb-forum-reply + .mb-forum-reply { margin-top: var(--spacing-md); }
+.mb-forum-reply-head { display: flex; gap: var(--spacing-md); align-items: baseline; flex-wrap: wrap; margin-bottom: 6px; }
+.mb-forum-back { display: inline-block; margin-bottom: var(--spacing-lg); font-size: 0.85rem; color: var(--primary-color-2); text-decoration: none; }
+.mb-forum-back:hover { text-decoration: underline; }
+.mb-forum-pagination { display: flex; justify-content: center; gap: var(--spacing-md); margin-top: var(--spacing-2xl); align-items: center; }
+
 /* --------------------------------------------------------------- reveal */
 .mb-reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
 .mb-reveal.is-visible { opacity: 1; transform: none; }

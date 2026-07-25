@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}{% if thread %}{{ thread.title }} — MoonBite Discussions{% else %}Thread not found — MoonBite{% endif %}{% endblock %}
+{% block meta_description %}A discussion thread on the MoonBite community forum.{% endblock %}
+
+{% block content %}
+<section class="mb-section" style="padding-top: clamp(4rem, 10vw, 7rem);">
+    <div class="mb-container">
+        <div class="mb-forum-wrap">
+            <a class="mb-forum-back" href="{{ url_for('discussions_page') }}">← All discussions</a>
+
+            {% if not thread %}
+            <div class="mb-forum-empty">
+                <h2 class="mb-section-title" style="font-size:1.3rem;">Thread not found</h2>
+                <p>This discussion doesn't exist or was removed.</p>
+            </div>
+            {% else %}
+
+            {% if error %}<div class="mb-forum-error">{{ error }}</div>{% endif %}
+
+            <article class="mb-forum-op">
+                <h1>{{ thread.title }}</h1>
+                <div class="mb-forum-meta">
+                    <span>by <span class="mb-forum-author">{{ thread.author }}</span></span>
+                    <span>{{ thread.created_display }}</span>
+                </div>
+                <div class="mb-forum-body">{{ thread.body }}</div>
+            </article>
+
+            <div class="mb-forum-bar">
+                <h2 class="mb-section-title" style="margin:0; font-size:1.2rem;">
+                    {{ thread.reply_count }} repl{{ 'y' if thread.reply_count == 1 else 'ies' }}
+                </h2>
+            </div>
+
+            {% if thread.replies %}
+            <div class="mb-forum-list" style="margin-bottom: var(--spacing-2xl);">
+                {% for r in thread.replies %}
+                <div class="mb-forum-reply" id="{{ 'reply-latest' if loop.last else 'reply-' ~ r.id }}">
+                    <div class="mb-forum-reply-head">
+                        <span class="mb-forum-author">{{ r.author }}</span>
+                        <span class="mb-forum-count">{{ r.created_display }}</span>
+                    </div>
+                    <div class="mb-forum-body">{{ r.body }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="mb-forum-empty" style="margin-bottom: var(--spacing-2xl);">No replies yet. Add the first one.</div>
+            {% endif %}
+
+            <form class="mb-forum-form" method="post" action="{{ url_for('discussions_reply', thread_id=thread.id) }}">
+                <div>
+                    <label for="reply-author">Your name</label>
+                    <input type="text" id="reply-author" name="author" maxlength="40" placeholder="anon" autocomplete="off">
+                </div>
+                <div>
+                    <label for="reply-body">Reply</label>
+                    <textarea id="reply-body" name="body" maxlength="8000" placeholder="Add to the discussion…" required></textarea>
+                </div>
+                <div class="mb-forum-form-actions">
+                    <button type="submit" class="btn btn-primary">Post reply</button>
+                    <span class="mb-forum-hint">Public and stored on the server. Keep it civil.</span>
+                </div>
+            </form>
+
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

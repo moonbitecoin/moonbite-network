@@ -31,6 +31,8 @@ venv/
 *.sqlite-wal
 *.sqlite-shm
 *.db
+*.db-wal
+*.db-shm
 
 # Coverage
 .coverage

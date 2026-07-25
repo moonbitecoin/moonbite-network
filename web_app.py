@@ -24,10 +24,20 @@ from collections import defaultdict
 from functools import wraps
 from typing import Optional
 
-from flask import Flask, jsonify, render_template, request, send_from_directory, session
+from flask import (
+    Flask,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    session,
+    url_for,
+)
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 import exchange
+import forum
 import merchants
 import swap_verifier
 from node import Node
@@ -441,6 +451,76 @@ def exchanges_page():
 def community_page():
     """Ways to participate in the MoonBite community."""
     return render_template("community.html")
+
+
+# --- Community forum (SQLite-backed threaded discussions) -------------------- #
+# Free-text display names, no accounts. Stored text is HTML-escaped by Jinja on
+# render, so a post can never inject markup. Write endpoints are rate limited.
+# There is no CSRF token: with no login there is no authenticated action to
+# forge — anyone may post regardless — so a token would add friction, not safety.
+
+
+@app.route("/discussions")
+def discussions_page():
+    """List discussion threads, newest activity first (paginated)."""
+    try:
+        page = max(1, int(request.args.get("page", 1)))
+    except (TypeError, ValueError):
+        page = 1
+    per_page = 20
+    data = forum.list_threads(limit=per_page, offset=(page - 1) * per_page)
+    total_pages = max(1, (data["total"] + per_page - 1) // per_page)
+    return render_template(
+        "discussions.html",
+        threads=data["threads"],
+        total=data["total"],
+        page=page,
+        total_pages=total_pages,
+        error=request.args.get("error"),
+    )
+
+
+@app.route("/discussions/<int:thread_id>")
+def discussion_thread_page(thread_id: int):
+    """Render one thread and its replies."""
+    thread = forum.get_thread(thread_id)
+    if thread is None:
+        return render_template("discussion_thread.html", thread=None), 404
+    return render_template(
+        "discussion_thread.html",
+        thread=thread,
+        error=request.args.get("error"),
+    )
+
+
+@app.route("/discussions/new", methods=["POST"])
+@rate_limit(10, 60)
+def discussions_create():
+    """Handle the new-thread form (Post/Redirect/Get)."""
+    try:
+        thread = forum.create_thread(
+            title=request.form.get("title"),
+            author=request.form.get("author"),
+            body=request.form.get("body"),
+        )
+    except ValueError as e:
+        return redirect(url_for("discussions_page", error=str(e)))
+    return redirect(url_for("discussion_thread_page", thread_id=thread["id"]))
+
+
+@app.route("/discussions/<int:thread_id>/reply", methods=["POST"])
+@rate_limit(20, 60)
+def discussions_reply(thread_id: int):
+    """Handle the reply form on a thread (Post/Redirect/Get)."""
+    try:
+        forum.add_reply(
+            thread_id,
+            author=request.form.get("author"),
+            body=request.form.get("body"),
+        )
+    except ValueError as e:
+        return redirect(url_for("discussion_thread_page", thread_id=thread_id, error=str(e)))
+    return redirect(url_for("discussion_thread_page", thread_id=thread_id) + f"#reply-latest")
 
 
 @app.route("/vocabulary")
