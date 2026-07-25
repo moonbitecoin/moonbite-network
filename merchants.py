@@ -252,21 +252,15 @@ def create_invoice(
     return invoice_status(inv_id, received_lookup)
 
 
-def invoice_status(invoice_id: str, received_lookup: ReceivedLookup) -> dict:
-    """Return an invoice with a *fresh* payment check against the chain."""
-    with _lock:
-        conn = _connect()
-        row = conn.execute(
-            "SELECT * FROM invoices WHERE id = ?", (invoice_id,)
-        ).fetchone()
-        if row is None:
-            raise ValueError("invoice not found")
-        inv = dict(row)
+def _settle_invoice(inv: dict, received_now: int, now: int) -> dict:
+    """Given a fresh on-chain reading, transition one pending invoice and persist.
 
-    received_now = int(received_lookup(inv["address"]))
+    Pure observation: a NEW inbound total of at least the invoiced amount (over
+    the baseline snapshotted at creation) flips 'pending' -> 'paid'; a lapsed TTL
+    flips it -> 'expired'. Terminal invoices are never re-touched. Returns the
+    invoice enriched with the live payment view.
+    """
     paid_units = max(0, received_now - inv["baseline_units"])
-    now = int(time.time())
-
     new_status = inv["status"]
     paid_at = inv["paid_at"]
     if inv["status"] == "pending":
@@ -281,7 +275,7 @@ def invoice_status(invoice_id: str, received_lookup: ReceivedLookup) -> dict:
             conn = _connect()
             conn.execute(
                 "UPDATE invoices SET status = ?, paid_at = ? WHERE id = ?",
-                (new_status, paid_at, invoice_id),
+                (new_status, paid_at, inv["id"]),
             )
             conn.commit()
         inv["status"] = new_status
@@ -294,4 +288,87 @@ def invoice_status(invoice_id: str, received_lookup: ReceivedLookup) -> dict:
         "received_now": received_now,
         "seconds_left": max(0, inv["expires_at"] - now),
         "pay_uri": build_pay_uri(inv["address"], amt, inv["memo"]),
+    }
+
+
+def invoice_status(invoice_id: str, received_lookup: ReceivedLookup) -> dict:
+    """Return an invoice with a *fresh* payment check against the chain."""
+    with _lock:
+        conn = _connect()
+        row = conn.execute(
+            "SELECT * FROM invoices WHERE id = ?", (invoice_id,)
+        ).fetchone()
+        if row is None:
+            raise ValueError("invoice not found")
+        inv = dict(row)
+
+    return _settle_invoice(inv, int(received_lookup(inv["address"])), int(time.time()))
+
+
+def list_invoices(
+    received_lookup: ReceivedLookup, merchant_id: Optional[str] = None
+) -> list[dict]:
+    """Return a merchant's invoices, each with a fresh chain-payment check.
+
+    A shop dashboard's read view: newest first, optionally scoped to one
+    merchant. Every returned invoice is passed through the same observation as
+    invoice_status, so simply listing also advances any that have been paid or
+    have expired since last seen.
+    """
+    with _lock:
+        conn = _connect()
+        if merchant_id:
+            rows = conn.execute(
+                "SELECT * FROM invoices WHERE merchant_id = ? ORDER BY created_at DESC",
+                (merchant_id,),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM invoices ORDER BY created_at DESC"
+            ).fetchall()
+    now = int(time.time())
+    # Cache lookups per address so a shop with many invoices hits the chain once
+    # per distinct address, not once per invoice.
+    seen: dict = {}
+    out = []
+    for r in rows:
+        inv = dict(r)
+        addr = inv["address"]
+        if addr not in seen:
+            seen[addr] = int(received_lookup(addr))
+        out.append(_settle_invoice(inv, seen[addr], now))
+    return out
+
+
+def poll_pending_invoices(received_lookup: ReceivedLookup) -> dict:
+    """Sweep every still-pending invoice once, advancing paid/expired ones.
+
+    The automation behind "auto-mark an invoice paid": a shop (or a timer) calls
+    this to reconcile all open invoices against the chain in a single pass,
+    instead of polling each invoice by hand. Non-custodial and idempotent — it
+    only observes and records; it never moves funds. Returns a small summary.
+    """
+    with _lock:
+        conn = _connect()
+        rows = conn.execute(
+            "SELECT * FROM invoices WHERE status = 'pending'"
+        ).fetchall()
+    now = int(time.time())
+    seen: dict = {}
+    paid, expired = [], []
+    for r in rows:
+        inv = dict(r)
+        addr = inv["address"]
+        if addr not in seen:
+            seen[addr] = int(received_lookup(addr))
+        settled = _settle_invoice(inv, seen[addr], now)
+        if settled["status"] == "paid":
+            paid.append(settled["id"])
+        elif settled["status"] == "expired":
+            expired.append(settled["id"])
+    return {
+        "checked": len(rows),
+        "paid": paid,
+        "expired": expired,
+        "addresses_scanned": len(seen),
     }

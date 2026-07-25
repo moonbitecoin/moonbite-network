@@ -610,6 +610,36 @@ def _qr_svg(payload: str) -> Optional[str]:
     return buf.getvalue().decode("utf-8")
 
 
+@app.route("/api/merchant/invoices", methods=["GET"])
+def api_merchant_invoices_list():
+    """List invoices (optionally for one merchant), each freshly checked on-chain.
+
+    A shop dashboard read: pass ?merchant_id=… to scope to one seller. Listing
+    also advances any invoice that has been paid or expired since last seen.
+    """
+    merchant_id = request.args.get("merchant_id")
+    try:
+        rows = merchants.list_invoices(received_at_address, merchant_id=merchant_id)
+        return jsonify({"status": "success", "invoices": rows}), 200
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
+@app.route("/api/merchant/invoices/poll", methods=["POST"])
+@rate_limit(10, 60)
+def api_merchant_invoices_poll():
+    """Sweep all pending invoices once, auto-marking paid/expired ones.
+
+    The automation a shop (or a timer) uses so it need not poll each invoice by
+    hand. Non-custodial: only observes the chain and records the result.
+    """
+    try:
+        summary = merchants.poll_pending_invoices(received_at_address)
+        return jsonify({"status": "success", **summary}), 200
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
 @app.route("/api/merchant/invoice/<invoice_id>/qr.svg", methods=["GET"])
 def api_merchant_invoice_qr(invoice_id: str):
     """Serve a scannable QR of the invoice's BIP21-style payment URI.
