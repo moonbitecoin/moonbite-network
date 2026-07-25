@@ -10,8 +10,8 @@
     <div class="mb-container">
         <div class="mb-hero-inner">
             <span class="mb-badge"><span class="mb-dot"></span> Non-custodial order book</span>
-            <h1 class="mb-hero-title">The MoonBite <span class="mb-gradient-text">internal exchange.</span></h1>
-            <p class="mb-hero-sub">Post what you'd trade MBITE for — or take someone else's offer — in LTC, BTC or USDT. The server only matches offers. It never touches your coins or keys. You settle wallet-to-wallet with an atomic swap.</p>
+            <h1 class="mb-hero-title">An exchange that <span class="mb-gradient-text">can't hold your coins.</span></h1>
+            <p class="mb-hero-sub">Post what you'd trade MBITE for, or take someone else's offer — in LTC, BTC or USDT. This board only introduces buyers and sellers. Your coins and keys never touch our server; you settle wallet-to-wallet with an atomic swap.</p>
             <div class="mb-cta-row">
                 <a href="#book" class="btn btn-primary mb-btn-xl">Open the order book</a>
                 <a href="#place" class="btn btn-secondary mb-btn-xl">Post an order</a>
@@ -23,13 +23,13 @@
 <section class="mb-section" id="book">
     <div class="mb-container">
         <div class="mb-banner mb-reveal" style="margin-bottom: var(--spacing-2xl);">
-            <span>ℹ️ <strong>This is not a live market.</strong> Prices below are offers people posted, not a traded value. MBITE is pre-mainnet and MoonBite is <strong>not an investment or a security</strong>. The server holds no funds — every trade settles directly between two wallets.</span>
+            <span>ℹ️ <strong>This is not a live market.</strong> Every number below is an offer someone typed in — not a traded price, not a valuation. MBITE is pre-mainnet and MoonBite is <strong>not an investment or a security</strong>. The server holds no funds; every trade settles directly between two wallets.</span>
         </div>
 
         <div class="mb-section-head mb-reveal">
             <span class="mb-eyebrow">Order book</span>
-            <h2 class="mb-section-title">Live open orders</h2>
-            <p class="mb-section-sub">Pick a pair. Green is people wanting to buy MBITE (bids); red is people selling MBITE (asks).</p>
+            <h2 class="mb-section-title">Who's offering what.</h2>
+            <p class="mb-section-sub">Pick a pair. Green is people wanting to buy MBITE (bids); red is people selling it (asks). Every row is a real person's standing offer.</p>
         </div>
 
         <div class="mb-ex-tabs mb-reveal" role="tablist" id="mbExTabs">
@@ -68,8 +68,8 @@
     <div class="mb-container">
         <div class="mb-section-head mb-reveal">
             <span class="mb-eyebrow">Post an order</span>
-            <h2 class="mb-section-title">Offer to buy or sell MBITE</h2>
-            <p class="mb-section-sub">You're posting a public offer, not sending coins. Give the address where you'd receive payment so a taker knows where to send. Nothing moves until you both run the swap.</p>
+            <h2 class="mb-section-title">Name your price.</h2>
+            <p class="mb-section-sub">You're posting a public offer, not sending coins. Drop in the address where you'd get paid so a taker knows where to send. Nothing moves until you both run the swap.</p>
         </div>
 
         <form class="mb-ex-form mb-reveal" id="mbExForm" autocomplete="off">
@@ -125,36 +125,36 @@
     <div class="mb-container">
         <div class="mb-section-head mb-reveal">
             <span class="mb-eyebrow">How settlement works</span>
-            <h2 class="mb-section-title">You trade wallet-to-wallet</h2>
-            <p class="mb-section-sub">The order book is just a meeting point. When two people agree, they swap coins directly — no middleman ever holds the money.</p>
+            <h2 class="mb-section-title">No middleman ever holds the money.</h2>
+            <p class="mb-section-sub">The order book is just where two people shake hands. When you agree, the coins move directly between your wallets — the math guarantees it, not us.</p>
         </div>
         <div class="mb-grid mb-grid-3 mb-reveal">
             <div class="mb-card">
                 <div class="mb-card-icon">📝</div>
                 <h3 class="mb-card-title">1 · Post or take an offer</h3>
-                <p class="mb-card-text">Add a buy or sell order, or find one you like in the book. You share only the addresses where each of you gets paid.</p>
+                <p class="mb-card-text">Add a buy or sell order, or grab one you like from the book. The only thing you share is the address where you get paid.</p>
             </div>
             <div class="mb-card">
                 <div class="mb-card-icon">🔒</div>
                 <h3 class="mb-card-title">2 · Atomic swap</h3>
-                <p class="mb-card-text">Both sides lock funds in a hash-time-locked contract. Either the whole trade happens, or everyone gets their coins back. Nobody can run off with the money.</p>
+                <p class="mb-card-text">Both sides lock funds in a hash-time-locked contract. Either the full trade clears, or everyone gets their coins back. There is no version where one side walks away with both.</p>
             </div>
             <div class="mb-card">
                 <div class="mb-card-icon">✅</div>
                 <h3 class="mb-card-title">3 · Done</h3>
-                <p class="mb-card-text">MBITE ⇄ LTC or BTC swaps natively (shared Bitcoin script family). USDT needs a smart-contract leg. The server just recorded that you two matched.</p>
+                <p class="mb-card-text">MBITE ⇄ LTC or BTC swaps natively — they share the Bitcoin script family. USDT needs a smart-contract leg. All the server ever did was note that you two matched.</p>
             </div>
         </div>
         <div class="mb-banner mb-reveal" style="margin-top: var(--spacing-2xl);">
-            <span>🚧 <strong>Automated swap coordination isn't built yet (Phase 2).</strong> For now the exchange matches orders and hands you both the addresses; you run the atomic swap with an external tool. We will never route funds through this server.</span>
+            <span>🚧 <strong>Automated swap coordination isn't built yet (Phase 2).</strong> Today the exchange matches orders and hands you both the addresses; you run the atomic swap with an external tool. Funds will never route through this server — not now, not after Phase 2.</span>
         </div>
     </div>
 </section>
 
 <section class="mb-section" id="notify" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
     <div class="mb-container">
-        {% set notify_title = "Get told when new pairs & the swap engine go live" %}
-        {% set notify_text = "Leave your email and we'll tell you when the automated atomic-swap coordinator ships or a new pair opens. That's all we'll send." %}
+        {% set notify_title = "Know the moment the swap engine ships" %}
+        {% set notify_text = "Leave an email and we'll ping you when the automated atomic-swap coordinator goes live or a new pair opens. Nothing else — no price alerts, no spam." %}
         {% set notify_source = "markets" %}
         {% include "partials/notify_form.html" %}
     </div>
