@@ -68,21 +68,30 @@
   nav.top a.supply, nav.top a.proof, nav.top a.firstbite { display: inline; padding: 0; }
   nav.top .menu-btn { background: none; border: 0; cursor: pointer;
     font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 2.2px;
-    color: rgba(242,246,255,0.62); padding: 0; transition: color .2s ease; }
-  nav.top .menu-btn:hover { color: var(--ice); }
+    color: rgba(242,246,255,0.62); padding: 0; transition: color .2s ease;
+    display: inline-flex; align-items: center; gap: 7px; }
+  nav.top .menu-btn:hover, nav.top .menu-btn[aria-expanded="true"] { color: var(--ice); }
+  nav.top .menu-btn .cx { font-size: 8px; opacity: 0.7; transition: transform .2s ease; }
+  nav.top .menu-btn[aria-expanded="true"] .cx { transform: rotate(180deg); }
 
-  /* ---------- full sitemap overlay ---------- */
-  .menu-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(4,5,10,0.92);
-    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  /* ---------- header mega-menu (full sitemap, drops down under the header) ---------- */
+  .menu-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(4,5,10,0.55);
+    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
     opacity: 0; transition: opacity .25s ease; }
   .menu-overlay.open { opacity: 1; }
-  .menu-panel { position: relative; max-width: 1080px; margin: 0 auto;
-    padding: 120px 44px 60px; }
+  .menu-panel { position: relative; margin: 0; padding: 104px 44px 46px;
+    background: rgba(6,8,14,0.98);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(95,233,208,0.18);
+    box-shadow: 0 30px 70px rgba(0,0,0,0.55);
+    transform: translateY(-14px); transition: transform .28s ease; }
+  .menu-overlay.open .menu-panel { transform: translateY(0); }
   .menu-close { position: absolute; top: 26px; right: 40px; background: none; border: 0;
     color: rgba(242,246,255,0.62); font-size: 34px; line-height: 1; cursor: pointer;
     transition: color .2s ease; }
   .menu-close:hover { color: var(--ice); }
-  .menu-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 34px; }
+  .menu-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 34px;
+    max-width: 1200px; margin: 0 auto; }
   .menu-col h4 { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 2px;
     text-transform: uppercase; color: rgba(242,246,255,0.42); margin: 0 0 16px; font-weight: 500; }
   .menu-col a { display: block; padding: 6px 0; color: rgba(242,246,255,0.82);
@@ -325,7 +334,7 @@
   <div class="bg-scan"></div>
 
   <nav class="top">
-    <button class="menu-btn" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false">MENU</button>
+    <button class="menu-btn" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false">MENU <span class="cx">&#9660;</span></button>
     <a href="/mine">MINE</a>
     <a class="supply" href="#supply">SUPPLY</a>
     <a class="proof" href="#proof">PROOF</a>
@@ -691,12 +700,20 @@
     mBtn.setAttribute("aria-expanded", "false");
     setTimeout(function () { mOv.hidden = true; }, 260);
   }
-  if (mBtn) mBtn.addEventListener("click", openMenu);
+  function toggleMenu() { (mOv && mOv.hidden) ? openMenu() : closeMenu(); }
+  if (mBtn) mBtn.addEventListener("click", toggleMenu);
   if (mClose) mClose.addEventListener("click", closeMenu);
   if (mOv) mOv.addEventListener("click", function (e) { if (e.target === mOv) closeMenu(); });
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && mOv && !mOv.hidden) closeMenu();
   });
+  // Desktop: open on hover, close when the pointer leaves the dropped panel.
+  var finePointer = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  if (finePointer && mBtn && mOv) {
+    var mPanel = mOv.querySelector(".menu-panel");
+    mBtn.addEventListener("mouseenter", openMenu);
+    if (mPanel) mPanel.addEventListener("mouseleave", closeMenu);
+  }
 })();
 </script>
 </body>
