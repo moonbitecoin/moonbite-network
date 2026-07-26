@@ -50,6 +50,19 @@ html[data-theme="dark"] body.mb-v2 {
     --border-radius-lg: 4px;
 }
 
+/* ------------------------------------------------ reveal animations */
+@keyframes mbRise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes mbRowIn { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes mbFade { from { opacity: 0; } to { opacity: 1; } }
+
+body.mb-v2 .mb-reveal {
+    opacity: 0;
+    transform: translateY(26px);
+}
+body.mb-v2 .mb-reveal.is-visible {
+    animation: mbRise 0.8s cubic-bezier(0.2, 0, 0.1, 1) forwards;
+}
+
 body.mb-v2 {
     background: var(--void);
     color: var(--ice);
