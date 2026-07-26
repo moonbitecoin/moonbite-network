@@ -245,14 +245,19 @@
   .receipt-rows .row .t { color: rgba(242,246,255,0.72); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
   .receipt-foot { padding: 14px 20px; border-top: 1px dashed rgba(242,246,255,0.18); font-size: 10.5px; letter-spacing: 2.4px; color: rgba(242,246,255,0.4); }
 
-  /* ---------- footer ---------- */
-  footer.site { padding: 0 44px 70px; display: flex; flex-direction: column; gap: 26px; }
-  footer.site .rule { border-top: 1px solid rgba(242,246,255,0.1); }
-  footer.site .row { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 30px; }
-  footer.site p { margin: 0; max-width: 620px; font-size: 15px; line-height: 1.66; color: rgba(242,246,255,0.5); text-wrap: pretty; }
-  footer.site .links { display: flex; flex-wrap: wrap; gap: 26px; font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 2.4px; }
-  footer.site .links a { color: rgba(242,246,255,0.55); }
-  footer.site .links a:hover { color: var(--ice); }
+  /* ---------- footer (unified mega-footer, scoped to the cinematic palette) ---------- */
+  footer.mb-footer { border-top: 1px solid rgba(242,246,255,0.1); background: rgba(255,255,255,0.015); padding: 64px 0 30px; margin-top: 40px; }
+  footer.mb-footer .mb-container { max-width: 1200px; margin: 0 auto; padding: 0 44px; }
+  .mb-footer-cols { display: grid; grid-template-columns: 1.4fr repeat(5, 1fr); gap: 34px; margin-bottom: 34px; }
+  .mb-footer .mb-brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; margin-bottom: 16px; }
+  .mb-footer .mb-brand-name { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 20px; color: var(--ice); }
+  .mb-footer-brand p { margin: 0; color: rgba(242,246,255,0.5); font-size: 14px; line-height: 1.55; max-width: 260px; text-wrap: pretty; }
+  .mb-footer-col h4 { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(242,246,255,0.5); margin: 0 0 14px; }
+  .mb-footer-col a { display: block; padding: 5px 0; color: rgba(242,246,255,0.72); text-decoration: none; font-size: 14px; }
+  .mb-footer-col a:hover { color: var(--accent); }
+  .mb-footer-bottom { border-top: 1px solid rgba(242,246,255,0.1); padding-top: 24px; display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; color: rgba(242,246,255,0.5); font-size: 13px; }
+  .mb-footer-legal { max-width: 620px; line-height: 1.5; }
+  .mb-footer-legal strong { color: rgba(242,246,255,0.72); }
 
   .replay { position: fixed; right: 26px; bottom: 26px; z-index: 50; display: inline-flex; align-items: center; gap: 9px;
     padding: 11px 16px; background: rgba(4,5,10,0.7); border: 1px solid rgba(242,246,255,0.2); color: rgba(242,246,255,0.7);
@@ -270,7 +275,8 @@
     .proof { padding: 0 32px 96px; }
     .firstbite { padding: 0 32px 100px; }
     .fb-box { padding: 44px 32px; gap: 40px; }
-    footer.site { padding: 0 32px 60px; }
+    footer.mb-footer .mb-container { padding: 0 32px; }
+    .mb-footer-cols { grid-template-columns: 1fr 1fr; }
     .receipt { justify-self: stretch; max-width: 100%; }
   }
 
@@ -289,8 +295,9 @@
     .sec-head { flex-wrap: wrap; }
     .fb-box { padding: 32px 20px; gap: 30px; }
     .wcard { padding: 26px; }
-    footer.site { padding: 0 20px 54px; }
-    footer.site .row { flex-direction: column; gap: 22px; }
+    footer.mb-footer .mb-container { padding: 0 20px; }
+    .mb-footer-cols { grid-template-columns: 1fr; gap: 26px; }
+    .mb-footer-bottom { flex-direction: column; align-items: flex-start; gap: 14px; }
     .replay { right: 14px; bottom: 14px; }
   }
 
@@ -580,19 +587,7 @@
       </div>
     </section>
 
-    <footer class="site">
-      <div class="rule"></div>
-      <div class="row">
-        <p>MoonBite is pre-mainnet and open source. It is not an investment or a security, it carries no promise of future value, and it isn't trading anywhere yet. Nothing here is a price prediction &mdash; only what you can verify today. No trackers, no ads.</p>
-        <div class="links">
-          <a href="/get-wallet">WALLET</a>
-          <a href="/mine">MINING</a>
-          <a href="/explorer">EXPLORER</a>
-          <a href="/developers">DOCS</a>
-          <a href="/markets">NOTIFY ME</a>
-        </div>
-      </div>
-    </footer>
+    {% include "partials/mega_footer.html" %}
   </main>
 
   <button class="replay" id="replay" type="button">&#8635; REPLAY SPLASH</button>
