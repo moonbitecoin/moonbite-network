@@ -34,40 +34,84 @@
   .bg-scan { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.4; background: repeating-linear-gradient(to bottom, rgba(242,246,255,0.05) 0 1px, transparent 1px 6px); }
   .wrap { position: relative; min-height: 100vh; overflow-x: hidden; }
 
-  nav.site { position: relative; z-index: 30; display: flex; align-items: center; justify-content: space-between; gap: 26px; padding: 24px 44px; animation: mbFade 0.7s ease-out both; }
-  nav.site .brand { display: flex; align-items: center; gap: 11px; }
-  nav.site .brand span { font-size: 17px; font-weight: 700; }
-  nav.site .links { display: flex; align-items: center; gap: 26px; font-size: 11px; letter-spacing: 2.2px; }
-  nav.site .links a { color: rgba(242,246,255,0.55); }
-  nav.site .links a:hover { color: #F2F6FF; }
-  nav.site .links .menu-btn { background: none; border: 0; cursor: pointer;
-    font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 2.2px;
-    color: rgba(242,246,255,0.55); padding: 0; transition: color .2s ease; }
-  nav.site .links .menu-btn:hover { color: #F2F6FF; }
+  /* ---------- mega-nav (shared partials/mega_nav.html, scoped to cinematic palette) ---------- */
+  .mb-meganav { position: sticky; top: 0; z-index: 100;
+    background: rgba(4,5,10,0.72); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(242,246,255,0.08); animation: mbFade 0.7s ease-out both; }
+  .mb-nav-inner { max-width: 1320px; margin: 0 auto; padding: 0 44px; height: 64px;
+    display: flex; align-items: center; gap: 18px; }
+  .mb-brand { display: flex; align-items: center; gap: 10px; font-size: 1.15rem; font-weight: 700;
+    text-decoration: none; color: #F2F6FF; white-space: nowrap; }
+  .mb-brand img { width: 30px; height: 30px; }
+  .mb-brand .mb-brand-name { background: linear-gradient(90deg, var(--accent), #5B7BFF);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 
-  /* ---------- full sitemap overlay ---------- */
-  .menu-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(4,5,10,0.92);
-    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
-    opacity: 0; transition: opacity .25s ease; }
-  .menu-overlay.open { opacity: 1; }
-  .menu-panel { position: relative; max-width: 1080px; margin: 0 auto; padding: 120px 44px 60px; }
-  .menu-close { position: absolute; top: 26px; right: 40px; background: none; border: 0;
-    color: rgba(242,246,255,0.62); font-size: 34px; line-height: 1; cursor: pointer;
-    transition: color .2s ease; }
-  .menu-close:hover { color: #F2F6FF; }
-  .menu-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 34px; }
-  .menu-col h4 { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 2px;
-    text-transform: uppercase; color: rgba(242,246,255,0.42); margin: 0 0 16px; font-weight: 500; }
-  .menu-col a { display: block; padding: 6px 0; color: rgba(242,246,255,0.82);
-    font-size: 14px; transition: color .2s ease; }
-  .menu-col a:hover { color: var(--accent); }
-  @media (max-width: 860px) {
-    .menu-grid { grid-template-columns: 1fr 1fr; gap: 26px; }
-    .menu-panel { padding: 96px 24px 48px; }
+  .mb-nav-links { display: flex; align-items: center; gap: 2px; list-style: none;
+    margin: 0 auto 0 18px; padding: 0; }
+  .mb-nav-item { position: relative; }
+  .mb-nav-trigger { display: inline-flex; align-items: center; gap: 6px; padding: 8px 11px;
+    border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500;
+    letter-spacing: 1.4px; text-transform: uppercase; color: rgba(242,246,255,0.62);
+    background: none; border: none; cursor: pointer; white-space: nowrap; transition: color .2s ease, background .2s ease; }
+  .mb-nav-trigger:hover, .mb-nav-item.is-open .mb-nav-trigger { color: #F2F6FF; background: rgba(242,246,255,0.06); }
+  .mb-nav-trigger .mb-caret { width: 7px; height: 7px; border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px);
+    transition: transform .2s ease; opacity: 0.7; }
+  .mb-nav-item.is-open .mb-caret { transform: rotate(-135deg) translateY(-1px); }
+
+  .mb-dropdown { position: absolute; top: calc(100% + 10px); left: 0; min-width: 244px; padding: 8px;
+    background: rgba(6,8,14,0.98); border: 1px solid rgba(95,233,208,0.18); border-radius: 4px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    opacity: 0; visibility: hidden; transform: translateY(-6px);
+    transition: opacity .18s ease, transform .18s ease, visibility .18s; }
+  .mb-nav-item.is-open .mb-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
+  .mb-dropdown a { display: flex; flex-direction: column; gap: 2px; padding: 9px 12px; border-radius: 3px;
+    text-decoration: none; color: rgba(242,246,255,0.86); transition: background .15s ease, color .15s ease; }
+  .mb-dropdown a:hover { background: rgba(95,233,208,0.08); }
+  .mb-dropdown a .mb-dd-title { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.92rem; letter-spacing: 0; }
+  .mb-dropdown a .mb-dd-desc { font-size: 0.76rem; color: rgba(242,246,255,0.5); letter-spacing: 0; }
+  .mb-dropdown a:hover .mb-dd-title { color: var(--accent); }
+
+  .mb-nav-cta { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+  .mb-nav-cta .mb-theme-btn { display: none; }
+  .mb-meganav .mb-nav-cta-btn { display: inline-flex; align-items: center; padding: 10px 18px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 1.8px; text-transform: uppercase;
+    border-radius: 2px; white-space: nowrap; transition: filter .2s ease, background .2s ease, border-color .2s ease, color .2s ease; }
+  .mb-meganav .mb-nav-cta-btn.btn-secondary { border: 1px solid rgba(242,246,255,0.22); color: #F2F6FF; background: none; }
+  .mb-meganav .mb-nav-cta-btn.btn-secondary:hover { border-color: #F2F6FF; }
+  .mb-meganav .mb-nav-cta-btn.btn-primary { background: var(--accent); color: #04050a; border: 1px solid var(--accent); }
+  .mb-meganav .mb-nav-cta-btn.btn-primary:hover { filter: brightness(1.12); }
+
+  .mb-hamburger { display: none; flex-direction: column; justify-content: center; gap: 5px;
+    width: 42px; height: 42px; border: 1px solid rgba(242,246,255,0.22); border-radius: 3px;
+    background: none; cursor: pointer; }
+  .mb-hamburger span { display: block; height: 2px; width: 20px; margin: 0 auto; background: #F2F6FF; transition: transform .2s ease; }
+
+  /* mobile full-screen sheet */
+  .mb-mobile-sheet { position: fixed; inset: 0; z-index: 200; background: #04050a;
+    padding: 22px; overflow-y: auto; transform: translateX(100%);
+    transition: transform .3s cubic-bezier(0.4,0,0.2,1); }
+  .mb-mobile-sheet.is-open { transform: translateX(0); }
+  .mb-mobile-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+  .mb-mobile-close { background: none; border: none; color: #F2F6FF; font-size: 1.8rem; cursor: pointer; line-height: 1; }
+  .mb-mobile-group { border-bottom: 1px solid rgba(242,246,255,0.1); }
+  .mb-mobile-group > button { width: 100%; display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 4px; background: none; border: none; color: #F2F6FF; font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.05rem; font-weight: 600; cursor: pointer; }
+  .mb-mobile-group .mb-mobile-links { display: none; padding: 0 0 12px 4px; }
+  .mb-mobile-group.is-open .mb-mobile-links { display: block; }
+  .mb-mobile-links a { display: block; padding: 9px 0; color: rgba(242,246,255,0.6); text-decoration: none; }
+  .mb-mobile-links a:hover { color: var(--accent); }
+  .mb-mobile-cta { margin-top: 22px; display: grid; gap: 12px; }
+  .mb-mobile-cta .btn { justify-content: center; }
+
+  @media (max-width: 1120px) {
+    .mb-nav-links { display: none; }
+    .mb-nav-cta .mb-nav-cta-btn { display: none; }
+    .mb-hamburger { display: flex; }
   }
-  @media (max-width: 480px) {
-    .menu-grid { grid-template-columns: 1fr; }
-  }
+  @media (max-width: 640px) { .mb-nav-inner { padding: 0 20px; } }
 
   .hero { position: relative; z-index: 10; display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 64px; align-items: center; padding: 56px 44px 84px; max-width: 1320px; margin: 0 auto; }
   .hero-copy { display: flex; flex-direction: column; gap: 28px; animation: mbRise 0.9s cubic-bezier(0.2,0,0.1,1) both; }
@@ -186,8 +230,6 @@
   .flash { position: fixed; inset: 0; z-index: 60; pointer-events: none; background: var(--accent); opacity: 0; }
 
   @media (max-width: 640px) {
-    nav.site { flex-wrap: wrap; gap: 14px; padding: 20px 22px; }
-    nav.site .links { gap: 16px; flex-wrap: wrap; }
     .hero { padding: 40px 22px 64px; gap: 44px; }
     .wall, .honest { padding-left: 22px; padding-right: 22px; }
     footer.site { padding-left: 22px; padding-right: 22px; }
@@ -204,86 +246,7 @@
 <div class="bg-scan"></div>
 <div class="wrap">
 
-  <nav class="site">
-    <div class="brand">
-      <div style="position: relative; width: 28px; height: 28px; flex: none">
-        <svg viewBox="-100 -100 200 200" style="position: absolute; inset: 0">
-          <mask id="mbNavMask" maskUnits="userSpaceOnUse" x="-100" y="-100" width="200" height="200">
-            <rect x="-100" y="-100" width="200" height="200" fill="#fff" />
-            <circle cx="50" cy="-13" r="84" fill="#000" />
-          </mask>
-          <g mask="url(#mbNavMask)"><circle cx="0" cy="0" r="93" fill="#F2F6FF" /></g>
-        </svg>
-      </div>
-      <span>MOON<span style="color: var(--accent)">BITE</span></span>
-    </div>
-    <div class="links mono">
-      <button class="menu-btn" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false">MENU</button>
-      <a href="#wall">THE WALL</a>
-      <a href="/explorer">EXPLORER</a>
-      <a href="#honest">RISKS</a>
-      <a href="/get-wallet">WALLET</a>
-    </div>
-  </nav>
-
-  <!-- Full sitemap overlay: every page, in the same void/mono palette -->
-  <div class="menu-overlay" id="menuOverlay" hidden>
-    <div class="menu-panel">
-      <button class="menu-close" id="menuClose" type="button" aria-label="Close menu">&times;</button>
-      <div class="menu-grid">
-        <div class="menu-col">
-          <h4>Start</h4>
-          <a href="/getting-started">Getting Started</a>
-          <a href="/how-it-works">How It Works</a>
-          <a href="/take-a-bite">Take a Bite</a>
-          <a href="/individuals">For Individuals</a>
-          <a href="/businesses">For Businesses</a>
-          <a href="/you-need-to-know">You Need to Know</a>
-          <a href="/why">Why MoonBite</a>
-          <a href="/whitepaper">White Paper</a>
-        </div>
-        <div class="menu-col">
-          <h4>Get &amp; use MBITE</h4>
-          <a href="/get-wallet">Wallet</a>
-          <a href="/wallet">Web Wallet</a>
-          <a href="/mine">Mining</a>
-          <a href="/mining">Live Reactor</a>
-          <a href="/buy">Buy MBITE</a>
-          <a href="/sell">Sell MBITE</a>
-          <a href="/markets">Exchange</a>
-          <a href="/merchants">Accept MBITE</a>
-        </div>
-        <div class="menu-col">
-          <h4>Explore &amp; build</h4>
-          <a href="/explorer">Explorer</a>
-          <a href="/dashboard">Dashboard</a>
-          <a href="/exchanges">Exchanges</a>
-          <a href="/developers">Developers</a>
-          <a href="/full-node">Run a Full Node</a>
-          <a href="/moonbite-core">MoonBite Core</a>
-          <a href="/development">Development</a>
-        </div>
-        <div class="menu-col">
-          <h4>Learn &amp; community</h4>
-          <a href="/learn">Learn &amp; FAQ</a>
-          <a href="/resources">Resources</a>
-          <a href="/vocabulary">Vocabulary</a>
-          <a href="/community">Community</a>
-          <a href="/support">Support MoonBite</a>
-          <a href="/events">Events</a>
-          <a href="/blog">Blog</a>
-          <a href="/about">About</a>
-        </div>
-        <div class="menu-col">
-          <h4>Safety &amp; legal</h4>
-          <a href="/scams">Avoid Scams</a>
-          <a href="/press">Press</a>
-          <a href="/legal">Legal</a>
-          <a href="/privacy">Privacy</a>
-        </div>
-      </div>
-    </div>
-  </div>
+  {% include "partials/mega_nav.html" %}
 
   <section class="hero">
     <div class="hero-copy">
@@ -656,25 +619,32 @@
   // the chain advances on its own, like a live tip
   chain = setInterval(function () { state.height += 1; render(); }, 9000);
 
-  // ---------- sitemap overlay ----------
-  var mBtn = $("menuBtn"), mOv = $("menuOverlay"), mClose = $("menuClose");
-  function openMenu() {
-    mOv.hidden = false;
-    void mOv.offsetWidth; // force reflow so the fade-in transition runs
-    mOv.classList.add("open");
-    mBtn.setAttribute("aria-expanded", "true");
-  }
-  function closeMenu() {
-    mOv.classList.remove("open");
-    mBtn.setAttribute("aria-expanded", "false");
-    setTimeout(function () { mOv.hidden = true; }, 260);
-  }
-  if (mBtn) mBtn.addEventListener("click", openMenu);
-  if (mClose) mClose.addEventListener("click", closeMenu);
-  if (mOv) mOv.addEventListener("click", function (e) { if (e.target === mOv) closeMenu(); });
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && mOv && !mOv.hidden) closeMenu();
+  // ---------- mega-nav dropdowns (same behaviour as site.js on every other page) ----------
+  var navItems = Array.prototype.slice.call(document.querySelectorAll(".mb-nav-item"));
+  function closeAllDropdowns() { navItems.forEach(function (i) { i.classList.remove("is-open"); }); }
+  navItems.forEach(function (item) {
+    var trigger = item.querySelector(".mb-nav-trigger");
+    if (!trigger || !item.querySelector(".mb-dropdown")) return;
+    trigger.addEventListener("click", function (e) {
+      e.preventDefault();
+      var wasOpen = item.classList.contains("is-open");
+      closeAllDropdowns();
+      if (!wasOpen) item.classList.add("is-open");
+    });
   });
+  var hamburger = document.querySelector(".mb-hamburger");
+  var sheet = document.querySelector(".mb-mobile-sheet");
+  var sheetClose = document.querySelector(".mb-mobile-close");
+  function openMobileSheet() { if (sheet) { sheet.classList.add("is-open"); document.body.style.overflow = "hidden"; } }
+  function closeMobileSheet() { if (sheet) { sheet.classList.remove("is-open"); document.body.style.overflow = ""; } }
+  if (hamburger) hamburger.addEventListener("click", openMobileSheet);
+  if (sheetClose) sheetClose.addEventListener("click", closeMobileSheet);
+  document.querySelectorAll(".mb-mobile-group > button").forEach(function (btn) {
+    btn.addEventListener("click", function () { btn.parentElement.classList.toggle("is-open"); });
+  });
+  document.querySelectorAll(".mb-mobile-links a").forEach(function (a) { a.addEventListener("click", closeMobileSheet); });
+  document.addEventListener("click", function (e) { if (!e.target.closest(".mb-nav-item")) closeAllDropdowns(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") { closeAllDropdowns(); closeMobileSheet(); } });
 
   render();
 })();
