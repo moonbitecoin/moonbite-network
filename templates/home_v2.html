@@ -27,7 +27,7 @@
 
   /* ---------- animation keyframes (ported verbatim from the design) ---------- */
   @keyframes mbFly {
-    0%, 55% { transform: translate(calc(50vw - 44px - 144px), calc(50vh - 40px - 24px)) scale(6); }
+    0%, 55% { transform: translate(calc(50vw - 44px - 144px), calc(50vh - 8px - 24px)) scale(6); }
     80%, 100% { transform: translate(0px, 0px) scale(1); }
   }
   @keyframes mbRing { 0% { opacity: 0; transform: scale(1.55) rotate(-28deg); } 18%, 100% { opacity: 1; transform: scale(1) rotate(0deg); } }
@@ -52,27 +52,54 @@
   .bg-scan { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.5;
     background: repeating-linear-gradient(to bottom, rgba(242,246,255,0.05) 0 1px, transparent 1px 6px); }
 
-  /* ---------- nav ---------- */
-  nav.top { position: fixed; top: 0; left: 0; right: 0; z-index: 40;
-    display: flex; align-items: center; justify-content: flex-end; gap: 30px;
-    padding: 30px 44px; font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 2.2px;
-    background: linear-gradient(#04050a 40%, rgba(4,5,10,0)); animation: mbFade 0.9s ease-out 0.92s both; }
+  /* ---------- nav (flush header bar) ---------- */
+  nav.top { position: fixed; top: 0; left: 0; right: 0; z-index: 40; height: 64px;
+    display: flex; align-items: center; justify-content: flex-end; gap: 14px;
+    padding: 0 44px; font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 2.2px;
+    background: rgba(4,5,10,0.72); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(242,246,255,0.07); animation: mbFade 0.9s ease-out 0.92s both; }
   nav.top a { color: rgba(242,246,255,0.62); transition: color .2s ease, background .2s ease; }
   nav.top a:hover { color: var(--ice); }
-  nav.top a.wallet { display: inline-flex; align-items: center; gap: 10px; padding: 11px 20px;
+  nav.top a.wallet { display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px;
     border: 1px solid var(--accent); color: var(--accent); border-radius: 2px; }
   nav.top a.wallet:hover { background: var(--accent); color: var(--void); }
   nav.top a.wallet span { opacity: 0.6; }
-  /* these nav links reuse the section class names (#supply/#proof/#firstbite);
-     reset so the section layout rules below don't inflate the nav links */
-  nav.top a.supply, nav.top a.proof, nav.top a.firstbite { display: inline; padding: 0; }
-  nav.top .menu-btn { background: none; border: 0; cursor: pointer;
-    font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 2.2px;
-    color: rgba(242,246,255,0.62); padding: 0; transition: color .2s ease;
-    display: inline-flex; align-items: center; gap: 7px; }
-  nav.top .menu-btn:hover, nav.top .menu-btn[aria-expanded="true"] { color: var(--ice); }
-  nav.top .menu-btn .cx { font-size: 8px; opacity: 0.7; transition: transform .2s ease; }
-  nav.top .menu-btn[aria-expanded="true"] .cx { transform: rotate(180deg); }
+  nav.top a.notify { display: inline-flex; align-items: center; padding: 10px 18px;
+    border: 1px solid rgba(242,246,255,0.22); border-radius: 2px; color: var(--ice); }
+  nav.top a.notify:hover { border-color: var(--ice); }
+
+  /* header dropdown menu */
+  .mb-hnav { display: flex; align-items: center; gap: 2px; list-style: none; margin: 0 auto 0 0; padding: 0; }
+  .mb-hitem { position: relative; }
+  .mb-htrig { background: none; border: 0; cursor: pointer; font-family: "JetBrains Mono", monospace;
+    font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: rgba(242,246,255,0.62);
+    padding: 9px 12px; display: inline-flex; align-items: center; gap: 6px; transition: color .2s ease; }
+  .mb-htrig:hover, .mb-hitem.open .mb-htrig { color: var(--ice); }
+  .mb-htrig .cx { font-size: 8px; opacity: 0.7; transition: transform .2s ease; }
+  .mb-hitem.open .mb-htrig .cx { transform: rotate(180deg); }
+  .mb-hdrop { position: absolute; top: calc(100% + 12px); left: 0; min-width: 232px; padding: 8px;
+    background: rgba(6,8,14,0.98); border: 1px solid rgba(95,233,208,0.18); border-radius: 4px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    opacity: 0; visibility: hidden; transform: translateY(-8px);
+    transition: opacity .2s ease, transform .2s ease, visibility .2s ease; }
+  .mb-hitem.open .mb-hdrop { opacity: 1; visibility: visible; transform: translateY(0); }
+  .mb-hdrop a { display: block; padding: 9px 12px; border-radius: 3px; color: rgba(242,246,255,0.82);
+    font-family: "Space Grotesk", sans-serif; font-size: 14px; letter-spacing: 0; text-transform: none;
+    transition: background .15s ease, color .15s ease; }
+  .mb-hdrop a:hover { background: rgba(95,233,208,0.08); color: var(--accent); }
+
+  /* hamburger (mobile only) */
+  nav.top .menu-btn { display: none; background: none; border: 0; cursor: pointer; padding: 8px;
+    width: 40px; height: 40px; align-items: center; justify-content: center; }
+  .mb-burger, .mb-burger::before, .mb-burger::after { content: ""; display: block; width: 22px; height: 2px;
+    background: var(--ice); border-radius: 2px; transition: transform .25s ease, opacity .2s ease; }
+  .mb-burger { position: relative; }
+  .mb-burger::before { position: absolute; top: -7px; left: 0; }
+  .mb-burger::after { position: absolute; top: 7px; left: 0; }
+  nav.top .menu-btn[aria-expanded="true"] .mb-burger { background: transparent; }
+  nav.top .menu-btn[aria-expanded="true"] .mb-burger::before { transform: translateY(7px) rotate(45deg); }
+  nav.top .menu-btn[aria-expanded="true"] .mb-burger::after { transform: translateY(-7px) rotate(-45deg); }
 
   /* ---------- header mega-menu (full sitemap, drops down under the header) ---------- */
   .menu-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(4,5,10,0.55);
@@ -106,7 +133,7 @@
   }
 
   /* ---------- flying logo ---------- */
-  .flylogo { position: fixed; left: 44px; top: 40px; height: 48px; z-index: 45; transform-origin: left center;
+  .flylogo { position: fixed; left: 44px; top: 8px; height: 48px; z-index: 45; transform-origin: left center;
     animation: mbFly 1.2s cubic-bezier(0.68,0,0.18,1) 0.05s both; }
   .flylogo-row { display: flex; align-items: center; gap: 14px; height: 48px; }
   .flylogo-mark { position: relative; width: 48px; height: 48px; flex: none; }
@@ -274,9 +301,16 @@
     backdrop-filter: blur(6px); transition: border-color .2s ease, color .2s ease; }
   .replay:hover { border-color: var(--ice); color: var(--ice); }
 
+  /* collapse the dropdown bar to a hamburger before the labels crowd the brand */
+  @media (max-width: 980px) {
+    .mb-hnav { display: none; }
+    nav.top a.notify { display: none; }
+    nav.top .menu-btn { display: inline-flex; }
+  }
+
   /* ---------- tablet ---------- */
   @media (max-width: 1024px) {
-    nav.top { padding: 26px 32px; gap: 24px; }
+    nav.top { padding: 0 32px; }
     .flylogo { left: 32px; }
     .hero { padding: 150px 32px 30px; }
     .reactor { padding: 96px 32px; gap: 46px; }
@@ -291,8 +325,7 @@
 
   /* ---------- mobile ---------- */
   @media (max-width: 640px) {
-    nav.top { gap: 16px; padding: 22px 20px; font-size: 11px; }
-    nav.top a.supply, nav.top a.proof, nav.top a.firstbite { display: none; }
+    nav.top { gap: 12px; padding: 0 20px; font-size: 11px; }
     .flylogo { left: 20px; }
     .hero { padding: 132px 20px 24px; }
     h1.head { letter-spacing: -1.5px; }
@@ -312,7 +345,7 @@
 
   /* ---------- small phones ---------- */
   @media (max-width: 400px) {
-    nav.top { padding: 18px 16px; gap: 12px; }
+    nav.top { padding: 0 16px; gap: 10px; }
     .flylogo { left: 16px; }
     .hero { padding: 120px 16px 20px; }
     .reactor, .waysin, .proof, .firstbite, footer.site { padding-left: 16px; padding-right: 16px; }
@@ -334,12 +367,83 @@
   <div class="bg-scan"></div>
 
   <nav class="top">
-    <button class="menu-btn" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false">MENU <span class="cx">&#9660;</span></button>
-    <a href="/mine">MINE</a>
-    <a class="supply" href="#supply">SUPPLY</a>
-    <a class="proof" href="#proof">PROOF</a>
-    <a class="firstbite" href="#firstbite">FIRST BITE</a>
+    <ul class="mb-hnav" id="mbHnav">
+      <li class="mb-hitem">
+        <button class="mb-htrig" type="button" aria-expanded="false">Start <span class="cx">&#9662;</span></button>
+        <div class="mb-hdrop">
+          <a href="/getting-started">Getting Started</a>
+          <a href="/how-it-works">How It Works</a>
+          <a href="/take-a-bite">Take a Bite</a>
+          <a href="/individuals">For Individuals</a>
+          <a href="/businesses">For Businesses</a>
+          <a href="/you-need-to-know">You Need to Know</a>
+        </div>
+      </li>
+      <li class="mb-hitem">
+        <button class="mb-htrig" type="button" aria-expanded="false">Wallet <span class="cx">&#9662;</span></button>
+        <div class="mb-hdrop">
+          <a href="/get-wallet">Download Wallet</a>
+          <a href="/wallet">Web Wallet</a>
+          <a href="/downloads/README.txt">All Downloads</a>
+        </div>
+      </li>
+      <li class="mb-hitem">
+        <button class="mb-htrig" type="button" aria-expanded="false">Mine <span class="cx">&#9662;</span></button>
+        <div class="mb-hdrop">
+          <a href="/mine">How to Mine</a>
+          <a href="/mining">Live Reactor</a>
+        </div>
+      </li>
+      <li class="mb-hitem">
+        <button class="mb-htrig" type="button" aria-expanded="false">Explore <span class="cx">&#9662;</span></button>
+        <div class="mb-hdrop">
+          <a href="/explorer">Block Explorer</a>
+          <a href="/dashboard">Network Dashboard</a>
+          <a href="/markets">Exchange</a>
+          <a href="/exchanges">Get MBITE</a>
+          <a href="/buy">Buy MBITE</a>
+          <a href="/sell">Sell MBITE</a>
+          <a href="/merchants">Accept MBITE</a>
+        </div>
+      </li>
+      <li class="mb-hitem">
+        <button class="mb-htrig" type="button" aria-expanded="false">Developers <span class="cx">&#9662;</span></button>
+        <div class="mb-hdrop">
+          <a href="/developers">API &amp; Docs</a>
+          <a href="/full-node">Run a Full Node</a>
+          <a href="/moonbite-core">MoonBite Core</a>
+          <a href="/development">Development</a>
+          <a href="/whitepaper">White Paper</a>
+        </div>
+      </li>
+      <li class="mb-hitem">
+        <button class="mb-htrig" type="button" aria-expanded="false">Learn <span class="cx">&#9662;</span></button>
+        <div class="mb-hdrop">
+          <a href="/why">Why MoonBite</a>
+          <a href="/learn">Learn &amp; FAQ</a>
+          <a href="/vocabulary">Vocabulary</a>
+          <a href="/resources">Resources</a>
+          <a href="/scams">Avoid Scams</a>
+          <a href="/about">About &amp; Roadmap</a>
+        </div>
+      </li>
+      <li class="mb-hitem">
+        <button class="mb-htrig" type="button" aria-expanded="false">Community <span class="cx">&#9662;</span></button>
+        <div class="mb-hdrop">
+          <a href="/community">Community</a>
+          <a href="/discussions">Discussions</a>
+          <a href="/support">Support MoonBite</a>
+          <a href="/events">Events</a>
+          <a href="/blog">Blog</a>
+          <a href="/press">Press</a>
+          <a href="/legal">Legal</a>
+          <a href="/privacy">Privacy</a>
+        </div>
+      </li>
+    </ul>
+    <a class="notify" href="/markets">GET NOTIFIED</a>
     <a class="wallet" href="/get-wallet">GET WALLET<span>&#8599;</span></a>
+    <button class="menu-btn" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false"><span class="mb-burger"></span></button>
   </nav>
 
   <!-- Full sitemap overlay: every page, in the same void/mono palette -->
@@ -707,13 +811,44 @@
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && mOv && !mOv.hidden) closeMenu();
   });
-  // Desktop: open on hover, close when the pointer leaves the dropped panel.
+
+  // ---------- header dropdowns ----------
+  var hItems = Array.prototype.slice.call(document.querySelectorAll(".mb-hitem"));
   var finePointer = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-  if (finePointer && mBtn && mOv) {
-    var mPanel = mOv.querySelector(".menu-panel");
-    mBtn.addEventListener("mouseenter", openMenu);
-    if (mPanel) mPanel.addEventListener("mouseleave", closeMenu);
+  function closeAllDrops(except) {
+    hItems.forEach(function (it) {
+      if (it === except) return;
+      it.classList.remove("open");
+      var t = it.querySelector(".mb-htrig");
+      if (t) t.setAttribute("aria-expanded", "false");
+    });
   }
+  hItems.forEach(function (it) {
+    var trig = it.querySelector(".mb-htrig");
+    if (!trig) return;
+    trig.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var willOpen = !it.classList.contains("open");
+      closeAllDrops(it);
+      it.classList.toggle("open", willOpen);
+      trig.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    });
+    if (finePointer) {
+      it.addEventListener("mouseenter", function () {
+        closeAllDrops(it);
+        it.classList.add("open");
+        trig.setAttribute("aria-expanded", "true");
+      });
+      it.addEventListener("mouseleave", function () {
+        it.classList.remove("open");
+        trig.setAttribute("aria-expanded", "false");
+      });
+    }
+  });
+  document.addEventListener("click", function () { closeAllDrops(null); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeAllDrops(null);
+  });
 })();
 </script>
 </body>
