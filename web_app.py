@@ -1105,14 +1105,14 @@ def api_blockchain_info():
             for block in [chain.blocks[block_hash]]
         )
 
-        # Calculate total money (sum of coinbase outputs)
-        # In a real system, this would be tracked more efficiently
+        # Calculate total money (sum of ONLY coinbase outputs, which create new coins)
+        # Non-coinbase transactions just move existing coins, not creating new value.
+        # In a real system, this would be tracked more efficiently.
         total_money_satoshis = sum(
-            output.amount
+            block.transactions[0].outputs[0].amount  # coinbase is always tx[0], output[0]
             for block_hash in chain.active_chain()
             for block in [chain.blocks[block_hash]]
-            for tx in block.transactions
-            for output in tx.outputs
+            if block.transactions  # skip empty blocks (none should exist, but be safe)
         )
         total_money_coins = total_money_satoshis / 100_000_000
 
