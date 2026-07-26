@@ -25,20 +25,8 @@
   /* keep the vector splash + marks razor-sharp at any DPI / scale-up */
   svg { shape-rendering: geometricPrecision; text-rendering: geometricPrecision; }
 
-  /* ---------- animation keyframes (ported verbatim from the design) ---------- */
-  @keyframes mbFly {
-    0%, 55% { transform: translate(calc(50vw - 44px - 144px), calc(50vh - 8px - 24px)) scale(6); }
-    80%, 100% { transform: translate(0px, 0px) scale(1); }
-  }
-  @keyframes mbRing { 0% { opacity: 0; transform: scale(1.55) rotate(-28deg); } 18%, 100% { opacity: 1; transform: scale(1) rotate(0deg); } }
+  /* ---------- animation keyframes ---------- */
   @keyframes mbSpin { to { transform: rotate(360deg); } }
-  @keyframes mbSweep { 0%, 6% { clip-path: inset(0 0 100% 0); } 26%, 100% { clip-path: inset(0 0 0 0); } }
-  @keyframes mbScanline { 0%, 6% { opacity: 1; transform: translateY(-108px); } 26% { opacity: 1; transform: translateY(108px); } 27%, 100% { opacity: 0; transform: translateY(108px); } }
-  @keyframes mbBite { 0%, 31% { transform: translateX(320px); } 36%, 100% { transform: translateX(0px); } }
-  @keyframes mbSquash { 0%, 27% { transform: scale(1,1); } 31% { transform: scale(1.05,0.95); } 36% { transform: scale(0.92,1.08); } 44% { transform: scale(1.03,0.97); } 54%, 100% { transform: scale(1,1); } }
-  @keyframes mbFlash { 0%, 31% { opacity: 0; transform: scale(1); } 34% { opacity: 0.9; transform: scale(1.04); } 48%, 100% { opacity: 0; transform: scale(1.36); } }
-  @keyframes mbWord { 0%, 80% { clip-path: inset(0 100% 0 0); } 95%, 100% { clip-path: inset(0 0 0 0); } }
-  @keyframes mbVeil { 0%, 58% { opacity: 1; } 80%, 100% { opacity: 0; } }
   @keyframes mbRise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes mbFade { from { opacity: 0; } to { opacity: 1; } }
   @keyframes mbPulseA { 0% { opacity: 0; transform: scale(0.92); } 26% { opacity: 1; } 100% { opacity: 0; transform: scale(1.52); } }
@@ -52,108 +40,77 @@
   .bg-scan { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.5;
     background: repeating-linear-gradient(to bottom, rgba(242,246,255,0.05) 0 1px, transparent 1px 6px); }
 
-  /* ---------- nav (flush header bar) ---------- */
-  nav.top { position: fixed; top: 0; left: 0; right: 0; z-index: 40; height: 64px;
-    display: flex; align-items: center; justify-content: flex-end; gap: 14px;
-    padding: 0 44px; font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 2.2px;
-    background: rgba(4,5,10,0.72); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(242,246,255,0.07); animation: mbFade 0.9s ease-out 0.92s both; }
-  nav.top a { color: rgba(242,246,255,0.62); transition: color .2s ease, background .2s ease; }
-  nav.top a:hover { color: var(--ice); }
-  nav.top a.wallet { display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px;
-    border: 1px solid var(--accent); color: var(--accent); border-radius: 2px; }
-  nav.top a.wallet:hover { background: var(--accent); color: var(--void); }
-  nav.top a.wallet span { opacity: 0.6; }
-  nav.top a.notify { display: inline-flex; align-items: center; padding: 10px 18px;
-    border: 1px solid rgba(242,246,255,0.22); border-radius: 2px; color: var(--ice); }
-  nav.top a.notify:hover { border-color: var(--ice); }
+  /* ---------- mega-nav (shared partials/mega_nav.html, scoped to cinematic palette) ---------- */
+  .mb-meganav { position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(4,5,10,0.72); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(242,246,255,0.08); animation: mbFade 0.9s ease-out 0.4s both; }
+  .mb-nav-inner { max-width: 1320px; margin: 0 auto; padding: 0 44px; height: 64px;
+    display: flex; align-items: center; gap: 18px; }
+  .mb-brand { display: flex; align-items: center; gap: 10px; font-size: 1.15rem; font-weight: 700;
+    text-decoration: none; color: var(--ice); white-space: nowrap; }
+  .mb-brand img { width: 30px; height: 30px; }
+  .mb-brand .mb-brand-name { background: linear-gradient(90deg, var(--accent), var(--cool));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 
-  /* header dropdown menu — margin-left reserves the fixed brand's width so the
-     labels never render under the MOONBITE logo; margin-right:auto pushes the CTAs right */
-  .mb-hnav { display: flex; align-items: center; gap: 0; list-style: none; margin: 0 auto 0 210px; padding: 0; }
-  .mb-hitem { position: relative; }
-  .mb-htrig { background: none; border: 0; cursor: pointer; font-family: "JetBrains Mono", monospace;
-    font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; color: rgba(242,246,255,0.62);
-    padding: 8px 10px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
-    transition: color .2s ease; }
-  .mb-htrig:hover, .mb-hitem.open .mb-htrig { color: var(--ice); }
-  .mb-htrig .cx { font-size: 8px; opacity: 0.7; transition: transform .2s ease; }
-  .mb-hitem.open .mb-htrig .cx { transform: rotate(180deg); }
-  .mb-hdrop { position: absolute; top: calc(100% + 12px); left: 0; min-width: 232px; padding: 8px;
+  .mb-nav-links { display: flex; align-items: center; gap: 2px; list-style: none;
+    margin: 0 auto 0 18px; padding: 0; }
+  .mb-nav-item { position: relative; }
+  .mb-nav-trigger { display: inline-flex; align-items: center; gap: 6px; padding: 8px 11px;
+    border-radius: 3px; font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 500;
+    letter-spacing: 1.4px; text-transform: uppercase; color: rgba(242,246,255,0.62);
+    background: none; border: none; cursor: pointer; white-space: nowrap; transition: color .2s ease, background .2s ease; }
+  .mb-nav-trigger:hover, .mb-nav-item.is-open .mb-nav-trigger { color: var(--ice); background: rgba(242,246,255,0.06); }
+  .mb-nav-trigger .mb-caret { width: 7px; height: 7px; border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px);
+    transition: transform .2s ease; opacity: 0.7; }
+  .mb-nav-item.is-open .mb-caret { transform: rotate(-135deg) translateY(-1px); }
+
+  .mb-dropdown { position: absolute; top: calc(100% + 10px); left: 0; min-width: 244px; padding: 8px;
     background: rgba(6,8,14,0.98); border: 1px solid rgba(95,233,208,0.18); border-radius: 4px;
     box-shadow: 0 24px 60px rgba(0,0,0,0.5);
     -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-    opacity: 0; visibility: hidden; transform: translateY(-8px);
-    transition: opacity .2s ease, transform .2s ease, visibility .2s ease; }
-  .mb-hitem.open .mb-hdrop { opacity: 1; visibility: visible; transform: translateY(0); }
-  .mb-hdrop a { display: block; padding: 9px 12px; border-radius: 3px; color: rgba(242,246,255,0.82);
-    font-family: "Space Grotesk", sans-serif; font-size: 14px; letter-spacing: 0; text-transform: none;
-    transition: background .15s ease, color .15s ease; }
-  .mb-hdrop a:hover { background: rgba(95,233,208,0.08); color: var(--accent); }
+    opacity: 0; visibility: hidden; transform: translateY(-6px);
+    transition: opacity .18s ease, transform .18s ease, visibility .18s; }
+  .mb-nav-item.is-open .mb-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
+  .mb-dropdown a { display: flex; flex-direction: column; gap: 2px; padding: 9px 12px; border-radius: 3px;
+    text-decoration: none; color: rgba(242,246,255,0.86); transition: background .15s ease, color .15s ease; }
+  .mb-dropdown a:hover { background: rgba(95,233,208,0.08); }
+  .mb-dropdown a .mb-dd-title { font-family: "Space Grotesk", sans-serif; font-weight: 600; font-size: 0.92rem; letter-spacing: 0; }
+  .mb-dropdown a .mb-dd-desc { font-size: 0.76rem; color: rgba(242,246,255,0.5); letter-spacing: 0; }
+  .mb-dropdown a:hover .mb-dd-title { color: var(--accent); }
 
-  /* hamburger (mobile only) */
-  nav.top .menu-btn { display: none; background: none; border: 0; cursor: pointer; padding: 8px;
-    width: 40px; height: 40px; align-items: center; justify-content: center; }
-  .mb-burger, .mb-burger::before, .mb-burger::after { content: ""; display: block; width: 22px; height: 2px;
-    background: var(--ice); border-radius: 2px; transition: transform .25s ease, opacity .2s ease; }
-  .mb-burger { position: relative; }
-  .mb-burger::before { position: absolute; top: -7px; left: 0; }
-  .mb-burger::after { position: absolute; top: 7px; left: 0; }
-  nav.top .menu-btn[aria-expanded="true"] .mb-burger { background: transparent; }
-  nav.top .menu-btn[aria-expanded="true"] .mb-burger::before { transform: translateY(7px) rotate(45deg); }
-  nav.top .menu-btn[aria-expanded="true"] .mb-burger::after { transform: translateY(-7px) rotate(-45deg); }
+  .mb-nav-cta { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+  .mb-nav-cta .mb-theme-btn { display: none; }
+  .mb-meganav .mb-nav-cta-btn { display: inline-flex; align-items: center; padding: 10px 18px;
+    font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 1.8px; text-transform: uppercase;
+    border-radius: 2px; white-space: nowrap; transition: filter .2s ease, background .2s ease, border-color .2s ease, color .2s ease; }
+  .mb-meganav .mb-nav-cta-btn.btn-secondary { border: 1px solid rgba(242,246,255,0.22); color: var(--ice); background: none; }
+  .mb-meganav .mb-nav-cta-btn.btn-secondary:hover { border-color: var(--ice); }
+  .mb-meganav .mb-nav-cta-btn.btn-primary { background: var(--accent); color: var(--void); border: 1px solid var(--accent); }
+  .mb-meganav .mb-nav-cta-btn.btn-primary:hover { filter: brightness(1.12); }
 
-  /* ---------- header mega-menu (full sitemap, drops down under the header) ---------- */
-  .menu-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(4,5,10,0.55);
-    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
-    opacity: 0; transition: opacity .25s ease; }
-  .menu-overlay.open { opacity: 1; }
-  .menu-panel { position: relative; margin: 0; padding: 104px 44px 46px;
-    background: rgba(6,8,14,0.98);
-    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(95,233,208,0.18);
-    box-shadow: 0 30px 70px rgba(0,0,0,0.55);
-    transform: translateY(-14px); transition: transform .28s ease; }
-  .menu-overlay.open .menu-panel { transform: translateY(0); }
-  .menu-close { position: absolute; top: 26px; right: 40px; background: none; border: 0;
-    color: rgba(242,246,255,0.62); font-size: 34px; line-height: 1; cursor: pointer;
-    transition: color .2s ease; }
-  .menu-close:hover { color: var(--ice); }
-  .menu-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 34px;
-    max-width: 1200px; margin: 0 auto; }
-  .menu-col h4 { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 2px;
-    text-transform: uppercase; color: rgba(242,246,255,0.42); margin: 0 0 16px; font-weight: 500; }
-  .menu-col a { display: block; padding: 6px 0; color: rgba(242,246,255,0.82);
-    font-size: 14px; transition: color .2s ease; }
-  .menu-col a:hover { color: var(--accent); }
-  @media (max-width: 860px) {
-    .menu-grid { grid-template-columns: 1fr 1fr; gap: 26px; }
-    .menu-panel { padding: 96px 24px 48px; }
-  }
-  @media (max-width: 480px) {
-    .menu-grid { grid-template-columns: 1fr; }
-  }
+  .mb-hamburger { display: none; flex-direction: column; justify-content: center; gap: 5px;
+    width: 42px; height: 42px; border: 1px solid rgba(242,246,255,0.22); border-radius: 3px;
+    background: none; cursor: pointer; }
+  .mb-hamburger span { display: block; height: 2px; width: 20px; margin: 0 auto; background: var(--ice); transition: transform .2s ease; }
 
-  /* ---------- flying logo ---------- */
-  .flylogo { position: fixed; left: 44px; top: 8px; height: 48px; z-index: 45; transform-origin: left center;
-    animation: mbFly 1.2s cubic-bezier(0.68,0,0.18,1) 0.05s both; }
-  .flylogo-row { display: flex; align-items: center; gap: 14px; height: 48px; }
-  .flylogo-mark { position: relative; width: 48px; height: 48px; flex: none; }
-  .fl-ring { position: absolute; inset: -13px; animation: mbRing 1.2s cubic-bezier(0.2,0,0.1,1) 0.05s both; }
-  .fl-ring-spin { position: absolute; inset: 0; animation: mbSpin 26s linear infinite; }
-  .fl-ring-spin svg, .fl-disc svg { position: absolute; inset: 0; overflow: visible; }
-  .fl-squash { position: absolute; inset: 0; animation: mbSquash 1.2s cubic-bezier(0.4,0,0.3,1) 0.05s both; }
-  .fl-disc { position: absolute; inset: 0; animation: mbSweep 1.2s cubic-bezier(0.5,0,0.4,1) 0.05s both; }
-  .fl-bitecirc { animation: mbBite 1.2s cubic-bezier(0.35,0,0.2,1) 0.05s both; }
-  .fl-flash { animation: mbFlash 1.2s ease-out 0.05s both; }
-  .fl-scanline { position: absolute; left: -18%; right: -18%; top: 50%; height: 2.5px; background: var(--accent);
-    box-shadow: 0 0 12px var(--accent); animation: mbScanline 1.2s cubic-bezier(0.5,0,0.4,1) 0.05s both; }
-  .fl-word { animation: mbWord 1.2s cubic-bezier(0.6,0,0.2,1) 0.05s both; }
-  .fl-word div { font-size: 25px; font-weight: 700; letter-spacing: 0.4px; line-height: 1; white-space: nowrap; }
-  .fl-word span { color: var(--accent); }
-
-  .veil { position: fixed; inset: 0; z-index: 44; background: var(--void); pointer-events: none;
-    animation: mbVeil 1.2s ease-in-out 0.05s both; }
+  /* mobile full-screen sheet */
+  .mb-mobile-sheet { position: fixed; inset: 0; z-index: 200; background: var(--void);
+    padding: 22px; overflow-y: auto; transform: translateX(100%);
+    transition: transform .3s cubic-bezier(0.4,0,0.2,1); }
+  .mb-mobile-sheet.is-open { transform: translateX(0); }
+  .mb-mobile-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+  .mb-mobile-close { background: none; border: none; color: var(--ice); font-size: 1.8rem; cursor: pointer; line-height: 1; }
+  .mb-mobile-group { border-bottom: 1px solid rgba(242,246,255,0.1); }
+  .mb-mobile-group > button { width: 100%; display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 4px; background: none; border: none; color: var(--ice); font-family: "Space Grotesk", sans-serif;
+    font-size: 1.05rem; font-weight: 600; cursor: pointer; }
+  .mb-mobile-group .mb-mobile-links { display: none; padding: 0 0 12px 4px; }
+  .mb-mobile-group.is-open .mb-mobile-links { display: block; }
+  .mb-mobile-links a { display: block; padding: 9px 0; color: rgba(242,246,255,0.6); text-decoration: none; }
+  .mb-mobile-links a:hover { color: var(--accent); }
+  .mb-mobile-cta { margin-top: 22px; display: grid; gap: 12px; }
+  .mb-mobile-cta .btn { justify-content: center; }
 
   main { position: relative; z-index: 10; }
 
@@ -297,23 +254,16 @@
   .mb-footer-legal { max-width: 620px; line-height: 1.5; }
   .mb-footer-legal strong { color: rgba(242,246,255,0.72); }
 
-  .replay { position: fixed; right: 26px; bottom: 26px; z-index: 50; display: inline-flex; align-items: center; gap: 9px;
-    padding: 11px 16px; background: rgba(4,5,10,0.7); border: 1px solid rgba(242,246,255,0.2); color: rgba(242,246,255,0.7);
-    font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 2.2px; border-radius: 2px; cursor: pointer;
-    backdrop-filter: blur(6px); transition: border-color .2s ease, color .2s ease; }
-  .replay:hover { border-color: var(--ice); color: var(--ice); }
-
-  /* below this the seven labels + brand + CTAs no longer fit, so collapse to a hamburger */
-  @media (max-width: 1200px) {
-    .mb-hnav { display: none; }
-    nav.top a.notify { display: none; }
-    nav.top .menu-btn { display: inline-flex; }
+  /* below this the seven labels + CTAs no longer fit, so collapse to a hamburger */
+  @media (max-width: 1120px) {
+    .mb-nav-links { display: none; }
+    .mb-nav-cta .mb-nav-cta-btn { display: none; }
+    .mb-hamburger { display: flex; }
   }
 
   /* ---------- tablet ---------- */
   @media (max-width: 1024px) {
-    nav.top { padding: 0 32px; }
-    .flylogo { left: 32px; }
+    .mb-nav-inner { padding: 0 32px; }
     .hero { padding: 150px 32px 30px; }
     .reactor { padding: 96px 32px; gap: 46px; }
     .waysin { padding: 40px 32px 96px; }
@@ -327,8 +277,7 @@
 
   /* ---------- mobile ---------- */
   @media (max-width: 640px) {
-    nav.top { gap: 12px; padding: 0 20px; font-size: 11px; }
-    .flylogo { left: 20px; }
+    .mb-nav-inner { padding: 0 20px; }
     .hero { padding: 132px 20px 24px; }
     h1.head { letter-spacing: -1.5px; }
     .lead { font-size: 17px; }
@@ -342,25 +291,19 @@
     footer.mb-footer .mb-container { padding: 0 20px; }
     .mb-footer-cols { grid-template-columns: 1fr; gap: 26px; }
     .mb-footer-bottom { flex-direction: column; align-items: flex-start; gap: 14px; }
-    .replay { right: 14px; bottom: 14px; }
   }
 
   /* ---------- small phones ---------- */
   @media (max-width: 400px) {
-    nav.top { padding: 0 16px; gap: 10px; }
-    .flylogo { left: 16px; }
+    .mb-nav-inner { padding: 0 16px; }
     .hero { padding: 120px 16px 20px; }
     .reactor, .waysin, .proof, .firstbite, footer.site { padding-left: 16px; padding-right: 16px; }
     .btn { padding: 15px 22px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .flylogo, .fl-ring, .fl-squash, .fl-disc, .fl-bitecirc, .fl-flash, .fl-scanline, .fl-word,
-    .veil, nav.top, .chip, h1.head, .lead, .hero-cta, .statgrid { animation: none !important; }
-    .veil { display: none; }
-    .fl-disc { clip-path: inset(0 0 0 0) !important; }
-    .fl-bitecirc { transform: translateX(0) !important; }
-    .chip, h1.head, .lead, .hero-cta, .statgrid, nav.top { opacity: 1 !important; transform: none !important; }
+    .mb-meganav, .chip, h1.head, .lead, .hero-cta, .statgrid { animation: none !important; }
+    .chip, h1.head, .lead, .hero-cta, .statgrid, .mb-meganav { opacity: 1 !important; transform: none !important; }
   }
 </style>
 </head>
@@ -368,186 +311,7 @@
   <div class="bg-glow"></div>
   <div class="bg-scan"></div>
 
-  <nav class="top">
-    <ul class="mb-hnav" id="mbHnav">
-      <li class="mb-hitem">
-        <button class="mb-htrig" type="button" aria-expanded="false">Start <span class="cx">&#9662;</span></button>
-        <div class="mb-hdrop">
-          <a href="/getting-started">Getting Started</a>
-          <a href="/how-it-works">How It Works</a>
-          <a href="/take-a-bite">Take a Bite</a>
-          <a href="/individuals">For Individuals</a>
-          <a href="/businesses">For Businesses</a>
-          <a href="/you-need-to-know">You Need to Know</a>
-        </div>
-      </li>
-      <li class="mb-hitem">
-        <button class="mb-htrig" type="button" aria-expanded="false">Wallet <span class="cx">&#9662;</span></button>
-        <div class="mb-hdrop">
-          <a href="/get-wallet">Download Wallet</a>
-          <a href="/wallet">Web Wallet</a>
-          <a href="/downloads/README.txt">All Downloads</a>
-        </div>
-      </li>
-      <li class="mb-hitem">
-        <button class="mb-htrig" type="button" aria-expanded="false">Mine <span class="cx">&#9662;</span></button>
-        <div class="mb-hdrop">
-          <a href="/mine">How to Mine</a>
-          <a href="/mining">Live Reactor</a>
-        </div>
-      </li>
-      <li class="mb-hitem">
-        <button class="mb-htrig" type="button" aria-expanded="false">Explore <span class="cx">&#9662;</span></button>
-        <div class="mb-hdrop">
-          <a href="/explorer">Block Explorer</a>
-          <a href="/dashboard">Network Dashboard</a>
-          <a href="/markets">Exchange</a>
-          <a href="/exchanges">Get MBITE</a>
-          <a href="/buy">Buy MBITE</a>
-          <a href="/sell">Sell MBITE</a>
-          <a href="/merchants">Accept MBITE</a>
-        </div>
-      </li>
-      <li class="mb-hitem">
-        <button class="mb-htrig" type="button" aria-expanded="false">Developers <span class="cx">&#9662;</span></button>
-        <div class="mb-hdrop">
-          <a href="/developers">API &amp; Docs</a>
-          <a href="/full-node">Run a Full Node</a>
-          <a href="/moonbite-core">MoonBite Core</a>
-          <a href="/development">Development</a>
-          <a href="/whitepaper">White Paper</a>
-        </div>
-      </li>
-      <li class="mb-hitem">
-        <button class="mb-htrig" type="button" aria-expanded="false">Learn <span class="cx">&#9662;</span></button>
-        <div class="mb-hdrop">
-          <a href="/why">Why MoonBite</a>
-          <a href="/learn">Learn &amp; FAQ</a>
-          <a href="/vocabulary">Vocabulary</a>
-          <a href="/resources">Resources</a>
-          <a href="/scams">Avoid Scams</a>
-          <a href="/about">About &amp; Roadmap</a>
-        </div>
-      </li>
-      <li class="mb-hitem">
-        <button class="mb-htrig" type="button" aria-expanded="false">Community <span class="cx">&#9662;</span></button>
-        <div class="mb-hdrop">
-          <a href="/community">Community</a>
-          <a href="/discussions">Discussions</a>
-          <a href="/support">Support MoonBite</a>
-          <a href="/events">Events</a>
-          <a href="/blog">Blog</a>
-          <a href="/press">Press</a>
-          <a href="/legal">Legal</a>
-          <a href="/privacy">Privacy</a>
-        </div>
-      </li>
-    </ul>
-    <a class="notify" href="/markets">GET NOTIFIED</a>
-    <a class="wallet" href="/get-wallet">GET WALLET<span>&#8599;</span></a>
-    <button class="menu-btn" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false"><span class="mb-burger"></span></button>
-  </nav>
-
-  <!-- Full sitemap overlay: every page, in the same void/mono palette -->
-  <div class="menu-overlay" id="menuOverlay" hidden>
-    <div class="menu-panel">
-      <button class="menu-close" id="menuClose" type="button" aria-label="Close menu">&times;</button>
-      <div class="menu-grid">
-        <div class="menu-col">
-          <h4>Start</h4>
-          <a href="/getting-started">Getting Started</a>
-          <a href="/how-it-works">How It Works</a>
-          <a href="/take-a-bite">Take a Bite</a>
-          <a href="/individuals">For Individuals</a>
-          <a href="/businesses">For Businesses</a>
-          <a href="/you-need-to-know">You Need to Know</a>
-          <a href="/why">Why MoonBite</a>
-          <a href="/whitepaper">White Paper</a>
-        </div>
-        <div class="menu-col">
-          <h4>Get &amp; use MBITE</h4>
-          <a href="/get-wallet">Wallet</a>
-          <a href="/wallet">Web Wallet</a>
-          <a href="/mine">Mining</a>
-          <a href="/mining">Live Reactor</a>
-          <a href="/buy">Buy MBITE</a>
-          <a href="/sell">Sell MBITE</a>
-          <a href="/markets">Exchange</a>
-          <a href="/merchants">Accept MBITE</a>
-        </div>
-        <div class="menu-col">
-          <h4>Explore &amp; build</h4>
-          <a href="/explorer">Explorer</a>
-          <a href="/dashboard">Dashboard</a>
-          <a href="/exchanges">Exchanges</a>
-          <a href="/developers">Developers</a>
-          <a href="/full-node">Run a Full Node</a>
-          <a href="/moonbite-core">MoonBite Core</a>
-          <a href="/development">Development</a>
-        </div>
-        <div class="menu-col">
-          <h4>Learn &amp; community</h4>
-          <a href="/learn">Learn &amp; FAQ</a>
-          <a href="/resources">Resources</a>
-          <a href="/vocabulary">Vocabulary</a>
-          <a href="/community">Community</a>
-          <a href="/support">Support MoonBite</a>
-          <a href="/events">Events</a>
-          <a href="/blog">Blog</a>
-          <a href="/about">About</a>
-        </div>
-        <div class="menu-col">
-          <h4>Safety &amp; legal</h4>
-          <a href="/scams">Avoid Scams</a>
-          <a href="/press">Press</a>
-          <a href="/legal">Legal</a>
-          <a href="/privacy">Privacy</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Flying logo splash -->
-  <div class="flylogo" id="flylogo">
-    <div class="flylogo-row">
-      <div class="flylogo-mark">
-        <div class="fl-ring">
-          <div class="fl-ring-spin">
-            <svg viewBox="-100 -100 200 200">
-              <circle cx="0" cy="0" r="86" fill="none" stroke="#F2F6FF" stroke-opacity="0.2" stroke-width="2.4"/>
-              <circle cx="0" cy="0" r="99" fill="none" stroke="#5FE9D0" stroke-opacity="0.34" stroke-width="2.4" stroke-dasharray="3 30"/>
-              <g stroke="#F2F6FF" stroke-opacity="0.3" stroke-width="2.4">
-                <path d="M86 0 h16 M-86 0 h-16 M0 86 v16 M0 -86 v-16" stroke="#5FE9D0" stroke-opacity="0.75" stroke-width="4"/>
-                <path d="M60.8 60.8 l11 11 M-60.8 60.8 l-11 11 M60.8 -60.8 l11 -11 M-60.8 -60.8 l-11 -11"/>
-              </g>
-            </svg>
-          </div>
-        </div>
-        <div class="fl-squash">
-          <div class="fl-disc">
-            <svg viewBox="-100 -100 200 200">
-              <mask id="mbNavBite" maskUnits="userSpaceOnUse" x="-130" y="-130" width="260" height="260">
-                <rect x="-130" y="-130" width="260" height="260" fill="#fff"/>
-                <circle class="fl-bitecirc" cx="50" cy="-13" r="84" fill="#000"/>
-              </mask>
-              <g mask="url(#mbNavBite)">
-                <circle cx="-6" cy="0" r="96" fill="#5FE9D0" opacity="0.55"/>
-                <circle cx="6" cy="0" r="96" fill="#5B7BFF" opacity="0.55"/>
-                <circle cx="0" cy="0" r="96" fill="#F2F6FF"/>
-                <circle cx="0" cy="0" r="64" fill="none" stroke="#04050a" stroke-opacity="0.16" stroke-width="2"/>
-                <circle cx="-36" cy="-29" r="6" fill="#04050a" opacity="0.14"/>
-              </g>
-              <circle class="fl-flash" cx="0" cy="0" r="96" fill="none" stroke="#5FE9D0" stroke-width="3" opacity="0"/>
-            </svg>
-          </div>
-          <div class="fl-scanline"></div>
-        </div>
-      </div>
-      <div class="fl-word"><div>MOON<span>BITE</span></div></div>
-    </div>
-  </div>
-
-  <div class="veil"></div>
+  {% include "partials/mega_nav.html" %}
 
   <main>
     <!-- HERO -->
@@ -705,27 +469,11 @@
     {% include "partials/mega_footer.html" %}
   </main>
 
-  <button class="replay" id="replay" type="button">&#8635; REPLAY SPLASH</button>
-
 <script>
 (function () {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
   function num(n) { return Number(n).toLocaleString("en-US"); }
-
-  /* ---- replay the splash sting ---- */
-  function restartSplash() {
-    var root = document.body;
-    root.querySelectorAll(".flylogo, .fl-ring, .fl-ring-spin, .fl-squash, .fl-disc, .fl-bitecirc, .fl-flash, .fl-scanline, .fl-word, .veil, nav.top, .chip, h1.head, .lead, .hero-cta, .statgrid").forEach(function (el) {
-      var orig = getComputedStyle(el).animationName;
-      if (!orig || orig === "none") return;
-      var css = el.style.animation;
-      el.style.animation = "none";
-      void el.offsetWidth;
-      el.style.animation = css;
-    });
-  }
-  $("replay").addEventListener("click", restartSplash);
 
   /* ---- live network data (real endpoints, honest empty state) ---- */
   function subsidyFor(height) {
@@ -793,63 +541,40 @@
   tick();
   setInterval(tick, 5000);
 
-  // ---------- sitemap overlay ----------
-  var mBtn = $("menuBtn"), mOv = $("menuOverlay"), mClose = $("menuClose");
-  function openMenu() {
-    mOv.hidden = false;
-    void mOv.offsetWidth; // force reflow so the fade-in transition runs
-    mOv.classList.add("open");
-    mBtn.setAttribute("aria-expanded", "true");
-  }
-  function closeMenu() {
-    mOv.classList.remove("open");
-    mBtn.setAttribute("aria-expanded", "false");
-    setTimeout(function () { mOv.hidden = true; }, 260);
-  }
-  function toggleMenu() { (mOv && mOv.hidden) ? openMenu() : closeMenu(); }
-  if (mBtn) mBtn.addEventListener("click", toggleMenu);
-  if (mClose) mClose.addEventListener("click", closeMenu);
-  if (mOv) mOv.addEventListener("click", function (e) { if (e.target === mOv) closeMenu(); });
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && mOv && !mOv.hidden) closeMenu();
+  // ---------- mega-nav dropdowns (same behaviour as site.js on every other page) ----------
+  var navItems = Array.prototype.slice.call(document.querySelectorAll(".mb-nav-item"));
+  function closeAllDropdowns() { navItems.forEach(function (i) { i.classList.remove("is-open"); }); }
+  navItems.forEach(function (item) {
+    var trigger = item.querySelector(".mb-nav-trigger");
+    if (!trigger || !item.querySelector(".mb-dropdown")) return;
+    trigger.addEventListener("click", function (e) {
+      e.preventDefault();
+      var wasOpen = item.classList.contains("is-open");
+      closeAllDropdowns();
+      if (!wasOpen) item.classList.add("is-open");
+    });
   });
 
-  // ---------- header dropdowns ----------
-  var hItems = Array.prototype.slice.call(document.querySelectorAll(".mb-hitem"));
-  var finePointer = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-  function closeAllDrops(except) {
-    hItems.forEach(function (it) {
-      if (it === except) return;
-      it.classList.remove("open");
-      var t = it.querySelector(".mb-htrig");
-      if (t) t.setAttribute("aria-expanded", "false");
-    });
-  }
-  hItems.forEach(function (it) {
-    var trig = it.querySelector(".mb-htrig");
-    if (!trig) return;
-    trig.addEventListener("click", function (e) {
-      e.stopPropagation();
-      var willOpen = !it.classList.contains("open");
-      closeAllDrops(it);
-      it.classList.toggle("open", willOpen);
-      trig.setAttribute("aria-expanded", willOpen ? "true" : "false");
-    });
-    if (finePointer) {
-      it.addEventListener("mouseenter", function () {
-        closeAllDrops(it);
-        it.classList.add("open");
-        trig.setAttribute("aria-expanded", "true");
-      });
-      it.addEventListener("mouseleave", function () {
-        it.classList.remove("open");
-        trig.setAttribute("aria-expanded", "false");
-      });
-    }
+  // ---------- mobile sheet ----------
+  var hamburger = document.querySelector(".mb-hamburger");
+  var sheet = document.querySelector(".mb-mobile-sheet");
+  var sheetClose = document.querySelector(".mb-mobile-close");
+  function openMobileSheet() { if (sheet) { sheet.classList.add("is-open"); document.body.style.overflow = "hidden"; } }
+  function closeMobileSheet() { if (sheet) { sheet.classList.remove("is-open"); document.body.style.overflow = ""; } }
+  if (hamburger) hamburger.addEventListener("click", openMobileSheet);
+  if (sheetClose) sheetClose.addEventListener("click", closeMobileSheet);
+  document.querySelectorAll(".mb-mobile-group > button").forEach(function (btn) {
+    btn.addEventListener("click", function () { btn.parentElement.classList.toggle("is-open"); });
   });
-  document.addEventListener("click", function () { closeAllDrops(null); });
+  document.querySelectorAll(".mb-mobile-links a").forEach(function (a) {
+    a.addEventListener("click", closeMobileSheet);
+  });
+
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest(".mb-nav-item")) closeAllDropdowns();
+  });
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") closeAllDrops(null);
+    if (e.key === "Escape") { closeAllDropdowns(); closeMobileSheet(); }
   });
 })();
 </script>
