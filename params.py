@@ -12,7 +12,7 @@ from __future__ import annotations
 CENTS_PER_COIN = 100_000_000          # smallest unit; 1 coin = 100,000,000 cents
 INITIAL_SUBSIDY = 50 * CENTS_PER_COIN  # block reward at height 0
 HALVING_INTERVAL = 210_000            # halve the subsidy every N blocks
-MAX_SUPPLY = 42_000_000 * CENTS_PER_COIN
+MAX_SUPPLY = 21_000_000 * CENTS_PER_COIN  # ~20,999,999.97690000 MBITE (50 initial, halve every 210k blocks)
 MAX_MONEY = MAX_SUPPLY                 # no single value may exceed the cap
 
 # --- proof-of-work / timing ------------------------------------------------ #
