@@ -76,9 +76,11 @@ body.mb-v2::after {
     background: repeating-linear-gradient(to bottom, rgba(242, 246, 255, 0.05) 0 1px, transparent 1px 6px);
 }
 body.mb-v2 main,
-body.mb-v2 .mb-meganav,
-body.mb-v2 .mb-footer,
-body.mb-v2 .page-loader { position: relative; z-index: 1; }
+body.mb-v2 .mb-footer { position: relative; z-index: 1; }
+/* The nav keeps its sticky positioning (from site.css) and the loader keeps its
+   fixed full-screen overlay (from style.css) — both already sit above the
+   ambient ::before/::after backdrop via their own z-index, so they must NOT be
+   forced to position:relative or they drop into flow and open a gap up top. */
 
 /* --------------------------------------------------------------- headings */
 body.mb-v2 h1, body.mb-v2 h2, body.mb-v2 h3 { font-family: "Space Grotesk", sans-serif; }
