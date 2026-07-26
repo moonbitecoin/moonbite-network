@@ -68,12 +68,14 @@
     border: 1px solid rgba(242,246,255,0.22); border-radius: 2px; color: var(--ice); }
   nav.top a.notify:hover { border-color: var(--ice); }
 
-  /* header dropdown menu */
-  .mb-hnav { display: flex; align-items: center; gap: 2px; list-style: none; margin: 0 auto 0 0; padding: 0; }
+  /* header dropdown menu — margin-left reserves the fixed brand's width so the
+     labels never render under the MOONBITE logo; margin-right:auto pushes the CTAs right */
+  .mb-hnav { display: flex; align-items: center; gap: 0; list-style: none; margin: 0 auto 0 210px; padding: 0; }
   .mb-hitem { position: relative; }
   .mb-htrig { background: none; border: 0; cursor: pointer; font-family: "JetBrains Mono", monospace;
-    font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: rgba(242,246,255,0.62);
-    padding: 9px 12px; display: inline-flex; align-items: center; gap: 6px; transition: color .2s ease; }
+    font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; color: rgba(242,246,255,0.62);
+    padding: 8px 10px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+    transition: color .2s ease; }
   .mb-htrig:hover, .mb-hitem.open .mb-htrig { color: var(--ice); }
   .mb-htrig .cx { font-size: 8px; opacity: 0.7; transition: transform .2s ease; }
   .mb-hitem.open .mb-htrig .cx { transform: rotate(180deg); }
@@ -301,8 +303,8 @@
     backdrop-filter: blur(6px); transition: border-color .2s ease, color .2s ease; }
   .replay:hover { border-color: var(--ice); color: var(--ice); }
 
-  /* collapse the dropdown bar to a hamburger before the labels crowd the brand */
-  @media (max-width: 980px) {
+  /* below this the seven labels + brand + CTAs no longer fit, so collapse to a hamburger */
+  @media (max-width: 1200px) {
     .mb-hnav { display: none; }
     nav.top a.notify { display: none; }
     nav.top .menu-btn { display: inline-flex; }
