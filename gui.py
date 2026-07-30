@@ -26,7 +26,7 @@ from PyQt6.QtCore import Qt, pyqtSignal, QObject, QThread
 from PyQt6.QtGui import QFont
 
 from node import Node
-from wallet import Wallet
+from wallet import HDWallet
 
 
 # Signal emitter for thread-safe GUI updates from mining threads
@@ -64,12 +64,12 @@ class MiningWorker(QObject):
 
 
 class WalletTab(QWidget):
-    """Tab 1: Wallet management."""
+    """Tab 1: Wallet management with HD wallet (BIP39/BIP32) support."""
 
     def __init__(self, node: Node):
         super().__init__()
         self.node = node
-        self.wallet = Wallet()
+        self.wallet = HDWallet()
         self.current_address = ""
         self.init_ui()
 
@@ -77,9 +77,22 @@ class WalletTab(QWidget):
         layout = QVBoxLayout()
 
         # Title
-        title = QLabel("Wallet Management")
+        title = QLabel("HD Wallet Management (BIP39/BIP32)")
         title.setFont(QFont("Arial", 12, QFont.Weight.Bold))
         layout.addWidget(title)
+
+        # Seed backup section
+        layout.addWidget(QLabel("Backup Seed Phrase (WRITE IT DOWN!):"))
+        self.seed_display = QTextEdit()
+        self.seed_display.setReadOnly(True)
+        self.seed_display.setMaximumHeight(80)
+        self.seed_display.setText(self.wallet.export_seed())
+        layout.addWidget(self.seed_display)
+
+        # Seed backup button
+        backup_btn = QPushButton("Copy Seed to Clipboard")
+        backup_btn.clicked.connect(self.copy_seed_to_clipboard)
+        layout.addWidget(backup_btn)
 
         # Current address section
         layout.addWidget(QLabel("Current Address:"))
@@ -89,7 +102,7 @@ class WalletTab(QWidget):
         layout.addWidget(self.address_display)
 
         # Generate new key button
-        self.gen_key_btn = QPushButton("Generate New Key")
+        self.gen_key_btn = QPushButton("Generate Next Address")
         self.gen_key_btn.clicked.connect(self.generate_new_key)
         layout.addWidget(self.gen_key_btn)
 
@@ -111,11 +124,19 @@ class WalletTab(QWidget):
         layout.addStretch()
         self.setLayout(layout)
 
+    def copy_seed_to_clipboard(self):
+        """Copy seed phrase to clipboard for backup."""
+        from PyQt6.QtWidgets import QApplication
+        clipboard = QApplication.clipboard()
+        clipboard.setText(self.wallet.export_seed())
+
     def generate_new_key(self):
-        """Generate a new keypair and display the address."""
+        """Generate next HD-derived address (m/44'/0'/0'/0/n)."""
         addr = self.wallet.new_key()
+        index = self.wallet._derivation_index - 1
         self.current_address = addr
-        self.address_display.setText(f"{addr}\n(Base58Check)")
+        path = f"m/44'/0'/0'/0/{index}"
+        self.address_display.setText(f"{addr}\n(Bech32 - Path: {path})")
         self.balance_display.setText("Balance: -- coins, -- cents")
 
     def check_balance(self):
@@ -152,7 +173,7 @@ class WalletTab(QWidget):
 class MiningTab(QWidget):
     """Tab 2: Mining control."""
 
-    def __init__(self, node: Node, wallet: Wallet):
+    def __init__(self, node: Node, wallet: HDWallet):
         super().__init__()
         self.node = node
         self.wallet = wallet
