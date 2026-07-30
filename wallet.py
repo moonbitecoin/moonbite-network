@@ -24,6 +24,8 @@ Trade-offs vs. real Bitcoin (the "~10% difference"):
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 from typing import Iterable
 
 from transaction import (
@@ -35,6 +37,7 @@ from transaction import (
     sha256d,
 )
 from ecdsa import SigningKey, SECP256k1
+from mnemonic import Mnemonic
 
 
 # --------------------------------------------------------------------------- #
@@ -337,3 +340,151 @@ class Wallet:
 
         self.history.append({"txid": tx.txid, "amount": amount, "to": to_address})
         return tx
+
+
+# --------------------------------------------------------------------------- #
+# HD Wallet (BIP32/39) — Hierarchical Deterministic key derivation
+# --------------------------------------------------------------------------- #
+class HDWallet(Wallet):
+    """HD Wallet supporting BIP39 mnemonic seed phrases and BIP32 key derivation.
+
+    Extends Wallet with:
+    - BIP39 mnemonic seed phrase generation (12/24 words)
+    - BIP32 hierarchical key derivation (m/44'/0'/0'/0/n path)
+    - Seed persistence and recovery
+    - Unlimited address generation from one seed
+    """
+
+    def __init__(self, mnemonic_phrase: str | None = None, passphrase: str = "") -> None:
+        """Initialize HD wallet from mnemonic or generate new seed.
+
+        Args:
+            mnemonic_phrase: BIP39 mnemonic (12 or 24 words). If None, generates new.
+            passphrase: Optional BIP39 passphrase for seed derivation.
+        """
+        super().__init__()
+        self.mnemonic_obj = Mnemonic("english")
+
+        if mnemonic_phrase is None:
+            # Generate new 12-word mnemonic
+            mnemonic_phrase = self.mnemonic_obj.generate(strength=128)
+
+        # Validate mnemonic
+        if not self.mnemonic_obj.check(mnemonic_phrase):
+            raise ValueError("invalid BIP39 mnemonic phrase")
+
+        self.mnemonic = mnemonic_phrase
+        self.passphrase = passphrase
+
+        # Derive BIP32 root from mnemonic
+        seed = self.mnemonic_obj.to_seed(mnemonic_phrase, passphrase)
+        self._root_key = self._derive_bip32_root(seed)
+
+        # Track derivation path counter for new addresses
+        self._derivation_index = 0
+
+    @staticmethod
+    def _derive_bip32_root(seed: bytes) -> dict:
+        """Derive BIP32 root key from seed (Bitcoin standard).
+
+        Returns dict with 'private_key' (bytes), 'chain_code' (bytes).
+        """
+        hmac_result = hmac.new(b"Bitcoin seed", seed, hashlib.sha512).digest()
+        private_key = hmac_result[:32]
+        chain_code = hmac_result[32:]
+        return {"private_key": private_key, "chain_code": chain_code}
+
+    @staticmethod
+    def _ckd_priv(key_data: dict, index: int) -> dict:
+        """Child Key Derivation (private) — BIP32 standard.
+
+        Args:
+            key_data: Parent key dict with 'private_key', 'chain_code'
+            index: Child index (0-2^31-1 for normal, 2^31+ for hardened)
+
+        Returns: Child key dict with same structure
+        """
+        if index >= 0x80000000:
+            # Hardened derivation: use private key
+            data = b"\x00" + key_data["private_key"] + index.to_bytes(4, "big")
+        else:
+            # Normal derivation: use public key (derived from private)
+            from ecdsa.util import sigencode_string
+            vk = SigningKey.from_string(
+                key_data["private_key"], curve=SECP256k1
+            ).get_verifying_key()
+            data = vk.to_string() + index.to_bytes(4, "big")
+
+        hmac_result = hmac.new(
+            key_data["chain_code"], data, hashlib.sha512
+        ).digest()
+        child_key = (
+            int.from_bytes(hmac_result[:32], "big")
+            + int.from_bytes(key_data["private_key"], "big")
+        ) % (SECP256k1.order or 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff)
+        child_key_bytes = child_key.to_bytes(32, "big")
+        child_chain_code = hmac_result[32:]
+
+        return {"private_key": child_key_bytes, "chain_code": child_chain_code}
+
+    def _derive_path(self, path: str = "m/44'/0'/0'/0/0") -> dict:
+        """Derive key at BIP32 path (e.g., "m/44'/0'/0'/0/0" for first address).
+
+        Standard MoonBite path: m/44'/0'/0'/0/n (account 0, change 0, index n)
+        """
+        key = self._root_key
+
+        for component in path.split("/")[1:]:  # Skip 'm'
+            if component == "":
+                continue
+            hardened = component.endswith("'")
+            index = int(component.rstrip("'"))
+            if hardened:
+                index += 0x80000000
+            key = self._ckd_priv(key, index)
+
+        return key
+
+    def new_key(self) -> str:
+        """Generate next HD address using derivation path m/44'/0'/0'/0/n."""
+        # Standard derivation: m/44'/0'/0'/0/n
+        path = f"m/44'/0'/0'/0/{self._derivation_index}"
+        self._derivation_index += 1
+
+        key_data = self._derive_path(path)
+        sk = SigningKey.from_string(key_data["private_key"], curve=SECP256k1)
+        pubkey_hex = sk.get_verifying_key().to_string().hex()
+        pkh = pubkey_hash(pubkey_hex)
+        addr = address_from_pubkey_hash(pkh)
+
+        self._keys[pkh] = sk
+        self._addresses[pkh] = addr
+        return addr
+
+    def export_seed(self) -> str:
+        """Export mnemonic seed phrase for recovery."""
+        return self.mnemonic
+
+    def derive_address(self, index: int) -> str:
+        """Derive a specific address by index (m/44'/0'/0'/0/index).
+
+        Useful for recovering specific addresses from seed without creating new ones.
+        """
+        path = f"m/44'/0'/0'/0/{index}"
+        key_data = self._derive_path(path)
+        sk = SigningKey.from_string(key_data["private_key"], curve=SECP256k1)
+        pubkey_hex = sk.get_verifying_key().to_string().hex()
+        pkh = pubkey_hash(pubkey_hex)
+        addr = address_from_pubkey_hash(pkh)
+
+        # Store the key if not already present
+        if pkh not in self._keys:
+            self._keys[pkh] = sk
+            self._addresses[pkh] = addr
+
+        return addr
+
+    @classmethod
+    def from_mnemonic(cls, mnemonic: str, passphrase: str = "") -> HDWallet:
+        """Recover wallet from BIP39 mnemonic seed phrase."""
+        return cls(mnemonic, passphrase)
