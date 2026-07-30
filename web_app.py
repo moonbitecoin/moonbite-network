@@ -43,7 +43,7 @@ import swap_verifier
 from node import Node
 from store import BlockStore
 from transaction import generate_keypair, pubkey_hash
-from wallet import address_from_pubkey_hash, is_valid_address, pubkey_hash_from_address
+from wallet import address_from_pubkey_hash, is_valid_address, pubkey_hash_from_address, HDWallet
 
 # Pragmatic email validation for the listing-notify capture.
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -1080,6 +1080,123 @@ def api_wallet_balance():
                 "balance_units": total_balance,
                 "balance_display": f"{balance_coins:.8f}".rstrip("0").rstrip(".") or "0",
                 "utxo_count": utxo_count,
+            }
+        ), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+# ============================================================================= #
+# API Routes — HD Wallet (BIP39/BIP32)
+# ============================================================================= #
+
+
+@app.route("/api/wallet/hd/new", methods=["GET"])
+@rate_limit(10, 60)
+def api_wallet_hd_new():
+    """Generate new HD wallet with BIP39 mnemonic seed phrase."""
+    try:
+        wallet = HDWallet()
+        mnemonic = wallet.export_seed()
+
+        # Store HD wallet in session for later use
+        session["hd_wallet_mnemonic"] = mnemonic
+
+        return jsonify(
+            {
+                "status": "success",
+                "mnemonic": mnemonic,
+                "word_count": len(mnemonic.split()),
+                "message": "BACKUP THIS SEED PHRASE! You can recover all addresses with it.",
+            }
+        ), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/wallet/hd/import", methods=["POST"])
+@rate_limit(5, 60)
+def api_wallet_hd_import():
+    """Import HD wallet from BIP39 mnemonic seed phrase."""
+    try:
+        data = request.get_json() or {}
+        mnemonic = (data.get("mnemonic") or "").strip()
+        passphrase = (data.get("passphrase") or "").strip()
+
+        if not mnemonic:
+            return jsonify({"status": "error", "message": "missing mnemonic"}), 400
+
+        # Validate and recover wallet from mnemonic
+        wallet = HDWallet.from_mnemonic(mnemonic, passphrase)
+
+        # Store in session
+        session["hd_wallet_mnemonic"] = mnemonic
+        session["hd_wallet_count"] = 0
+
+        return jsonify(
+            {
+                "status": "success",
+                "message": "Wallet recovered from mnemonic. Use /api/wallet/hd/address to generate addresses.",
+            }
+        ), 200
+    except ValueError as e:
+        return jsonify({"status": "error", "message": f"invalid mnemonic: {str(e)}"}), 400
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/wallet/hd/address", methods=["GET"])
+@rate_limit(30, 60)
+def api_wallet_hd_address():
+    """Generate next HD-derived address (m/44'/0'/0'/0/n)."""
+    try:
+        mnemonic = session.get("hd_wallet_mnemonic")
+        if not mnemonic:
+            return jsonify({"status": "error", "message": "no HD wallet in session. Use /api/wallet/hd/new first"}), 400
+
+        wallet = HDWallet.from_mnemonic(mnemonic)
+        index = session.get("hd_wallet_count", 0)
+
+        # Generate address at this index
+        address = wallet.derive_address(index)
+
+        # Increment counter and store in session
+        session["hd_wallet_count"] = index + 1
+
+        # Also store pubkey_hash for balance tracking (like /api/wallet/new)
+        from wallet import pubkey_hash_from_address
+        pkh = pubkey_hash_from_address(address)
+        pkhs = [h for h in session.get("wallet_pkhs", []) if h != pkh]
+        pkhs.append(pkh)
+        session["wallet_pkhs"] = pkhs[-_MAX_SESSION_ADDRESSES:]
+
+        return jsonify(
+            {
+                "status": "success",
+                "address": address,
+                "index": index,
+                "path": f"m/44'/0'/0'/0/{index}",
+            }
+        ), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/wallet/hd/seed", methods=["GET"])
+@rate_limit(5, 60)
+def api_wallet_hd_seed():
+    """Get the current session's HD wallet seed (mnemonic phrase)."""
+    try:
+        mnemonic = session.get("hd_wallet_mnemonic")
+        if not mnemonic:
+            return jsonify({"status": "error", "message": "no HD wallet in session"}), 400
+
+        return jsonify(
+            {
+                "status": "success",
+                "mnemonic": mnemonic,
+                "word_count": len(mnemonic.split()),
+                "warning": "NEVER share this seed. Anyone with it can access all your funds.",
             }
         ), 200
     except Exception as e:
