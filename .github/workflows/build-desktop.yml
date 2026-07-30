@@ -1,0 +1,103 @@
+name: Build Desktop Wallet
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller PyQt6 ecdsa mnemonic
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Build executable
+        run: pyinstaller moonbite.spec --onefile
+
+      - name: Upload to releases
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            dist/MoonBite.exe
+          draft: false
+          prerelease: false
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller PyQt6 ecdsa mnemonic
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Build app
+        run: pyinstaller moonbite.spec
+
+      - name: Create DMG
+        run: |
+          hdiutil create -volname MoonBite -srcfolder dist/MoonBite.app -ov -format UDZO MoonBite.dmg
+
+      - name: Upload to releases
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            MoonBite.dmg
+          draft: false
+          prerelease: false
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller PyQt6 ecdsa mnemonic
+          sudo apt-get update && sudo apt-get install -y python3-pyqt6
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Build executable
+        run: pyinstaller moonbite.spec --onefile
+
+      - name: Upload to releases
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            dist/MoonBite
+          draft: false
+          prerelease: false
