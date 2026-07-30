@@ -312,24 +312,32 @@ def mine():
     if not address:
         return _err("missing 'address' in request body", 400)
 
-    # Validate the address on the node before mining to it.
-    try:
-        info = client.validateaddress(address)
-        if not info.get("isvalid"):
-            # A well-formed address for the wrong network is the common footgun
-            # (e.g. a tmoon1… testnet address sent to a mainnet node). Detect it
-            # and say so, instead of the bare "invalid address".
-            node_chain = None
-            try:
-                node_chain = (client.getblockchaininfo() or {}).get("chain")
-            except (RPCConnectionError, RPCError):
-                pass
-            hint = _wrong_network_hint(address, node_chain)
-            return _err(hint or "invalid MoonBite address", 400)
-    except RPCConnectionError as exc:
-        return _err(str(exc), 503)
-    except RPCError as exc:
-        return _err(str(exc), 502)
+    # Validate bech32 addresses client-side (wallet.py) since the node RPC
+    # may not support them. Base58 addresses still go through node RPC.
+    from wallet import is_valid_address
+    if address.lower().startswith(("moon1", "tmoon1", "rmoon1")):
+        # Bech32 address — validate client-side
+        if not is_valid_address(address):
+            return _err("invalid MoonBite address", 400)
+    else:
+        # Base58 or other — validate on the node before mining to it.
+        try:
+            info = client.validateaddress(address)
+            if not info.get("isvalid"):
+                # A well-formed address for the wrong network is the common footgun
+                # (e.g. a tmoon1… testnet address sent to a mainnet node). Detect it
+                # and say so, instead of the bare "invalid address".
+                node_chain = None
+                try:
+                    node_chain = (client.getblockchaininfo() or {}).get("chain")
+                except (RPCConnectionError, RPCError):
+                    pass
+                hint = _wrong_network_hint(address, node_chain)
+                return _err(hint or "invalid MoonBite address", 400)
+        except RPCConnectionError as exc:
+            return _err(str(exc), 503)
+        except RPCError as exc:
+            return _err(str(exc), 502)
 
     try:
         before = client.getblockcount()
