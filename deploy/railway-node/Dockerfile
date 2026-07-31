@@ -7,12 +7,8 @@ WORKDIR /app
 # Copy application files
 COPY . .
 
-# Install dependencies
-RUN pip install --no-cache-dir \
-    flask \
-    gunicorn \
-    requests \
-    werkzeug
+# Install Python dependencies for web app
+RUN pip install --no-cache-dir -r requirements-web.txt
 
 # Expose port 5000 (Railway default PORT env var)
 EXPOSE 5000
