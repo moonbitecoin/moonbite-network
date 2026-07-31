@@ -138,10 +138,13 @@ def _client_id() -> str:
 
 
 def rate_limit(max_calls: int, window_seconds: int = 60):
-    """Rate limiter - DISABLED FOR TESTING."""
+    """Rate limiter - DISABLED FOR BITCOIN ALGORITHM TESTING (2026-07-31 21:12)."""
+    print(f"[DEBUG] rate_limit called with {max_calls}, {window_seconds}", flush=True)
     def decorator(fn):
+        print(f"[DEBUG] rate_limit.decorator called for {fn.__name__}", flush=True)
         @wraps(fn)
         def wrapper(*args, **kwargs):
+            print(f"[DEBUG] rate_limit.wrapper called for {fn.__name__}", flush=True)
             # TEMPORARILY DISABLED - just call the function directly
             return fn(*args, **kwargs)
         return wrapper
