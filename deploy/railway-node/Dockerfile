@@ -6,6 +6,8 @@ WORKDIR /app
 
 # Copy application files
 COPY . .
+COPY deploy/railway-node/entrypoint-flask.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Install Python dependencies for web app
 RUN pip install --no-cache-dir -r requirements-web.txt
@@ -13,15 +15,5 @@ RUN pip install --no-cache-dir -r requirements-web.txt
 # Expose port 5000 (Railway default PORT env var)
 EXPOSE 5000
 
-# Run with gunicorn
-# Use 1 worker + async to handle memory constraints on Railway
-# Increase timeout since Node initialization can be slow
-CMD ["gunicorn", \
-     "--bind", "0.0.0.0:5000", \
-     "--workers", "1", \
-     "--worker-class", "sync", \
-     "--timeout", "180", \
-     "--max-requests", "1000", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-", \
-     "web_app:app"]
+# Use entrypoint script for better logging and error handling
+ENTRYPOINT ["/entrypoint.sh"]
