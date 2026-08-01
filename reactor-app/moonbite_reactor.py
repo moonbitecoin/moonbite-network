@@ -48,12 +48,28 @@ _MIME = {
 
 def _proxy_mine(payload, timeout=90):
     """Forward a mine request to the live explorer. Returns (status, body-bytes)."""
-    url = EXPLORER.rstrip("/") + "/api/mine"
-    req = urllib.request.Request(url, data=payload, method="POST")
+    # Parse the incoming request (from browser, contains {"address": "..."})
+    try:
+        data = json.loads(payload.decode("utf-8")) if isinstance(payload, bytes) else payload
+    except:
+        return 400, json.dumps({"error": "invalid JSON"}).encode("utf-8")
+
+    # Flask API expects {"blocks": N, "address": "..."}
+    # Reactor browser sends only {"address": "..."}, so default to 1 block
+    if "blocks" not in data:
+        data["blocks"] = 1
+
+    # Forward to Flask /api/mining/start endpoint
+    url = EXPLORER.rstrip("/") + "/api/mining/start"
+    req = urllib.request.Request(url, data=json.dumps(data).encode("utf-8"), method="POST")
     req.add_header("Content-Type", "application/json")
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
-            return resp.status, resp.read()
+            response_body = resp.read()
+            # Flask response format: {"blocks_to_mine": N, "status": "mining"}
+            # Browser expects: {"found": true/false, "height": N, "hashes": [...]}
+            # For now, just return the Flask response format and let the UI adapt
+            return resp.status, response_body
     except urllib.error.HTTPError as exc:
         return exc.code, exc.read()
     except (TimeoutError, urllib.error.URLError, ConnectionError, OSError) as exc:

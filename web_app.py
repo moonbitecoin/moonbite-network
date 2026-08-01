@@ -635,8 +635,18 @@ def why_page():
 
 @app.route("/wallet")
 def wallet_page():
-    """Render the wallet page."""
-    return render_template("wallet.html")
+    """Render the mobile PWA wallet page."""
+    return render_template("wallet-pwa.html")
+
+@app.route("/wallet-manifest.json")
+def wallet_manifest():
+    """Serve PWA manifest."""
+    return send_file("templates/wallet-manifest.json", mimetype="application/manifest+json")
+
+@app.route("/wallet-sw.js")
+def wallet_service_worker():
+    """Serve the service worker for offline support."""
+    return send_file("static/wallet-sw.js", mimetype="application/javascript")
 
 
 @app.route("/mining")

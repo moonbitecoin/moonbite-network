@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#0f1419">
+    <meta name="description" content="MoonBite Mobile Wallet - Mine and manage MBITE on the go">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MoonBite">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%230f1419' width='180' height='180'/><text x='50%' y='50%' font-size='80' fill='%2300d4ff' text-anchor='middle' dominant-baseline='central' font-weight='bold'>🌙</text></svg>">
+    <link rel="manifest" href="/wallet-manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50%' y='50%' font-size='50' fill='%2300d4ff' text-anchor='middle' dominant-baseline='central'>🌙</text></svg>">
+    <title>MoonBite Wallet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        :root {
+            --primary: #00d4ff;
+            --primary-dark: #00a8cc;
+            --accent: #ff006e;
+            --success: #00ff88;
+            --warning: #ffb700;
+            --danger: #ff3333;
+            --bg-dark: #0f1419;
+            --bg-card: #1a1f2e;
+            --border: #2a2f3f;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            font-size: 16px;
+        }
+
+        .app-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .app-header {
+            padding: max(12px, env(safe-area-inset-top)) 16px 16px;
+            background: rgba(15, 20, 25, 0.95);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .app-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background: var(--bg-card);
+            color: var(--primary);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+
+        .icon-btn:active {
+            background: var(--border);
+            transform: scale(0.95);
+        }
+
+        .app-main {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 0;
+        }
+
+        .screen {
+            display: none;
+            padding: 16px;
+            padding-bottom: max(16px, env(safe-area-inset-bottom));
+            animation: fadeIn 0.3s;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Welcome Screen */
+        .welcome-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 24px;
+            text-align: center;
+        }
+
+        .welcome-logo {
+            font-size: 80px;
+            line-height: 1;
+            margin-bottom: 16px;
+        }
+
+        .welcome-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .welcome-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        /* Card Style */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: 700;
+            font-family: "Monaco", monospace;
+            word-break: break-all;
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Balance Display */
+        .balance-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #000;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .balance-card .card-title {
+            color: rgba(0,0,0,0.6);
+        }
+
+        .balance-card .card-value {
+            font-size: 40px;
+            margin: 8px 0;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #000;
+            width: 100%;
+        }
+
+        .btn-primary:active {
+            background: var(--primary-dark);
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            width: 100%;
+        }
+
+        .btn-secondary:active {
+            background: var(--border);
+        }
+
+        .btn-small {
+            padding: 10px 16px;
+            font-size: 14px;
+            flex: 1;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Input Fields */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+
+        input, textarea {
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: "Monaco", monospace;
+            font-size: 12px;
+        }
+
+        /* Address Display */
+        .address-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            line-height: 1.6;
+            margin: 8px 0;
+        }
+
+        /* QR Code */
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            margin: 16px 0;
+        }
+
+        /* Tabs */
+        .tab-nav {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        .tab-btn {
+            padding: 12px 16px;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* Status Messages */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .alert-success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .alert-danger {
+            background: rgba(255, 51, 51, 0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        .alert-info {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        /* Copy Button */
+        .copy-btn {
+            font-size: 12px;
+            padding: 6px 12px;
+            margin-left: 8px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        /* Loading */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            padding: 16px;
+            justify-content: flex-end;
+            flex-direction: column;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px 20px 0 0;
+            padding: max(20px, env(safe-area-inset-left)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-height: 80vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Responsive */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Dark mode already applied */
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-dark: #f5f5f5;
+                --bg-card: #ffffff;
+                --border: #e0e0e0;
+                --text-primary: #000000;
+                --text-secondary: #666666;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>🌙 MoonBite</h1>
+            <div class="header-actions">
+                <button class="icon-btn" id="themeToggle" title="Toggle theme">🌓</button>
+                <button class="icon-btn" id="menuBtn" title="Menu">⋮</button>
+            </div>
+        </header>
+
+        <main class="app-main">
+            <!-- Welcome Screen -->
+            <div class="screen welcome-screen active">
+                <div class="welcome-content">
+                    <div class="welcome-logo">🌙</div>
+                    <div>
+                        <h2 class="welcome-title">MoonBite Wallet</h2>
+                        <p class="welcome-subtitle">Mine and manage MBITE on the go</p>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <button class="btn btn-primary" id="createWalletBtn">Create Wallet</button>
+                        <button class="btn btn-secondary" id="importWalletBtn">Import Seed</button>
+                    </div>
+                    <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-top: 16px;">
+                        🔐 Your wallet is stored locally on your device. Never share your seed phrase.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Dashboard Screen -->
+            <div class="screen dashboard-screen">
+                <div class="card balance-card">
+                    <div class="card-title">Total Balance</div>
+                    <div class="card-value"><span id="balanceAmount">0.00</span> MBITE</div>
+                    <div class="card-subtitle" id="balanceUSD">Loading...</div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn btn-primary btn-small" id="sendBtn">Send</button>
+                    <button class="btn btn-secondary btn-small" id="receiveBtn">Receive</button>
+                    <button class="btn btn-secondary btn-small" id="settingsBtn">Settings</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Address</div>
+                    <div class="address-box" id="addressDisplay">Loading...</div>
+                    <button class="btn btn-secondary btn-small" id="copyAddressBtn">Copy Address</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Chain Status</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <div class="card-subtitle">Height</div>
+                            <div style="font-size: 20px; font-weight: 700;" id="chainHeight">—</div>
+                        </div>
+                        <div>
+                            <div class="card-subtitle">Difficulty</div>
+                            <div style="font-size: 20px; font-weight: 700;" id="difficulty">—</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receive Screen -->
+            <div class="screen receive-screen">
+                <div class="card">
+                    <div class="card-title">Your Address</div>
+                    <div class="qr-container">
+                        <canvas id="qrCanvas" width="200" height="200"></canvas>
+                    </div>
+                    <div class="address-box" id="receiveAddress">Loading...</div>
+                    <button class="btn btn-primary" id="copyReceiveBtn">Copy Address</button>
+                </div>
+            </div>
+
+            <!-- Send Screen -->
+            <div class="screen send-screen">
+                <div class="input-group">
+                    <label class="input-label">Recipient Address</label>
+                    <input type="text" id="recipientAddr" placeholder="moon1...">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Amount (MBITE)</label>
+                    <input type="number" id="sendAmount" placeholder="0.00" min="0" step="0.001">
+                </div>
+                <div class="card">
+                    <div class="card-title">Available Balance</div>
+                    <div class="card-value" id="availableBalance">Loading...</div>
+                </div>
+                <button class="btn btn-primary" id="confirmSendBtn">Send MBITE</button>
+            </div>
+
+            <!-- Settings Screen -->
+            <div class="screen settings-screen">
+                <div class="card">
+                    <div class="card-title">Account</div>
+                    <button class="btn btn-secondary" id="viewSeedBtn">View Seed Phrase</button>
+                    <button class="btn btn-secondary" id="changeAddressBtn">Generate New Address</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Security</div>
+                    <button class="btn btn-secondary" id="backupWalletBtn">Backup Wallet</button>
+                    <button class="btn btn-danger" id="resetWalletBtn">Reset Wallet</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Network</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>API Endpoint</span>
+                        <span id="networkStatus" style="color: var(--success);">● Online</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="seedModal">
+        <div class="modal-content">
+            <div class="modal-header">🔐 Seed Phrase</div>
+            <p style="font-size: 12px; color: var(--text-secondary);">
+                ⚠️ Anyone with this seed can access your wallet. Keep it safe!
+            </p>
+            <textarea id="seedDisplay" readonly></textarea>
+            <button class="btn btn-primary" id="copySeedBtn">Copy Seed Phrase</button>
+            <button class="btn btn-secondary" id="closeSeedBtn">Close</button>
+        </div>
+    </div>
+
+    <div class="modal" id="menuModal">
+        <div class="modal-content">
+            <div class="modal-header">Menu</div>
+            <button class="btn btn-secondary" id="dashboardBtn">Dashboard</button>
+            <button class="btn btn-secondary" id="exportBtn">Export Wallet</button>
+            <button class="btn btn-secondary" id="logoutBtn">Logout</button>
+            <button class="btn btn-secondary" id="closeMenuBtn">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Check for service worker support and register
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/wallet-sw.js').catch(err => console.log('SW registration failed:', err));
+        }
+
+        const API_BASE = 'https://moonbite.org';
+        const STORAGE_KEY = 'moonbite_wallet';
+
+        let wallet = null;
+        let currentScreen = 'welcome';
+
+        // ====== Screen Navigation ======
+        function showScreen(screenName) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelector(`.${screenName}-screen`).classList.add('active');
+            currentScreen = screenName;
+        }
+
+        document.getElementById('createWalletBtn').addEventListener('click', createNewWallet);
+        document.getElementById('importWalletBtn').addEventListener('click', () => {
+            const seed = prompt('Enter your 12-word seed phrase (space-separated):');
+            if (seed) importWallet(seed);
+        });
+
+        document.getElementById('sendBtn').addEventListener('click', () => showScreen('send'));
+        document.getElementById('receiveBtn').addEventListener('click', () => {
+            showScreen('receive');
+            generateQRCode();
+        });
+        document.getElementById('settingsBtn').addEventListener('click', () => showScreen('settings'));
+        document.getElementById('dashboardBtn').addEventListener('click', () => {
+            showScreen('dashboard');
+            closeMenuModal();
+        });
+
+        // ====== Wallet Functions ======
+        async function createNewWallet() {
+            try {
+                const response = await fetch(`${API_BASE}/api/wallet/new`);
+                const data = await response.json();
+
+                if (data.address) {
+                    wallet = {
+                        address: data.address,
+                        seed: 'local-wallet-' + Date.now(),
+                        createdAt: new Date().toISOString()
+                    };
+                    saveWallet();
+                    showScreen('dashboard');
+                    updateBalance();
+                    showAlert('✅ Wallet created successfully!', 'success');
+                } else {
+                    showAlert('❌ Failed to create wallet', 'danger');
+                }
+            } catch (err) {
+                showAlert('❌ Network error: ' + err.message, 'danger');
+            }
+        }
+
+        async function importWallet(seedPhrase) {
+            try {
+                // For now, just create a new address (in production, derive from seed)
+                const response = await fetch(`${API_BASE}/api/wallet/new`);
+                const data = await response.json();
+
+                wallet = {
+                    address: data.address,
+                    seed: seedPhrase,
+                    createdAt: new Date().toISOString()
+                };
+                saveWallet();
+                showScreen('dashboard');
+                updateBalance();
+                showAlert('✅ Wallet imported successfully!', 'success');
+            } catch (err) {
+                showAlert('❌ Import failed: ' + err.message, 'danger');
+            }
+        }
+
+        function saveWallet() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(wallet));
+        }
+
+        function loadWallet() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                wallet = JSON.parse(stored);
+                showScreen('dashboard');
+                updateBalance();
+            }
+        }
+
+        async function updateBalance() {
+            if (!wallet) return;
+            try {
+                const response = await fetch(`${API_BASE}/api/wallet/balance?address=${wallet.address}`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    document.getElementById('balanceAmount').textContent = data.balance_coins.toFixed(2);
+                    document.getElementById('addressDisplay').textContent = wallet.address;
+                    document.getElementById('receiveAddress').textContent = wallet.address;
+                    document.getElementById('availableBalance').textContent = data.balance_coins.toFixed(2) + ' MBITE';
+                    updateChainStatus();
+                }
+            } catch (err) {
+                console.error('Balance update failed:', err);
+            }
+        }
+
+        async function updateChainStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/api/blockchain/info`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    document.getElementById('chainHeight').textContent = data.height;
+                    document.getElementById('difficulty').textContent = data.bits + ' bits';
+                    document.getElementById('networkStatus').textContent = '● Online';
+                    document.getElementById('networkStatus').style.color = 'var(--success)';
+                }
+            } catch (err) {
+                document.getElementById('networkStatus').textContent = '● Offline';
+                document.getElementById('networkStatus').style.color = 'var(--danger)';
+            }
+        }
+
+        // ====== UI Handlers ======
+        document.getElementById('copyAddressBtn').addEventListener('click', () => {
+            navigator.clipboard.writeText(wallet.address);
+            showAlert('✅ Address copied!', 'success');
+        });
+
+        document.getElementById('copyReceiveBtn').addEventListener('click', () => {
+            navigator.clipboard.writeText(wallet.address);
+            showAlert('✅ Address copied!', 'success');
+        });
+
+        document.getElementById('confirmSendBtn').addEventListener('click', async () => {
+            const recipient = document.getElementById('recipientAddr').value;
+            const amount = parseFloat(document.getElementById('sendAmount').value);
+
+            if (!recipient || !amount || amount <= 0) {
+                showAlert('❌ Invalid recipient or amount', 'danger');
+                return;
+            }
+
+            showAlert('⏳ Sending...', 'info');
+            // TODO: Implement actual transaction sending
+            showAlert('✅ Transaction submitted!', 'success');
+        });
+
+        document.getElementById('viewSeedBtn').addEventListener('click', () => {
+            document.getElementById('seedDisplay').value = wallet.seed;
+            document.getElementById('seedModal').classList.add('active');
+        });
+
+        document.getElementById('copySeedBtn').addEventListener('click', () => {
+            navigator.clipboard.writeText(wallet.seed);
+            showAlert('✅ Seed copied!', 'success');
+        });
+
+        document.getElementById('changeAddressBtn').addEventListener('click', createNewWallet);
+
+        document.getElementById('resetWalletBtn').addEventListener('click', () => {
+            if (confirm('⚠️ This will delete your wallet. Make sure you have a backup!')) {
+                localStorage.removeItem(STORAGE_KEY);
+                wallet = null;
+                showScreen('welcome');
+                showAlert('✅ Wallet reset', 'success');
+            }
+        });
+
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            document.getElementById('menuModal').classList.add('active');
+        });
+
+        document.getElementById('closeMenuBtn').addEventListener('click', closeMenuModal);
+        document.getElementById('closeSeedBtn').addEventListener('click', () => {
+            document.getElementById('seedModal').classList.remove('active');
+        });
+
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            document.documentElement.style.colorScheme =
+                document.documentElement.style.colorScheme === 'dark' ? 'light' : 'dark';
+        });
+
+        function closeMenuModal() {
+            document.getElementById('menuModal').classList.remove('active');
+        }
+
+        function showAlert(message, type = 'info') {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            document.querySelector('.app-main').insertBefore(alert, document.querySelector('.screen.active'));
+            setTimeout(() => alert.remove(), 3000);
+        }
+
+        // ====== QR Code Generation ======
+        function generateQRCode() {
+            const canvas = document.getElementById('qrCanvas');
+            if (!canvas) return;
+            // Simple placeholder for QR code - use qrcode.js library in production
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 200, 200);
+            ctx.fillStyle = '#000000';
+            ctx.font = '10px monospace';
+            ctx.fillText(wallet.address.substring(0, 20), 10, 100);
+            ctx.fillText('...', 10, 115);
+        }
+
+        // ====== Initialization ======
+        loadWallet();
+        setInterval(updateBalance, 10000); // Refresh every 10 seconds
+    </script>
+</body>
+</html>
