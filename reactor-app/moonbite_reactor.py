@@ -24,7 +24,7 @@ import urllib.request
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-DEFAULT_EXPLORER = "https://moonbite-production.up.railway.app"
+DEFAULT_EXPLORER = "https://dashboard-production-2f49.up.railway.app"
 EXPLORER = DEFAULT_EXPLORER  # overridden by --explorer / env
 
 
