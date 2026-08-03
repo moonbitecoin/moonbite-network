@@ -315,6 +315,7 @@ def mining_worker(job_id: str, blocks_to_mine: int, miner_address: str) -> None:
         "hashes_tried": 0,
         "hashrate": 0.0,
         "started_at": time.time(),
+        "mining_address": miner_address,  # For receipts/sharing
     }
 
     with app.mining_lock:
@@ -1407,6 +1408,91 @@ def api_mining_stop():
                         job["is_mining"] = False
                         stopped_count += 1
                 return jsonify({"status": "stopped", "jobs_stopped": stopped_count}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/mining/global-stats", methods=["GET"])
+def api_mining_global_stats():
+    """Get global mining statistics for viral display."""
+    try:
+        with app.mining_lock:
+            active_jobs = app.mining_state["active_jobs"].copy()
+
+        # Count active miners (only those actively mining right now)
+        active_miners = sum(1 for job in active_jobs.values() if job.get("is_mining"))
+        total_blocks_mined = sum(job.get("blocks_mined", 0) for job in active_jobs.values())
+        total_blocks_target = sum(job.get("blocks_to_mine", 0) for job in active_jobs.values())
+        combined_hashrate = sum(job.get("hashrate", 0.0) for job in active_jobs.values())
+
+        node = get_node()
+        return jsonify(
+            {
+                "status": "success",
+                "active_miners": active_miners,
+                "active_jobs": len(active_jobs),
+                "blocks_mined_globally": total_blocks_mined,
+                "blocks_pending": total_blocks_target - total_blocks_mined,
+                "combined_hashrate": round(combined_hashrate, 2),
+                "current_height": node.chain.height,
+                "network_difficulty": 1 << node.chain.next_bits(),
+            }
+        ), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/mining/share/<job_id>", methods=["GET"])
+def api_mining_share(job_id):
+    """Generate shareable receipt data for a completed mining job.
+
+    Returns OG tags and share text for Twitter, TikTok, etc.
+    """
+    try:
+        with app.mining_lock:
+            job = app.mining_state["active_jobs"].get(job_id)
+
+        if not job:
+            return jsonify({"status": "error", "message": "Job not found"}), 404
+
+        blocks_mined = job.get("blocks_mined", 0)
+        address = job.get("mining_address", "Unknown")
+        hashrate = job.get("hashrate", 0)
+
+        if blocks_mined == 0:
+            return jsonify({"status": "error", "message": "No blocks mined yet"}), 400
+
+        # Calculate estimated MBITE earned (50 MBITE per block)
+        mbite_earned = blocks_mined * 50
+
+        # Generate share text for different platforms
+        share_text = f"I just mined {blocks_mined} MoonBite block{'s' if blocks_mined > 1 else ''}! Earned {mbite_earned:,.0f} MBITE 🌙⛏️"
+        twitter_text = f"{share_text} Join me: https://moonbite.org/mining"
+        tiktok_text = f"Mining crypto with {share_text} #MoonBite #Mining"
+
+        return jsonify(
+            {
+                "status": "success",
+                "job_id": job_id,
+                "blocks_mined": blocks_mined,
+                "mbite_earned": mbite_earned,
+                "hashrate": round(hashrate, 2),
+                "share_text": share_text,
+                "twitter": {
+                    "text": twitter_text,
+                    "url": f"https://twitter.com/intent/tweet?text={share_text.replace(' ', '%20')}&url=https://moonbite.org",
+                },
+                "tiktok": {
+                    "text": tiktok_text,
+                },
+                "og_tags": {
+                    "title": f"I mined {mbite_earned:,.0f} MBITE! 🚀",
+                    "description": f"Mined {blocks_mined} block{'s' if blocks_mined > 1 else ''} using the MoonBite browser miner",
+                    "image": "https://moonbite.org/favicon.svg",
+                    "url": f"https://moonbite.org/mining?receipt={job_id}",
+                },
+            }
+        ), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 

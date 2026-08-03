@@ -15,6 +15,24 @@
         <p>Mine blocks and earn coinbase rewards to your address.</p>
     </section>
 
+    <!-- VIRAL: Global Mining Stats Banner -->
+    <div class="mb-stats-banner">
+        <div class="mb-stats-item">
+            <div class="mb-stats-count"><span id="activeMinerCount">0</span></div>
+            <div class="mb-stats-label">Active Miners</div>
+        </div>
+        <div class="mb-stats-divider"></div>
+        <div class="mb-stats-item">
+            <div class="mb-stats-count"><span id="globalBlocksCount">0</span></div>
+            <div class="mb-stats-label">Blocks Mined</div>
+        </div>
+        <div class="mb-stats-divider"></div>
+        <div class="mb-stats-item">
+            <div class="mb-stats-count"><span id="hashRateCount">0</span> H/s</div>
+            <div class="mb-stats-label">Network Power</div>
+        </div>
+    </div>
+
     <!-- Mining Controls -->
     <div class="card card-full">
         <div class="card-header">Mining Configuration</div>
@@ -172,6 +190,48 @@
 
     <!-- Status Messages -->
     <div id="statusMessage" class="status-message hidden"></div>
+
+    <!-- VIRAL: Shareable Receipt Modal (shown after mining completes) -->
+    <div id="receiptModal" class="mb-receipt-modal hidden">
+        <div class="mb-receipt-card">
+            <button class="mb-receipt-close" onclick="closeReceipt()">&times;</button>
+
+            <div class="mb-receipt-header">
+                <div class="mb-receipt-emoji">🎉</div>
+                <h3>You Did It!</h3>
+            </div>
+
+            <div class="mb-receipt-stats">
+                <div class="mb-receipt-stat">
+                    <div class="mb-receipt-stat-value" id="receiptBlocks">1</div>
+                    <div class="mb-receipt-stat-label">Block Mined</div>
+                </div>
+                <div class="mb-receipt-stat">
+                    <div class="mb-receipt-stat-value" id="receiptMBITE">50</div>
+                    <div class="mb-receipt-stat-label">MBITE Earned</div>
+                </div>
+            </div>
+
+            <div class="mb-receipt-message">
+                <p id="receiptText">I just mined 1 MoonBite block! Earned 50 MBITE 🌙⛏️</p>
+            </div>
+
+            <div class="mb-receipt-divider"></div>
+
+            <div class="mb-receipt-actions">
+                <button class="mb-receipt-btn mb-receipt-btn-twitter" onclick="shareTwitter()">
+                    <span>𝕏</span> Share on Twitter
+                </button>
+                <button class="mb-receipt-btn mb-receipt-btn-copy" onclick="copyToClipboard()">
+                    <span>📋</span> Copy Text
+                </button>
+            </div>
+
+            <div class="mb-receipt-footer">
+                <small>Join 1000s mining MoonBite</small>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -180,6 +240,7 @@
     let isMining = false;
     let startTime = 0;
     let statusCheckInterval = null;
+    let currentJobId = null;
 
     function showStatus(message, type = 'info') {
         const statusEl = document.getElementById('statusMessage');
@@ -189,6 +250,72 @@
         setTimeout(() => {
             statusEl.classList.add('hidden');
         }, 5000);
+    }
+
+    // Update global mining stats (viral metrics)
+    async function updateGlobalStats() {
+        try {
+            const response = await fetch('/api/mining/global-stats');
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                document.getElementById('activeMinerCount').textContent = data.active_miners;
+                document.getElementById('globalBlocksCount').textContent = data.blocks_mined_globally;
+                const hashrate = (data.combined_hashrate / 1000).toFixed(1);
+                document.getElementById('hashRateCount').textContent = hashrate + 'K';
+            }
+        } catch (error) {
+            console.error('Error updating global stats:', error);
+        }
+    }
+
+    // Show shareable receipt modal
+    async function showReceipt(jobId, blocksMined) {
+        if (blocksMined === 0) return;
+
+        try {
+            const response = await fetch(`/api/mining/share/${jobId}`);
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                // Update receipt UI
+                document.getElementById('receiptBlocks').textContent = blocksMined;
+                document.getElementById('receiptMBITE').textContent = data.mbite_earned;
+                document.getElementById('receiptText').textContent = data.share_text;
+
+                // Store for sharing
+                window.currentReceipt = data;
+
+                // Show modal
+                document.getElementById('receiptModal').classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('Error generating receipt:', error);
+        }
+    }
+
+    function closeReceipt() {
+        document.getElementById('receiptModal').classList.add('hidden');
+    }
+
+    function shareTwitter() {
+        const receipt = window.currentReceipt;
+        if (!receipt) return;
+
+        const text = receipt.share_text;
+        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=https://moonbite.org`;
+        window.open(url, '_blank', 'width=600,height=400');
+    }
+
+    function copyToClipboard() {
+        const receipt = window.currentReceipt;
+        if (!receipt) return;
+
+        navigator.clipboard.writeText(receipt.share_text).then(() => {
+            showStatus('✓ Copied to clipboard!', 'success');
+        }).catch(err => {
+            console.error('Copy failed:', err);
+        });
     }
 
     async function startMining(event) {
@@ -224,6 +351,7 @@
             const data = await response.json();
 
             if (response.ok && data.status === 'mining') {
+                currentJobId = data.job_id;  // Store job ID for receipt
                 isMining = true;
                 startTime = Date.now();
                 document.getElementById('miningForm').style.display = 'none';
@@ -278,6 +406,10 @@
                 // Check if mining is complete
                 if (data.status !== 'mining' || blocksMined >= totalBlocks) {
                     stopMiningUI();
+                    // VIRAL: Show shareable receipt on completion
+                    if (blocksMined > 0 && currentJobId) {
+                        setTimeout(() => showReceipt(currentJobId, blocksMined), 500);
+                    }
                 } else {
                     document.getElementById('miningStatusDisplay').textContent = 'Mining...';
                 }
@@ -324,6 +456,10 @@
         if (savedAddresses.length > 0) {
             document.getElementById('addressInput').value = savedAddresses[0].address;
         }
+
+        // Update global stats immediately and every 3 seconds (viral metrics)
+        updateGlobalStats();
+        setInterval(updateGlobalStats, 3000);
 
         // Poll blockchain info in background
         setInterval(() => {
