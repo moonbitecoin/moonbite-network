@@ -81,14 +81,14 @@ if _TRUSTED_PROXY_COUNT > 0:
 _MAX_CONTENT_LENGTH = int(os.environ.get("MOONBITE_MAX_BODY_BYTES", str(256 * 1024)))
 app.config["MAX_CONTENT_LENGTH"] = _MAX_CONTENT_LENGTH
 
-# Global state for mining operations
+# Global state for mining operations - queue-based for concurrent mining
+import queue
+import uuid
+
 app.mining_state = {
-    "is_mining": False,
-    "blocks_to_mine": 0,
-    "blocks_mined": 0,
-    "current_block_height": 0,
-    "mining_address": None,
-    "mining_thread": None,
+    "active_jobs": {},  # job_id -> {is_mining, blocks_to_mine, blocks_mined, ...}
+    "job_queue": queue.Queue(),  # Queue of pending mining jobs
+    "total_blocks_mined": 0,  # Total blocks mined across all jobs
 }
 
 # Global node instance (initialized once per app instance)
@@ -103,8 +103,9 @@ _MAX_SESSION_ADDRESSES = 25
 # indefinitely (a self-inflicted DoS). 100 is plenty for the demo reactor.
 _MAX_MINE_BLOCKS = 100
 
-# Lock for thread-safe mining operations
+# Lock for thread-safe mining and blockchain operations
 app.mining_lock = threading.Lock()
+app.blockchain_lock = threading.Lock()  # Protect blockchain.add_block()
 
 # --------------------------------------------------------------------------- #
 # Lightweight in-process rate limiting (no external store, no third parties).
@@ -300,41 +301,57 @@ def merchant_received_lookup(address: str) -> int:
     return received_at_address(address)
 
 
-def mining_worker(blocks_to_mine: int, miner_address: str) -> None:
-    """Background worker thread for mining blocks."""
+def mining_worker(job_id: str, blocks_to_mine: int, miner_address: str) -> None:
+    """Background worker thread for mining blocks (concurrent-safe)."""
     node = get_node()
-    # Bind the state dict once: this run should consistently update its own dict
-    # even if app.mining_state is later reassigned (e.g. by a test fixture reset).
-    state = app.mining_state
-    state["blocks_mined"] = 0
-    state["current_block_height"] = node.chain.height
-    state["hashes_tried"] = 0
-    state["hashrate"] = 0.0
-    state["started_at"] = time.time()
+
+    # Job-specific state
+    job_state = {
+        "job_id": job_id,
+        "is_mining": True,
+        "blocks_to_mine": blocks_to_mine,
+        "blocks_mined": 0,
+        "current_block_height": node.chain.height,
+        "hashes_tried": 0,
+        "hashrate": 0.0,
+        "started_at": time.time(),
+    }
+
+    with app.mining_lock:
+        app.mining_state["active_jobs"][job_id] = job_state
 
     for i in range(blocks_to_mine):
-        if not state["is_mining"]:
-            break
+        with app.mining_lock:
+            if not app.mining_state["active_jobs"].get(job_id, {}).get("is_mining", False):
+                break
 
         try:
-            block = node.mine_block(miner_address)
+            # Lock blockchain access - mine_block() calls chain.add_block() which needs serialization
+            with app.blockchain_lock:
+                block = node.mine_block(miner_address)
+                if block is not None:
+                    _persist_block(block)
+
             if block is not None:
-                _persist_block(block)
-                # `mine()` starts at nonce 0 and increments until a hash meets
-                # target, so nonce+1 is the real number of hashes tried for this
-                # block. Summing them over elapsed time is an honest hashrate.
-                state["hashes_tried"] += block.header.nonce + 1
-                elapsed = max(1e-6, time.time() - state["started_at"])
-                state["hashrate"] = state["hashes_tried"] / elapsed
-                state["blocks_mined"] = i + 1
-                state["current_block_height"] = node.chain.height
+                # Update job state (outside blockchain lock to avoid holding lock too long)
+                job_state["hashes_tried"] += block.header.nonce + 1
+                elapsed = max(1e-6, time.time() - job_state["started_at"])
+                job_state["hashrate"] = job_state["hashes_tried"] / elapsed
+                job_state["blocks_mined"] = i + 1
+                job_state["current_block_height"] = node.chain.height
+
+                with app.mining_lock:
+                    app.mining_state["total_blocks_mined"] += 1
+                    app.mining_state["active_jobs"][job_id] = job_state
             else:
                 break
         except Exception as e:
-            print(f"Mining error: {e}")
+            print(f"Mining error (job {job_id}): {e}")
             break
 
-    state["is_mining"] = False
+    job_state["is_mining"] = False
+    with app.mining_lock:
+        app.mining_state["active_jobs"][job_id] = job_state
 
 
 # ============================================================================= #
@@ -1251,104 +1268,113 @@ def api_blockchain_info():
 
 @app.route("/api/mining/start", methods=["POST"])
 def api_mining_start():
-    """Start mining blocks. Expects JSON: {"blocks": N, "address": "..."}"""
-    with app.mining_lock:
-        if app.mining_state["is_mining"]:
+    """Start mining blocks. Expects JSON: {"blocks": N, "address": "..."}
+
+    Now supports concurrent mining from multiple devices/clients.
+    Each request gets a unique job_id and runs in parallel.
+    """
+    try:
+        data = request.get_json()
+        blocks_to_mine = data.get("blocks", 1)
+        miner_address = data.get("address")
+
+        # Reject a non-integer or out-of-range block count (bool is an int
+        # subclass, so exclude it explicitly). Capping at _MAX_MINE_BLOCKS
+        # stops a single request from pinning a worker on unbounded PoW.
+        if isinstance(blocks_to_mine, bool) or not isinstance(blocks_to_mine, int):
             return jsonify(
                 {
                     "status": "error",
-                    "message": "Mining already in progress",
+                    "message": "'blocks' must be an integer",
                 }
             ), 400
 
-        try:
-            data = request.get_json()
-            blocks_to_mine = data.get("blocks", 1)
-            miner_address = data.get("address")
-
-            # Reject a non-integer or out-of-range block count (bool is an int
-            # subclass, so exclude it explicitly). Capping at _MAX_MINE_BLOCKS
-            # stops a single request from pinning a worker on unbounded PoW.
-            if isinstance(blocks_to_mine, bool) or not isinstance(blocks_to_mine, int):
-                return jsonify(
-                    {
-                        "status": "error",
-                        "message": "'blocks' must be an integer",
-                    }
-                ), 400
-
-            if not miner_address or blocks_to_mine <= 0 or blocks_to_mine > _MAX_MINE_BLOCKS:
-                return jsonify(
-                    {
-                        "status": "error",
-                        "message": f"Invalid blocks (1-{_MAX_MINE_BLOCKS}) or address",
-                    }
-                ), 400
-
-            # Validate and convert address to pubkey_hash
-            try:
-                from wallet import pubkey_hash_from_address
-                miner_pubkey_hash = pubkey_hash_from_address(miner_address)
-            except Exception as e:
-                return jsonify(
-                    {
-                        "status": "error",
-                        "message": f"Invalid address format: {str(e)}",
-                    }
-                ), 400
-
-            app.mining_state["is_mining"] = True
-            app.mining_state["blocks_to_mine"] = blocks_to_mine
-            app.mining_state["blocks_mined"] = 0
-            app.mining_state["mining_address"] = miner_address
-
-            # Start mining in a background thread (pass pubkey_hash, not address)
-            thread = threading.Thread(
-                target=mining_worker, args=(blocks_to_mine, miner_pubkey_hash), daemon=True
-            )
-            app.mining_state["mining_thread"] = thread
-            thread.start()
-
+        if not miner_address or blocks_to_mine <= 0 or blocks_to_mine > _MAX_MINE_BLOCKS:
             return jsonify(
                 {
-                    "status": "mining",
-                    "blocks_to_mine": blocks_to_mine,
+                    "status": "error",
+                    "message": f"Invalid blocks (1-{_MAX_MINE_BLOCKS}) or address",
                 }
-            ), 200
+            ), 400
 
+        # Validate and convert address to pubkey_hash
+        try:
+            from wallet import pubkey_hash_from_address
+            miner_pubkey_hash = pubkey_hash_from_address(miner_address)
         except Exception as e:
-            app.mining_state["is_mining"] = False
-            return jsonify({"status": "error", "message": str(e)}), 500
+            return jsonify(
+                {
+                    "status": "error",
+                    "message": f"Invalid address format: {str(e)}",
+                }
+            ), 400
+
+        # Generate unique job ID for this mining request
+        job_id = str(uuid.uuid4())
+
+        # Start mining in a background thread
+        thread = threading.Thread(
+            target=mining_worker, args=(job_id, blocks_to_mine, miner_pubkey_hash), daemon=True
+        )
+        thread.start()
+
+        return jsonify(
+            {
+                "status": "mining",
+                "job_id": job_id,
+                "blocks_to_mine": blocks_to_mine,
+            }
+        ), 200
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 @app.route("/api/mining/status", methods=["GET"])
 def api_mining_status():
-    """Get current mining status."""
+    """Get current mining status (supports multiple concurrent jobs)."""
     try:
         from block import block_subsidy
 
         node = get_node()
         chain = node.chain
         next_bits = chain.next_bits()
-        # Difficulty = expected hashes to find a block = 2**bits (target is
-        # 2**(256-bits), so P(meet)=2**-bits). Report it two ways.
         difficulty = 1 << next_bits
-        hashrate = float(app.mining_state.get("hashrate", 0.0))
-        # Estimated seconds to the next block at the measured hashrate.
-        eta_seconds = (difficulty / hashrate) if hashrate > 0 else None
         next_height = chain.height + 1
         block_reward = block_subsidy(next_height)
+
+        with app.mining_lock:
+            active_jobs = app.mining_state["active_jobs"].copy()
+
+        # Aggregate stats from all active jobs
+        total_blocks_mined = 0
+        total_blocks_target = 0
+        total_hashes_tried = 0
+        combined_hashrate = 0.0
+        is_mining = len(active_jobs) > 0
+
+        for job in active_jobs.values():
+            if job.get("is_mining"):
+                total_blocks_mined += job.get("blocks_mined", 0)
+                total_blocks_target += job.get("blocks_to_mine", 0)
+                total_hashes_tried += job.get("hashes_tried", 0)
+                combined_hashrate += job.get("hashrate", 0.0)
+
+        # Estimated seconds to the next block at combined hashrate
+        eta_seconds = (difficulty / combined_hashrate) if combined_hashrate > 0 else None
+
         return jsonify(
             {
-                "status": "mining" if app.mining_state["is_mining"] else "idle",
-                "blocks_mined": app.mining_state["blocks_mined"],
-                "total_blocks": app.mining_state["blocks_to_mine"],
+                "status": "mining" if is_mining else "idle",
+                "active_jobs": len(active_jobs),
+                "blocks_mined": total_blocks_mined,
+                "total_blocks_target": total_blocks_target,
                 "current_height": chain.height,
                 "tip_hash": chain.tip,
                 "bits": next_bits,
                 "difficulty": difficulty,
-                "hashes_tried": app.mining_state.get("hashes_tried", 0),
-                "hashrate": round(hashrate, 2),
+                "total_hashes_tried": total_hashes_tried,
+                "combined_hashrate": round(combined_hashrate, 2),
                 "eta_next_block_seconds": (round(eta_seconds, 2)
                                            if eta_seconds is not None else None),
                 "next_block_reward_coins": block_reward / 100_000_000,
@@ -1360,10 +1386,26 @@ def api_mining_status():
 
 @app.route("/api/mining/stop", methods=["GET"])
 def api_mining_stop():
-    """Stop the current mining operation."""
+    """Stop mining (all jobs or specific job_id)."""
     try:
-        app.mining_state["is_mining"] = False
-        return jsonify({"status": "stopped"}), 200
+        job_id = request.args.get("job_id")
+
+        with app.mining_lock:
+            if job_id:
+                # Stop a specific job
+                if job_id in app.mining_state["active_jobs"]:
+                    app.mining_state["active_jobs"][job_id]["is_mining"] = False
+                    return jsonify({"status": "stopped", "job_id": job_id}), 200
+                else:
+                    return jsonify({"status": "error", "message": f"Job {job_id} not found"}), 404
+            else:
+                # Stop all jobs
+                stopped_count = 0
+                for job in app.mining_state["active_jobs"].values():
+                    if job.get("is_mining"):
+                        job["is_mining"] = False
+                        stopped_count += 1
+                return jsonify({"status": "stopped", "jobs_stopped": stopped_count}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
