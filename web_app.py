@@ -1273,6 +1273,7 @@ def api_mining_start():
     Now supports concurrent mining from multiple devices/clients.
     Each request gets a unique job_id and runs in parallel.
     """
+    print(f"[MINING API] New concurrent mining endpoint called", flush=True)
     try:
         data = request.get_json()
         blocks_to_mine = data.get("blocks", 1)
