@@ -1798,3 +1798,4 @@ if __name__ == "__main__":
     debug = os.environ.get("FLASK_DEBUG", "1") == "1"
     print(f"MoonBite Dashboard starting on http://{host}:{port}")
     app.run(debug=debug, host=host, port=port)
+# Deployment: Mon Aug  3 21:02:36 AST 2026
