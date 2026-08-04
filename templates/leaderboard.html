@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}Mining Leaderboard - MoonBite{% endblock %}
+{% block nav_active %}mining{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <section class="hero">
+        <h2>🏆 Mining Leaderboard</h2>
+        <p>Top miners earning MoonBite blocks</p>
+    </section>
+
+    <!-- Period Selector -->
+    <div class="cards-grid">
+        <button class="mb-period-btn active" onclick="loadLeaderboard('week')">
+            This Week
+        </button>
+        <button class="mb-period-btn" onclick="loadLeaderboard('all')">
+            All Time
+        </button>
+    </div>
+
+    <!-- Leaderboard Table -->
+    <div class="card card-full">
+        <div class="card-header">Top Miners</div>
+        <div class="card-body">
+            <table class="mb-leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Miner Address</th>
+                        <th>Blocks Mined</th>
+                        <th>MBITE Earned</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody">
+                    <tr><td colspan="4" style="text-align: center; padding: 2rem;">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Your Rank -->
+    <div class="card card-full hidden" id="yourRankCard">
+        <div class="card-header">Your Mining Stats</div>
+        <div class="card-body">
+            <div class="mb-stats-grid">
+                <div>
+                    <div class="mb-stats-label">Your Rank</div>
+                    <div class="mb-stats-value" id="yourRank">--</div>
+                </div>
+                <div>
+                    <div class="mb-stats-label">Blocks Mined</div>
+                    <div class="mb-stats-value" id="yourBlocks">0</div>
+                </div>
+                <div>
+                    <div class="mb-stats-label">MBITE Earned</div>
+                    <div class="mb-stats-value" id="yourMBITE">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info -->
+    <div class="card card-full">
+        <div class="card-header">ℹ️ How It Works</div>
+        <div class="card-body">
+            <ul class="info-list">
+                <li>Every block mined earns 50 MBITE for the miner</li>
+                <li>Leaderboard updates in real-time as blocks are mined</li>
+                <li>Top miners compete for prestige and rewards</li>
+                <li>Difficulty adjusts automatically to keep 10-min block time</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+    async function loadLeaderboard(period) {
+        try {
+            // Update active button
+            document.querySelectorAll('.mb-period-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Fetch leaderboard
+            const response = await fetch(`/api/mining/leaderboard?period=${period}&limit=100`);
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                const tbody = document.getElementById('leaderboardBody');
+                tbody.innerHTML = '';
+
+                data.leaderboard.forEach((miner, index) => {
+                    const mbite = miner.blocks * 50;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="mb-rank">${index + 1}</td>
+                        <td class="mb-address" title="${miner.address}">
+                            ${miner.address.substring(0, 20)}...
+                        </td>
+                        <td class="mb-blocks">${miner.blocks}</td>
+                        <td class="mb-mbite">${mbite.toLocaleString()}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Check if current user is in leaderboard (mock for now)
+                // In production, would compare with user's mining address
+            }
+        } catch (error) {
+            console.error('Error loading leaderboard:', error);
+            document.getElementById('leaderboardBody').innerHTML =
+                '<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">Error loading leaderboard</td></tr>';
+        }
+    }
+
+    // Load on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadLeaderboard('week');
+    });
+</script>
+{% endblock %}

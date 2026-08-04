@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}Accept MBITE Payments - MoonBite Merchants{% endblock %}
+{% block nav_active %}merchants{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <section class="hero">
+        <h2>💰 Accept MoonBite Payments</h2>
+        <p>Sell digital products and earn instantly in MBITE</p>
+    </section>
+
+    <!-- Value Prop -->
+    <div class="cards-grid">
+        <div class="card">
+            <div class="card-header">⚡ Instant Settlement</div>
+            <div class="card-body">
+                <p>Payments arrive in your wallet immediately. No middleman delays.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">💸 Low Fees</div>
+            <div class="card-body">
+                <p>Only 2% fee total (compared to 3-5% for traditional payments)</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">🌍 Global Reach</div>
+            <div class="card-body">
+                <p>Accept payments from anyone, anywhere, no restrictions</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">🔐 Self-Custody</div>
+            <div class="card-body">
+                <p>YOU control the private keys. No account needed.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="card card-full">
+        <div class="card-header">How to Accept Payments</div>
+        <div class="card-body">
+            <ol class="info-list" style="list-style-type: decimal;">
+                <li><strong>Set up a wallet</strong> - Get a MoonBite address (takes 30 seconds)</li>
+                <li><strong>Create an invoice</strong> - Call our API with product details and price</li>
+                <li><strong>Share payment link</strong> - Customer sends MBITE to the address</li>
+                <li><strong>Deliver product</strong> - Get notified instantly when payment arrives</li>
+                <li><strong>Keep earnings</strong> - Funds go directly to your wallet (98% after 2% fee)</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- API Example -->
+    <div class="card card-full">
+        <div class="card-header">📚 API Integration</div>
+        <div class="card-body">
+            <p><strong>Create Invoice:</strong></p>
+            <pre class="code-block"><code>POST /api/merchants/create-invoice
+
+{
+  "merchant_address": "moon1xxx...",
+  "product_name": "My eBook",
+  "amount_mbite": 10,
+  "product_id": "ebook-001"
+}
+
+Response:
+{
+  "invoice_id": "inv_abc123",
+  "payment_address": "moon1yyy...",
+  "amount_mbite": 10,
+  "fee_mbite": 0.2,
+  "net_to_merchant": 9.8
+}</code></pre>
+
+            <p style="margin-top: 2rem;"><strong>Check Status:</strong></p>
+            <pre class="code-block"><code>GET /api/merchants/invoice/inv_abc123
+
+Response:
+{
+  "invoice_id": "inv_abc123",
+  "payment_status": "paid",
+  "amount_received": 10,
+  "confirmations": 3
+}</code></pre>
+        </div>
+    </div>
+
+    <!-- Live Example -->
+    <div class="card card-full">
+        <div class="card-header">🧪 Try It Out</div>
+        <div class="card-body">
+            <form id="testInvoiceForm" class="mining-form">
+                <div class="form-group">
+                    <label>Merchant Address</label>
+                    <input type="text" id="merchantAddr" placeholder="moon1..." class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Product Name</label>
+                    <input type="text" id="productName" placeholder="My Digital Product" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Price (MBITE)</label>
+                    <input type="number" id="amountMBITE" min="0.1" step="0.1" value="10" class="form-input" required>
+                </div>
+
+                <button type="submit" class="btn btn-success btn-large">Create Test Invoice</button>
+            </form>
+
+            <div id="invoiceResult" class="hidden" style="margin-top: 2rem; padding: 1rem; background: rgba(52,211,255,0.1); border-radius: var(--radius-md);">
+                <p><strong>Invoice Created!</strong></p>
+                <p id="resultText"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Earnings Dashboard (placeholder) -->
+    <div class="card card-full">
+        <div class="card-header">💎 Your Merchant Dashboard</div>
+        <div class="card-body">
+            <p style="color: var(--text-secondary);">
+                Coming soon: Real-time earnings, payment history, and analytics
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+    document.getElementById('testInvoiceForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const merchantAddr = document.getElementById('merchantAddr').value;
+        const productName = document.getElementById('productName').value;
+        const amountMBITE = parseFloat(document.getElementById('amountMBITE').value);
+
+        try {
+            const response = await fetch('/api/merchants/create-invoice', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    merchant_address: merchantAddr,
+                    product_name: productName,
+                    amount_mbite: amountMBITE,
+                    product_id: `test-${Date.now()}`
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                const result = document.getElementById('invoiceResult');
+                result.classList.remove('hidden');
+                result.innerHTML = `
+                    <p><strong>✓ Invoice Created!</strong></p>
+                    <p>Invoice ID: <code>${data.invoice_id}</code></p>
+                    <p>Payment Address: <code>${data.payment_address}</code></p>
+                    <p>Amount: ${data.amount_mbite} MBITE</p>
+                    <p>Fee: ${data.fee_mbite} MBITE (2%)</p>
+                    <p>You receive: ${data.net_to_merchant} MBITE</p>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Expires in 1 hour
+                    </p>
+                `;
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (error) {
+            alert('Error creating invoice: ' + error.message);
+        }
+    });
+</script>
+{% endblock %}

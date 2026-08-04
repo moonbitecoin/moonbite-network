@@ -673,6 +673,18 @@ def mining_page():
     return render_template("mining.html")
 
 
+@app.route("/leaderboard")
+def leaderboard_page():
+    """Render the mining leaderboard page."""
+    return render_template("leaderboard.html")
+
+
+@app.route("/merchants")
+def merchants_page():
+    """Render the merchant payment platform page."""
+    return render_template("merchant.html")
+
+
 @app.route("/explorer")
 def explorer_page():
     """Render the block explorer page."""
@@ -1437,6 +1449,138 @@ def api_mining_global_stats():
                 "combined_hashrate": round(combined_hashrate, 2),
                 "current_height": node.chain.height,
                 "network_difficulty": 1 << node.chain.next_bits(),
+            }
+        ), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/merchants/invoice/<invoice_id>", methods=["GET"])
+@rate_limit(30, 60)  # Check invoice status
+def api_merchants_invoice_status(invoice_id):
+    """Get invoice status and payment progress."""
+    try:
+        # In production: look up invoice in database
+        # For MVP: check if payment address received MBITE
+        node = get_node()
+
+        # Mock response (would check actual payment in production)
+        return jsonify({
+            "status": "success",
+            "invoice_id": invoice_id,
+            "payment_status": "pending",  # or "paid", "expired"
+            "amount_expected": 10,
+            "amount_received": 0,
+            "confirmations": 0,
+            "expires_at": int(time.time()) + 3600,
+        }), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/merchants/create-invoice", methods=["POST"])
+@rate_limit(30, 60)  # Merchants can create invoices
+def api_merchants_create_invoice():
+    """Create a payment invoice for a digital product.
+
+    Request: {
+        "merchant_address": "moon1xxx",
+        "product_name": "My eBook",
+        "amount_mbite": 10,
+        "product_id": "ebook-001",
+        "customer_email": "buyer@example.com"
+    }
+
+    Response: {
+        "invoice_id": "inv_abc123",
+        "status": "pending",
+        "payment_address": "moon1yyy",  # Unique address for this payment
+        "amount_mbite": 10,
+        "fee_mbite": 0.2,  # 2% fee
+        "expires_at": 3600  # seconds
+    }
+    """
+    try:
+        data = request.get_json()
+        merchant_address = data.get("merchant_address")
+        product_name = data.get("product_name", "Digital Product")
+        amount_mbite = float(data.get("amount_mbite", 0))
+        product_id = data.get("product_id", "")
+
+        if not merchant_address or amount_mbite <= 0:
+            return jsonify({
+                "status": "error",
+                "message": "Invalid merchant_address or amount"
+            }), 400
+
+        # Calculate 2% fee (1% to miners, 0.5% merchants, 0.5% development)
+        fee_mbite = amount_mbite * 0.02
+        net_to_merchant = amount_mbite - fee_mbite
+
+        # Generate unique payment address for this invoice
+        # (In production: would create HD wallet sub-address)
+        import uuid
+        invoice_id = f"inv_{uuid.uuid4().hex[:12]}"
+        payment_address = f"moon1{uuid.uuid4().hex[:59]}"  # Mock address
+
+        return jsonify({
+            "status": "success",
+            "invoice_id": invoice_id,
+            "status": "pending",
+            "payment_address": payment_address,
+            "amount_mbite": amount_mbite,
+            "fee_mbite": round(fee_mbite, 8),
+            "net_to_merchant": round(net_to_merchant, 8),
+            "product_name": product_name,
+            "product_id": product_id,
+            "expires_seconds": 3600,
+            "created_at": int(time.time()),
+        }), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/mining/leaderboard", methods=["GET"])
+@rate_limit(30, 60)  # Leaderboard is public & frequently accessed
+def api_mining_leaderboard():
+    """Get mining leaderboard - top miners by blocks mined (this week/all-time)."""
+    try:
+        period = request.args.get("period", "week")  # week or all
+        limit = min(int(request.args.get("limit", "50")), 100)  # Max 100
+
+        node = get_node()
+        chain = node.chain
+
+        # Build address -> blocks_mined map from chain
+        address_blocks = {}
+        for block_hash in chain.active_chain():
+            block = chain.blocks[block_hash]
+            # Coinbase tx has miner address
+            if block.transactions and block.transactions[0].is_coinbase():
+                coinbase = block.transactions[0]
+                if coinbase.outputs:
+                    # Get first output's recipient (miner address)
+                    output = coinbase.outputs[0]
+                    try:
+                        addr = address_from_pubkey_hash(output.pubkey_hash)
+                        address_blocks[addr] = address_blocks.get(addr, 0) + 1
+                    except:
+                        pass
+
+        # Sort by blocks mined
+        leaderboard = sorted(
+            [{"address": addr, "blocks": count} for addr, count in address_blocks.items()],
+            key=lambda x: x["blocks"],
+            reverse=True
+        )[:limit]
+
+        return jsonify(
+            {
+                "status": "success",
+                "period": period,
+                "leaderboard": leaderboard,
+                "total_miners": len(address_blocks),
+                "current_height": chain.height,
             }
         ), 200
     except Exception as e:
