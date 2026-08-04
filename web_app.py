@@ -621,12 +621,6 @@ def markets_page():
     return render_template("markets.html")
 
 
-@app.route("/merchants")
-def merchants_page():
-    """Render the merchant directory + accept-MBITE pay-flow page."""
-    return render_template("merchants.html")
-
-
 @app.route("/developers")
 def developers_page():
     """Render the developers landing page."""
