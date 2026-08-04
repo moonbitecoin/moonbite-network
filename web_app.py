@@ -1412,7 +1412,7 @@ def api_mining_stop():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
-@app.route("/api/mining/global-stats", methods=["GET"])
+@app.route("/api/mining/globalstats", methods=["GET"])
 @rate_limit(30, 60)  # Allow 30 requests per minute for stats updates
 def api_mining_global_stats():
     """Get global mining statistics for viral display."""
@@ -1443,7 +1443,7 @@ def api_mining_global_stats():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
-@app.route("/api/mining/share/<job_id>", methods=["GET"])
+@app.route("/api/mining/receipt/<job_id>", methods=["GET"])
 @rate_limit(30, 60)  # Allow receipt generation requests
 def api_mining_share(job_id):
     """Generate shareable receipt data for a completed mining job.

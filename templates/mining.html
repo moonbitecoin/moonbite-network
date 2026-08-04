@@ -255,7 +255,7 @@
     // Update global mining stats (viral metrics)
     async function updateGlobalStats() {
         try {
-            const response = await fetch('/api/mining/global-stats');
+            const response = await fetch('/api/mining/globalstats');
             const data = await response.json();
 
             if (data.status === 'success') {
@@ -274,7 +274,7 @@
         if (blocksMined === 0) return;
 
         try {
-            const response = await fetch(`/api/mining/share/${jobId}`);
+            const response = await fetch(`/api/mining/receipt/${jobId}`);
             const data = await response.json();
 
             if (data.status === 'success') {
