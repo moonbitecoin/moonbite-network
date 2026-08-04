@@ -362,8 +362,8 @@ def mining_worker(job_id: str, blocks_to_mine: int, miner_address: str) -> None:
 
 @app.route("/")
 def home_page():
-    """Render the marketing homepage (editorial/terminal home-v2 design)."""
-    return render_template("home_v2.html")
+    """Render the marketing homepage (Zeldman-style elegant minimalism)."""
+    return render_template("home.html")
 
 
 @app.route("/home-classic")

@@ -1,555 +1,727 @@
 {% extends "base.html" %}
-{% block body_class %}zeldman-home{% endblock %}
-{% block title %}MoonBite — Fair Launch Cryptocurrency{% endblock %}
-{% block meta_description %}A peer-to-peer cryptocurrency with no premine, no ICO, no shortcuts. Mine your first block in under a minute.{% endblock %}
+{% block body_class %}lw-home{% endblock %}
+{% block title %}MoonBite — Mine Your First Block in 30 Seconds{% endblock %}
+{% block meta_description %}No ICO. No premine. No signup. Mine real blocks. Join 50,000+ miners earning MBITE today.{% endblock %}
 {% block nav_active %}home{% endblock %}
 
 {% block head_extra %}
 <style>
-  /* Zeldman: Content-first, typography-driven, elegant minimalism */
+  /* Luke Wroblewski: Mobile-first, task-focused, patterns-based design */
 
-  .zeldman-home {
-    background: #fafaf8;
-    color: #1a1a18;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    line-height: 1.6;
+  .lw-home {
+    background: #fff;
+    color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
-  /* Accent color: subtle purple for links and highlights */
+  /* Root tokens */
   :root {
-    --accent: #7c3aed;
-    --text-light: #6b6b68;
-    --border: #e5e5e0;
-    --bg-card: #fefffe;
+    --primary: #7c3aed;
+    --secondary: #6b21a8;
+    --accent: #ec4899;
+    --success: #10b981;
+    --error: #ef4444;
+    --neutral-50: #f9fafb;
+    --neutral-100: #f3f4f6;
+    --neutral-200: #e5e7eb;
+    --neutral-500: #6b7280;
+    --neutral-700: #374151;
+    --neutral-900: #111827;
   }
 
-  /* Typography: generous hierarchy and whitespace */
+  /* Typography: clear hierarchy, generous sizing */
+  body {
+    line-height: 1.5;
+    font-size: 16px;
+  }
+
   h1 {
-    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-size: clamp(1.75rem, 5vw, 3rem);
     font-weight: 700;
-    line-height: 1.1;
-    margin: 2rem 0 1rem 0;
-    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: 0 0 0.5rem 0;
+    color: var(--neutral-900);
   }
 
   h2 {
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-size: clamp(1.35rem, 4vw, 2rem);
     font-weight: 700;
     line-height: 1.2;
-    margin: 2.5rem 0 1.5rem 0;
-    letter-spacing: -0.015em;
+    margin: 2.5rem 0 1rem 0;
+    color: var(--neutral-900);
   }
 
   h3 {
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: 1.1rem;
+    font-weight: 600;
     margin: 1.5rem 0 0.75rem 0;
+    color: var(--neutral-900);
   }
 
   p {
+    margin: 0 0 1rem 0;
+    color: var(--neutral-700);
     font-size: 1rem;
-    margin-bottom: 1.5rem;
-    color: var(--text-light);
-  }
-
-  p + p {
-    margin-top: 1.5rem;
   }
 
   a {
-    color: var(--accent);
+    color: var(--primary);
     text-decoration: none;
-    border-bottom: 1px solid currentColor;
-    transition: opacity 0.2s ease;
   }
 
   a:hover {
-    opacity: 0.7;
+    text-decoration: underline;
   }
 
-  /* Hero: simple, elegant, scannable */
-  .zeldman-hero {
-    max-width: 700px;
+  /* Container and layout */
+  .lw-container {
+    max-width: 640px;
     margin: 0 auto;
-    padding: 6rem 2rem;
+    padding: 0 1.5rem;
+  }
+
+  .lw-container-wide {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  /* Hero: clear value prop + immediate CTA */
+  .lw-hero {
+    padding: 3rem 0;
     text-align: center;
   }
 
-  .zeldman-hero h1 {
-    font-weight: 800;
-    font-size: clamp(2rem, 5vw, 3.5rem);
+  .lw-hero h1 {
+    margin-bottom: 1rem;
   }
 
-  .zeldman-hero .subtitle {
-    font-size: 1.25rem;
-    color: var(--text-light);
-    margin: 1.5rem 0 3rem 0;
-    font-weight: 400;
+  .lw-hero-subheading {
+    font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+    color: var(--neutral-700);
+    margin-bottom: 2rem;
+    line-height: 1.4;
   }
 
-  /* CTA buttons: restrained, clear */
-  .zeldman-cta-group {
+  .lw-hero-stat {
+    display: inline-block;
+    margin: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--neutral-500);
+  }
+
+  /* Primary CTA button: high contrast, thumb-friendly */
+  .lw-btn {
+    display: inline-block;
+    padding: 1rem 2rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    min-height: 48px;
+    min-width: 48px;
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+
+  .lw-btn:hover {
+    background: var(--secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+  }
+
+  .lw-btn-secondary {
+    background: var(--neutral-100);
+    color: var(--primary);
+    border: 2px solid var(--neutral-200);
+  }
+
+  .lw-btn-secondary:hover {
+    background: var(--neutral-50);
+    border-color: var(--primary);
+  }
+
+  .lw-btn-group {
     display: flex;
     gap: 1rem;
     justify-content: center;
     flex-wrap: wrap;
-    margin-bottom: 4rem;
-  }
-
-  .zeldman-btn {
-    padding: 0.875rem 2rem;
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 0.25rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.2s ease;
-    letter-spacing: 0.3px;
-  }
-
-  .zeldman-btn:hover {
-    background: #6d28d9;
-    transform: translateY(-1px);
-  }
-
-  .zeldman-btn-secondary {
-    background: transparent;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-  }
-
-  .zeldman-btn-secondary:hover {
-    background: var(--accent);
-    color: white;
-  }
-
-  /* Stats: clean grid, no flourish */
-  .zeldman-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 2rem;
-    max-width: 1000px;
-    margin: 4rem auto;
-    padding: 0 2rem;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding-top: 3rem;
-    padding-bottom: 3rem;
-  }
-
-  .zeldman-stat {
-    text-align: center;
-  }
-
-  .zeldman-stat-number {
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: var(--accent);
-    line-height: 1;
-    margin-bottom: 0.5rem;
-    font-family: 'Courier New', monospace;
-  }
-
-  .zeldman-stat-label {
-    font-size: 0.875rem;
-    color: var(--text-light);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 600;
-  }
-
-  /* Main sections: generous padding, max-width for reading */
-  .zeldman-section {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 4rem 2rem;
-  }
-
-  .zeldman-section h2 {
-    margin-top: 0;
-  }
-
-  /* Feature list: simple, readable */
-  .zeldman-features {
-    list-style: none;
-    padding: 0;
     margin: 2rem 0;
   }
 
-  .zeldman-features li {
-    padding: 1.5rem 0;
-    border-bottom: 1px solid var(--border);
+  /* Live proof section: show social proof immediately */
+  .lw-proof {
+    background: var(--neutral-50);
+    border-top: 1px solid var(--neutral-200);
+    border-bottom: 1px solid var(--neutral-200);
+    padding: 2rem 0;
+    margin: 2rem 0;
   }
 
-  .zeldman-features li:last-child {
+  .lw-proof-title {
+    font-size: 0.9rem;
+    color: var(--neutral-500);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  .lw-proof-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 2rem;
+  }
+
+  .lw-proof-item {
+    text-align: center;
+  }
+
+  .lw-proof-number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--primary);
+    font-family: 'Courier New', monospace;
+    margin-bottom: 0.5rem;
+  }
+
+  .lw-proof-label {
+    font-size: 0.85rem;
+    color: var(--neutral-500);
+    line-height: 1.3;
+  }
+
+  /* Task-based sections: scannable, action-oriented */
+  .lw-section {
+    padding: 2.5rem 0;
+  }
+
+  .lw-section-title {
+    margin-bottom: 1.5rem;
+  }
+
+  /* Two-column task list for larger screens */
+  .lw-tasks {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .lw-task {
+    padding: 1.5rem;
+    background: var(--neutral-50);
+    border-radius: 0.5rem;
+    border-left: 4px solid var(--primary);
+  }
+
+  .lw-task h3 {
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .lw-task-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .lw-task p {
+    margin-bottom: 0.75rem;
+  }
+
+  .lw-task-link {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  /* Social proof: leaderboard preview */
+  .lw-leaderboard-preview {
+    background: var(--neutral-50);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin: 2rem 0;
+    border: 1px solid var(--neutral-200);
+  }
+
+  .lw-leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+
+  .lw-leaderboard-table th {
+    text-align: left;
+    padding: 0.75rem 0;
+    border-bottom: 2px solid var(--neutral-200);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: var(--neutral-500);
+    letter-spacing: 0.05em;
+  }
+
+  .lw-leaderboard-table td {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--neutral-200);
+  }
+
+  .lw-rank-badge {
+    font-weight: 700;
+    min-width: 2rem;
+  }
+
+  .lw-rank-1 {
+    color: var(--primary);
+    font-size: 1.1rem;
+  }
+
+  .lw-address {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--neutral-500);
+  }
+
+  /* Trust signals: simple, scannable */
+  .lw-trust {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .lw-trust-item {
+    text-align: center;
+    padding: 1rem;
+  }
+
+  .lw-trust-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .lw-trust-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--neutral-900);
+    margin-bottom: 0.25rem;
+  }
+
+  .lw-trust-desc {
+    font-size: 0.8rem;
+    color: var(--neutral-500);
+    line-height: 1.4;
+  }
+
+  /* Feature list: readable, benefit-focused */
+  .lw-features {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0;
+  }
+
+  .lw-features li {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--neutral-200);
+    display: flex;
+    gap: 1rem;
+  }
+
+  .lw-features li:last-child {
     border-bottom: none;
   }
 
-  .zeldman-features strong {
-    font-weight: 700;
+  .lw-features-check {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    color: var(--success);
+  }
+
+  .lw-features-text strong {
     display: block;
-    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--neutral-900);
+    margin-bottom: 0.25rem;
   }
 
-  /* Timeline: elegant, minimal */
-  .zeldman-timeline {
-    margin: 3rem 0;
+  .lw-features-text {
+    color: var(--neutral-700);
+    font-size: 0.95rem;
   }
 
-  .zeldman-timeline-item {
-    padding: 2rem 0;
-    padding-left: 3rem;
+  /* Timeline: scannable milestone view */
+  .lw-timeline {
+    margin: 2rem 0;
+  }
+
+  .lw-timeline-item {
+    padding: 1.5rem 0;
+    padding-left: 2rem;
     position: relative;
-    border-left: 1px solid var(--border);
-    margin-left: 1rem;
+    border-left: 2px solid var(--neutral-200);
   }
 
-  .zeldman-timeline-item::before {
+  .lw-timeline-item::before {
     content: '';
     position: absolute;
-    left: -0.5rem;
-    top: 2rem;
-    width: 1rem;
-    height: 1rem;
-    background: var(--accent);
+    left: -6px;
+    top: 1.75rem;
+    width: 12px;
+    height: 12px;
+    background: var(--primary);
     border-radius: 50%;
   }
 
-  .zeldman-timeline-date {
-    font-size: 0.875rem;
-    color: var(--text-light);
+  .lw-timeline-date {
+    font-size: 0.85rem;
+    color: var(--neutral-500);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+  }
+
+  .lw-timeline-title {
+    font-weight: 600;
+    color: var(--neutral-900);
     margin-bottom: 0.5rem;
   }
 
-  .zeldman-timeline-title {
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-  }
-
-  .zeldman-timeline-desc {
-    color: var(--text-light);
+  .lw-timeline-desc {
     font-size: 0.95rem;
+    color: var(--neutral-700);
+    line-height: 1.5;
   }
 
-  /* Leaderboard: tables done right */
-  .zeldman-leaderboard {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 2rem 0;
-  }
-
-  .zeldman-leaderboard th {
-    text-align: left;
-    padding: 1rem 0;
-    border-bottom: 2px solid var(--border);
-    font-weight: 700;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 0.1em;
-    color: var(--text-light);
-  }
-
-  .zeldman-leaderboard td {
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.95rem;
-  }
-
-  .zeldman-leaderboard tr:hover {
-    background: rgba(124, 58, 237, 0.05);
-  }
-
-  .zeldman-rank-1 { font-weight: 800; color: var(--accent); }
-
-  /* Call-to-action box: subtle emphasis */
-  .zeldman-callout {
-    background: var(--bg-card);
-    border-left: 4px solid var(--accent);
-    padding: 2rem;
-    margin: 2rem 0;
-    border-radius: 0.25rem;
-  }
-
-  .zeldman-callout h3 {
-    margin-top: 0;
-  }
-
-  /* Trust badges: simple list */
-  .zeldman-trust {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 2rem;
+  /* CTA band: conversion focus */
+  .lw-cta-band {
+    background: var(--primary);
+    color: white;
+    padding: 3rem 1.5rem;
+    text-align: center;
     margin: 3rem 0;
   }
 
-  .zeldman-trust-item {
-    text-align: center;
+  .lw-cta-band h2 {
+    color: white;
+    margin-top: 0;
   }
 
-  .zeldman-trust-item strong {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 700;
+  .lw-cta-band p {
+    color: rgba(255, 255, 255, 0.9);
   }
 
-  .zeldman-trust-item p {
-    font-size: 0.9rem;
-    color: var(--text-light);
-    margin: 0;
-  }
-
-  /* Responsive */
-  @media (max-width: 640px) {
-    .zeldman-hero {
-      padding: 3rem 1.5rem;
+  /* Responsive: mobile-first */
+  @media (min-width: 640px) {
+    .lw-hero {
+      padding: 4rem 0;
     }
 
-    .zeldman-section {
-      padding: 2rem 1.5rem;
+    .lw-tasks {
+      grid-template-columns: repeat(2, 1fr);
     }
 
-    .zeldman-stats {
-      grid-template-columns: 1fr;
+    .lw-proof-grid {
+      grid-template-columns: repeat(4, 1fr);
       gap: 1.5rem;
     }
 
-    .zeldman-cta-group {
-      flex-direction: column;
-    }
-
-    .zeldman-btn {
-      width: 100%;
-      text-align: center;
-    }
-
-    .zeldman-timeline-item {
-      padding-left: 1.5rem;
-      margin-left: 0;
+    .lw-trust {
+      grid-template-columns: repeat(4, 1fr);
     }
   }
 
-  /* Subtle animations */
-  @media (prefers-reduced-motion: no-preference) {
-    a {
-      transition: opacity 0.2s ease;
-    }
-
-    .zeldman-btn {
-      transition: all 0.2s ease;
-    }
-  }
-
-  /* Respect dark mode preferences */
   @media (prefers-color-scheme: dark) {
-    .zeldman-home {
-      background: #1a1a18;
-      color: #f5f5f3;
+    .lw-home {
+      background: #111827;
+      color: #f3f4f6;
     }
 
-    .zeldman-home p {
-      color: #b0b0ab;
+    .lw-hero h1,
+    h1, h2, h3 {
+      color: #f9fafb;
     }
 
-    .zeldman-leaderboard tr:hover {
-      background: rgba(124, 58, 237, 0.1);
+    p {
+      color: #d1d5db;
     }
 
-    .zeldman-callout {
-      background: #2a2a28;
+    .lw-proof,
+    .lw-task,
+    .lw-leaderboard-preview {
+      background: #1f2937;
+      border-color: #374151;
+    }
+
+    .lw-leaderboard-table th,
+    .lw-leaderboard-table td {
+      border-color: #374151;
+    }
+
+    .lw-cta-band {
+      background: #6d28d9;
     }
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Hero: Clear value proposition -->
-<section class="zeldman-hero">
-  <h1>Mine the Moon</h1>
-  <p class="subtitle">A peer-to-peer cryptocurrency with no premine, no ICO, no shortcuts. Mine your first block in under a minute.</p>
-  <div class="zeldman-cta-group">
-    <a href="/mining" class="zeldman-btn">Start Mining</a>
-    <a href="/wallet" class="zeldman-btn zeldman-btn-secondary">Get Wallet</a>
-  </div>
-</section>
+<!-- Hero: Clear, immediate value prop -->
+<section class="lw-hero">
+  <div class="lw-container">
+    <h1>Mine your first block in 30 seconds</h1>
+    <p class="lw-hero-subheading">No signup. No fees. No ICO. Earn real MBITE directly to your wallet.</p>
 
-<!-- Live stats: Plain numbers, real data -->
-<section class="zeldman-stats">
-  <div class="zeldman-stat">
-    <div class="zeldman-stat-number" id="stat-height">0</div>
-    <div class="zeldman-stat-label">Blocks Mined</div>
-  </div>
-  <div class="zeldman-stat">
-    <div class="zeldman-stat-number" id="stat-miners">0</div>
-    <div class="zeldman-stat-label">Active Miners</div>
-  </div>
-  <div class="zeldman-stat">
-    <div class="zeldman-stat-number" id="stat-difficulty">0</div>
-    <div class="zeldman-stat-label">Difficulty</div>
-  </div>
-  <div class="zeldman-stat">
-    <div class="zeldman-stat-number" id="stat-mbite">0</div>
-    <div class="zeldman-stat-label">MBITE in Circulation</div>
-  </div>
-</section>
-
-<!-- What is MoonBite? The story -->
-<section class="zeldman-section">
-  <h2>What is MoonBite?</h2>
-  <p>MoonBite is a Litecoin fork designed for absolute fairness. It has no premine, no ICO, no venture capital, and no founders' allocation. The first block was mined on the same terms as every block that follows: 50 MBITE to whoever secures the network.</p>
-  <p>In a space where nearly every cryptocurrency project involves some form of founder advantage—whether through mining rewards reserved in advance, token allocation, or exchange listings that benefit insiders—MoonBite offers something simpler: a network where everyone has the same opportunity from day one.</p>
-  <p>You don't buy MBITE. You mine it. You don't trust the founders. You trust mathematics.</p>
-</section>
-
-<!-- Why mine -->
-<section class="zeldman-section">
-  <h2>Why Mine MoonBite?</h2>
-  <ul class="zeldman-features">
-    <li>
-      <strong>Your coins go directly to your wallet.</strong>
-      <p>No account, no intermediary, no middleman. MBITE arrives in the address you control, on the blockchain you can verify. You own your wealth.</p>
-    </li>
-    <li>
-      <strong>You're not gambling on an exchange listing.</strong>
-      <p>The value of MBITE emerges naturally from supply and demand. It's not dependent on venture capitalists deciding when to sell or a marketing team hyping adoption.</p>
-    </li>
-    <li>
-      <strong>Mining is proof of early participation.</strong>
-      <p>Your mining receipt shows the block you secured, the timestamp, the block hash. It's verifiable. It's real. You can share #MinedMyFirstBlock knowing it's cryptographic fact, not speculation.</p>
-    </li>
-    <li>
-      <strong>You're contributing to network security.</strong>
-      <p>Every block you mine makes MoonBite stronger and more decentralized. The network's consensus depends on the miners who run it.</p>
-    </li>
-    <li>
-      <strong>The math doesn't change.</strong>
-      <p>50 MBITE per block. Difficulty auto-adjusts every 2016 blocks. Halving every 700,000 blocks. These rules are immutable. Founders can't dilute the supply. The network can't be stopped.</p>
-    </li>
-  </ul>
-</section>
-
-<!-- The leaderboard: Who's mining -->
-<section class="zeldman-section">
-  <h2>Top Miners</h2>
-  <p>These miners are securing the network right now. First place changes daily—it's not a ranking, it's a leaderboard of current activity.</p>
-  <table class="zeldman-leaderboard">
-    <thead>
-      <tr>
-        <th>Rank</th>
-        <th>Address</th>
-        <th>Blocks</th>
-        <th>MBITE</th>
-      </tr>
-    </thead>
-    <tbody id="leaderboard-tbody">
-      <tr>
-        <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-light);">Loading leaderboard…</td>
-      </tr>
-    </tbody>
-  </table>
-  <p style="text-align: center;"><a href="/leaderboard">View full leaderboard</a></p>
-</section>
-
-<!-- The roadmap: What's next -->
-<section class="zeldman-section">
-  <h2>What Comes Next</h2>
-  <p>MoonBite's path is straightforward. There are no surprises, no pivots, no secret phases. Here's what we're building:</p>
-
-  <div class="zeldman-timeline">
-    <div class="zeldman-timeline-item">
-      <div class="zeldman-timeline-date">Now → Aug 2026</div>
-      <div class="zeldman-timeline-title">Testnet Mining</div>
-      <div class="zeldman-timeline-desc">50,000+ miners are mining real blocks on the testnet. Difficulty adjusts. Blocks arrive every 2.5 minutes. Leaderboards update live. Every block you mine now will be honored on mainnet.</div>
+    <div style="margin: 1.5rem 0;">
+      <span class="lw-hero-stat">50K+ miners</span>
+      <span class="lw-hero-stat">•</span>
+      <span class="lw-hero-stat">Testnet live</span>
+      <span class="lw-hero-stat">•</span>
+      <span class="lw-hero-stat">Fair launch</span>
     </div>
 
-    <div class="zeldman-timeline-item">
-      <div class="zeldman-timeline-date">Q3 2026</div>
-      <div class="zeldman-timeline-title">Mainnet Launch</div>
-      <div class="zeldman-timeline-desc">MoonBite goes live. The same network rules apply. Your testnet holdings are migrated to mainnet. The blockchain is now immutable and fully decentralized.</div>
-    </div>
-
-    <div class="zeldman-timeline-item">
-      <div class="zeldman-timeline-date">Q4 2026</div>
-      <div class="zeldman-timeline-title">Exchange Listings</div>
-      <div class="zeldman-timeline-desc">MBITE gets listed on crypto exchanges. Trading begins. Your mined coins can now be bought and sold. Early miners have real market advantage.</div>
-    </div>
-
-    <div class="zeldman-timeline-item">
-      <div class="zeldman-timeline-date">2027+</div>
-      <div class="zeldman-timeline-title">Adoption</div>
-      <div class="zeldman-timeline-desc">Merchants accept MBITE. Mobile wallets. Multi-chain bridges. MBITE becomes a reference for fair-launch cryptocurrency design.</div>
+    <div class="lw-btn-group">
+      <a href="/mining" class="lw-btn">Start Mining Now</a>
+      <a href="/wallet" class="lw-btn lw-btn-secondary">Get Wallet</a>
     </div>
   </div>
 </section>
 
-<!-- Why this matters -->
-<section class="zeldman-section">
-  <div class="zeldman-callout">
-    <h3>Why Fair Launch Matters</h3>
-    <p>The crypto industry was built on a promise: decentralization, no middleman, no central authority. But most projects betray that promise from day one with a premine, founder allocation, or ICO that benefits insiders.</p>
-    <p>MoonBite takes the promise seriously. If decentralization is the point, then fairness at launch is non-negotiable. Everyone starts at block zero. The math is transparent. The network can't be gamed.</p>
-  </div>
-</section>
-
-<!-- Trust markers -->
-<section class="zeldman-section">
-  <h2>You Can Verify This</h2>
-  <div class="zeldman-trust">
-    <div class="zeldman-trust-item">
-      <strong>✓ No Premine</strong>
-      <p>Read the code. The genesis block contains no reserved coins. Founders earn MBITE the same way you do: by mining.</p>
-    </div>
-    <div class="zeldman-trust-item">
-      <strong>✓ No ICO</strong>
-      <p>There was no token sale. No venture funding. No private allocation round. Mining is the only way MBITE enters circulation.</p>
-    </div>
-    <div class="zeldman-trust-item">
-      <strong>✓ Open Source</strong>
-      <p>The code is on GitHub. Fork it. Audit it. Run your own node. This is how Bitcoin works. This is how MoonBite works.</p>
-    </div>
-    <div class="zeldman-trust-item">
-      <strong>✓ No Price Promises</strong>
-      <p>We don't predict value. We don't hype adoption. We mine blocks. Market price is determined by willing buyers and sellers.</p>
+<!-- Live proof: Show it working right now -->
+<section class="lw-proof">
+  <div class="lw-container">
+    <div class="lw-proof-title">Network Activity Right Now</div>
+    <div class="lw-proof-grid">
+      <div class="lw-proof-item">
+        <div class="lw-proof-number" id="lw-blocks">0</div>
+        <div class="lw-proof-label">Blocks Mined</div>
+      </div>
+      <div class="lw-proof-item">
+        <div class="lw-proof-number" id="lw-miners">0</div>
+        <div class="lw-proof-label">Active Miners</div>
+      </div>
+      <div class="lw-proof-item">
+        <div class="lw-proof-number" id="lw-difficulty">0</div>
+        <div class="lw-proof-label">Difficulty</div>
+      </div>
+      <div class="lw-proof-item">
+        <div class="lw-proof-number" id="lw-circulation">0</div>
+        <div class="lw-proof-label">MBITE in Circulation</div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- Final CTA -->
-<section class="zeldman-section" style="text-align: center;">
-  <h2>You're Part of the Network Now</h2>
-  <p>Mine a block. Earn MBITE. Own your wealth. Join 50,000+ miners who've already started.</p>
-  <div class="zeldman-cta-group">
-    <a href="/mining" class="zeldman-btn">Start Mining</a>
-    <a href="/explorer" class="zeldman-btn zeldman-btn-secondary">View Blockchain</a>
+<!-- Top miners: Social proof in action -->
+<section class="lw-section">
+  <div class="lw-container">
+    <h2>Who's Mining Right Now</h2>
+    <p>Real miners, real blocks, real earnings. Leaderboard updates every few minutes.</p>
+
+    <div class="lw-leaderboard-preview">
+      <table class="lw-leaderboard-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Miner</th>
+            <th>Blocks</th>
+            <th>MBITE</th>
+          </tr>
+        </thead>
+        <tbody id="lw-leaderboard-body">
+          <tr>
+            <td colspan="4" style="text-align: center; padding: 2rem; color: var(--neutral-500);">Loading leaderboard…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="text-align: center; margin-top: 1.5rem;">
+      <a href="/leaderboard" class="lw-task-link">View full leaderboard →</a>
+    </div>
   </div>
 </section>
 
+<!-- How to mine: Task-focused sections -->
+<section class="lw-section">
+  <div class="lw-container">
+    <h2>Three Ways to Mine</h2>
+
+    <div class="lw-tasks">
+      <div class="lw-task">
+        <h3><span class="lw-task-icon">⚡</span> Browser Mining</h3>
+        <p>Mine in your browser right now. No download. No setup. Works on any device.</p>
+        <a href="/mining" class="lw-task-link">Start mining →</a>
+      </div>
+
+      <div class="lw-task">
+        <h3><span class="lw-task-icon">💻</span> Download Miner</h3>
+        <p>Run our optimized miner for 10x faster hashing. Works on Windows, Mac, Linux.</p>
+        <a href="/get-wallet" class="lw-task-link">Get miner →</a>
+      </div>
+
+      <div class="lw-task">
+        <h3><span class="lw-task-icon">🔗</span> Run Your Node</h3>
+        <p>Full node mining. Complete network security. For advanced miners.</p>
+        <a href="/developers" class="lw-task-link">Learn more →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why this works: Feature benefits -->
+<section class="lw-section">
+  <div class="lw-container">
+    <h2>Why Miners Choose MoonBite</h2>
+
+    <ul class="lw-features">
+      <li>
+        <span class="lw-features-check">✓</span>
+        <div class="lw-features-text">
+          <strong>You control your coins</strong>
+          MBITE goes straight to your wallet address. No account. No intermediary.
+        </div>
+      </li>
+      <li>
+        <span class="lw-features-check">✓</span>
+        <div class="lw-features-text">
+          <strong>No premine or founder advantage</strong>
+          Everyone mines the same 50 MBITE per block. Same rules for everyone, forever.
+        </div>
+      </li>
+      <li>
+        <span class="lw-features-check">✓</span>
+        <div class="lw-features-text">
+          <strong>Proof you were early</strong>
+          Your mining receipt is cryptographic fact. Share #MinedMyFirstBlock. It's verifiable.
+        </div>
+      </li>
+      <li>
+        <span class="lw-features-check">✓</span>
+        <div class="lw-features-text">
+          <strong>Real blockchain security</strong>
+          Every block you mine makes the network stronger and more decentralized.
+        </div>
+      </li>
+      <li>
+        <span class="lw-features-check">✓</span>
+        <div class="lw-features-text">
+          <strong>Immutable, predictable economics</strong>
+          50 MBITE per block. Halving every 700K blocks. Rules can't change.
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- Timeline: What's next -->
+<section class="lw-section">
+  <div class="lw-container">
+    <h2>What Happens Next</h2>
+    <p>No surprises. No pivot. Clear milestones.</p>
+
+    <div class="lw-timeline">
+      <div class="lw-timeline-item">
+        <div class="lw-timeline-date">Now - Aug 2026</div>
+        <div class="lw-timeline-title">Testnet Mining</div>
+        <div class="lw-timeline-desc">Mine real blocks on testnet. Every block you mine will transfer to mainnet. Build your early-miner status now.</div>
+      </div>
+
+      <div class="lw-timeline-item">
+        <div class="lw-timeline-date">Q3 2026</div>
+        <div class="lw-timeline-title">Mainnet Launch</div>
+        <div class="lw-timeline-desc">MoonBite goes live. Your testnet coins transfer to mainnet. Network becomes fully decentralized.</div>
+      </div>
+
+      <div class="lw-timeline-item">
+        <div class="lw-timeline-date">Q4 2026</div>
+        <div class="lw-timeline-title">Exchange Listings</div>
+        <div class="lw-timeline-desc">MBITE starts trading on crypto exchanges. Early miners have real market advantage.</div>
+      </div>
+
+      <div class="lw-timeline-item">
+        <div class="lw-timeline-date">2027+</div>
+        <div class="lw-timeline-title">Adoption</div>
+        <div class="lw-timeline-desc">Merchants accept MBITE. Wallets integrate it. MoonBite becomes the reference fair-launch design.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Trust signals: Verifiable claims -->
+<section class="lw-section">
+  <div class="lw-container">
+    <h2>You Can Verify Everything</h2>
+
+    <div class="lw-trust">
+      <div class="lw-trust-item">
+        <div class="lw-trust-icon">📖</div>
+        <div class="lw-trust-label">Open Source</div>
+        <div class="lw-trust-desc">Code on GitHub. Audit it. Fork it. Run it yourself.</div>
+      </div>
+
+      <div class="lw-trust-item">
+        <div class="lw-trust-icon">✓</div>
+        <div class="lw-trust-label">No Premine</div>
+        <div class="lw-trust-desc">Genesis block contains zero reserved coins. Founders mine like everyone.</div>
+      </div>
+
+      <div class="lw-trust-item">
+        <div class="lw-trust-icon">⚖️</div>
+        <div class="lw-trust-label">Fair Launch</div>
+        <div class="lw-trust-desc">No ICO. No founder allocation. No venture funding. Mining only.</div>
+      </div>
+
+      <div class="lw-trust-item">
+        <div class="lw-trust-icon">📊</div>
+        <div class="lw-trust-label">Transparent</div>
+        <div class="lw-trust-desc">All data on-chain. No secrets. No hidden supply. No surprises.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Conversion band: Final CTA -->
+<section class="lw-cta-band">
+  <div class="lw-container">
+    <h2>Ready to Mine?</h2>
+    <p>Start in your browser. No download. No signup. You already have what you need.</p>
+    <div class="lw-btn-group" style="margin-top: 2rem;">
+      <a href="/mining" class="lw-btn">Start Mining Now</a>
+      <a href="/wallet" class="lw-btn lw-btn-secondary" style="background: white; color: var(--primary);">Get Wallet</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts_extra %}
 <script>
-  async function loadZeldmanStats() {
+  async function loadLWStats() {
     try {
       const res = await fetch('/api/mining/status?include=leaderboard');
       const data = await res.json();
 
-      updateStat('stat-height', data.current_height || 0);
-      updateStat('stat-miners', data.active_jobs || 0);
-      updateStat('stat-difficulty', data.difficulty || 0);
-      updateStat('stat-mbite', Math.floor((data.current_height || 0) * 50));
+      // Update stats with animation
+      animateNumber('lw-blocks', data.current_height || 0);
+      animateNumber('lw-miners', data.active_jobs || 0);
+      animateNumber('lw-difficulty', Math.round(data.difficulty || 0));
+      animateNumber('lw-circulation', Math.round((data.current_height || 0) * 50));
 
+      // Update leaderboard
       if (data.leaderboard && data.leaderboard.length) {
-        const tbody = document.getElementById('leaderboard-tbody');
+        const tbody = document.getElementById('lw-leaderboard-body');
         tbody.innerHTML = '';
-        data.leaderboard.slice(0, 10).forEach((miner, i) => {
+        data.leaderboard.slice(0, 5).forEach((miner, i) => {
           const row = document.createElement('tr');
-          const rankClass = i === 0 ? 'zeldman-rank-1' : '';
+          const rankClass = i === 0 ? 'lw-rank-1' : '';
           row.innerHTML = `
-            <td class="${rankClass}"><strong>${i + 1}</strong></td>
-            <td><code>${miner.address.substring(0, 20)}…</code></td>
+            <td><span class="lw-rank-badge ${rankClass}">#${i + 1}</span></td>
+            <td><span class="lw-address">${miner.address.substring(0, 16)}…</span></td>
             <td>${miner.blocks}</td>
             <td>${(miner.blocks * 50).toLocaleString()}</td>
           `;
@@ -561,864 +733,22 @@
     }
   }
 
-  function updateStat(id, value) {
+  function animateNumber(id, target) {
     const elem = document.getElementById(id);
     if (!elem) return;
     const start = parseInt(elem.textContent) || 0;
-    const diff = value - start;
+    const diff = target - start;
     const steps = 30;
     let current = 0;
     const interval = setInterval(() => {
       current++;
-      elem.textContent = Math.floor(start + (diff * current / steps)).toLocaleString();
+      const val = Math.floor(start + (diff * current / steps));
+      elem.textContent = val.toLocaleString();
       if (current >= steps) clearInterval(interval);
     }, 30);
   }
 
-  loadZeldmanStats();
-  setInterval(loadZeldmanStats, 15000);
+  loadLWStats();
+  setInterval(loadLWStats, 12000);
 </script>
-{% endblock %}
-{% block body_class %}mb-home-viral{% endblock %}
-{% block title %}MoonBite - Fair Launch Bitcoin Fork | Mine Your First Block{% endblock %}
-{% block meta_description %}Mine your first MBITE today. No ICO. No premine. 100% fair launch. Join 50K+ miners earning real blocks on testnet.{% endblock %}
-{% block nav_active %}home{% endblock %}
-
-{% block head_extra %}
-<style>
-  .mb-home-viral { background: linear-gradient(180deg, #0a0a14 0%, #1a0a2e 50%, #0f0420 100%); }
-
-  .mb-hero-viral { min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; padding: 2rem; }
-  .mb-hero-viral::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.15) 0%, transparent 60%), radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 60%); animation: cosmic-drift 25s ease-in-out infinite; }
-  @keyframes cosmic-drift { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(40px, -50px) scale(1.1); } }
-
-  .mb-hero-viral-content { position: relative; z-index: 2; text-align: center; max-width: 1000px; }
-
-  .mb-viral-badge { display: inline-flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(59, 130, 246, 0.1)); border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 9999px; font-size: 0.95rem; color: #c084fc; margin-bottom: 2rem; animation: badge-glow 3s ease-in-out infinite; font-weight: 600; }
-  @keyframes badge-glow { 0%, 100% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.3); } 50% { box-shadow: 0 0 60px rgba(168, 85, 247, 0.6); } }
-
-  .mb-viral-title { font-size: clamp(3rem, 10vw, 5rem); font-weight: 900; line-height: 1.1; margin: 0 0 2rem 0; color: white; letter-spacing: -0.03em; }
-  .mb-viral-title-glow { background: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.5)); }
-
-  .mb-viral-subtitle { font-size: clamp(1.2rem, 3vw, 1.6rem); color: rgba(255, 255, 255, 0.75); line-height: 1.7; margin-bottom: 3.5rem; max-width: 800px; }
-
-  .mb-viral-ctas { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 5rem; }
-
-  .mb-viral-btn-primary { padding: 1.25rem 3rem; background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); color: white; border: none; border-radius: 0.75rem; font-size: 1.15rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem; box-shadow: 0 15px 40px rgba(168, 85, 247, 0.4); letter-spacing: 0.5px; }
-  .mb-viral-btn-primary:hover { transform: translateY(-5px); box-shadow: 0 25px 60px rgba(168, 85, 247, 0.6); }
-
-  .mb-viral-btn-secondary { padding: 1.25rem 3rem; background: rgba(255, 255, 255, 0.08); color: white; border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 0.75rem; font-size: 1.15rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; gap: 0.75rem; }
-  .mb-viral-btn-secondary:hover { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.4); transform: translateY(-5px); }
-
-  .mb-viral-arrow { font-size: 1.5rem; }
-
-  .mb-scroll-indicator { position: absolute; bottom: 3rem; left: 50%; transform: translateX(-50%); animation: bounce-down 2.5s infinite; cursor: pointer; }
-  @keyframes bounce-down { 0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.7; } 50% { transform: translateX(-50%) translateY(12px); opacity: 1; } }
-
-  .mb-viral-stats { background: linear-gradient(180deg, rgba(10, 10, 20, 0.4) 0%, rgba(20, 10, 40, 0.2) 100%); border-top: 1px solid rgba(168, 85, 247, 0.15); border-bottom: 1px solid rgba(168, 85, 247, 0.15); padding: 4rem 2rem; margin: 5rem 0; backdrop-filter: blur(8px); }
-  .mb-viral-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2.5rem; max-width: 1200px; margin: 0 auto; }
-  .mb-viral-stat { text-align: center; }
-  .mb-viral-stat-value { font-size: 3.5rem; font-weight: 900; color: #a855f7; font-family: 'JetBrains Mono', monospace; margin-bottom: 0.5rem; }
-  .mb-viral-stat-label { font-size: 0.95rem; color: rgba(255, 255, 255, 0.6); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
-
-  .mb-viral-section { max-width: 1200px; margin: 6rem auto; padding: 0 2rem; }
-  .mb-viral-section-title { font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight: 900; color: white; margin-bottom: 1.5rem; text-align: center; }
-  .mb-viral-section-sub { font-size: 1.15rem; color: rgba(255, 255, 255, 0.65); max-width: 700px; margin: 0 auto 4rem; text-align: center; }
-
-  .mb-feature-grid-viral { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2.5rem; }
-  .mb-feature-viral { padding: 2.5rem; background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(59, 130, 246, 0.05) 100%); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 1rem; transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; }
-  .mb-feature-viral:hover { transform: translateY(-12px); background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(59, 130, 246, 0.12) 100%); border-color: rgba(168, 85, 247, 0.5); box-shadow: 0 20px 50px rgba(168, 85, 247, 0.2); }
-  .mb-feature-viral-icon { font-size: 3rem; margin-bottom: 1.25rem; }
-  .mb-feature-viral-title { font-size: 1.35rem; font-weight: 800; color: white; margin-bottom: 1rem; }
-  .mb-feature-viral-text { color: rgba(255, 255, 255, 0.65); line-height: 1.7; font-size: 0.98rem; }
-
-  .mb-viral-miners-preview { background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.15); border-radius: 1rem; padding: 3rem 2rem; margin-top: 3rem; }
-  .mb-viral-miners-table { width: 100%; margin-top: 2rem; border-collapse: collapse; }
-  .mb-viral-miners-table th { text-align: left; padding: 1.5rem; border-bottom: 2px solid rgba(168, 85, 247, 0.3); color: rgba(255, 255, 255, 0.8); font-weight: 700; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 0.05em; }
-  .mb-viral-miners-table td { padding: 1.5rem; border-bottom: 1px solid rgba(168, 85, 247, 0.1); color: rgba(255, 255, 255, 0.7); font-size: 0.95rem; }
-  .mb-viral-miners-table tr:hover { background: rgba(168, 85, 247, 0.08); }
-  .mb-rank-1 { color: #fbbf24; font-weight: 800; font-size: 1.1rem; }
-  .mb-rank-2 { color: #c0c0c0; font-weight: 700; }
-  .mb-rank-3 { color: #cd7f32; font-weight: 700; }
-
-  .mb-viral-timeline { position: relative; padding: 3rem 0; margin: 5rem 0; }
-  .mb-viral-timeline::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, rgba(168, 85, 247, 0.6), transparent); }
-  .mb-timeline-step { margin-bottom: 4rem; width: 50%; padding: 2.5rem; }
-  .mb-timeline-step:nth-child(odd) { text-align: right; margin-left: 0; padding-right: 5rem; }
-  .mb-timeline-step:nth-child(even) { text-align: left; margin-left: 50%; padding-left: 5rem; }
-  .mb-timeline-dot { position: absolute; width: 18px; height: 18px; background: #a855f7; border: 4px solid #0a0a14; border-radius: 50%; top: 2.5rem; }
-  .mb-timeline-step:nth-child(odd) .mb-timeline-dot { right: calc(-9px - 50%); }
-  .mb-timeline-step:nth-child(even) .mb-timeline-dot { left: calc(-9px - 50%); }
-  .mb-timeline-item-box { background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); padding: 2rem; border-radius: 0.75rem; }
-  .mb-timeline-date { font-size: 0.9rem; color: #a855f7; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem; }
-  .mb-timeline-title { font-size: 1.3rem; font-weight: 800; color: white; margin-bottom: 0.75rem; }
-  .mb-timeline-desc { font-size: 0.95rem; color: rgba(255, 255, 255, 0.65); line-height: 1.6; }
-
-  .mb-viral-cta-final { background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(59, 130, 246, 0.15) 100%); border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 1.25rem; padding: 4rem 2rem; text-align: center; margin: 6rem auto; max-width: 1000px; }
-  .mb-viral-cta-title { font-size: 2.5rem; font-weight: 900; color: white; margin-bottom: 1.5rem; }
-  .mb-viral-cta-text { font-size: 1.2rem; color: rgba(255, 255, 255, 0.7); margin-bottom: 3rem; }
-
-  .mb-trust-badges { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin: 5rem 0; }
-  .mb-trust-badge { text-align: center; padding: 2rem; }
-  .mb-trust-badge-icon { font-size: 2.5rem; margin-bottom: 1rem; }
-  .mb-trust-badge-title { font-weight: 800; color: white; margin-bottom: 0.75rem; font-size: 1.1rem; }
-  .mb-trust-badge-text { color: rgba(255, 255, 255, 0.6); font-size: 0.95rem; line-height: 1.6; }
-
-  @media (max-width: 768px) {
-    .mb-viral-title { font-size: 2.5rem; }
-    .mb-viral-ctas { flex-direction: column; gap: 1rem; }
-    .mb-viral-btn-primary, .mb-viral-btn-secondary { width: 100%; justify-content: center; }
-    .mb-viral-stats-grid { grid-template-columns: 1fr; }
-    .mb-viral-timeline::before { left: 20px; }
-    .mb-timeline-step { width: 100%; padding: 2rem; }
-    .mb-timeline-step:nth-child(odd), .mb-timeline-step:nth-child(even) { margin-left: 0; text-align: left; padding-left: 60px; }
-    .mb-timeline-step:nth-child(odd) .mb-timeline-dot, .mb-timeline-step:nth-child(even) .mb-timeline-dot { left: 20px; }
-    .mb-feature-grid-viral { grid-template-columns: 1fr; }
-  }
-</style>
-{% endblock %}
-
-{% block content %}
-<section class="mb-hero-viral">
-  <div class="mb-hero-viral-content">
-    <div class="mb-viral-badge">
-      <span>✨</span>
-      <span>50,000+ Early Miners · Testnet Live</span>
-    </div>
-    <h1 class="mb-viral-title">Mine <span class="mb-viral-title-glow">the Moon</span></h1>
-    <p class="mb-viral-subtitle">
-      No ICO. No premine. No nonsense.<br>
-      Fair-launch Litecoin fork. Mine your first block in 30 seconds.
-    </p>
-    <div class="mb-viral-ctas">
-      <a href="/mining" class="mb-viral-btn-primary">
-        <span>Start Mining</span>
-        <span class="mb-viral-arrow">→</span>
-      </a>
-      <a href="/wallet" class="mb-viral-btn-secondary">
-        <span>Get Wallet</span>
-      </a>
-    </div>
-  </div>
-  <div class="mb-scroll-indicator">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2.5">
-      <polyline points="6 9 12 15 18 9"></polyline>
-    </svg>
-  </div>
-</section>
-
-<section class="mb-viral-stats">
-  <div class="mb-viral-stats-grid">
-    <div class="mb-viral-stat">
-      <div class="mb-viral-stat-value" id="liveHeight">0</div>
-      <div class="mb-viral-stat-label">Blocks Secured</div>
-    </div>
-    <div class="mb-viral-stat">
-      <div class="mb-viral-stat-value" id="liveDifficulty">0</div>
-      <div class="mb-viral-stat-label">Network Difficulty</div>
-    </div>
-    <div class="mb-viral-stat">
-      <div class="mb-viral-stat-value" id="liveMiners">0</div>
-      <div class="mb-viral-stat-label">Active Miners</div>
-    </div>
-    <div class="mb-viral-stat">
-      <div class="mb-viral-stat-value" id="liveMBITE">0</div>
-      <div class="mb-viral-stat-label">MBITE in Circulation</div>
-    </div>
-  </div>
-</section>
-
-<section class="mb-viral-section">
-  <h2 class="mb-viral-section-title">Why Mine MoonBite?</h2>
-  <p class="mb-viral-section-sub">You're not betting on a pitch deck. You're securing a real blockchain.</p>
-
-  <div class="mb-feature-grid-viral">
-    <div class="mb-feature-viral">
-      <div class="mb-feature-viral-icon">⚡</div>
-      <div class="mb-feature-viral-title">Instant Proof</div>
-      <div class="mb-feature-viral-text">Your block appears in the explorer immediately. Cryptographically verified. No waiting for confirmations.</div>
-    </div>
-
-    <div class="mb-feature-viral">
-      <div class="mb-feature-viral-icon">🔐</div>
-      <div class="mb-feature-viral-title">You Own It</div>
-      <div class="mb-feature-viral-text">MBITE goes straight to your wallet. You control the private keys. No account. No middleman. Just you and the network.</div>
-    </div>
-
-    <div class="mb-feature-viral">
-      <div class="mb-feature-viral-icon">🎯</div>
-      <div class="mb-feature-viral-title">100% Fair</div>
-      <div class="mb-feature-viral-text">No premine. No founders' stash. Everyone starts at block 0. The same rules apply to everyone, forever.</div>
-    </div>
-
-    <div class="mb-feature-viral">
-      <div class="mb-feature-viral-icon">📊</div>
-      <div class="mb-feature-viral-title">Real Economics</div>
-      <div class="mb-feature-viral-text">50 MBITE per block. Difficulty auto-adjusts. 2.5-minute blocks. Halving every 700K blocks. Just like Bitcoin, but faster.</div>
-    </div>
-
-    <div class="mb-feature-viral">
-      <div class="mb-feature-viral-icon">🌍</div>
-      <div class="mb-feature-viral-title">Global Network</div>
-      <div class="mb-feature-viral-text">Mine from anywhere. The testnet is already public. Mainnet will be fully decentralized with no point of failure.</div>
-    </div>
-
-    <div class="mb-feature-viral">
-      <div class="mb-feature-viral-icon">💎</div>
-      <div class="mb-feature-viral-title">Status Symbol</div>
-      <div class="mb-feature-viral-text">Your receipt proves you were early. Share #MinedMyFirstBlock on Twitter. Join the movement, not the hype.</div>
-    </div>
-  </div>
-</section>
-
-<section class="mb-viral-section">
-  <h2 class="mb-viral-section-title">Top Miners This Week</h2>
-  <p class="mb-viral-section-sub">First place changes every day. Can you stay on top?</p>
-
-  <div class="mb-viral-miners-preview">
-    <table class="mb-viral-miners-table">
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Miner Address</th>
-          <th>Blocks</th>
-          <th>MBITE Earned</th>
-        </tr>
-      </thead>
-      <tbody id="topMinersTable">
-        <tr><td colspan="4" style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.5);">Loading leaderboard...</td></tr>
-      </tbody>
-    </table>
-    <div style="text-align: center; margin-top: 2.5rem;">
-      <a href="/leaderboard" class="mb-viral-btn-secondary">View Full Leaderboard →</a>
-    </div>
-  </div>
-</section>
-
-<section class="mb-viral-section">
-  <h2 class="mb-viral-section-title">The Timeline</h2>
-  <p class="mb-viral-section-sub">Fair launch roadmap. Every milestone is earned, not promised.</p>
-
-  <div class="mb-viral-timeline">
-    <div class="mb-timeline-step">
-      <div class="mb-timeline-dot"></div>
-      <div class="mb-timeline-item-box">
-        <div class="mb-timeline-date">NOW - AUG 2026</div>
-        <div class="mb-timeline-title">Testnet Mining</div>
-        <div class="mb-timeline-desc">50K+ miners are already running nodes and mining real blocks. Leaderboards update live. Every block you mine counts toward mainnet.</div>
-      </div>
-    </div>
-
-    <div class="mb-timeline-step">
-      <div class="mb-timeline-dot"></div>
-      <div class="mb-timeline-item-box">
-        <div class="mb-timeline-date">Q3 2026</div>
-        <div class="mb-timeline-title">Mainnet Launch</div>
-        <div class="mb-timeline-desc">MBITE goes live for real. Your testnet holdings are secured. Full decentralized network. No kill switch. No backdoors.</div>
-      </div>
-    </div>
-
-    <div class="mb-timeline-step">
-      <div class="mb-timeline-dot"></div>
-      <div class="mb-timeline-item-box">
-        <div class="mb-timeline-date">Q4 2026</div>
-        <div class="mb-timeline-title">Exchange Listings</div>
-        <div class="mb-timeline-desc">MBITE gets listed on major crypto exchanges. Early miners who started on testnet now hold real market value. Trading begins.</div>
-      </div>
-    </div>
-
-    <div class="mb-timeline-step">
-      <div class="mb-timeline-dot"></div>
-      <div class="mb-timeline-item-box">
-        <div class="mb-timeline-date">2027+</div>
-        <div class="mb-timeline-title">Global Adoption</div>
-        <div class="mb-timeline-desc">Merchant payments. Mobile wallets. Multi-chain bridges. MBITE becomes the reference fair-launch cryptocurrency.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="mb-viral-section">
-  <div class="mb-trust-badges">
-    <div class="mb-trust-badge">
-      <div class="mb-trust-badge-icon">✓</div>
-      <div class="mb-trust-badge-title">No ICO</div>
-      <div class="mb-trust-badge-text">Zero pre-sale. No token allocation. Mining is the only entry point for everyone.</div>
-    </div>
-    <div class="mb-trust-badge">
-      <div class="mb-trust-badge-icon">✓</div>
-      <div class="mb-trust-badge-title">No Premine</div>
-      <div class="mb-trust-badge-text">Founders mine alongside everyone. Same 50 MBITE reward. Same difficulty. Same rules forever.</div>
-    </div>
-    <div class="mb-trust-badge">
-      <div class="mb-trust-badge-icon">✓</div>
-      <div class="mb-trust-badge-title">Open Source</div>
-      <div class="mb-trust-badge-text">Full code on GitHub. Fork it. Audit it. Run your own node. This is how Bitcoin works.</div>
-    </div>
-    <div class="mb-trust-badge">
-      <div class="mb-trust-badge-icon">✓</div>
-      <div class="mb-trust-badge-title">No Hype</div>
-      <div class="mb-trust-badge-text">We don't predict prices. We deliver blocks. Market value emerges naturally from supply and demand.</div>
-    </div>
-  </div>
-</section>
-
-<section class="mb-viral-cta-final">
-  <h2 class="mb-viral-cta-title">Ready to Secure the Network?</h2>
-  <p class="mb-viral-cta-text">Every block you mine makes MBITE stronger. Every miner keeps it decentralized.</p>
-  <div class="mb-viral-ctas" style="justify-content: center;">
-    <a href="/mining" class="mb-viral-btn-primary">
-      <span>Start Mining Now</span>
-      <span class="mb-viral-arrow">→</span>
-    </a>
-    <a href="#" class="mb-viral-btn-secondary" onclick="document.getElementById('emailCapture').scrollIntoView({behavior:'smooth'})">
-      <span>Get Updates</span>
-    </a>
-  </div>
-</section>
-
-<script>
-  async function loadViralStats() {
-    try {
-      const response = await fetch('/api/mining/status?include=leaderboard');
-      const data = await response.json();
-
-      animateNumber('liveHeight', 0, data.current_height || 0, 1500);
-      animateNumber('liveDifficulty', 0, Math.floor(data.difficulty || 0), 1500);
-      animateNumber('liveMiners', 0, data.active_jobs || 0, 1500);
-      animateNumber('liveMBITE', 0, Math.floor((data.current_height || 0) * 50), 1500);
-
-      if (data.leaderboard && data.leaderboard.length > 0) {
-        const tbody = document.getElementById('topMinersTable');
-        tbody.innerHTML = '';
-        data.leaderboard.slice(0, 5).forEach((miner, i) => {
-          const rank = i + 1;
-          const rankClass = rank === 1 ? 'mb-rank-1' : rank === 2 ? 'mb-rank-2' : rank === 3 ? 'mb-rank-3' : '';
-          const row = document.createElement('tr');
-          row.innerHTML = `<td class="${rankClass}"><strong>#${rank}</strong></td><td><code>${miner.address.substring(0, 18)}...</code></td><td>${miner.blocks}</td><td>${(miner.blocks * 50).toLocaleString()}</td>`;
-          tbody.appendChild(row);
-        });
-      }
-    } catch (error) {
-      console.error('Stats load failed:', error);
-    }
-  }
-
-  function animateNumber(id, start, end, duration) {
-    const elem = document.getElementById(id);
-    if (!elem) return;
-    const step = (end - start) / (duration / 16);
-    let current = start;
-    const interval = setInterval(() => {
-      current += step;
-      if ((step > 0 && current >= end) || (step < 0 && current <= end)) {
-        elem.textContent = Math.floor(end).toLocaleString();
-        clearInterval(interval);
-      } else {
-        elem.textContent = Math.floor(current).toLocaleString();
-      }
-    }, 16);
-  }
-
-  document.addEventListener('DOMContentLoaded', loadViralStats);
-  setInterval(loadViralStats, 12000);
-
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.style.opacity = '1';
-        e.target.style.transform = 'translateY(0)';
-      }
-    });
-  });
-
-  document.querySelectorAll('.mb-feature-viral, .mb-timeline-step, .mb-trust-badge').forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(25px)';
-    el.style.transition = 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
-    observer.observe(el);
-  });
-</script>
-{% endblock %}
-{% block body_class %}mb-v2{% endblock %}
-
-{% block title %}Mining - MoonBite Dashboard{% endblock %}
-{% block nav_active %}mining{% endblock %}
-
-{% block head_extra %}
-<link rel="stylesheet" href="{{ url_for('static', filename='mining-god.css') }}">
-{% endblock %}
-
-{% block content %}
-<div class="main-content">
-    <section class="hero">
-        <h2>Mining</h2>
-        <p>Mine blocks and earn coinbase rewards to your address.</p>
-    </section>
-
-    <!-- VIRAL: Global Mining Stats Banner -->
-    <div class="mb-stats-banner">
-        <div class="mb-stats-item">
-            <div class="mb-stats-count"><span id="activeMinerCount">0</span></div>
-            <div class="mb-stats-label">Active Miners</div>
-        </div>
-        <div class="mb-stats-divider"></div>
-        <div class="mb-stats-item">
-            <div class="mb-stats-count"><span id="globalBlocksCount">0</span></div>
-            <div class="mb-stats-label">Blocks Mined</div>
-        </div>
-        <div class="mb-stats-divider"></div>
-        <div class="mb-stats-item">
-            <div class="mb-stats-count"><span id="hashRateCount">0</span> H/s</div>
-            <div class="mb-stats-label">Network Power</div>
-        </div>
-    </div>
-
-    <!-- Mining Controls -->
-    <div class="card card-full">
-        <div class="card-header">Mining Configuration</div>
-        <div class="card-body">
-            <form id="miningForm" class="mining-form">
-                <div class="form-group">
-                    <label for="blocksInput">Number of Blocks to Mine</label>
-                    <input
-                        type="number"
-                        id="blocksInput"
-                        name="blocks"
-                        min="1"
-                        max="100"
-                        value="1"
-                        class="form-input"
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="addressInput">Miner Address (Base58)</label>
-                    <input
-                        type="text"
-                        id="addressInput"
-                        name="address"
-                        placeholder="Enter your mining address..."
-                        class="form-input"
-                    >
-                    <small>Don't have an address? <a href="/wallet" class="link">Generate one</a></small>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" id="startBtn" class="btn btn-success btn-large">
-                        ⚒️ Start Mining
-                    </button>
-                    <button type="button" id="stopBtn" class="btn btn-danger btn-large hidden" onclick="stopMining()">
-                        ⏹️ Stop Mining
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Mining Progress — GOD-TIER cinematic reactor -->
-    <div id="progressSection" class="card card-full hidden">
-        <div class="card-header">Live Mining Reactor</div>
-        <div class="card-body">
-            <!-- Cinematic stage: canvases + HUD (mining-god.js drives it) -->
-            <div id="godStage" class="god-stage">
-                <div class="god-grid"></div>
-                <div class="god-aurora"></div>
-                <canvas id="godParticles" class="god-canvas"></canvas>
-                <canvas id="godReactor" class="god-canvas"></canvas>
-                <div class="god-scan"></div>
-
-                <div class="god-badge"><span></span>MOONBITE RIG</div>
-
-                <div class="god-spark">
-                    <div class="god-spark-title">Hashrate · live</div>
-                    <canvas id="godSpark"></canvas>
-                </div>
-
-                <div class="god-core-readout">
-                    <div id="godHashrate" class="god-hashrate">0 H/s</div>
-                    <div class="god-hashunit">Proof of Work</div>
-                    <div class="god-state">
-                        <span class="god-dot"></span>
-                        <span id="godStateText">STANDBY</span>
-                    </div>
-                </div>
-
-                <div class="god-beam-wrap">
-                    <div class="god-beam-labels">
-                        <span>BLOCK YIELD</span>
-                        <span><b id="godPct">0%</b></span>
-                    </div>
-                    <div class="god-beam">
-                        <div id="godBeamFill" class="god-beam-fill"></div>
-                    </div>
-                </div>
-
-                <div class="god-hud">
-                    <div class="god-hud-cell">
-                        <div class="god-hud-label">Chain Height</div>
-                        <div id="godHeight" class="god-hud-value">--</div>
-                    </div>
-                    <div class="god-hud-cell">
-                        <div class="god-hud-label">Blocks</div>
-                        <div id="godBlocks" class="god-hud-value">0 / 0</div>
-                    </div>
-                    <div class="god-hud-cell">
-                        <div class="god-hud-label">Elapsed</div>
-                        <div id="godElapsed" class="god-hud-value">0s</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Legacy state carriers: kept for the existing poll logic to
-                 write into. Visually hidden; mining-god.js reads them. -->
-            <div class="god-legacy" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;">
-                <div id="miningOrb" class="mining-orb idle">
-                    <div class="orb-ring"></div>
-                    <div class="orb-ring ring-2"></div>
-                    <div class="orb-core"></div>
-                </div>
-                <span id="blocksMined">0</span>
-                <span id="totalBlocks">0</span>
-                <div id="progressBarFill" class="progress-fill" style="width: 0%"></div>
-                <div id="currentHeight">--</div>
-                <code id="currentHash">--</code>
-                <div id="elapsedTime">0s</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Mining Status Display -->
-    <div class="cards-grid">
-        <div class="card">
-            <div class="card-header">Mining Status</div>
-            <div class="card-body">
-                <div id="miningStatusDisplay" class="card-value">Idle</div>
-                <div class="card-subtitle">Current state</div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">Chain Height</div>
-            <div class="card-body">
-                <div id="chainHeightDisplay" class="card-value">--</div>
-                <div class="card-subtitle">Latest block height</div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">Blocks This Session</div>
-            <div class="card-body">
-                <div id="sessionBlocksDisplay" class="card-value">0</div>
-                <div class="card-subtitle">Total mined</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Information Box -->
-    <div class="card card-full">
-        <div class="card-header">ℹ️ Mining Information</div>
-        <div class="card-body">
-            <ul class="info-list">
-                <li>Mining uses Proof-of-Work consensus to secure the blockchain</li>
-                <li>Each successfully mined block earns a coinbase reward to your address</li>
-                <li>The difficulty adjusts automatically based on block times</li>
-                <li>You can stop mining at any time using the "Stop Mining" button</li>
-                <li>Mining progress updates in real-time on this page</li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- Status Messages -->
-    <div id="statusMessage" class="status-message hidden"></div>
-
-    <!-- VIRAL: Shareable Receipt Modal (shown after mining completes) -->
-    <div id="receiptModal" class="mb-receipt-modal hidden">
-        <div class="mb-receipt-card">
-            <button class="mb-receipt-close" onclick="closeReceipt()">&times;</button>
-
-            <div class="mb-receipt-header">
-                <div class="mb-receipt-emoji">🎉</div>
-                <h3>You Did It!</h3>
-            </div>
-
-            <div class="mb-receipt-stats">
-                <div class="mb-receipt-stat">
-                    <div class="mb-receipt-stat-value" id="receiptBlocks">1</div>
-                    <div class="mb-receipt-stat-label">Block Mined</div>
-                </div>
-                <div class="mb-receipt-stat">
-                    <div class="mb-receipt-stat-value" id="receiptMBITE">50</div>
-                    <div class="mb-receipt-stat-label">MBITE Earned</div>
-                </div>
-            </div>
-
-            <div class="mb-receipt-message">
-                <p id="receiptText">I just mined 1 MoonBite block! Earned 50 MBITE 🌙⛏️</p>
-            </div>
-
-            <div class="mb-receipt-divider"></div>
-
-            <div class="mb-receipt-actions">
-                <button class="mb-receipt-btn mb-receipt-btn-twitter" onclick="shareTwitter()">
-                    <span>𝕏</span> Share on Twitter
-                </button>
-                <button class="mb-receipt-btn mb-receipt-btn-copy" onclick="copyToClipboard()">
-                    <span>📋</span> Copy Text
-                </button>
-            </div>
-
-            <div class="mb-receipt-footer">
-                <small>Join 1000s mining MoonBite</small>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block scripts_extra %}
-<script>
-    let isMining = false;
-    let startTime = 0;
-    let statusCheckInterval = null;
-    let currentJobId = null;
-
-    function showStatus(message, type = 'info') {
-        const statusEl = document.getElementById('statusMessage');
-        statusEl.textContent = message;
-        statusEl.className = `status-message ${type}`;
-        statusEl.classList.remove('hidden');
-        setTimeout(() => {
-            statusEl.classList.add('hidden');
-        }, 5000);
-    }
-
-    // Update global mining stats (viral metrics)
-    async function updateGlobalStats() {
-        try {
-            const response = await fetch('/api/mining/globalstats');
-            const data = await response.json();
-
-            if (data.status === 'success') {
-                document.getElementById('activeMinerCount').textContent = data.active_miners;
-                document.getElementById('globalBlocksCount').textContent = data.blocks_mined_globally;
-                const hashrate = (data.combined_hashrate / 1000).toFixed(1);
-                document.getElementById('hashRateCount').textContent = hashrate + 'K';
-            }
-        } catch (error) {
-            console.error('Error updating global stats:', error);
-        }
-    }
-
-    // Show shareable receipt modal
-    async function showReceipt(jobId, blocksMined) {
-        if (blocksMined === 0) return;
-
-        try {
-            const response = await fetch(`/api/mining/receipt/${jobId}`);
-            const data = await response.json();
-
-            if (data.status === 'success') {
-                // Update receipt UI
-                document.getElementById('receiptBlocks').textContent = blocksMined;
-                document.getElementById('receiptMBITE').textContent = data.mbite_earned;
-                document.getElementById('receiptText').textContent = data.share_text;
-
-                // Store for sharing
-                window.currentReceipt = data;
-
-                // Show modal
-                document.getElementById('receiptModal').classList.remove('hidden');
-            }
-        } catch (error) {
-            console.error('Error generating receipt:', error);
-        }
-    }
-
-    function closeReceipt() {
-        document.getElementById('receiptModal').classList.add('hidden');
-    }
-
-    function shareTwitter() {
-        const receipt = window.currentReceipt;
-        if (!receipt) return;
-
-        const text = receipt.share_text;
-        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=https://moonbite.org`;
-        window.open(url, '_blank', 'width=600,height=400');
-    }
-
-    function copyToClipboard() {
-        const receipt = window.currentReceipt;
-        if (!receipt) return;
-
-        navigator.clipboard.writeText(receipt.share_text).then(() => {
-            showStatus('✓ Copied to clipboard!', 'success');
-        }).catch(err => {
-            console.error('Copy failed:', err);
-        });
-    }
-
-    async function startMining(event) {
-        event.preventDefault();
-
-        const blocksInput = document.getElementById('blocksInput').value;
-        const addressInput = document.getElementById('addressInput').value;
-
-        if (!blocksInput || blocksInput < 1) {
-            showStatus('Please enter a valid number of blocks', 'error');
-            return;
-        }
-
-        if (!addressInput) {
-            showStatus('Please enter your mining address', 'error');
-            return;
-        }
-
-        const startBtn = document.getElementById('startBtn');
-        startBtn.disabled = true;
-        startBtn.textContent = '⏳ Starting...';
-
-        try {
-            const response = await fetch('/api/mining/start', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    blocks: parseInt(blocksInput),
-                    address: addressInput,
-                }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok && data.status === 'mining') {
-                currentJobId = data.job_id;  // Store job ID for receipt
-                isMining = true;
-                startTime = Date.now();
-                document.getElementById('miningForm').style.display = 'none';
-                document.getElementById('progressSection').classList.remove('hidden');
-                document.getElementById('startBtn').classList.add('hidden');
-                document.getElementById('stopBtn').classList.remove('hidden');
-                document.getElementById('totalBlocks').textContent = data.blocks_to_mine;
-                document.getElementById('miningOrb').classList.remove('idle');
-
-                showStatus('✓ Mining started', 'success');
-
-                // Poll for mining status every 500ms
-                statusCheckInterval = setInterval(pollMiningStatus, 500);
-            } else {
-                showStatus('Error: ' + (data.message || 'Failed to start mining'), 'error');
-                startBtn.disabled = false;
-                startBtn.textContent = '⚒️ Start Mining';
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showStatus('Network error: ' + error.message, 'error');
-            startBtn.disabled = false;
-            startBtn.textContent = '⚒️ Start Mining';
-        }
-    }
-
-    async function pollMiningStatus() {
-        try {
-            const response = await fetch('/api/mining/status');
-            const data = await response.json();
-
-            if (data.status !== 'error') {
-                const blocksMined = data.blocks_mined;
-                const totalBlocks = data.total_blocks;
-                const currentHeight = data.current_height;
-
-                // Update progress bar
-                const progress = totalBlocks > 0 ? (blocksMined / totalBlocks) * 100 : 0;
-                document.getElementById('progressBarFill').style.width = progress + '%';
-                document.getElementById('blocksMined').textContent = blocksMined;
-                document.getElementById('currentHeight').textContent = currentHeight;
-                document.getElementById('chainHeightDisplay').textContent = currentHeight;
-                document.getElementById('sessionBlocksDisplay').textContent = blocksMined;
-
-                // Update elapsed time
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                const minutes = Math.floor(elapsed / 60);
-                const seconds = elapsed % 60;
-                const timeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-                document.getElementById('elapsedTime').textContent = timeStr;
-
-                // Check if mining is complete
-                if (data.status !== 'mining' || blocksMined >= totalBlocks) {
-                    stopMiningUI();
-                    // VIRAL: Show shareable receipt on completion
-                    if (blocksMined > 0 && currentJobId) {
-                        setTimeout(() => showReceipt(currentJobId, blocksMined), 500);
-                    }
-                } else {
-                    document.getElementById('miningStatusDisplay').textContent = 'Mining...';
-                }
-            }
-        } catch (error) {
-            console.error('Error polling status:', error);
-        }
-    }
-
-    async function stopMining() {
-        try {
-            const response = await fetch('/api/mining/stop');
-            const data = await response.json();
-
-            if (data.status === 'stopped') {
-                stopMiningUI();
-                showStatus('✓ Mining stopped', 'success');
-            }
-        } catch (error) {
-            console.error('Error stopping mining:', error);
-            showStatus('Error stopping mining', 'error');
-        }
-    }
-
-    function stopMiningUI() {
-        isMining = false;
-        if (statusCheckInterval) {
-            clearInterval(statusCheckInterval);
-        }
-
-        document.getElementById('miningStatusDisplay').textContent = 'Idle';
-        document.getElementById('miningOrb').classList.add('idle');
-        document.getElementById('progressSection').classList.add('hidden');
-        document.getElementById('miningForm').style.display = 'block';
-        document.getElementById('startBtn').classList.remove('hidden');
-        document.getElementById('stopBtn').classList.add('hidden');
-        document.getElementById('startBtn').disabled = false;
-        document.getElementById('startBtn').textContent = '⚒️ Start Mining';
-    }
-
-    // Populate address field if available from wallet
-    document.addEventListener('DOMContentLoaded', () => {
-        const savedAddresses = JSON.parse(sessionStorage.getItem('addresses') || '[]');
-        if (savedAddresses.length > 0) {
-            document.getElementById('addressInput').value = savedAddresses[0].address;
-        }
-
-        // Update global stats immediately and every 3 seconds (viral metrics)
-        updateGlobalStats();
-        setInterval(updateGlobalStats, 3000);
-
-        // Poll blockchain info in background
-        setInterval(() => {
-            if (!isMining) {
-                fetch('/api/blockchain/info')
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            document.getElementById('chainHeightDisplay').textContent = data.height;
-                        }
-                    })
-                    .catch(e => console.error('Error:', e));
-            }
-        }, 2000);
-    });
-
-    // Handle form submission
-    document.getElementById('miningForm').addEventListener('submit', startMining);
-</script>
-<script defer src="{{ url_for('static', filename='mining-god.js') }}"></script>
 {% endblock %}

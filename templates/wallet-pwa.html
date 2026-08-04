@@ -480,7 +480,50 @@
                         <button class="btn btn-secondary" id="importWalletBtn">Import Seed</button>
                     </div>
                     <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-top: 16px;">
-                        🔐 Your wallet is stored locally on your device. Never share your seed phrase.
+                        🔐 Password-protected. Your wallet is encrypted locally on your device.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Password Setup Screen -->
+            <div class="screen password-setup-screen">
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px;">
+                    <h2 class="welcome-title">Set Password</h2>
+                    <p style="color: var(--text-secondary); font-size: 14px;">
+                        Create a strong password to protect your wallet. You'll need this to access your funds.
+                    </p>
+                    <div class="input-group">
+                        <label class="input-label">Password</label>
+                        <input type="password" id="setupPassword" placeholder="Min 8 characters" minlength="8">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Confirm Password</label>
+                        <input type="password" id="confirmPassword" placeholder="Confirm password" minlength="8">
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 16px;">
+                        <button class="btn btn-secondary" style="flex: 1;" id="cancelPasswordBtn">Cancel</button>
+                        <button class="btn btn-primary" style="flex: 1;" id="confirmPasswordBtn">Continue</button>
+                    </div>
+                    <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.5;">
+                        ⚠️ You cannot reset a forgotten password. Keep it safe.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Unlock Screen -->
+            <div class="screen unlock-screen">
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px;">
+                    <h2 class="welcome-title">Unlock Wallet</h2>
+                    <p style="color: var(--text-secondary); font-size: 14px;">
+                        Enter your password to access your wallet.
+                    </p>
+                    <div class="input-group">
+                        <label class="input-label">Password</label>
+                        <input type="password" id="unlockPassword" placeholder="Enter password">
+                    </div>
+                    <button class="btn btn-primary" id="unlockBtn" style="width: 100%;">Unlock Wallet</button>
+                    <p style="font-size: 12px; color: var(--text-secondary); text-align: center;">
+                        <a href="#" id="resetWalletLink" style="color: var(--primary);">Reset wallet?</a>
                     </p>
                 </div>
             </div>
@@ -559,8 +602,9 @@
 
                 <div class="card">
                     <div class="card-title">Security</div>
+                    <button class="btn btn-secondary" id="changePasswordBtn">Change Password</button>
                     <button class="btn btn-secondary" id="backupWalletBtn">Backup Wallet</button>
-                    <button class="btn btn-danger" id="resetWalletBtn">Reset Wallet</button>
+                    <button class="btn btn-danger" id="resetWalletBtn">Delete Wallet</button>
                 </div>
 
                 <div class="card">
@@ -587,6 +631,29 @@
         </div>
     </div>
 
+    <div class="modal" id="passwordModal">
+        <div class="modal-content">
+            <div class="modal-header">🔐 Change Password</div>
+            <p style="font-size: 12px; color: var(--text-secondary);">
+                Enter your current password and new password.
+            </p>
+            <div class="input-group">
+                <label class="input-label">Current Password</label>
+                <input type="password" id="currentPassword" placeholder="Current password">
+            </div>
+            <div class="input-group">
+                <label class="input-label">New Password</label>
+                <input type="password" id="newPassword" placeholder="Min 8 characters" minlength="8">
+            </div>
+            <div class="input-group">
+                <label class="input-label">Confirm Password</label>
+                <input type="password" id="confirmNewPassword" placeholder="Confirm new password" minlength="8">
+            </div>
+            <button class="btn btn-primary" id="changePasswordConfirmBtn" style="width: 100%;">Change Password</button>
+            <button class="btn btn-secondary" id="closePasswordModalBtn" style="width: 100%; margin-top: 8px;">Cancel</button>
+        </div>
+    </div>
+
     <div class="modal" id="menuModal">
         <div class="modal-content">
             <div class="modal-header">Menu</div>
@@ -605,9 +672,87 @@
 
         const API_BASE = 'https://moonbite.org';
         const STORAGE_KEY = 'moonbite_wallet';
+        const ENCRYPTED_KEY = 'moonbite_wallet_encrypted';
 
         let wallet = null;
+        let walletPassword = null;
+        let isWalletUnlocked = false;
         let currentScreen = 'welcome';
+
+        // ====== Encryption Functions ======
+        async function deriveKey(password, salt) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const keyMaterial = await window.crypto.subtle.importKey(
+                'raw',
+                data,
+                { name: 'PBKDF2' },
+                false,
+                ['deriveBits', 'deriveKey']
+            );
+            return window.crypto.subtle.deriveKey(
+                {
+                    name: 'PBKDF2',
+                    salt: salt,
+                    iterations: 100000,
+                    hash: 'SHA-256',
+                },
+                keyMaterial,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['encrypt', 'decrypt']
+            );
+        }
+
+        async function encryptWallet(walletData, password) {
+            try {
+                const salt = window.crypto.getRandomValues(new Uint8Array(16));
+                const iv = window.crypto.getRandomValues(new Uint8Array(12));
+                const key = await deriveKey(password, salt);
+
+                const encoder = new TextEncoder();
+                const data = encoder.encode(JSON.stringify(walletData));
+
+                const encrypted = await window.crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    key,
+                    data
+                );
+
+                const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+                combined.set(salt, 0);
+                combined.set(iv, salt.length);
+                combined.set(new Uint8Array(encrypted), salt.length + iv.length);
+
+                return btoa(String.fromCharCode(...combined));
+            } catch (err) {
+                showAlert('❌ Encryption failed: ' + err.message, 'danger');
+                return null;
+            }
+        }
+
+        async function decryptWallet(encryptedData, password) {
+            try {
+                const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
+                const salt = combined.slice(0, 16);
+                const iv = combined.slice(16, 28);
+                const encrypted = combined.slice(28);
+
+                const key = await deriveKey(password, salt);
+
+                const decrypted = await window.crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    key,
+                    encrypted
+                );
+
+                const decoder = new TextDecoder();
+                return JSON.parse(decoder.decode(decrypted));
+            } catch (err) {
+                showAlert('❌ Decryption failed: Invalid password', 'danger');
+                return null;
+            }
+        }
 
         // ====== Screen Navigation ======
         function showScreen(screenName) {
@@ -616,10 +761,50 @@
             currentScreen = screenName;
         }
 
-        document.getElementById('createWalletBtn').addEventListener('click', createNewWallet);
+        // Password setup flow
+        let pendingWalletAction = null;
+
+        document.getElementById('createWalletBtn').addEventListener('click', () => {
+            pendingWalletAction = 'create';
+            showScreen('password-setup');
+        });
+
         document.getElementById('importWalletBtn').addEventListener('click', () => {
-            const seed = prompt('Enter your 12-word seed phrase (space-separated):');
-            if (seed) importWallet(seed);
+            pendingWalletAction = 'import';
+            showScreen('password-setup');
+        });
+
+        document.getElementById('confirmPasswordBtn').addEventListener('click', async () => {
+            const password = document.getElementById('setupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password.length < 8) {
+                showAlert('❌ Password must be at least 8 characters', 'danger');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showAlert('❌ Passwords do not match', 'danger');
+                return;
+            }
+
+            walletPassword = password;
+
+            if (pendingWalletAction === 'create') {
+                await createNewWallet();
+            } else if (pendingWalletAction === 'import') {
+                const seed = prompt('Enter your 12-word seed phrase (space-separated):');
+                if (seed) await importWallet(seed);
+            }
+
+            document.getElementById('setupPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        });
+
+        document.getElementById('cancelPasswordBtn').addEventListener('click', () => {
+            showScreen('welcome');
+            document.getElementById('setupPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
         });
 
         document.getElementById('sendBtn').addEventListener('click', () => showScreen('send'));
@@ -645,10 +830,11 @@
                         seed: 'local-wallet-' + Date.now(),
                         createdAt: new Date().toISOString()
                     };
-                    saveWallet();
+                    await saveWallet();
+                    isWalletUnlocked = true;
                     showScreen('dashboard');
                     updateBalance();
-                    showAlert('✅ Wallet created successfully!', 'success');
+                    showAlert('✅ Wallet created and password-protected!', 'success');
                 } else {
                     showAlert('❌ Failed to create wallet', 'danger');
                 }
@@ -668,27 +854,78 @@
                     seed: seedPhrase,
                     createdAt: new Date().toISOString()
                 };
-                saveWallet();
+                await saveWallet();
+                isWalletUnlocked = true;
                 showScreen('dashboard');
                 updateBalance();
-                showAlert('✅ Wallet imported successfully!', 'success');
+                showAlert('✅ Wallet imported and password-protected!', 'success');
             } catch (err) {
                 showAlert('❌ Import failed: ' + err.message, 'danger');
             }
         }
 
-        function saveWallet() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(wallet));
+        async function saveWallet() {
+            if (!walletPassword) {
+                showAlert('❌ Password required', 'danger');
+                return;
+            }
+            const encrypted = await encryptWallet(wallet, walletPassword);
+            if (encrypted) {
+                localStorage.setItem(ENCRYPTED_KEY, encrypted);
+                localStorage.removeItem(STORAGE_KEY); // Remove unencrypted version
+            }
         }
 
         function loadWallet() {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                wallet = JSON.parse(stored);
-                showScreen('dashboard');
-                updateBalance();
+            const encrypted = localStorage.getItem(ENCRYPTED_KEY);
+            if (encrypted) {
+                showScreen('unlock');
+            } else {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    wallet = JSON.parse(stored);
+                    showScreen('dashboard');
+                    updateBalance();
+                }
             }
         }
+
+        document.getElementById('unlockBtn').addEventListener('click', async () => {
+            const password = document.getElementById('unlockPassword').value;
+            if (!password) {
+                showAlert('❌ Enter your password', 'danger');
+                return;
+            }
+
+            const encrypted = localStorage.getItem(ENCRYPTED_KEY);
+            if (!encrypted) {
+                showAlert('❌ Wallet not found', 'danger');
+                return;
+            }
+
+            wallet = await decryptWallet(encrypted, password);
+            if (wallet) {
+                walletPassword = password;
+                isWalletUnlocked = true;
+                document.getElementById('unlockPassword').value = '';
+                showScreen('dashboard');
+                updateBalance();
+                showAlert('✅ Wallet unlocked!', 'success');
+            }
+        });
+
+        document.getElementById('resetWalletLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            if (confirm('⚠️ This will delete your wallet permanently! Make sure you have a backup seed phrase.')) {
+                localStorage.removeItem(ENCRYPTED_KEY);
+                localStorage.removeItem(STORAGE_KEY);
+                wallet = null;
+                walletPassword = null;
+                isWalletUnlocked = false;
+                showScreen('welcome');
+                showAlert('✅ Wallet deleted', 'success');
+            }
+        });
 
         async function updateBalance() {
             if (!wallet) return;
@@ -762,12 +999,57 @@
 
         document.getElementById('changeAddressBtn').addEventListener('click', createNewWallet);
 
+        document.getElementById('changePasswordBtn').addEventListener('click', () => {
+            document.getElementById('passwordModal').classList.add('active');
+        });
+
+        document.getElementById('changePasswordConfirmBtn').addEventListener('click', async () => {
+            const current = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmNewPassword').value;
+
+            if (!current || !newPass || !confirm) {
+                showAlert('❌ Fill all fields', 'danger');
+                return;
+            }
+
+            if (current !== walletPassword) {
+                showAlert('❌ Current password is incorrect', 'danger');
+                return;
+            }
+
+            if (newPass.length < 8) {
+                showAlert('❌ New password must be at least 8 characters', 'danger');
+                return;
+            }
+
+            if (newPass !== confirm) {
+                showAlert('❌ Passwords do not match', 'danger');
+                return;
+            }
+
+            walletPassword = newPass;
+            await saveWallet();
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+            document.getElementById('passwordModal').classList.remove('active');
+            showAlert('✅ Password changed successfully!', 'success');
+        });
+
+        document.getElementById('closePasswordModalBtn').addEventListener('click', () => {
+            document.getElementById('passwordModal').classList.remove('active');
+        });
+
         document.getElementById('resetWalletBtn').addEventListener('click', () => {
-            if (confirm('⚠️ This will delete your wallet. Make sure you have a backup!')) {
+            if (confirm('⚠️ This will permanently delete your wallet! Make sure you have a backup seed phrase.')) {
                 localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem(ENCRYPTED_KEY);
                 wallet = null;
+                walletPassword = null;
+                isWalletUnlocked = false;
                 showScreen('welcome');
-                showAlert('✅ Wallet reset', 'success');
+                showAlert('✅ Wallet deleted', 'success');
             }
         });
 
