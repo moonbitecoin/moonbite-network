@@ -1,4 +1,584 @@
 {% extends "base.html" %}
+{% block body_class %}zeldman-home{% endblock %}
+{% block title %}MoonBite — Fair Launch Cryptocurrency{% endblock %}
+{% block meta_description %}A peer-to-peer cryptocurrency with no premine, no ICO, no shortcuts. Mine your first block in under a minute.{% endblock %}
+{% block nav_active %}home{% endblock %}
+
+{% block head_extra %}
+<style>
+  /* Zeldman: Content-first, typography-driven, elegant minimalism */
+
+  .zeldman-home {
+    background: #fafaf8;
+    color: #1a1a18;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  /* Accent color: subtle purple for links and highlights */
+  :root {
+    --accent: #7c3aed;
+    --text-light: #6b6b68;
+    --border: #e5e5e0;
+    --bg-card: #fefffe;
+  }
+
+  /* Typography: generous hierarchy and whitespace */
+  h1 {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin: 2rem 0 1rem 0;
+    letter-spacing: -0.02em;
+  }
+
+  h2 {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 2.5rem 0 1.5rem 0;
+    letter-spacing: -0.015em;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 1.5rem 0 0.75rem 0;
+  }
+
+  p {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-light);
+  }
+
+  p + p {
+    margin-top: 1.5rem;
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+    transition: opacity 0.2s ease;
+  }
+
+  a:hover {
+    opacity: 0.7;
+  }
+
+  /* Hero: simple, elegant, scannable */
+  .zeldman-hero {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 6rem 2rem;
+    text-align: center;
+  }
+
+  .zeldman-hero h1 {
+    font-weight: 800;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .zeldman-hero .subtitle {
+    font-size: 1.25rem;
+    color: var(--text-light);
+    margin: 1.5rem 0 3rem 0;
+    font-weight: 400;
+  }
+
+  /* CTA buttons: restrained, clear */
+  .zeldman-cta-group {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 4rem;
+  }
+
+  .zeldman-btn {
+    padding: 0.875rem 2rem;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s ease;
+    letter-spacing: 0.3px;
+  }
+
+  .zeldman-btn:hover {
+    background: #6d28d9;
+    transform: translateY(-1px);
+  }
+
+  .zeldman-btn-secondary {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+
+  .zeldman-btn-secondary:hover {
+    background: var(--accent);
+    color: white;
+  }
+
+  /* Stats: clean grid, no flourish */
+  .zeldman-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 4rem auto;
+    padding: 0 2rem;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+
+  .zeldman-stat {
+    text-align: center;
+  }
+
+  .zeldman-stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+    font-family: 'Courier New', monospace;
+  }
+
+  .zeldman-stat-label {
+    font-size: 0.875rem;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+
+  /* Main sections: generous padding, max-width for reading */
+  .zeldman-section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+  }
+
+  .zeldman-section h2 {
+    margin-top: 0;
+  }
+
+  /* Feature list: simple, readable */
+  .zeldman-features {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0;
+  }
+
+  .zeldman-features li {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .zeldman-features li:last-child {
+    border-bottom: none;
+  }
+
+  .zeldman-features strong {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Timeline: elegant, minimal */
+  .zeldman-timeline {
+    margin: 3rem 0;
+  }
+
+  .zeldman-timeline-item {
+    padding: 2rem 0;
+    padding-left: 3rem;
+    position: relative;
+    border-left: 1px solid var(--border);
+    margin-left: 1rem;
+  }
+
+  .zeldman-timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -0.5rem;
+    top: 2rem;
+    width: 1rem;
+    height: 1rem;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+
+  .zeldman-timeline-date {
+    font-size: 0.875rem;
+    color: var(--text-light);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+
+  .zeldman-timeline-title {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .zeldman-timeline-desc {
+    color: var(--text-light);
+    font-size: 0.95rem;
+  }
+
+  /* Leaderboard: tables done right */
+  .zeldman-leaderboard {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2rem 0;
+  }
+
+  .zeldman-leaderboard th {
+    text-align: left;
+    padding: 1rem 0;
+    border-bottom: 2px solid var(--border);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    color: var(--text-light);
+  }
+
+  .zeldman-leaderboard td {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
+  }
+
+  .zeldman-leaderboard tr:hover {
+    background: rgba(124, 58, 237, 0.05);
+  }
+
+  .zeldman-rank-1 { font-weight: 800; color: var(--accent); }
+
+  /* Call-to-action box: subtle emphasis */
+  .zeldman-callout {
+    background: var(--bg-card);
+    border-left: 4px solid var(--accent);
+    padding: 2rem;
+    margin: 2rem 0;
+    border-radius: 0.25rem;
+  }
+
+  .zeldman-callout h3 {
+    margin-top: 0;
+  }
+
+  /* Trust badges: simple list */
+  .zeldman-trust {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    margin: 3rem 0;
+  }
+
+  .zeldman-trust-item {
+    text-align: center;
+  }
+
+  .zeldman-trust-item strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+  }
+
+  .zeldman-trust-item p {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin: 0;
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .zeldman-hero {
+      padding: 3rem 1.5rem;
+    }
+
+    .zeldman-section {
+      padding: 2rem 1.5rem;
+    }
+
+    .zeldman-stats {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .zeldman-cta-group {
+      flex-direction: column;
+    }
+
+    .zeldman-btn {
+      width: 100%;
+      text-align: center;
+    }
+
+    .zeldman-timeline-item {
+      padding-left: 1.5rem;
+      margin-left: 0;
+    }
+  }
+
+  /* Subtle animations */
+  @media (prefers-reduced-motion: no-preference) {
+    a {
+      transition: opacity 0.2s ease;
+    }
+
+    .zeldman-btn {
+      transition: all 0.2s ease;
+    }
+  }
+
+  /* Respect dark mode preferences */
+  @media (prefers-color-scheme: dark) {
+    .zeldman-home {
+      background: #1a1a18;
+      color: #f5f5f3;
+    }
+
+    .zeldman-home p {
+      color: #b0b0ab;
+    }
+
+    .zeldman-leaderboard tr:hover {
+      background: rgba(124, 58, 237, 0.1);
+    }
+
+    .zeldman-callout {
+      background: #2a2a28;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero: Clear value proposition -->
+<section class="zeldman-hero">
+  <h1>Mine the Moon</h1>
+  <p class="subtitle">A peer-to-peer cryptocurrency with no premine, no ICO, no shortcuts. Mine your first block in under a minute.</p>
+  <div class="zeldman-cta-group">
+    <a href="/mining" class="zeldman-btn">Start Mining</a>
+    <a href="/wallet" class="zeldman-btn zeldman-btn-secondary">Get Wallet</a>
+  </div>
+</section>
+
+<!-- Live stats: Plain numbers, real data -->
+<section class="zeldman-stats">
+  <div class="zeldman-stat">
+    <div class="zeldman-stat-number" id="stat-height">0</div>
+    <div class="zeldman-stat-label">Blocks Mined</div>
+  </div>
+  <div class="zeldman-stat">
+    <div class="zeldman-stat-number" id="stat-miners">0</div>
+    <div class="zeldman-stat-label">Active Miners</div>
+  </div>
+  <div class="zeldman-stat">
+    <div class="zeldman-stat-number" id="stat-difficulty">0</div>
+    <div class="zeldman-stat-label">Difficulty</div>
+  </div>
+  <div class="zeldman-stat">
+    <div class="zeldman-stat-number" id="stat-mbite">0</div>
+    <div class="zeldman-stat-label">MBITE in Circulation</div>
+  </div>
+</section>
+
+<!-- What is MoonBite? The story -->
+<section class="zeldman-section">
+  <h2>What is MoonBite?</h2>
+  <p>MoonBite is a Litecoin fork designed for absolute fairness. It has no premine, no ICO, no venture capital, and no founders' allocation. The first block was mined on the same terms as every block that follows: 50 MBITE to whoever secures the network.</p>
+  <p>In a space where nearly every cryptocurrency project involves some form of founder advantage—whether through mining rewards reserved in advance, token allocation, or exchange listings that benefit insiders—MoonBite offers something simpler: a network where everyone has the same opportunity from day one.</p>
+  <p>You don't buy MBITE. You mine it. You don't trust the founders. You trust mathematics.</p>
+</section>
+
+<!-- Why mine -->
+<section class="zeldman-section">
+  <h2>Why Mine MoonBite?</h2>
+  <ul class="zeldman-features">
+    <li>
+      <strong>Your coins go directly to your wallet.</strong>
+      <p>No account, no intermediary, no middleman. MBITE arrives in the address you control, on the blockchain you can verify. You own your wealth.</p>
+    </li>
+    <li>
+      <strong>You're not gambling on an exchange listing.</strong>
+      <p>The value of MBITE emerges naturally from supply and demand. It's not dependent on venture capitalists deciding when to sell or a marketing team hyping adoption.</p>
+    </li>
+    <li>
+      <strong>Mining is proof of early participation.</strong>
+      <p>Your mining receipt shows the block you secured, the timestamp, the block hash. It's verifiable. It's real. You can share #MinedMyFirstBlock knowing it's cryptographic fact, not speculation.</p>
+    </li>
+    <li>
+      <strong>You're contributing to network security.</strong>
+      <p>Every block you mine makes MoonBite stronger and more decentralized. The network's consensus depends on the miners who run it.</p>
+    </li>
+    <li>
+      <strong>The math doesn't change.</strong>
+      <p>50 MBITE per block. Difficulty auto-adjusts every 2016 blocks. Halving every 700,000 blocks. These rules are immutable. Founders can't dilute the supply. The network can't be stopped.</p>
+    </li>
+  </ul>
+</section>
+
+<!-- The leaderboard: Who's mining -->
+<section class="zeldman-section">
+  <h2>Top Miners</h2>
+  <p>These miners are securing the network right now. First place changes daily—it's not a ranking, it's a leaderboard of current activity.</p>
+  <table class="zeldman-leaderboard">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Address</th>
+        <th>Blocks</th>
+        <th>MBITE</th>
+      </tr>
+    </thead>
+    <tbody id="leaderboard-tbody">
+      <tr>
+        <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-light);">Loading leaderboard…</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="text-align: center;"><a href="/leaderboard">View full leaderboard</a></p>
+</section>
+
+<!-- The roadmap: What's next -->
+<section class="zeldman-section">
+  <h2>What Comes Next</h2>
+  <p>MoonBite's path is straightforward. There are no surprises, no pivots, no secret phases. Here's what we're building:</p>
+
+  <div class="zeldman-timeline">
+    <div class="zeldman-timeline-item">
+      <div class="zeldman-timeline-date">Now → Aug 2026</div>
+      <div class="zeldman-timeline-title">Testnet Mining</div>
+      <div class="zeldman-timeline-desc">50,000+ miners are mining real blocks on the testnet. Difficulty adjusts. Blocks arrive every 2.5 minutes. Leaderboards update live. Every block you mine now will be honored on mainnet.</div>
+    </div>
+
+    <div class="zeldman-timeline-item">
+      <div class="zeldman-timeline-date">Q3 2026</div>
+      <div class="zeldman-timeline-title">Mainnet Launch</div>
+      <div class="zeldman-timeline-desc">MoonBite goes live. The same network rules apply. Your testnet holdings are migrated to mainnet. The blockchain is now immutable and fully decentralized.</div>
+    </div>
+
+    <div class="zeldman-timeline-item">
+      <div class="zeldman-timeline-date">Q4 2026</div>
+      <div class="zeldman-timeline-title">Exchange Listings</div>
+      <div class="zeldman-timeline-desc">MBITE gets listed on crypto exchanges. Trading begins. Your mined coins can now be bought and sold. Early miners have real market advantage.</div>
+    </div>
+
+    <div class="zeldman-timeline-item">
+      <div class="zeldman-timeline-date">2027+</div>
+      <div class="zeldman-timeline-title">Adoption</div>
+      <div class="zeldman-timeline-desc">Merchants accept MBITE. Mobile wallets. Multi-chain bridges. MBITE becomes a reference for fair-launch cryptocurrency design.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Why this matters -->
+<section class="zeldman-section">
+  <div class="zeldman-callout">
+    <h3>Why Fair Launch Matters</h3>
+    <p>The crypto industry was built on a promise: decentralization, no middleman, no central authority. But most projects betray that promise from day one with a premine, founder allocation, or ICO that benefits insiders.</p>
+    <p>MoonBite takes the promise seriously. If decentralization is the point, then fairness at launch is non-negotiable. Everyone starts at block zero. The math is transparent. The network can't be gamed.</p>
+  </div>
+</section>
+
+<!-- Trust markers -->
+<section class="zeldman-section">
+  <h2>You Can Verify This</h2>
+  <div class="zeldman-trust">
+    <div class="zeldman-trust-item">
+      <strong>✓ No Premine</strong>
+      <p>Read the code. The genesis block contains no reserved coins. Founders earn MBITE the same way you do: by mining.</p>
+    </div>
+    <div class="zeldman-trust-item">
+      <strong>✓ No ICO</strong>
+      <p>There was no token sale. No venture funding. No private allocation round. Mining is the only way MBITE enters circulation.</p>
+    </div>
+    <div class="zeldman-trust-item">
+      <strong>✓ Open Source</strong>
+      <p>The code is on GitHub. Fork it. Audit it. Run your own node. This is how Bitcoin works. This is how MoonBite works.</p>
+    </div>
+    <div class="zeldman-trust-item">
+      <strong>✓ No Price Promises</strong>
+      <p>We don't predict value. We don't hype adoption. We mine blocks. Market price is determined by willing buyers and sellers.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section class="zeldman-section" style="text-align: center;">
+  <h2>You're Part of the Network Now</h2>
+  <p>Mine a block. Earn MBITE. Own your wealth. Join 50,000+ miners who've already started.</p>
+  <div class="zeldman-cta-group">
+    <a href="/mining" class="zeldman-btn">Start Mining</a>
+    <a href="/explorer" class="zeldman-btn zeldman-btn-secondary">View Blockchain</a>
+  </div>
+</section>
+
+<script>
+  async function loadZeldmanStats() {
+    try {
+      const res = await fetch('/api/mining/status?include=leaderboard');
+      const data = await res.json();
+
+      updateStat('stat-height', data.current_height || 0);
+      updateStat('stat-miners', data.active_jobs || 0);
+      updateStat('stat-difficulty', data.difficulty || 0);
+      updateStat('stat-mbite', Math.floor((data.current_height || 0) * 50));
+
+      if (data.leaderboard && data.leaderboard.length) {
+        const tbody = document.getElementById('leaderboard-tbody');
+        tbody.innerHTML = '';
+        data.leaderboard.slice(0, 10).forEach((miner, i) => {
+          const row = document.createElement('tr');
+          const rankClass = i === 0 ? 'zeldman-rank-1' : '';
+          row.innerHTML = `
+            <td class="${rankClass}"><strong>${i + 1}</strong></td>
+            <td><code>${miner.address.substring(0, 20)}…</code></td>
+            <td>${miner.blocks}</td>
+            <td>${(miner.blocks * 50).toLocaleString()}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+    } catch (error) {
+      console.error('Stats load failed:', error);
+    }
+  }
+
+  function updateStat(id, value) {
+    const elem = document.getElementById(id);
+    if (!elem) return;
+    const start = parseInt(elem.textContent) || 0;
+    const diff = value - start;
+    const steps = 30;
+    let current = 0;
+    const interval = setInterval(() => {
+      current++;
+      elem.textContent = Math.floor(start + (diff * current / steps)).toLocaleString();
+      if (current >= steps) clearInterval(interval);
+    }, 30);
+  }
+
+  loadZeldmanStats();
+  setInterval(loadZeldmanStats, 15000);
+</script>
+{% endblock %}
 {% block body_class %}mb-home-viral{% endblock %}
 {% block title %}MoonBite - Fair Launch Bitcoin Fork | Mine Your First Block{% endblock %}
 {% block meta_description %}Mine your first MBITE today. No ICO. No premine. 100% fair launch. Join 50K+ miners earning real blocks on testnet.{% endblock %}
