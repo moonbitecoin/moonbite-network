@@ -1413,6 +1413,7 @@ def api_mining_stop():
 
 
 @app.route("/api/mining/global-stats", methods=["GET"])
+@rate_limit(30, 60)  # Allow 30 requests per minute for stats updates
 def api_mining_global_stats():
     """Get global mining statistics for viral display."""
     try:
@@ -1443,6 +1444,7 @@ def api_mining_global_stats():
 
 
 @app.route("/api/mining/share/<job_id>", methods=["GET"])
+@rate_limit(30, 60)  # Allow receipt generation requests
 def api_mining_share(job_id):
     """Generate shareable receipt data for a completed mining job.
 
