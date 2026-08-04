@@ -664,6 +664,7 @@ def wallet_service_worker():
 @app.route("/mining")
 def mining_page():
     """Render the mining page."""
+    # August 4, 2026 - Testing deployment
     return render_template("mining.html")
 
 
