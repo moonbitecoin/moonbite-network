@@ -87,8 +87,8 @@
             });
             event.target.classList.add('active');
 
-            // Fetch leaderboard
-            const response = await fetch(`/api/mining/leaderboard?period=${period}&limit=100`);
+            // Fetch leaderboard from extended mining/status endpoint
+            const response = await fetch(`/api/mining/status?include=leaderboard`);
             const data = await response.json();
 
             if (data.status === 'success') {

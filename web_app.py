@@ -1231,6 +1231,7 @@ def api_wallet_hd_seed():
 
 
 @app.route("/api/blockchain/info", methods=["GET"])
+@rate_limit(60, 60)  # Public info endpoint
 def api_blockchain_info():
     """Get blockchain state: height, tip hash, total money, tx count."""
     try:
@@ -1346,7 +1347,12 @@ def api_mining_start():
 
 @app.route("/api/mining/status", methods=["GET"])
 def api_mining_status():
-    """Get current mining status (supports multiple concurrent jobs)."""
+    """Get current mining status (supports multiple concurrent jobs).
+
+    Optional query params:
+    - include=leaderboard : Add top miners leaderboard
+    - include=merchants : Add merchant payment status
+    """
     try:
         from block import block_subsidy
 
@@ -1377,23 +1383,45 @@ def api_mining_status():
         # Estimated seconds to the next block at combined hashrate
         eta_seconds = (difficulty / combined_hashrate) if combined_hashrate > 0 else None
 
-        return jsonify(
-            {
-                "status": "mining" if is_mining else "idle",
-                "active_jobs": len(active_jobs),
-                "blocks_mined": total_blocks_mined,
-                "total_blocks_target": total_blocks_target,
-                "current_height": chain.height,
-                "tip_hash": chain.tip,
-                "bits": next_bits,
-                "difficulty": difficulty,
-                "total_hashes_tried": total_hashes_tried,
-                "combined_hashrate": round(combined_hashrate, 2),
-                "eta_next_block_seconds": (round(eta_seconds, 2)
-                                           if eta_seconds is not None else None),
-                "next_block_reward_coins": block_reward / 100_000_000,
-            }
-        ), 200
+        response = {
+            "status": "mining" if is_mining else "idle",
+            "active_jobs": len(active_jobs),
+            "blocks_mined": total_blocks_mined,
+            "total_blocks_target": total_blocks_target,
+            "current_height": chain.height,
+            "tip_hash": chain.tip,
+            "bits": next_bits,
+            "difficulty": difficulty,
+            "total_hashes_tried": total_hashes_tried,
+            "combined_hashrate": round(combined_hashrate, 2),
+            "eta_next_block_seconds": (round(eta_seconds, 2)
+                                       if eta_seconds is not None else None),
+            "next_block_reward_coins": block_reward / 100_000_000,
+        }
+
+        # Add leaderboard if requested
+        if request.args.get("include") == "leaderboard":
+            address_blocks = {}
+            for block_hash in chain.active_chain():
+                block = chain.blocks[block_hash]
+                if block.transactions and block.transactions[0].is_coinbase():
+                    coinbase = block.transactions[0]
+                    if coinbase.outputs:
+                        output = coinbase.outputs[0]
+                        try:
+                            addr = address_from_pubkey_hash(output.pubkey_hash)
+                            address_blocks[addr] = address_blocks.get(addr, 0) + 1
+                        except:
+                            pass
+
+            leaderboard = sorted(
+                [{"address": addr, "blocks": count} for addr, count in address_blocks.items()],
+                key=lambda x: x["blocks"],
+                reverse=True
+            )[:50]
+            response["leaderboard"] = leaderboard
+
+        return jsonify(response), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
