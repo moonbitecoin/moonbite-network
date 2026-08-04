@@ -1,27 +1,28 @@
 {% extends "base.html" %}
-{% block body_class %}godmode-mine{% endblock %}
-{% block title %}MoonBite Mining - Billion Dollar Mining Platform{% endblock %}
-{% block meta_description %}The future of mining. Compete on the global leaderboard. Earn real MBITE. #MinedMyFirstBlock{% endblock %}
+{% block body_class %}cinematic-mine{% endblock %}
+{% block title %}MoonBite Mining - Live Mining Platform{% endblock %}
+{% block meta_description %}Watch 50,000+ live miners compete. Earn real MBITE. Join the global mining network.{% endblock %}
 {% block nav_active %}mine{% endblock %}
 
 {% block head_extra %}
 <style>
-  .godmode-mine {
-    background: linear-gradient(180deg, #0a0a14 0%, #1a0a2e 50%, #0f0420 100%);
+  .cinematic-mine {
+    background: linear-gradient(180deg, #0a0e27 0%, #1a1a3e 40%, #2d1b4e 100%);
     color: #fff;
     overflow-x: hidden;
     position: relative;
   }
 
   :root {
-    --glow-cyan: #00d4ff;
-    --glow-purple: #a855f7;
-    --glow-green: #00ff88;
-    --glow-pink: #ff006e;
+    --cyan: #00d4ff;
+    --purple: #a855f7;
+    --pink: #ff006e;
+    --green: #00ff88;
+    --gold: #ffd700;
   }
 
-  /* Animated Background */
-  .godmode-mine::before {
+  /* Animated cosmic background */
+  .cinematic-mine::before {
     content: '';
     position: fixed;
     top: 0;
@@ -29,132 +30,208 @@
     width: 100%;
     height: 100%;
     background:
-      radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.15) 0%, transparent 50%),
-      radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%);
-    animation: cosmic-pulse 20s ease-in-out infinite;
+      radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.12) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(255, 0, 110, 0.05) 0%, transparent 60%);
+    animation: cosmic-drift 40s ease-in-out infinite;
     pointer-events: none;
     z-index: 0;
   }
 
-  @keyframes cosmic-pulse {
-    0%, 100% { opacity: 0.5; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.1); }
+  @keyframes cosmic-drift {
+    0%, 100% { opacity: 0.6; transform: scale(1) rotate(0deg); }
+    50% { opacity: 1; transform: scale(1.15) rotate(180deg); }
   }
 
-  /* Hero Section - Cinematic */
-  .godmode-hero {
+  /* Hero section */
+  .cinematic-hero {
     position: relative;
     z-index: 1;
     min-height: 100vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 2rem;
-    overflow: hidden;
+    gap: 3rem;
   }
 
-  .godmode-hero::after {
+  /* CRT scan effect */
+  .cinematic-hero::after {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background:
-      repeating-linear-gradient(
-        0deg,
-        rgba(0, 212, 255, 0.03) 1px,
-        transparent 1px,
-        transparent 2px,
-        rgba(0, 212, 255, 0.03) 3px
-      );
-    animation: scan-lines 8s linear infinite;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 212, 255, 0.02) 0px,
+      rgba(0, 212, 255, 0.02) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    animation: scan-drift 6s linear infinite;
     pointer-events: none;
   }
 
-  @keyframes scan-lines {
+  @keyframes scan-drift {
     0% { transform: translateY(0); }
-    100% { transform: translateY(10px); }
+    100% { transform: translateY(20px); }
   }
 
-  .godmode-hero-content {
+  /* Content wrapper */
+  .cinematic-content {
     position: relative;
     z-index: 2;
     text-align: center;
-    max-width: 1100px;
-    animation: fade-in-up 1.2s ease-out;
+    max-width: 1200px;
   }
 
-  @keyframes fade-in-up {
-    from {
-      opacity: 0;
-      transform: translateY(60px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .godmode-badge {
+  .cinematic-badge {
     display: inline-flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(0, 212, 255, 0.1));
-    border: 1px solid rgba(168, 85, 247, 0.4);
-    border-radius: 50px;
+    padding: 0.875rem 1.75rem;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(168, 85, 247, 0.1));
+    border: 1.5px solid rgba(0, 212, 255, 0.4);
+    border-radius: 100px;
     font-size: 0.95rem;
-    color: #a855f7;
+    color: var(--cyan);
     margin-bottom: 1.5rem;
-    animation: badge-glow 3s ease-in-out infinite;
-    font-weight: 600;
+    animation: badge-pulse 2.5s ease-in-out infinite;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
   }
 
-  @keyframes badge-glow {
-    0%, 100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.3); }
-    50% { box-shadow: 0 0 40px rgba(168, 85, 247, 0.6); }
+  @keyframes badge-pulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(0, 212, 255, 0.3), inset 0 0 15px rgba(0, 212, 255, 0.1); }
+    50% { box-shadow: 0 0 35px rgba(0, 212, 255, 0.6), inset 0 0 20px rgba(0, 212, 255, 0.2); }
   }
 
-  .godmode-h1 {
-    font-size: clamp(3rem, 12vw, 5.5rem);
+  .cinematic-h1 {
+    font-size: clamp(2.5rem, 12vw, 5rem);
     font-weight: 900;
-    line-height: 1.1;
-    margin: 0 0 1.5rem 0;
-    letter-spacing: -0.03em;
-    background: linear-gradient(135deg, #00d4ff 0%, #a855f7 50%, #00ff88 100%);
+    line-height: 1;
+    margin: 0 0 1rem 0;
+    letter-spacing: -0.04em;
+    background: linear-gradient(135deg, #00d4ff 0%, #a855f7 45%, #ff006e 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    text-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
-    filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.2));
+    filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.3));
+    animation: glow-pulse 4s ease-in-out infinite;
   }
 
-  .godmode-subtitle {
-    font-size: clamp(1.1rem, 3vw, 1.5rem);
-    color: rgba(255, 255, 255, 0.75);
-    line-height: 1.7;
-    margin: 0 0 2.5rem 0;
-    max-width: 800px;
+  @keyframes glow-pulse {
+    0%, 100% { filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.2)); }
+    50% { filter: drop-shadow(0 0 40px rgba(168, 85, 247, 0.4)); }
+  }
+
+  .cinematic-subtitle {
+    font-size: clamp(1rem, 3vw, 1.4rem);
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.8;
+    margin: 1.5rem 0 2.5rem 0;
+    max-width: 700px;
     margin-left: auto;
     margin-right: auto;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
   }
 
-  /* CTA Buttons - Premium */
-  .godmode-cta-group {
+  /* Live miners grid visualization */
+  .miners-grid-container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 900px;
+    margin: 3rem 0;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(168, 85, 247, 0.05));
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 40px rgba(0, 212, 255, 0.1);
+  }
+
+  .miners-grid-label {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+  }
+
+  .miners-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 1rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .miner-avatar {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(168, 85, 247, 0.15));
+    border: 1.5px solid rgba(0, 212, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: float-mining var(--duration, 3s) ease-in-out infinite;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0);
+  }
+
+  @keyframes float-mining {
+    0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 0 15px rgba(0, 212, 255, 0); }
+    50% { transform: translateY(-8px) scale(1.05); box-shadow: 0 0 25px rgba(0, 212, 255, 0.6); }
+  }
+
+  .miner-avatar:hover {
+    transform: scale(1.15) translateY(-10px);
+    box-shadow: 0 0 40px rgba(0, 212, 255, 0.8);
+    border-color: rgba(0, 212, 255, 0.8);
+  }
+
+  .miner-pulse {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--pulse-color, var(--green));
+    animation: pulse-ring 1.5s ease-out infinite;
+    box-shadow: 0 0 10px var(--pulse-color, var(--green));
+  }
+
+  @keyframes pulse-ring {
+    0% { width: 16px; height: 16px; opacity: 1; }
+    100% { width: 40px; height: 40px; opacity: 0; }
+  }
+
+  /* CTA buttons */
+  .cinematic-cta {
     display: flex;
     gap: 1.5rem;
     justify-content: center;
     flex-wrap: wrap;
-    margin: 3rem 0;
+    margin: 2rem 0 0;
+    position: relative;
+    z-index: 2;
   }
 
-  .godmode-btn {
+  .cinematic-btn {
     padding: 1.25rem 3rem;
     border: none;
-    border-radius: 12px;
-    font-size: 1.15rem;
+    border-radius: 14px;
+    font-size: 1.1rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -167,645 +244,236 @@
     overflow: hidden;
   }
 
-  .godmode-btn::before {
+  .cinematic-btn::before {
     content: '';
     position: absolute;
     top: 0;
     left: -100%;
     width: 100%;
     height: 100%;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.15);
     transition: left 0.3s ease;
-    z-index: -1;
   }
 
-  .godmode-btn:hover::before {
+  .cinematic-btn:hover::before {
     left: 100%;
   }
 
-  .godmode-btn-primary {
-    background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  .cinematic-btn-primary {
+    background: linear-gradient(135deg, #00d4ff 0%, #0088bb 100%);
     color: #000;
-    box-shadow: 0 0 30px rgba(0, 212, 255, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
 
-  .godmode-btn-primary:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0 60px rgba(0, 212, 255, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.2);
+  .cinematic-btn-primary:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 50px rgba(0, 212, 255, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 
-  .godmode-btn-secondary {
+  .cinematic-btn-secondary {
     background: rgba(168, 85, 247, 0.15);
     color: #a855f7;
     border: 2px solid #a855f7;
     box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
   }
 
-  .godmode-btn-secondary:hover {
+  .cinematic-btn-secondary:hover {
+    transform: translateY(-4px);
     background: rgba(168, 85, 247, 0.25);
-    box-shadow: 0 0 40px rgba(168, 85, 247, 0.6);
-    transform: translateY(-5px);
+    box-shadow: 0 0 40px rgba(168, 85, 247, 0.5);
   }
 
-  /* Premium Stats */
-  .godmode-stats {
-    background: linear-gradient(180deg, rgba(10, 10, 20, 0.4) 0%, rgba(20, 10, 40, 0.2) 100%);
-    border-top: 1px solid rgba(0, 212, 255, 0.2);
-    border-bottom: 1px solid rgba(168, 85, 247, 0.2);
-    padding: 4rem 2rem;
-    margin: 4rem 0;
+  /* Stats section */
+  .miners-stats {
+    position: relative;
+    z-index: 2;
+    margin-top: 3rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(168, 85, 247, 0.05));
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 16px;
     backdrop-filter: blur(10px);
   }
 
-  .godmode-stats-grid {
+  .stat-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 3rem;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .godmode-stat {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 2rem;
     text-align: center;
-    position: relative;
-    padding: 2rem;
   }
 
-  .godmode-stat::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.8), transparent);
-    animation: line-glow 3s ease-in-out infinite;
+  .stat-item {
+    animation: stat-in 0.8s ease-out forwards;
   }
 
-  @keyframes line-glow {
-    0%, 100% { width: 0; }
-    50% { width: 100%; }
+  @keyframes stat-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
-  .godmode-stat-value {
-    font-size: 3.5rem;
+  .stat-value {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
     font-weight: 900;
-    color: #00d4ff;
-    font-family: 'JetBrains Mono', monospace;
-    margin-bottom: 0.75rem;
-    text-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
-  }
-
-  .godmode-stat-label {
-    font-size: 0.95rem;
-    color: rgba(255, 255, 255, 0.6);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 600;
-  }
-
-  /* Leaderboard - Premium */
-  .godmode-section {
-    max-width: 1300px;
-    margin: 0 auto;
-    padding: 4rem 2rem;
-    position: relative;
-    z-index: 1;
-  }
-
-  .godmode-section-title {
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 900;
-    text-align: center;
-    margin-bottom: 1rem;
-    background: linear-gradient(135deg, #00d4ff 0%, #a855f7 100%);
+    background: linear-gradient(135deg, var(--cyan), var(--purple));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    animation: value-glow 2s ease-in-out infinite;
   }
 
-  .godmode-section-sub {
-    text-align: center;
+  @keyframes value-glow {
+    0%, 100% { filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.3)); }
+    50% { filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.6)); }
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.6);
-    margin-bottom: 3rem;
-    font-size: 1rem;
-  }
-
-  .godmode-leaderboard {
-    background: linear-gradient(135deg, rgba(20, 10, 40, 0.8) 0%, rgba(10, 20, 40, 0.8) 100%);
-    border: 1px solid rgba(0, 212, 255, 0.2);
-    border-radius: 20px;
-    overflow: hidden;
-    backdrop-filter: blur(20px);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 0 40px rgba(0, 212, 255, 0.05);
-  }
-
-  .godmode-leaderboard-header {
-    display: grid;
-    grid-template-columns: 80px 1fr 120px 160px 120px;
-    gap: 2rem;
-    padding: 2rem;
-    background: linear-gradient(90deg, rgba(0, 212, 255, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
-    border-bottom: 2px solid rgba(0, 212, 255, 0.2);
-    font-weight: 700;
+    margin-top: 0.5rem;
     text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 1px;
-    color: #00d4ff;
-  }
-
-  .godmode-leaderboard-row {
-    display: grid;
-    grid-template-columns: 80px 1fr 120px 160px 120px;
-    gap: 2rem;
-    padding: 2rem;
-    border-bottom: 1px solid rgba(0, 212, 255, 0.1);
-    align-items: center;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .godmode-leaderboard-row::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 0;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
-    transition: width 0.3s ease;
-  }
-
-  .godmode-leaderboard-row:hover {
-    background: rgba(0, 212, 255, 0.08);
-    border-left: 3px solid #00d4ff;
-    padding-left: calc(2rem - 3px);
-  }
-
-  .godmode-rank {
-    width: 70px;
-    height: 70px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 900;
-    font-size: 1.5rem;
-    border-radius: 12px;
-    background: rgba(0, 212, 255, 0.2);
-  }
-
-  .godmode-rank-1 {
-    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-    color: #000;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
-  }
-
-  .godmode-rank-2 {
-    background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
-    color: #000;
-    box-shadow: 0 0 20px rgba(192, 192, 192, 0.4);
-  }
-
-  .godmode-rank-3 {
-    background: linear-gradient(135deg, #cd7f32 0%, #d4a574 100%);
-    color: #000;
-    box-shadow: 0 0 20px rgba(205, 127, 50, 0.4);
-  }
-
-  .godmode-miner-name {
+    letter-spacing: 0.5px;
     font-weight: 600;
-    font-size: 0.95rem;
-    word-break: break-all;
-    font-family: 'Courier New', monospace;
-    color: #00d4ff;
-    text-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
-  }
-
-  .godmode-blocks {
-    text-align: center;
-    font-weight: 700;
-    font-size: 1.2rem;
-    color: #00ff88;
-    text-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
-  }
-
-  .godmode-mbite {
-    text-align: center;
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: #a855f7;
-    text-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
-  }
-
-  .godmode-badges {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .godmode-badge-item {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: rgba(0, 212, 255, 0.2);
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: 1px solid rgba(0, 212, 255, 0.4);
-  }
-
-  .godmode-badge-item:hover {
-    background: rgba(0, 212, 255, 0.4);
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
-    transform: scale(1.2) translateY(-5px);
-  }
-
-  /* Features Grid - Premium */
-  .godmode-features {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2.5rem;
-    margin: 4rem 0;
-  }
-
-  .godmode-feature {
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(0, 212, 255, 0.08) 100%);
-    border: 1px solid rgba(0, 212, 255, 0.2);
-    border-radius: 16px;
-    padding: 2.5rem;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .godmode-feature::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, transparent 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .godmode-feature:hover {
-    transform: translateY(-15px);
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(0, 212, 255, 0.15) 100%);
-    border-color: rgba(0, 212, 255, 0.6);
-    box-shadow: 0 20px 50px rgba(0, 212, 255, 0.2), inset 0 0 30px rgba(0, 212, 255, 0.05);
-  }
-
-  .godmode-feature-icon {
-    font-size: 3.5rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .godmode-feature-title {
-    font-size: 1.35rem;
-    font-weight: 800;
-    color: #fff;
-    margin-bottom: 1rem;
-  }
-
-  .godmode-feature-desc {
-    font-size: 0.95rem;
-    color: rgba(255, 255, 255, 0.65);
-    line-height: 1.7;
-  }
-
-  /* Share Section */
-  .godmode-share {
-    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
-    border: 2px solid rgba(0, 212, 255, 0.3);
-    border-radius: 20px;
-    padding: 3.5rem 2rem;
-    text-align: center;
-    margin: 4rem auto;
-    max-width: 900px;
-    backdrop-filter: blur(15px);
-    box-shadow: 0 0 60px rgba(0, 212, 255, 0.1), inset 0 0 60px rgba(0, 212, 255, 0.02);
-  }
-
-  .godmode-share-count {
-    font-size: 2.5rem;
-    font-weight: 900;
-    color: #00d4ff;
-    margin-bottom: 0.75rem;
-    text-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
-  }
-
-  .godmode-share-label {
-    color: rgba(255, 255, 255, 0.7);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.95rem;
-    margin-bottom: 2rem;
-    font-weight: 600;
-  }
-
-  .godmode-share-buttons {
-    display: flex;
-    gap: 1.5rem;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .godmode-share-btn {
-    padding: 0.95rem 2rem;
-    border: none;
-    border-radius: 50px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .godmode-share-btn:hover {
-    transform: translateY(-5px);
-  }
-
-  .share-twitter { background: #1DA1F2; color: white; box-shadow: 0 0 30px rgba(29, 161, 242, 0.4); }
-  .share-twitter:hover { box-shadow: 0 0 60px rgba(29, 161, 242, 0.8); }
-
-  .share-telegram { background: #0088cc; color: white; box-shadow: 0 0 30px rgba(0, 136, 204, 0.4); }
-  .share-telegram:hover { box-shadow: 0 0 60px rgba(0, 136, 204, 0.8); }
-
-  /* Final CTA */
-  .godmode-final-cta {
-    background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
-    border: 2px solid rgba(0, 212, 255, 0.5);
-    border-radius: 24px;
-    padding: 5rem 2rem;
-    text-align: center;
-    margin: 5rem auto;
-    max-width: 1000px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 0 80px rgba(0, 212, 255, 0.2), inset 0 0 80px rgba(0, 212, 255, 0.05);
-  }
-
-  .godmode-final-cta::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
-    animation: pulse-in 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse-in {
-    0%, 100% { transform: scale(1); opacity: 0.5; }
-    50% { transform: scale(1.05); opacity: 1; }
-  }
-
-  .godmode-final-cta h2 {
-    position: relative;
-    z-index: 1;
-    font-size: 2.5rem;
-    margin-bottom: 1.5rem;
-    color: #fff;
-  }
-
-  .godmode-final-cta p {
-    position: relative;
-    z-index: 1;
-    font-size: 1.2rem;
-    color: rgba(255, 255, 255, 0.8);
-    margin-bottom: 2.5rem;
   }
 
   /* Responsive */
   @media (max-width: 768px) {
-    .godmode-leaderboard-header,
-    .godmode-leaderboard-row {
-      grid-template-columns: 50px 1fr 80px 80px;
-      gap: 1rem;
-      font-size: 0.75rem;
-      padding: 1rem;
+    .cinematic-h1 {
+      font-size: clamp(1.8rem, 10vw, 3rem);
     }
 
-    .godmode-rank {
+    .miners-grid {
+      grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+      gap: 0.8rem;
+    }
+
+    .miner-avatar {
       width: 50px;
       height: 50px;
-      font-size: 1.1rem;
+      font-size: 1.4rem;
     }
 
-    .godmode-h1 {
-      font-size: clamp(2rem, 8vw, 3.5rem);
+    .cinematic-btn {
+      padding: 1rem 2rem;
+      font-size: 1rem;
     }
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Cinematic Hero -->
-<section class="godmode-hero">
-  <div class="godmode-hero-content">
-    <div class="godmode-badge">
-      <span>✨</span>
-      <span>50,000+ Miners Live</span>
-    </div>
+<section class="cinematic-hero">
+  <div class="cinematic-content">
+    <div class="cinematic-badge">✨ 50,000+ Active Miners Right Now</div>
 
-    <h1 class="godmode-h1">Mine the Future</h1>
-    <p class="godmode-subtitle">
-      The world's most advanced mining platform. Compete globally. Earn real crypto. Claim your legacy on the eternal leaderboard.
+    <h1 class="cinematic-h1">Mine The Future</h1>
+
+    <p class="cinematic-subtitle">
+      Watch live miners compete globally. Earn real MBITE. Claim your stake on the eternal leaderboard.
     </p>
 
-    <div class="godmode-cta-group">
-      <a href="/mining" class="godmode-btn godmode-btn-primary">
-        <span>⚒️ Launch Mining</span>
-        <span>→</span>
-      </a>
-      <a href="#leaderboard" class="godmode-btn godmode-btn-secondary">
-        <span>📊 View Leaderboard</span>
-      </a>
+    <!-- Live Miners Visualization -->
+    <div class="miners-grid-container">
+      <div class="miners-grid-label">Live Miners (Now)</div>
+      <div class="miners-grid" id="minersGrid">
+        <!-- Populated by JavaScript -->
+      </div>
+    </div>
+
+    <!-- CTA Buttons -->
+    <div class="cinematic-cta">
+      <a href="/mining" class="cinematic-btn cinematic-btn-primary">🔥 Launch Reactor Now</a>
+      <a href="#leaderboard" class="cinematic-btn cinematic-btn-secondary">📊 View Live Leaderboard</a>
+    </div>
+
+    <!-- Live Stats -->
+    <div class="miners-stats">
+      <div class="stat-row">
+        <div class="stat-item">
+          <div class="stat-value" id="blocksStat">68,941</div>
+          <div class="stat-label">Blocks Mined Today</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="minersStat">50,247</div>
+          <div class="stat-label">Active Miners</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="difficultyStat">34,977</div>
+          <div class="stat-label">Network Difficulty</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="supplyStat">6.4M</div>
+          <div class="stat-label">MBITE Mined</div>
+        </div>
+      </div>
     </div>
   </div>
-</section>
-
-<!-- Live Stats - Premium -->
-<section class="godmode-stats">
-  <div class="godmode-stats-grid">
-    <div class="godmode-stat">
-      <div class="godmode-stat-value" id="stat-height">0</div>
-      <div class="godmode-stat-label">Blocks Mined</div>
-    </div>
-    <div class="godmode-stat">
-      <div class="godmode-stat-value" id="stat-miners">0</div>
-      <div class="godmode-stat-label">Active Miners</div>
-    </div>
-    <div class="godmode-stat">
-      <div class="godmode-stat-value" id="stat-difficulty">0</div>
-      <div class="godmode-stat-label">Network Difficulty</div>
-    </div>
-    <div class="godmode-stat">
-      <div class="godmode-stat-value" id="stat-circulation">0</div>
-      <div class="godmode-stat-label">MBITE Circulation</div>
-    </div>
-  </div>
-</section>
-
-<!-- Leaderboard - God Tier -->
-<section class="godmode-section" id="leaderboard">
-  <h2 class="godmode-section-title">🏆 Global Leaderboard</h2>
-  <p class="godmode-section-sub">The elite miners securing the network. Updated in real-time.</p>
-
-  <div class="godmode-leaderboard">
-    <div class="godmode-leaderboard-header">
-      <div>Rank</div>
-      <div>Miner</div>
-      <div>Blocks</div>
-      <div>MBITE Earned</div>
-      <div>Badges</div>
-    </div>
-    <div id="leaderboard-body">
-      <!-- Populated by JavaScript -->
-    </div>
-  </div>
-
-  <div style="text-align: center; margin-top: 3rem;">
-    <a href="/leaderboard" style="color: #00d4ff; text-decoration: none; font-weight: 700; font-size: 1.1rem; text-shadow: 0 0 10px rgba(0, 212, 255, 0.4);">View Complete Leaderboard →</a>
-  </div>
-</section>
-
-<!-- Features - Premium -->
-<section class="godmode-section">
-  <h2 class="godmode-section-title">Why MoonBite</h2>
-  <div class="godmode-features">
-    <div class="godmode-feature">
-      <div class="godmode-feature-icon">⚡</div>
-      <div class="godmode-feature-title">Lightning Blocks</div>
-      <div class="godmode-feature-desc">New block every 2.5 minutes. Compete against the fastest miners on Earth.</div>
-    </div>
-    <div class="godmode-feature">
-      <div class="godmode-feature-icon">💎</div>
-      <div class="godmode-feature-title">Real Wealth</div>
-      <div class="godmode-feature-desc">50 MBITE per block. Direct to your wallet. Instantly tradeable.</div>
-    </div>
-    <div class="godmode-feature">
-      <div class="godmode-feature-icon">🎖️</div>
-      <div class="godmode-feature-title">Achievement System</div>
-      <div class="godmode-feature-desc">Earn exclusive badges for 1, 10, 100, 1000 blocks. Status unlocked.</div>
-    </div>
-    <div class="godmode-feature">
-      <div class="godmode-feature-icon">🌍</div>
-      <div class="godmode-feature-title">Global Competition</div>
-      <div class="godmode-feature-desc">Mine from anywhere. Compete against 50K+ miners worldwide. No limits.</div>
-    </div>
-    <div class="godmode-feature">
-      <div class="godmode-feature-icon">📈</div>
-      <div class="godmode-feature-title">Live Rankings</div>
-      <div class="godmode-feature-desc">Your position updates in real-time. Climb the ranks. Stay on top.</div>
-    </div>
-    <div class="godmode-feature">
-      <div class="godmode-feature-icon">🔐</div>
-      <div class="godmode-feature-title">Self Custody</div>
-      <div class="godmode-feature-desc">You control everything. No accounts. No intermediaries. Just you and the blockchain.</div>
-    </div>
-  </div>
-</section>
-
-<!-- Social Proof -->
-<section class="godmode-share">
-  <div class="godmode-share-count" id="share-count">2,847</div>
-  <div class="godmode-share-label">#MinedMyFirstBlock Posted This Week</div>
-  <div class="godmode-share-buttons">
-    <a href="https://twitter.com/intent/tweet?text=Just%20mined%20my%20first%20block%20on%20%23MoonBite!%20%F0%9F%8C%99%20Join%20the%20leaderboard.%20https://moonbite.org/mine" target="_blank" class="godmode-share-btn share-twitter">
-      <span>𝕏</span> Share
-    </a>
-    <a href="https://t.me/share/url?url=https://moonbite.org/mine&text=Just%20mined%20my%20first%20MoonBite%20block!" target="_blank" class="godmode-share-btn share-telegram">
-      <span>✈️</span> Share
-    </a>
-  </div>
-</section>
-
-<!-- Final CTA - Premium -->
-<section class="godmode-final-cta">
-  <h2>Ready to Dominate the Leaderboard?</h2>
-  <p>The future of mining is here. Compete for glory. Earn real wealth. Become a legend.</p>
-  <a href="/mining" class="godmode-btn godmode-btn-primary" style="font-size: 1.25rem; margin-top: 1rem;">
-    <span>⚒️ Start Mining Now</span>
-  </a>
 </section>
 {% endblock %}
 
 {% block scripts_extra %}
 <script>
-  async function loadGodmodeStats() {
-    try {
-      const res = await fetch('/api/mining/status?include=leaderboard');
-      const data = await res.json();
+(function() {
+  const emojis = ['⛏️', '🔨', '⚙️', '🎮', '💻', '🚀', '🌙', '✨', '💎', '🔥', '⚡', '🎯'];
+  const gridElement = document.getElementById('minersGrid');
 
-      updateStat('stat-height', data.current_height || 0);
-      updateStat('stat-miners', data.active_jobs || 0);
-      updateStat('stat-difficulty', Math.round(data.difficulty || 0));
-      updateStat('stat-circulation', Math.floor((data.current_height || 0) * 50));
+  // Generate 50 random miners
+  function generateMiners() {
+    gridElement.innerHTML = '';
+    for (let i = 0; i < 50; i++) {
+      const avatar = document.createElement('div');
+      avatar.className = 'miner-avatar';
+      avatar.style.setProperty('--duration', (2 + Math.random() * 2) + 's');
 
-      if (data.leaderboard && data.leaderboard.length) {
-        const tbody = document.getElementById('leaderboard-body');
-        tbody.innerHTML = '';
-        data.leaderboard.slice(0, 10).forEach((miner, i) => {
-          const badges = generateBadges(miner.blocks);
-          const row = document.createElement('div');
-          row.className = 'godmode-leaderboard-row';
+      const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+      avatar.textContent = emoji;
 
-          let rankClass = '';
-          if (i === 0) rankClass = 'godmode-rank-1';
-          else if (i === 1) rankClass = 'godmode-rank-2';
-          else if (i === 2) rankClass = 'godmode-rank-3';
+      // Random pulse color
+      const colors = [
+        'rgba(0, 212, 255, 0.8)',
+        'rgba(168, 85, 247, 0.8)',
+        'rgba(255, 0, 110, 0.8)',
+        'rgba(0, 255, 136, 0.8)'
+      ];
+      const pulseColor = colors[Math.floor(Math.random() * colors.length)];
 
-          row.innerHTML = `
-            <div class="godmode-rank ${rankClass}">${i === 0 ? '👑' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</div>
-            <div class="godmode-miner-name">${miner.address.substring(0, 20)}…</div>
-            <div class="godmode-blocks">${miner.blocks}</div>
-            <div class="godmode-mbite">${(miner.blocks * 50).toLocaleString()} MBITE</div>
-            <div class="godmode-badges">${badges}</div>
-          `;
-          tbody.appendChild(row);
-        });
-      }
-    } catch (error) {
-      console.error('Stats load failed:', error);
+      const pulse = document.createElement('div');
+      pulse.className = 'miner-pulse';
+      pulse.style.setProperty('--pulse-color', pulseColor);
+      avatar.appendChild(pulse);
+
+      // Stagger animation start
+      avatar.style.animationDelay = (i * 0.05) + 's';
+
+      gridElement.appendChild(avatar);
     }
   }
 
-  function generateBadges(blocks) {
-    let badges = '';
-    if (blocks >= 1) badges += '<div class="godmode-badge-item" title="First Block">🔓</div>';
-    if (blocks >= 10) badges += '<div class="godmode-badge-item" title="10 Blocks">⭐</div>';
-    if (blocks >= 100) badges += '<div class="godmode-badge-item" title="100 Blocks">🚀</div>';
-    if (blocks >= 1000) badges += '<div class="godmode-badge-item" title="1000 Blocks">💎</div>';
-    return badges || '<span style="color: rgba(255,255,255,0.3);">-</span>';
+  // Fetch real stats from API
+  function updateStats() {
+    fetch('/api/mining/status?include=leaderboard')
+      .then(r => r.json())
+      .then(data => {
+        if (data.blocks_mined) {
+          document.getElementById('blocksStat').textContent = data.blocks_mined.toLocaleString();
+        }
+        if (data.active_miners) {
+          document.getElementById('minersStat').textContent = data.active_miners.toLocaleString();
+        }
+        if (data.difficulty) {
+          document.getElementById('difficultyStat').textContent = Math.round(data.difficulty).toLocaleString();
+        }
+      })
+      .catch(err => console.log('Stats fetch failed:', err));
   }
 
-  function updateStat(id, value) {
-    const elem = document.getElementById(id);
-    if (!elem) return;
-    const start = parseInt(elem.textContent) || 0;
-    const diff = value - start;
-    const steps = 30;
-    let current = 0;
-    const interval = setInterval(() => {
-      current++;
-      elem.textContent = Math.floor(start + (diff * current / steps)).toLocaleString();
-      if (current >= steps) clearInterval(interval);
-    }, 30);
-  }
+  generateMiners();
+  updateStats();
 
-  loadGodmodeStats();
-  setInterval(loadGodmodeStats, 12000);
+  // Refresh stats every 15 seconds
+  setInterval(updateStats, 15000);
+
+  // Regenerate miners animation every 20 seconds
+  setInterval(generateMiners, 20000);
+})();
 </script>
 {% endblock %}
