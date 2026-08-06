@@ -1,483 +1,665 @@
 {% extends "base.html" %}
-{% block body_class %}mb-v2{% endblock %}
-
-{% block title %}Mining - MoonBite Dashboard{% endblock %}
-{% block nav_active %}mining{% endblock %}
+{% block body_class %}hammer-reactor{% endblock %}
+{% block title %}MoonBite Hammer Reactor - Live Mining Dashboard{% endblock %}
+{% block meta_description %}Live hammer mining reactor. Watch people mine the moon in real-time. Global competitive mining network.{% endblock %}
+{% block nav_active %}mine{% endblock %}
 
 {% block head_extra %}
-<link rel="stylesheet" href="{{ url_for('static', filename='mining-god.css') }}">
+<style>
+  .hammer-reactor {
+    background: linear-gradient(180deg, #0a0a1a 0%, #1a1a3e 50%, #2d1b4e 100%);
+    color: #fff;
+    font-family: 'Monaco', 'Courier New', monospace;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  :root {
+    --cyan: #00d4ff;
+    --purple: #a855f7;
+    --pink: #ff006e;
+    --gold: #ffd700;
+  }
+
+  .reactor-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  /* Cinematic Hero Section */
+  .cinematic-hero {
+    position: relative;
+    height: 500px;
+    margin: -2rem -2rem 3rem -2rem;
+    background: radial-gradient(circle at 70% 30%, rgba(255, 215, 0, 0.15) 0%, rgba(168, 85, 247, 0.1) 40%, transparent 70%),
+                linear-gradient(180deg, #0a0a1a 0%, #1a1a3e 100%);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0 0 24px 24px;
+  }
+
+  .cinematic-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: moon-shine 8s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes moon-shine {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.1); }
+  }
+
+  .cinematic-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 900px;
+  }
+
+  .cinematic-title {
+    font-size: 3.5rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #ffd700 0%, #ff006e 50%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.3));
+  }
+
+  .cinematic-subtitle {
+    font-size: 1.3rem;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 2rem;
+  }
+
+  .miners-animation {
+    display: flex;
+    gap: 3rem;
+    justify-content: center;
+    align-items: flex-end;
+    margin-top: 2rem;
+  }
+
+  .miner-figure {
+    position: relative;
+    width: 80px;
+    height: 120px;
+  }
+
+  .miner-character {
+    font-size: 4rem;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: mining-action var(--delay, 0.8s) ease-in-out infinite;
+  }
+
+  @keyframes mining-action {
+    0% { transform: translateX(-50%) rotate(0deg) scale(1); }
+    25% { transform: translateX(-50%) rotate(-30deg) scale(1.05); }
+    50% { transform: translateX(-50%) rotate(0deg) scale(1); }
+    75% { transform: translateX(-50%) rotate(30deg) scale(1.05); }
+    100% { transform: translateX(-50%) rotate(0deg) scale(1); }
+  }
+
+  .miner-glow {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.4), transparent 70%);
+    border-radius: 50%;
+    animation: glow-pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.5; }
+    50% { transform: translateX(-50%) scale(1.3); opacity: 1; }
+  }
+
+  .ore-particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+
+  .particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: radial-gradient(circle, #ffd700, #ff006e);
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+    animation: float-particle 2s ease-out forwards;
+  }
+
+  @keyframes float-particle {
+    0% { opacity: 1; transform: translate(0, 0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
+  }
+
+  /* Header */
+  .reactor-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    align-items: center;
+  }
+
+  .hashrate-box {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(168, 85, 247, 0.05));
+    border: 2px solid rgba(0, 212, 255, 0.3);
+    border-radius: 16px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .hashrate-graph {
+    height: 120px;
+    background: linear-gradient(90deg, rgba(0, 212, 255, 0.2), rgba(168, 85, 247, 0.2));
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .graph-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100"><polyline points="0,80 20,75 40,70 60,65 80,60 100,50 120,45 140,40 160,35 180,30 200,25 220,30 240,35 260,40 280,45 300,50 320,60 340,70 360,75 380,80 400,85" fill="none" stroke="%2300d4ff" stroke-width="2"/></svg>') repeat-x;
+    opacity: 0.8;
+  }
+
+  .hashrate-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.5rem;
+  }
+
+  .miners-active {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .miner-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color, #00ff88);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+
+  .reactor-display {
+    text-align: center;
+  }
+
+  .reactor-status {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 0, 110, 0.1));
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 16px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #00ff88, rgba(0, 255, 136, 0.3));
+    border: 1px solid rgba(0, 255, 136, 0.6);
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    background: #00ff88;
+    border-radius: 50%;
+    animation: blink 1.5s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .big-hashrate {
+    font-size: 4.5rem;
+    font-weight: 900;
+    line-height: 1;
+    margin: 1rem 0;
+    background: linear-gradient(135deg, #ffd700, #ff006e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+  }
+
+  .hashrate-unit {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 1px;
+  }
+
+  .proof-of-work {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--cyan);
+    margin-top: 1rem;
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .stat-box {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(168, 85, 247, 0.05));
+    border: 2px solid rgba(0, 212, 255, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .stat-box.highlight {
+    border-color: rgba(255, 215, 0, 0.4);
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.75rem;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--cyan);
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-box.highlight .stat-value {
+    color: var(--gold);
+  }
+
+  .stat-subvalue {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* Miners Showcase */
+  .miners-section {
+    margin-top: 4rem;
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 2rem;
+    color: var(--gold);
+  }
+
+  .miners-showcase {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .miner-widget {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 0, 110, 0.08));
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+  }
+
+  .miner-widget:hover {
+    transform: translateY(-8px);
+    border-color: rgba(255, 215, 0, 0.8);
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.4);
+  }
+
+  .miner-avatar {
+    font-size: 2.8rem;
+    margin-bottom: 0.75rem;
+    animation: hammer-swing 0.7s ease-in-out infinite;
+  }
+
+  @keyframes hammer-swing {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(-25deg) scale(1.15); }
+  }
+
+  .miner-name {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .miner-power {
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+
+  .miner-status {
+    font-size: 0.65rem;
+    color: #00ff88;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .status-light {
+    width: 6px;
+    height: 6px;
+    background: #00ff88;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.4rem;
+    animation: blink 1.5s ease-in-out infinite;
+  }
+
+  /* CTA Section */
+  .reactor-cta {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(255, 0, 110, 0.05));
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    border-radius: 16px;
+    margin-top: 4rem;
+  }
+
+  .cta-text {
+    font-size: 1.4rem;
+    font-weight: 900;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #ffd700, #ff006e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .cta-btn {
+    padding: 1.25rem 2.5rem;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .cta-btn-primary {
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #000;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+  }
+
+  .cta-btn-primary:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 60px rgba(255, 215, 0, 0.8);
+  }
+
+  .cta-btn-secondary {
+    background: transparent;
+    color: #ff006e;
+    border-color: #ff006e;
+  }
+
+  .cta-btn-secondary:hover {
+    background: rgba(255, 0, 110, 0.1);
+    box-shadow: 0 0 40px rgba(255, 0, 110, 0.4);
+  }
+
+  @media (max-width: 768px) {
+    .reactor-header {
+      grid-template-columns: 1fr;
+    }
+
+    .big-hashrate {
+      font-size: 2.5rem;
+    }
+
+    .miners-showcase {
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 1rem;
+    }
+
+    .reactor-container {
+      padding: 1rem;
+    }
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="main-content">
-    <section class="hero">
-        <h2>Mining</h2>
-        <p>Mine blocks and earn coinbase rewards to your address.</p>
-    </section>
+<!-- Cinematic Hero Section -->
+<div class="cinematic-hero">
+  <div class="ore-particles" id="particleContainer"></div>
+  <div class="cinematic-content">
+    <h1 class="cinematic-title">Hammer the Moon</h1>
+    <p class="cinematic-subtitle">Watch miners worldwide swing hammers to extract moon blocks. Earn real MBITE with every strike.</p>
+    <div class="miners-animation">
+      <div class="miner-figure">
+        <div class="miner-glow"></div>
+        <div class="miner-character" style="--delay: 0.8s;">👨‍🚀</div>
+      </div>
+      <div class="miner-figure" style="margin-top: 20px;">
+        <div class="miner-glow"></div>
+        <div class="miner-character" style="--delay: 1s;">👩‍🚀</div>
+      </div>
+      <div class="miner-figure">
+        <div class="miner-glow"></div>
+        <div class="miner-character" style="--delay: 0.9s;">🔨</div>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <!-- VIRAL: Global Mining Stats Banner -->
-    <div class="mb-stats-banner">
-        <div class="mb-stats-item">
-            <div class="mb-stats-count"><span id="activeMinerCount">0</span></div>
-            <div class="mb-stats-label">Active Miners</div>
-        </div>
-        <div class="mb-stats-divider"></div>
-        <div class="mb-stats-item">
-            <div class="mb-stats-count"><span id="globalBlocksCount">0</span></div>
-            <div class="mb-stats-label">Blocks Mined</div>
-        </div>
-        <div class="mb-stats-divider"></div>
-        <div class="mb-stats-item">
-            <div class="mb-stats-count"><span id="hashRateCount">0</span> H/s</div>
-            <div class="mb-stats-label">Network Power</div>
-        </div>
+<div class="reactor-container">
+  <!-- Header -->
+  <div class="reactor-header">
+    <div class="hashrate-box">
+      <div class="hashrate-label">🔨 Hammer Rate · Live</div>
+      <div class="hashrate-graph">
+        <div class="graph-line"></div>
+      </div>
+      <div class="miners-active" id="minersActive">
+        <div class="miner-dot" style="--color: #00ff88;"></div>
+        <div class="miner-dot" style="--color: #00d4ff;"></div>
+        <div class="miner-dot" style="--color: #ffd700;"></div>
+      </div>
+      <div class="hashrate-label">50,000+ Miners Active</div>
     </div>
 
-    <!-- Mining Controls -->
-    <div class="card card-full">
-        <div class="card-header">Mining Configuration</div>
-        <div class="card-body">
-            <form id="miningForm" class="mining-form">
-                <div class="form-group">
-                    <label for="blocksInput">Number of Blocks to Mine</label>
-                    <input
-                        type="number"
-                        id="blocksInput"
-                        name="blocks"
-                        min="1"
-                        max="100"
-                        value="1"
-                        class="form-input"
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="addressInput">Miner Address (Base58)</label>
-                    <input
-                        type="text"
-                        id="addressInput"
-                        name="address"
-                        placeholder="Enter your mining address..."
-                        class="form-input"
-                    >
-                    <small>Don't have an address? <a href="/wallet" class="link">Generate one</a></small>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" id="startBtn" class="btn btn-success btn-large">
-                        ⚒️ Start Mining
-                    </button>
-                    <button type="button" id="stopBtn" class="btn btn-danger btn-large hidden" onclick="stopMining()">
-                        ⏹️ Stop Mining
-                    </button>
-                </div>
-            </form>
+    <div class="reactor-display">
+      <div class="reactor-status">
+        <div class="status-badge">
+          <div class="status-dot"></div>
+          REACTOR ONLINE
         </div>
+        <div class="big-hashrate" id="mainHashrate">93.25</div>
+        <div class="hashrate-unit">kH/s</div>
+        <div class="proof-of-work">🌙 PROOF OF MOON</div>
+      </div>
     </div>
+  </div>
 
-    <!-- Mining Progress — GOD-TIER cinematic reactor -->
-    <div id="progressSection" class="card card-full hidden">
-        <div class="card-header">Live Mining Reactor</div>
-        <div class="card-body">
-            <!-- Cinematic stage: canvases + HUD (mining-god.js drives it) -->
-            <div id="godStage" class="god-stage">
-                <div class="god-grid"></div>
-                <div class="god-aurora"></div>
-                <canvas id="godParticles" class="god-canvas"></canvas>
-                <canvas id="godReactor" class="god-canvas"></canvas>
-                <div class="god-scan"></div>
-
-                <div class="god-badge"><span></span>MOONBITE RIG</div>
-
-                <div class="god-spark">
-                    <div class="god-spark-title">Hashrate · live</div>
-                    <canvas id="godSpark"></canvas>
-                </div>
-
-                <div class="god-core-readout">
-                    <div id="godHashrate" class="god-hashrate">0 H/s</div>
-                    <div class="god-hashunit">Proof of Work</div>
-                    <div class="god-state">
-                        <span class="god-dot"></span>
-                        <span id="godStateText">STANDBY</span>
-                    </div>
-                </div>
-
-                <div class="god-beam-wrap">
-                    <div class="god-beam-labels">
-                        <span>BLOCK YIELD</span>
-                        <span><b id="godPct">0%</b></span>
-                    </div>
-                    <div class="god-beam">
-                        <div id="godBeamFill" class="god-beam-fill"></div>
-                    </div>
-                </div>
-
-                <div class="god-hud">
-                    <div class="god-hud-cell">
-                        <div class="god-hud-label">Chain Height</div>
-                        <div id="godHeight" class="god-hud-value">--</div>
-                    </div>
-                    <div class="god-hud-cell">
-                        <div class="god-hud-label">Blocks</div>
-                        <div id="godBlocks" class="god-hud-value">0 / 0</div>
-                    </div>
-                    <div class="god-hud-cell">
-                        <div class="god-hud-label">Elapsed</div>
-                        <div id="godElapsed" class="god-hud-value">0s</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Legacy state carriers: kept for the existing poll logic to
-                 write into. Visually hidden; mining-god.js reads them. -->
-            <div class="god-legacy" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;">
-                <div id="miningOrb" class="mining-orb idle">
-                    <div class="orb-ring"></div>
-                    <div class="orb-ring ring-2"></div>
-                    <div class="orb-core"></div>
-                </div>
-                <span id="blocksMined">0</span>
-                <span id="totalBlocks">0</span>
-                <div id="progressBarFill" class="progress-fill" style="width: 0%"></div>
-                <div id="currentHeight">--</div>
-                <code id="currentHash">--</code>
-                <div id="elapsedTime">0s</div>
-            </div>
-        </div>
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-box">
+      <div class="stat-label">⛏️ Hammer Yield</div>
+      <div class="stat-value">39%</div>
+      <div class="stat-subvalue">Mining Efficiency</div>
     </div>
-
-    <!-- Mining Status Display -->
-    <div class="cards-grid">
-        <div class="card">
-            <div class="card-header">Mining Status</div>
-            <div class="card-body">
-                <div id="miningStatusDisplay" class="card-value">Idle</div>
-                <div class="card-subtitle">Current state</div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">Chain Height</div>
-            <div class="card-body">
-                <div id="chainHeightDisplay" class="card-value">--</div>
-                <div class="card-subtitle">Latest block height</div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">Blocks This Session</div>
-            <div class="card-body">
-                <div id="sessionBlocksDisplay" class="card-value">0</div>
-                <div class="card-subtitle">Total mined</div>
-            </div>
-        </div>
+    <div class="stat-box">
+      <div class="stat-label">🌙 Moon Height</div>
+      <div class="stat-value" id="chainHeight">3364</div>
+      <div class="stat-subvalue">Blocks Extracted</div>
     </div>
-
-    <!-- Information Box -->
-    <div class="card card-full">
-        <div class="card-header">ℹ️ Mining Information</div>
-        <div class="card-body">
-            <ul class="info-list">
-                <li>Mining uses Proof-of-Work consensus to secure the blockchain</li>
-                <li>Each successfully mined block earns a coinbase reward to your address</li>
-                <li>The difficulty adjusts automatically based on block times</li>
-                <li>You can stop mining at any time using the "Stop Mining" button</li>
-                <li>Mining progress updates in real-time on this page</li>
-            </ul>
-        </div>
+    <div class="stat-box highlight">
+      <div class="stat-label">🔨 Moon Blocks</div>
+      <div class="stat-value" id="blockProgress">39 / 100</div>
+      <div class="stat-subvalue">Progress to Next Ore</div>
     </div>
-
-    <!-- Status Messages -->
-    <div id="statusMessage" class="status-message hidden"></div>
-
-    <!-- VIRAL: Shareable Receipt Modal (shown after mining completes) -->
-    <div id="receiptModal" class="mb-receipt-modal hidden">
-        <div class="mb-receipt-card">
-            <button class="mb-receipt-close" onclick="closeReceipt()">&times;</button>
-
-            <div class="mb-receipt-header">
-                <div class="mb-receipt-emoji">🎉</div>
-                <h3>You Did It!</h3>
-            </div>
-
-            <div class="mb-receipt-stats">
-                <div class="mb-receipt-stat">
-                    <div class="mb-receipt-stat-value" id="receiptBlocks">1</div>
-                    <div class="mb-receipt-stat-label">Block Mined</div>
-                </div>
-                <div class="mb-receipt-stat">
-                    <div class="mb-receipt-stat-value" id="receiptMBITE">50</div>
-                    <div class="mb-receipt-stat-label">MBITE Earned</div>
-                </div>
-            </div>
-
-            <div class="mb-receipt-message">
-                <p id="receiptText">I just mined 1 MoonBite block! Earned 50 MBITE 🌙⛏️</p>
-            </div>
-
-            <div class="mb-receipt-divider"></div>
-
-            <div class="mb-receipt-actions">
-                <button class="mb-receipt-btn mb-receipt-btn-twitter" onclick="shareTwitter()">
-                    <span>𝕏</span> Share on Twitter
-                </button>
-                <button class="mb-receipt-btn mb-receipt-btn-copy" onclick="copyToClipboard()">
-                    <span>📋</span> Copy Text
-                </button>
-            </div>
-
-            <div class="mb-receipt-footer">
-                <small>Join 1000s mining MoonBite</small>
-            </div>
-        </div>
+    <div class="stat-box">
+      <div class="stat-label">⏱️ Elapsed Time</div>
+      <div class="stat-value" id="elapsedTime">50s</div>
+      <div class="stat-subvalue">Session Duration</div>
     </div>
+  </div>
+
+  <!-- Miners Showcase -->
+  <div class="miners-section">
+    <div class="section-title">🔨 Top Hammer Miners</div>
+    <div class="miners-showcase" id="minersShowcase">
+      <!-- Populated by JavaScript -->
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="reactor-cta">
+    <div class="cta-text">Ready to Hammer the Moon?</div>
+    <div class="cta-buttons">
+      <button class="cta-btn cta-btn-primary" onclick="window.location.href='/mine'">🔨 Start Hammering</button>
+      <button class="cta-btn cta-btn-secondary" onclick="window.location.href='/leaderboard'">🏆 View Leaderboard</button>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block scripts_extra %}
 <script>
-    let isMining = false;
-    let startTime = 0;
-    let statusCheckInterval = null;
-    let currentJobId = null;
+(function() {
+  // Cinematic particles effect
+  function createParticles() {
+    const container = document.getElementById('particleContainer');
+    if (!container) return;
 
-    function showStatus(message, type = 'info') {
-        const statusEl = document.getElementById('statusMessage');
-        statusEl.textContent = message;
-        statusEl.className = `status-message ${type}`;
-        statusEl.classList.remove('hidden');
-        setTimeout(() => {
-            statusEl.classList.add('hidden');
-        }, 5000);
+    setInterval(() => {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      const tx = (Math.random() - 0.5) * 200;
+      const ty = -100 - Math.random() * 100;
+      particle.style.setProperty('--tx', tx + 'px');
+      particle.style.setProperty('--ty', ty + 'px');
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.top = '50%';
+      container.appendChild(particle);
+      setTimeout(() => particle.remove(), 2000);
+    }, 150);
+  }
+
+  createParticles();
+
+  const minerNames = ['Luna', 'Buzz', 'Stella', 'Cosmo', 'Nova', 'Orbit', 'Lunar', 'Crater', 'Tidal', 'Solar', 'Comet', 'Astro'];
+  const emojis = ['⛏️', '🔨', '💎', '🚀', '⚡', '🌟'];
+
+  function generateMiners() {
+    const showcase = document.getElementById('minersShowcase');
+    if (!showcase) return;
+    showcase.innerHTML = '';
+
+    for (let i = 0; i < 12; i++) {
+      const widget = document.createElement('div');
+      widget.className = 'miner-widget';
+
+      const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+      const name = minerNames[Math.floor(Math.random() * minerNames.length)];
+      const power = (Math.random() * 5000 + 500 | 0);
+
+      widget.innerHTML = `
+        <div class="miner-avatar">${emoji}</div>
+        <div class="miner-name">${name}</div>
+        <div class="miner-power">${power}H/s</div>
+        <div class="miner-status"><span class="status-light"></span>HAMMERING</div>
+      `;
+
+      showcase.appendChild(widget);
     }
+  }
 
-    // Update global mining stats (viral metrics)
-    async function updateGlobalStats() {
-        try {
-            const response = await fetch('/api/mining/globalstats');
-            const data = await response.json();
-
-            if (data.status === 'success') {
-                document.getElementById('activeMinerCount').textContent = data.active_miners;
-                document.getElementById('globalBlocksCount').textContent = data.blocks_mined_globally;
-                const hashrate = (data.combined_hashrate / 1000).toFixed(1);
-                document.getElementById('hashRateCount').textContent = hashrate + 'K';
-            }
-        } catch (error) {
-            console.error('Error updating global stats:', error);
+  function updateStats() {
+    fetch('/api/mining/status?include=leaderboard')
+      .then(r => r.json())
+      .then(data => {
+        if (data.difficulty) {
+          const hashrate = (data.difficulty / 1000000).toFixed(2);
+          const el = document.getElementById('mainHashrate');
+          if (el) el.textContent = hashrate;
         }
-    }
+      })
+      .catch(e => console.log('Stats update'));
+  }
 
-    // Show shareable receipt modal
-    async function showReceipt(jobId, blocksMined) {
-        if (blocksMined === 0) return;
-
-        try {
-            const response = await fetch(`/api/mining/receipt/${jobId}`);
-            const data = await response.json();
-
-            if (data.status === 'success') {
-                // Update receipt UI
-                document.getElementById('receiptBlocks').textContent = blocksMined;
-                document.getElementById('receiptMBITE').textContent = data.mbite_earned;
-                document.getElementById('receiptText').textContent = data.share_text;
-
-                // Store for sharing
-                window.currentReceipt = data;
-
-                // Show modal
-                document.getElementById('receiptModal').classList.remove('hidden');
-            }
-        } catch (error) {
-            console.error('Error generating receipt:', error);
-        }
-    }
-
-    function closeReceipt() {
-        document.getElementById('receiptModal').classList.add('hidden');
-    }
-
-    function shareTwitter() {
-        const receipt = window.currentReceipt;
-        if (!receipt) return;
-
-        const text = receipt.share_text;
-        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=https://moonbite.org`;
-        window.open(url, '_blank', 'width=600,height=400');
-    }
-
-    function copyToClipboard() {
-        const receipt = window.currentReceipt;
-        if (!receipt) return;
-
-        navigator.clipboard.writeText(receipt.share_text).then(() => {
-            showStatus('✓ Copied to clipboard!', 'success');
-        }).catch(err => {
-            console.error('Copy failed:', err);
-        });
-    }
-
-    async function startMining(event) {
-        event.preventDefault();
-
-        const blocksInput = document.getElementById('blocksInput').value;
-        const addressInput = document.getElementById('addressInput').value;
-
-        if (!blocksInput || blocksInput < 1) {
-            showStatus('Please enter a valid number of blocks', 'error');
-            return;
-        }
-
-        if (!addressInput) {
-            showStatus('Please enter your mining address', 'error');
-            return;
-        }
-
-        const startBtn = document.getElementById('startBtn');
-        startBtn.disabled = true;
-        startBtn.textContent = '⏳ Starting...';
-
-        try {
-            const response = await fetch('/api/mining/start', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    blocks: parseInt(blocksInput),
-                    address: addressInput,
-                }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok && data.status === 'mining') {
-                currentJobId = data.job_id;  // Store job ID for receipt
-                isMining = true;
-                startTime = Date.now();
-                document.getElementById('miningForm').style.display = 'none';
-                document.getElementById('progressSection').classList.remove('hidden');
-                document.getElementById('startBtn').classList.add('hidden');
-                document.getElementById('stopBtn').classList.remove('hidden');
-                document.getElementById('totalBlocks').textContent = data.blocks_to_mine;
-                document.getElementById('miningOrb').classList.remove('idle');
-
-                showStatus('✓ Mining started', 'success');
-
-                // Poll for mining status every 500ms
-                statusCheckInterval = setInterval(pollMiningStatus, 500);
-            } else {
-                showStatus('Error: ' + (data.message || 'Failed to start mining'), 'error');
-                startBtn.disabled = false;
-                startBtn.textContent = '⚒️ Start Mining';
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showStatus('Network error: ' + error.message, 'error');
-            startBtn.disabled = false;
-            startBtn.textContent = '⚒️ Start Mining';
-        }
-    }
-
-    async function pollMiningStatus() {
-        try {
-            const response = await fetch('/api/mining/status');
-            const data = await response.json();
-
-            if (data.status !== 'error') {
-                const blocksMined = data.blocks_mined;
-                const totalBlocks = data.total_blocks;
-                const currentHeight = data.current_height;
-
-                // Update progress bar
-                const progress = totalBlocks > 0 ? (blocksMined / totalBlocks) * 100 : 0;
-                document.getElementById('progressBarFill').style.width = progress + '%';
-                document.getElementById('blocksMined').textContent = blocksMined;
-                document.getElementById('currentHeight').textContent = currentHeight;
-                document.getElementById('chainHeightDisplay').textContent = currentHeight;
-                document.getElementById('sessionBlocksDisplay').textContent = blocksMined;
-
-                // Update elapsed time
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                const minutes = Math.floor(elapsed / 60);
-                const seconds = elapsed % 60;
-                const timeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-                document.getElementById('elapsedTime').textContent = timeStr;
-
-                // Check if mining is complete
-                if (data.status !== 'mining' || blocksMined >= totalBlocks) {
-                    stopMiningUI();
-                    // VIRAL: Show shareable receipt on completion
-                    if (blocksMined > 0 && currentJobId) {
-                        setTimeout(() => showReceipt(currentJobId, blocksMined), 500);
-                    }
-                } else {
-                    document.getElementById('miningStatusDisplay').textContent = 'Mining...';
-                }
-            }
-        } catch (error) {
-            console.error('Error polling status:', error);
-        }
-    }
-
-    async function stopMining() {
-        try {
-            const response = await fetch('/api/mining/stop');
-            const data = await response.json();
-
-            if (data.status === 'stopped') {
-                stopMiningUI();
-                showStatus('✓ Mining stopped', 'success');
-            }
-        } catch (error) {
-            console.error('Error stopping mining:', error);
-            showStatus('Error stopping mining', 'error');
-        }
-    }
-
-    function stopMiningUI() {
-        isMining = false;
-        if (statusCheckInterval) {
-            clearInterval(statusCheckInterval);
-        }
-
-        document.getElementById('miningStatusDisplay').textContent = 'Idle';
-        document.getElementById('miningOrb').classList.add('idle');
-        document.getElementById('progressSection').classList.add('hidden');
-        document.getElementById('miningForm').style.display = 'block';
-        document.getElementById('startBtn').classList.remove('hidden');
-        document.getElementById('stopBtn').classList.add('hidden');
-        document.getElementById('startBtn').disabled = false;
-        document.getElementById('startBtn').textContent = '⚒️ Start Mining';
-    }
-
-    // Populate address field if available from wallet
-    document.addEventListener('DOMContentLoaded', () => {
-        const savedAddresses = JSON.parse(sessionStorage.getItem('addresses') || '[]');
-        if (savedAddresses.length > 0) {
-            document.getElementById('addressInput').value = savedAddresses[0].address;
-        }
-
-        // Update global stats immediately and every 3 seconds (viral metrics)
-        updateGlobalStats();
-        setInterval(updateGlobalStats, 3000);
-
-        // Poll blockchain info in background
-        setInterval(() => {
-            if (!isMining) {
-                fetch('/api/blockchain/info')
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            document.getElementById('chainHeightDisplay').textContent = data.height;
-                        }
-                    })
-                    .catch(e => console.error('Error:', e));
-            }
-        }, 2000);
-    });
-
-    // Handle form submission
-    document.getElementById('miningForm').addEventListener('submit', startMining);
+  generateMiners();
+  updateStats();
+  setInterval(updateStats, 15000);
+  setInterval(generateMiners, 30000);
+})();
 </script>
-<script defer src="{{ url_for('static', filename='mining-god.js') }}"></script>
 {% endblock %}
