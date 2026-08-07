@@ -1,0 +1,126 @@
+{
+  "name": "MoonBite Wallet",
+  "short_name": "MoonBite",
+  "description": "Mine and manage MBITE cryptocurrency - the first coin you truly own",
+  "start_url": "/wallet",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "dir": "ltr",
+  "lang": "en-US",
+  "background_color": "#0A0C0F",
+  "theme_color": "#C9A24B",
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Send MBITE",
+      "short_name": "Send",
+      "description": "Send MoonBite cryptocurrency",
+      "url": "/wallet?action=send",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%230A0C0F' width='192' height='192'/%3E%3Ctext x='96' y='96' font-size='100' fill='%23C9A24B' text-anchor='middle' dominant-baseline='central' font-weight='bold'%3E📤%3C/text%3E%3C/svg%3E",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        },
+        {
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect fill='%230A0C0F' width='512' height='512'/%3E%3Ctext x='256' y='256' font-size='300' fill='%23C9A24B' text-anchor='middle' dominant-baseline='central' font-weight='bold'%3E📤%3C/text%3E%3C/svg%3E",
+          "sizes": "512x512",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Receive MBITE",
+      "short_name": "Receive",
+      "description": "Receive MoonBite from others",
+      "url": "/wallet?action=receive",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%230A0C0F' width='192' height='192'/%3E%3Ctext x='96' y='96' font-size='100' fill='%23C9A24B' text-anchor='middle' dominant-baseline='central' font-weight='bold'%3E📥%3C/text%3E%3C/svg%3E",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        },
+        {
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect fill='%230A0C0F' width='512' height='512'/%3E%3Ctext x='256' y='256' font-size='300' fill='%23C9A24B' text-anchor='middle' dominant-baseline='central' font-weight='bold'%3E📥%3C/text%3E%3C/svg%3E",
+          "sizes": "512x512",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "View Balance",
+      "short_name": "Balance",
+      "description": "Check your MBITE balance",
+      "url": "/wallet?action=balance",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%230A0C0F' width='192' height='192'/%3E%3Ctext x='96' y='96' font-size='100' fill='%23C9A24B' text-anchor='middle' dominant-baseline='central' font-weight='bold'%3E💰%3C/text%3E%3C/svg%3E",
+          "sizes": "192x192",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Ccircle cx='96' cy='96' r='88' fill='%230A0C0F' stroke='%23C9A24B' stroke-width='3'/%3E%3Ctext x='96' y='106' font-size='110' fill='%23C9A24B' text-anchor='middle' dominant-baseline='central' font-weight='bold'%3E🌙%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='240' fill='%230A0C0F' stroke='%23C9A24B' stroke-width='8'/%3E%3Ctext x='256' y='280' font-size='320' fill='%23C9A24B' text-anchor='middle' dominant-baseline='central' font-weight='bold'%3E🌙%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect fill='%230A0C0F' width='180' height='180'/%3E%3Ccircle cx='90' cy='90' r='80' fill='%23C9A24B'/%3E%3Ctext x='90' y='105' font-size='90' fill='%230A0C0F' text-anchor='middle' dominant-baseline='central' font-weight='bold'%3E🌙%3C/text%3E%3C/svg%3E",
+      "sizes": "180x180",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'%3E%3Crect fill='%230A0C0F' width='540' height='720'/%3E%3Crect fill='%23C9A24B' width='540' height='100'/%3E%3Ctext x='270' y='60' font-size='40' fill='%230A0C0F' text-anchor='middle' dominant-baseline='central' font-weight='bold'%3EMoonBite Wallet%3C/text%3E%3Crect fill='%231a1d22' x='20' y='130' width='500' height='100'%3E%3C/rect%3E%3Ctext x='270' y='185' font-size='24' fill='%23C9A24B' text-anchor='middle' dominant-baseline='central'%3EBalance%3C/text%3E%3Crect fill='%231a1d22' x='20' y='250' width='500' height='80'%3E%3C/rect%3E%3Crect fill='%231a1d22' x='20' y='350' width='500' height='80'%3E%3C/rect%3E%3Crect fill='%23C9A24B' x='20' y='600' width='240' height='80' rx='8'%3E%3C/rect%3E%3Ctext x='140' y='645' font-size='20' fill='%230A0C0F' text-anchor='middle' dominant-baseline='central'%3ESend%3C/text%3E%3Crect fill='%23C9A24B' x='280' y='600' width='240' height='80' rx='8'%3E%3C/rect%3E%3Ctext x='400' y='645' font-size='20' fill='%230A0C0F' text-anchor='middle' dominant-baseline='central'%3EReceive%3C/text%3E%3C/svg%3E",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 800'%3E%3Crect fill='%230A0C0F' width='1280' height='800'/%3E%3Crect fill='%23C9A24B' width='1280' height='80'/%3E%3Ctext x='640' y='45' font-size='36' fill='%230A0C0F' text-anchor='middle' dominant-baseline='central' font-weight='bold'%3EMoonBite Wallet Dashboard%3C/text%3E%3Crect fill='%231a1d22' x='40' y='120' width='560' height='200'/%3E%3Crect fill='%231a1d22' x='680' y='120' width='560' height='200'/%3E%3Crect fill='%231a1d22' x='40' y='380' width='560' height='200'/%3E%3Crect fill='%231a1d22' x='680' y='380' width='560' height='200'/%3E%3C/svg%3E",
+      "sizes": "1280x800",
+      "type": "image/svg+xml",
+      "form_factor": "wide"
+    }
+  ],
+  "categories": ["finance"],
+  "share_target": {
+    "action": "/wallet/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "file_handlers": [
+    {
+      "action": "/wallet/import",
+      "accept": {
+        "application/json": [".json"],
+        "text/plain": [".txt"]
+      },
+      "launch_type": "single-client"
+    }
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+mbite",
+      "url": "/wallet?action=pay&uri=%s"
+    }
+  ]
+}

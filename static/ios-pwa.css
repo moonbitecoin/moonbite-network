@@ -1,0 +1,382 @@
+/**
+ * iOS PWA Optimizations
+ * Safe area support, notch handling, gesture-friendly UI
+ */
+
+/* iOS Safe Area Support */
+html.ios-device,
+html.ios-standalone {
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+}
+
+/* Prevent iOS rubber band scroll */
+html, body {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  overscroll-behavior: none;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+}
+
+/* Scrollable viewport for iOS */
+main, .content, .app-viewport {
+  position: absolute;
+  top: var(--safe-area-inset-top, 0);
+  left: var(--safe-area-inset-left, 0);
+  right: var(--safe-area-inset-right, 0);
+  bottom: var(--safe-area-inset-bottom, 0);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  height: 100%;
+}
+
+/* Header with safe area support */
+header, .header, .nav {
+  padding-top: var(--safe-area-inset-top, 0);
+  padding-left: var(--safe-area-inset-left, 0);
+  padding-right: var(--safe-area-inset-right, 0);
+}
+
+/* Footer safe area handling */
+footer, .footer, .bottom-nav {
+  padding-bottom: var(--safe-area-inset-bottom, 0);
+  padding-left: var(--safe-area-inset-left, 0);
+  padding-right: var(--safe-area-inset-right, 0);
+}
+
+/* Notch awareness for portrait apps */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(12px, var(--safe-area-inset-left));
+    padding-right: max(12px, var(--safe-area-inset-right));
+    padding-top: max(12px, var(--safe-area-inset-top));
+    padding-bottom: max(12px, var(--safe-area-inset-bottom));
+  }
+
+  header, .header, .nav {
+    padding-left: max(12px, var(--safe-area-inset-left));
+    padding-right: max(12px, var(--safe-area-inset-right));
+    padding-top: max(12px, var(--safe-area-inset-top));
+  }
+
+  footer, .footer, .bottom-nav {
+    padding-left: max(12px, var(--safe-area-inset-left));
+    padding-right: max(12px, var(--safe-area-inset-right));
+    padding-bottom: max(12px, var(--safe-area-inset-bottom));
+  }
+}
+
+/* iOS Standalone Mode Optimizations */
+html.ios-standalone {
+  /* Disable viewport scaling */
+  --webkit-user-select: none;
+}
+
+html.ios-standalone body {
+  /* Full viewport usage when running as app */
+  margin: 0;
+  padding: 0;
+}
+
+/* Prevent bounce scroll on iOS */
+.scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Gesture-friendly tap targets (minimum 44x44px) */
+button, a, [role="button"], .tap-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Remove iOS default button styling */
+button, input[type="button"], input[type="submit"], input[type="reset"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 12px 16px;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+/* Remove iOS input styling */
+input, textarea, select {
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 0;
+  font-size: 16px; /* Prevents auto-zoom on iOS */
+}
+
+textarea {
+  resize: vertical;
+  -webkit-user-select: text;
+}
+
+/* iOS input autofill styling */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+  -webkit-text-fill-color: #333 !important;
+}
+
+/* Prevent iOS selection menu on long press */
+.no-context-menu {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Allow text selection where needed */
+.selectable {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+/* iOS keyboard handling */
+input:focus, textarea:focus, select:focus {
+  /* Prevent iOS from zooming when focused */
+  font-size: 16px;
+}
+
+/* Viewport height fix for iOS keyboard */
+@media (max-height: 500px) {
+  body {
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height (iOS 15+) */
+  }
+
+  main, .content, .app-viewport {
+    height: 100dvh;
+  }
+}
+
+/* Smooth scrolling on iOS */
+* {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+a, button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Gesture-aware event handling styles */
+.swipe-area {
+  touch-action: pan-y pinch-zoom;
+  -webkit-user-select: none;
+}
+
+.draggable {
+  touch-action: manipulation;
+  cursor: grab;
+}
+
+.draggable:active {
+  cursor: grabbing;
+}
+
+/* Back gesture compatibility (swipe from left edge) */
+.gesture-back-area {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 100%;
+  z-index: 10;
+  -webkit-user-select: none;
+}
+
+/* Home indicator safe area (for notched devices) */
+@supports (padding: max(0px)) {
+  .home-indicator-safe {
+    padding-bottom: max(20px, calc(var(--safe-area-inset-bottom) + 20px));
+  }
+}
+
+/* Modal/Dialog safe area support */
+.modal, .dialog, [role="dialog"] {
+  padding: var(--safe-area-inset-top) var(--safe-area-inset-right) var(--safe-area-inset-bottom) var(--safe-area-inset-left);
+}
+
+/* iOS landscape orientation handling */
+@media (orientation: landscape) {
+  html.ios-device {
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-right: env(safe-area-inset-right, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  }
+
+  header, .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: max(12px, var(--safe-area-inset-left));
+    padding-right: max(12px, var(--safe-area-inset-right));
+  }
+
+  main, .content {
+    margin: 0 var(--safe-area-inset-right) 0 var(--safe-area-inset-left);
+  }
+}
+
+/* Fixed bottom navigation with home indicator space */
+.bottom-nav, .tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: max(8px, var(--safe-area-inset-bottom));
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
+  background: var(--bg-color, #fff);
+  border-top: 1px solid var(--border-color, #eee);
+  z-index: 100;
+}
+
+/* iOS status bar color support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+  }
+}
+
+/* Haptic feedback visual feedback (since haptics aren't standard web) */
+.haptic-feedback {
+  transition: transform 0.05s ease-out, box-shadow 0.05s ease-out;
+}
+
+.haptic-feedback:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Touch action improvements */
+.no-double-tap-zoom {
+  touch-action: manipulation;
+}
+
+/* iOS form styling */
+input[type="range"] {
+  -webkit-appearance: slider-horizontal;
+  width: 100%;
+}
+
+/* Fix for iOS Safari select boxes */
+select {
+  background: white;
+  color: #333;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Prevent iOS zoom on input focus in landscape */
+@media (orientation: landscape) {
+  input, textarea, select {
+    font-size: 16px;
+  }
+}
+
+/* iOS share sheet styling */
+.share-action {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Bottom sheet modal for iOS */
+.bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 90vh;
+  background: white;
+  border-radius: 12px 12px 0 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: max(16px, var(--safe-area-inset-bottom));
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.bottom-sheet::before {
+  content: '';
+  display: block;
+  height: 4px;
+  width: 40px;
+  background: #ccc;
+  border-radius: 2px;
+  margin: 8px auto;
+}
+
+/* Landscape orientation lock for full-screen apps */
+html.ios-standalone.lock-portrait {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* iOS specific scrollbar styling (subtle) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Dynamic viewport height support (iOS 15+) */
+@supports (height: 100dvh) {
+  html, body {
+    height: 100dvh;
+  }
+
+  main, .content, .app-viewport {
+    height: 100dvh;
+  }
+}
+
+/* Focus visible for accessibility */
+:focus-visible {
+  outline: 2px solid #0066cc;
+  outline-offset: 2px;
+}
+
+/* Remove outline on mouse click (still visible on keyboard) */
+:focus:not(:focus-visible) {
+  outline: none;
+}
