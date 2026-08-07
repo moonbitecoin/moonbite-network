@@ -1,0 +1,39 @@
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    nginx \
+    certbot \
+    python3-certbot-nginx \
+    curl \
+    git \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy application files
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# Create necessary directories
+RUN mkdir -p /etc/letsencrypt /var/log/nginx /var/cache/nginx
+
+# Copy nginx configuration
+COPY deploy/nginx.conf /etc/nginx/nginx.conf
+COPY deploy/ssl.conf /etc/nginx/ssl.conf
+
+# Copy startup script
+COPY deploy/entrypoint-railway.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Expose HTTPS port
+EXPOSE 443 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+    CMD curl -f https://localhost/wallet 2>/dev/null || exit 1
+
+ENTRYPOINT ["/entrypoint.sh"]

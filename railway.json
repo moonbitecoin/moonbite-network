@@ -2,10 +2,19 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "DOCKERFILE",
-    "dockerfilePath": "deploy/railway-node/Dockerfile"
+    "dockerfilePath": "deploy/Dockerfile.https"
   },
   "deploy": {
     "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
+    "restartPolicyMaxRetries": 10,
+    "startCommand": "bash deploy/entrypoint-https.sh",
+    "healthchecks": {
+      "liveness": {
+        "command": ["curl", "-f", "https://localhost:443/wallet || exit 1"],
+        "interval": 30,
+        "timeout": 10,
+        "retries": 3
+      }
+    }
   }
 }
