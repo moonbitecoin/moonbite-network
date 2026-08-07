@@ -32,6 +32,17 @@
     {% include "partials/mega_footer.html" %}
 
     <script>
+        // Force clear old service worker caches and register new version
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(reg => reg.unregister());
+            });
+            caches.keys().then(cacheNames => {
+                cacheNames.forEach(cacheName => caches.delete(cacheName));
+            });
+            navigator.serviceWorker.register('/static/service-worker.js');
+        }
+
         // Reveal page + fade out loader once ready (with a safety fallback).
         (function () {
             function reveal() { document.body.classList.add('loaded'); }
