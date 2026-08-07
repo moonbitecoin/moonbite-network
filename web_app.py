@@ -1,5 +1,7 @@
 """MyCoin Web Dashboard — Flask application for blockchain visualization and interaction.
 
+DEPLOYMENT_REBUILD_2026_08_07_22_15_BULLETPROOF_WALLET_CACHE_BUST
+
 This module provides a RESTful API and web interface for MyCoin, allowing users to:
   - Generate new wallet addresses
   - Check wallet balances
