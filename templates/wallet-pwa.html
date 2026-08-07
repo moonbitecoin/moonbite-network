@@ -679,7 +679,7 @@
             navigator.serviceWorker.register('/static/wallet-sw.js').catch(err => console.log('SW registration failed:', err));
         }
 
-        const API_BASE = 'https://moonbite.org';
+        const API_BASE = window.location.origin;
         const STORAGE_KEY = 'moonbite_wallet';
         const ENCRYPTED_KEY = 'moonbite_wallet_encrypted';
 
