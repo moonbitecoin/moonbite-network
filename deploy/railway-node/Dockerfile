@@ -1,5 +1,6 @@
 # MoonBite Dashboard — Flask web app for blockchain interaction
 # Runs web_app.py with gunicorn to expose GET /api/blockchain/info and dashboard UI
+# REBUILD_TIMESTAMP: 2026-08-07T22:20:00Z - Force fresh bulletproof wallet deployment
 FROM python:3.11-slim
 
 WORKDIR /app
