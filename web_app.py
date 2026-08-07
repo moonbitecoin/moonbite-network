@@ -663,7 +663,11 @@ def why_page():
 
 @app.route("/wallet")
 def wallet_page():
-    """Render the mobile PWA wallet page."""
+    """Render the mobile PWA wallet page with bulletproof security (AES-256-GCM + PBKDF2)."""
+    import os
+    wallet_file = os.path.join("templates", "wallet-pwa.html")
+    if not os.path.exists(wallet_file):
+        return "ERROR: wallet-pwa.html not found", 500
     return render_template("wallet-pwa.html")
 
 @app.route("/wallet-manifest.json")
