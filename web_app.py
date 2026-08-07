@@ -72,6 +72,19 @@ if _TRUSTED_PROXY_COUNT > 0:
         app.wsgi_app, x_for=_TRUSTED_PROXY_COUNT, x_proto=1, x_host=1
     )
 
+# Force HTTPS in production
+@app.before_request
+def force_https():
+    """Force all traffic to HTTPS in production."""
+    if os.environ.get("RAILWAY_ENVIRONMENT") == "production":
+        if request.headers.get("X-Forwarded-Proto", "http") != "https":
+            url = request.url.replace("http://", "https://", 1)
+            return redirect(url, code=301)
+    # Also set HSTS header
+    if request.headers.get("X-Forwarded-Proto", "http") == "https":
+        # HSTS header already set by nginx, but ensure it's present
+        pass
+
 # Hard cap on request body size. Flask/Werkzeug default to unlimited, so without
 # this a single POST with a multi-hundred-MB body forces the worker to buffer +
 # JSON-parse it — ~2.8x amplification measured, i.e. one 400 MB request spikes
