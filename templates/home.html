@@ -1,754 +1,582 @@
-{% extends "base.html" %}
-{% block body_class %}lw-home{% endblock %}
-{% block title %}MoonBite — Mine Your First Block in 30 Seconds{% endblock %}
-{% block meta_description %}No ICO. No premine. No signup. Mine real blocks. Join 50,000+ miners earning MBITE today.{% endblock %}
-{% block nav_active %}home{% endblock %}
-
-{% block head_extra %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoonBite — Mine the moon. Fair-launch proof-of-work money (MBITE)</title>
+<meta name="description" content="You can't buy MBITE — it isn't listed anywhere, and that's the point. Proof-of-work money you mine on your own hardware, hold in your own wallet, and verify with your own node. No premine, no gatekeepers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  /* Luke Wroblewski: Mobile-first, task-focused, patterns-based design */
-
-  .lw-home {
-    background: #fff;
-    color: #333;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }
-
-  /* Root tokens */
-  :root {
-    --primary: #7c3aed;
-    --secondary: #6b21a8;
-    --accent: #ec4899;
-    --success: #10b981;
-    --error: #ef4444;
-    --neutral-50: #f9fafb;
-    --neutral-100: #f3f4f6;
-    --neutral-200: #e5e7eb;
-    --neutral-500: #6b7280;
-    --neutral-700: #374151;
-    --neutral-900: #111827;
-  }
-
-  /* Typography: clear hierarchy, generous sizing */
+  :root { --void:#04050a; --ice:#F2F6FF; --accent:#5FE9D0; --cool:#5B7BFF; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
   body {
-    line-height: 1.5;
-    font-size: 16px;
+    background: var(--void);
+    color: var(--ice);
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  .mono { font-family: "JetBrains Mono", monospace; }
+  img, svg { max-width: 100%; }
+  /* keep the vector splash + marks razor-sharp at any DPI / scale-up */
+  svg { shape-rendering: geometricPrecision; text-rendering: geometricPrecision; }
+
+  /* ---------- animation keyframes ---------- */
+  @keyframes mbSpin { to { transform: rotate(360deg); } }
+  @keyframes mbRise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes mbFade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes mbPulseA { 0% { opacity: 0; transform: scale(0.92); } 26% { opacity: 1; } 100% { opacity: 0; transform: scale(1.52); } }
+  @keyframes mbPulseB { 0% { opacity: 0; transform: scale(0.92); } 26% { opacity: 1; } 100% { opacity: 0; transform: scale(1.52); } }
+  @keyframes mbRowIn { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes mbBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+  /* ---------- ambient background ---------- */
+  .bg-glow { position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(58% 52% at 50% 38%, #101a3a 0%, rgba(4,5,10,0) 72%); }
+  .bg-scan { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.5;
+    background: repeating-linear-gradient(to bottom, rgba(242,246,255,0.05) 0 1px, transparent 1px 6px); }
+
+  /* ---------- mega-nav (shared partials/mega_nav.html, scoped to cinematic palette) ---------- */
+  .mb-meganav { position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(4,5,10,0.72); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(242,246,255,0.08); animation: mbFade 0.9s ease-out 0.4s both; }
+  .mb-nav-inner { max-width: 1320px; margin: 0 auto; padding: 0 44px; height: 64px;
+    display: flex; align-items: center; gap: 18px; }
+  .mb-brand { display: flex; align-items: center; gap: 10px; font-size: 1.15rem; font-weight: 700;
+    text-decoration: none; color: var(--ice); white-space: nowrap; }
+  .mb-brand img { width: 30px; height: 30px; }
+  .mb-brand .mb-brand-name { background: linear-gradient(90deg, var(--accent), var(--cool));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+
+  .mb-nav-links { display: flex; align-items: center; gap: 2px; list-style: none;
+    margin: 0 auto 0 18px; padding: 0; }
+  .mb-nav-item { position: relative; }
+  .mb-nav-trigger { display: inline-flex; align-items: center; gap: 6px; padding: 8px 11px;
+    border-radius: 3px; font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 500;
+    letter-spacing: 1.4px; text-transform: uppercase; color: rgba(242,246,255,0.62);
+    background: none; border: none; cursor: pointer; white-space: nowrap; transition: color .2s ease, background .2s ease; }
+  .mb-nav-trigger:hover, .mb-nav-item.is-open .mb-nav-trigger { color: var(--ice); background: rgba(242,246,255,0.06); }
+  .mb-nav-trigger .mb-caret { width: 7px; height: 7px; border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px);
+    transition: transform .2s ease; opacity: 0.7; }
+  .mb-nav-item.is-open .mb-caret { transform: rotate(-135deg) translateY(-1px); }
+
+  .mb-dropdown { position: absolute; top: calc(100% + 10px); left: 0; min-width: 244px; padding: 8px;
+    background: rgba(6,8,14,0.98); border: 1px solid rgba(95,233,208,0.18); border-radius: 4px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    opacity: 0; visibility: hidden; transform: translateY(-6px);
+    transition: opacity .18s ease, transform .18s ease, visibility .18s; }
+  .mb-nav-item.is-open .mb-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
+  .mb-dropdown a { display: flex; flex-direction: column; gap: 2px; padding: 9px 12px; border-radius: 3px;
+    text-decoration: none; color: rgba(242,246,255,0.86); transition: background .15s ease, color .15s ease; }
+  .mb-dropdown a:hover { background: rgba(95,233,208,0.08); }
+  .mb-dropdown a .mb-dd-title { font-family: "Space Grotesk", sans-serif; font-weight: 600; font-size: 0.92rem; letter-spacing: 0; }
+  .mb-dropdown a .mb-dd-desc { font-size: 0.76rem; color: rgba(242,246,255,0.5); letter-spacing: 0; }
+  .mb-dropdown a:hover .mb-dd-title { color: var(--accent); }
+
+  .mb-nav-cta { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+  .mb-nav-cta .mb-theme-btn { display: none; }
+  .mb-meganav .mb-nav-cta-btn { display: inline-flex; align-items: center; padding: 10px 18px;
+    font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 1.8px; text-transform: uppercase;
+    border-radius: 2px; white-space: nowrap; transition: filter .2s ease, background .2s ease, border-color .2s ease, color .2s ease; }
+  .mb-meganav .mb-nav-cta-btn.btn-secondary { border: 1px solid rgba(242,246,255,0.22); color: var(--ice); background: none; }
+  .mb-meganav .mb-nav-cta-btn.btn-secondary:hover { border-color: var(--ice); }
+  .mb-meganav .mb-nav-cta-btn.btn-primary { background: var(--accent); color: var(--void); border: 1px solid var(--accent); }
+  .mb-meganav .mb-nav-cta-btn.btn-primary:hover { filter: brightness(1.12); }
+
+  .mb-hamburger { display: none; flex-direction: column; justify-content: center; gap: 5px;
+    width: 42px; height: 42px; border: 1px solid rgba(242,246,255,0.22); border-radius: 3px;
+    background: none; cursor: pointer; }
+  .mb-hamburger span { display: block; height: 2px; width: 20px; margin: 0 auto; background: var(--ice); transition: transform .2s ease; }
+
+  /* mobile full-screen sheet */
+  .mb-mobile-sheet { position: fixed; inset: 0; z-index: 200; background: var(--void);
+    padding: 22px; overflow-y: auto; transform: translateX(100%);
+    transition: transform .3s cubic-bezier(0.4,0,0.2,1); }
+  .mb-mobile-sheet.is-open { transform: translateX(0); }
+  .mb-mobile-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+  .mb-mobile-close { background: none; border: none; color: var(--ice); font-size: 1.8rem; cursor: pointer; line-height: 1; }
+  .mb-mobile-group { border-bottom: 1px solid rgba(242,246,255,0.1); }
+  .mb-mobile-group > button { width: 100%; display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 4px; background: none; border: none; color: var(--ice); font-family: "Space Grotesk", sans-serif;
+    font-size: 1.05rem; font-weight: 600; cursor: pointer; }
+  .mb-mobile-group .mb-mobile-links { display: none; padding: 0 0 12px 4px; }
+  .mb-mobile-group.is-open .mb-mobile-links { display: block; }
+  .mb-mobile-links a { display: block; padding: 9px 0; color: rgba(242,246,255,0.6); text-decoration: none; }
+  .mb-mobile-links a:hover { color: var(--accent); }
+  .mb-mobile-cta { margin-top: 22px; display: grid; gap: 12px; }
+  .mb-mobile-cta .btn { justify-content: center; }
+
+  main { position: relative; z-index: 10; }
+
+  /* ---------- hero ---------- */
+  .hero { min-height: 100vh; display: grid; grid-template-rows: 1fr auto; padding: 200px 44px 34px; }
+  .hero-copy { display: flex; flex-direction: column; justify-content: center; gap: 32px; max-width: 1120px; }
+  .chip { display: flex; align-items: center; gap: 12px; font-family: "JetBrains Mono", monospace;
+    font-size: 12px; letter-spacing: 3px; color: rgba(242,246,255,0.5); animation: mbRise 0.7s ease-out 0.78s both; }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: mbBlink 2.4s ease-in-out infinite; }
+  h1.head { margin: 0; font-size: clamp(56px, 9vw, 158px); font-weight: 700; line-height: 0.9;
+    letter-spacing: -3px; text-wrap: balance; animation: mbRise 0.8s cubic-bezier(0.2,0,0.1,1) 0.84s both; }
+  .lead { margin: 0; max-width: 620px; font-size: 20px; line-height: 1.6; color: rgba(242,246,255,0.66);
+    text-wrap: pretty; animation: mbRise 1s ease-out 0.92s both; }
+  .hero-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; animation: mbRise 1s ease-out 1.0s both; }
+  .btn { display: inline-flex; align-items: center; gap: 12px; padding: 18px 30px;
+    font-family: "JetBrains Mono", monospace; font-size: 13px; letter-spacing: 2.4px; border-radius: 2px;
+    transition: filter .2s ease, border-color .2s ease, color .2s ease; }
+  .btn.solid { background: var(--accent); color: var(--void); }
+  .btn.solid:hover { filter: brightness(1.12); }
+  .btn.line { border: 1px solid rgba(242,246,255,0.24); color: rgba(242,246,255,0.8); }
+  .btn.line:hover { border-color: var(--ice); color: var(--ice); }
+  .btn.text { font-size: 12px; letter-spacing: 2.2px; color: rgba(242,246,255,0.45); padding-left: 8px; }
+  .btn.text:hover { color: var(--ice); }
+
+  .statgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1px;
+    background: rgba(242,246,255,0.1); border: 1px solid rgba(242,246,255,0.1); animation: mbFade 1.2s ease-out 1.0s both; }
+  .statcell { display: flex; flex-direction: column; gap: 8px; padding: 20px 22px; background: var(--void); }
+  .statcell .k { font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 2.6px; color: rgba(242,246,255,0.42); }
+  .statcell .v { font-size: 27px; font-weight: 500; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
+
+  /* ---------- generic section header ---------- */
+  section { position: relative; }
+  .eyebrow { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 3px; color: var(--accent); }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 24px;
+    border-bottom: 1px solid rgba(242,246,255,0.1); padding-bottom: 18px; }
+  .sec-head h2 { margin: 0; font-size: clamp(32px, 3.8vw, 60px); font-weight: 700; letter-spacing: -1.4px; }
+  .sec-head .note { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 2.6px; color: rgba(242,246,255,0.42); }
+
+  /* ---------- reactor ---------- */
+  .reactor { padding: 130px 44px; display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 70px; align-items: center; }
+  .reactor-copy { display: flex; flex-direction: column; gap: 26px; }
+  .reactor-copy h2 { margin: 0; font-size: clamp(36px, 4.6vw, 76px); font-weight: 700; line-height: 0.98; letter-spacing: -2px; }
+  .reactor-copy p { margin: 0; max-width: 520px; font-size: 18px; line-height: 1.62; color: rgba(242,246,255,0.62); text-wrap: pretty; }
+  .specs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 22px; padding-top: 6px; }
+  .spec { display: flex; flex-direction: column; gap: 7px; border-top: 1px solid rgba(242,246,255,0.14); padding-top: 14px; }
+  .spec .v { font-size: 21px; font-weight: 500; letter-spacing: -0.4px; }
+  .spec .k { font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 2.2px; color: rgba(242,246,255,0.42); }
+  .reactor-side { display: flex; flex-direction: column; gap: 26px; }
+  .bigmoon { position: relative; aspect-ratio: 1; max-width: 420px; margin: 0 auto; width: 100%; }
+  .bigmoon .spin { position: absolute; inset: 0; animation: mbSpin 60s linear infinite; }
+  .bigmoon svg { position: absolute; inset: 0; }
+  .feed { border: 1px solid rgba(242,246,255,0.12); border-radius: 3px; overflow: hidden; }
+  .feed-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 16px;
+    border-bottom: 1px solid rgba(242,246,255,0.12); font-family: "JetBrains Mono", monospace; font-size: 10.5px;
+    letter-spacing: 2.4px; color: rgba(242,246,255,0.5); }
+  .feed-head .live { display: inline-flex; align-items: center; gap: 9px; }
+  .feed-head .live .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: mbBlink 2s ease-in-out infinite; }
+  .feed-row { display: grid; grid-template-columns: 1fr 1.4fr auto; gap: 14px; padding: 13px 16px;
+    border-bottom: 1px solid rgba(242,246,255,0.07); font-family: "JetBrains Mono", monospace; font-size: 12px; }
+  .feed-row.newest { background: rgba(95,233,208,0.07); animation: mbRowIn 0.55s ease-out both; }
+  .feed-row .h { color: var(--ice); }
+  .feed-row .x { color: rgba(242,246,255,0.4); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .feed-row .r { color: var(--accent); }
+  .feed-empty { padding: 22px 16px; font-family: "JetBrains Mono", monospace; font-size: 11.5px; letter-spacing: 1.4px; color: rgba(242,246,255,0.4); }
+
+  /* ---------- ways in ---------- */
+  .waysin { padding: 40px 44px 130px; display: flex; flex-direction: column; gap: 40px; }
+  .cards2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 22px; }
+  .wcard { display: flex; flex-direction: column; gap: 16px; padding: 32px; border-radius: 3px; }
+  .wcard.open { border: 1px solid var(--accent); background: rgba(95,233,208,0.05); transition: background .2s ease; }
+  .wcard.open:hover { background: rgba(95,233,208,0.1); }
+  .wcard.soon { border: 1px solid rgba(242,246,255,0.12); }
+  .wcard .tag { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 2.6px; }
+  .wcard.open .tag { color: var(--accent); }
+  .wcard.soon .tag { color: rgba(242,246,255,0.42); }
+  .wcard .title { font-size: 30px; font-weight: 700; letter-spacing: -1px; }
+  .wcard.open .title { color: var(--ice); }
+  .wcard.soon .title { color: rgba(242,246,255,0.6); }
+  .wcard .desc { font-size: 17px; line-height: 1.6; text-wrap: pretty; }
+  .wcard.open .desc { color: rgba(242,246,255,0.68); }
+  .wcard.soon .desc { color: rgba(242,246,255,0.5); }
+  .wcard .go { font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 2.2px; }
+  .wcard.open .go { color: var(--accent); }
+  .wcard.soon .go { color: rgba(242,246,255,0.6); }
+  .wcard.soon .go:hover { color: var(--ice); }
+
+  /* ---------- proof ---------- */
+  .proof { padding: 0 44px 130px; display: flex; flex-direction: column; gap: 40px; }
+  .cards3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; }
+  .pcard { display: flex; flex-direction: column; gap: 14px; padding: 28px; border: 1px solid rgba(242,246,255,0.12);
+    border-radius: 3px; background: rgba(242,246,255,0.02); }
+  .pcard .tag { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 2.6px; color: var(--accent); }
+  .pcard .title { font-size: 23px; font-weight: 500; letter-spacing: -0.6px; }
+  .pcard .body { font-size: 16px; line-height: 1.62; color: rgba(242,246,255,0.58); text-wrap: pretty; }
+
+  /* ---------- first bite ---------- */
+  .firstbite { padding: 0 44px 140px; }
+  .fb-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 60px; align-items: center;
+    border: 1px solid rgba(242,246,255,0.12); border-radius: 4px; padding: 56px 44px;
+    background: radial-gradient(70% 120% at 88% 50%, rgba(95,233,208,0.07), rgba(4,5,10,0)); }
+  .fb-copy { display: flex; flex-direction: column; gap: 22px; }
+  .fb-copy h2 { margin: 0; font-size: clamp(34px, 4.2vw, 66px); font-weight: 700; line-height: 1; letter-spacing: -1.8px; }
+  .fb-copy p { margin: 0; max-width: 460px; font-size: 17px; line-height: 1.62; color: rgba(242,246,255,0.62); text-wrap: pretty; }
+  .fb-cta { display: flex; flex-wrap: wrap; gap: 12px; }
+  .fb-cta a { display: inline-flex; align-items: center; gap: 10px; padding: 16px 26px;
+    font-family: "JetBrains Mono", monospace; font-size: 12.5px; letter-spacing: 2.4px; border-radius: 2px; }
+  .fb-cta a.solid { background: var(--accent); color: var(--void); }
+  .fb-cta a.solid:hover { filter: brightness(1.12); }
+  .fb-cta a.line { border: 1px solid rgba(242,246,255,0.24); color: rgba(242,246,255,0.78); }
+  .fb-cta a.line:hover { border-color: var(--ice); color: var(--ice); }
+  .receipt { display: flex; flex-direction: column; border: 1px solid rgba(242,246,255,0.18); border-radius: 3px;
+    background: #06070f; max-width: 440px; width: 100%; justify-self: end; font-family: "JetBrains Mono", monospace; }
+  .receipt-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 20px;
+    border-bottom: 1px dashed rgba(242,246,255,0.18); font-size: 10.5px; letter-spacing: 2.6px; color: rgba(242,246,255,0.5); }
+  .receipt-body { display: flex; align-items: center; gap: 20px; padding: 26px 20px; }
+  .receipt-body .mk { position: relative; width: 74px; height: 74px; flex: none; }
+  .receipt-body .mk svg { position: absolute; inset: 0; }
+  .receipt-body .blk { display: flex; flex-direction: column; gap: 6px; }
+  .receipt-body .blk .k { font-size: 11px; letter-spacing: 2.4px; color: rgba(242,246,255,0.45); }
+  .receipt-body .blk .v { font-family: "Space Grotesk", sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -1px;
+    color: var(--ice); font-variant-numeric: tabular-nums; }
+  .receipt-rows { display: flex; flex-direction: column; gap: 12px; padding: 0 20px 22px; font-size: 11.5px; }
+  .receipt-rows .row { display: flex; justify-content: space-between; gap: 14px; }
+  .receipt-rows .row .k { color: rgba(242,246,255,0.42); letter-spacing: 2px; }
+  .receipt-rows .row .a { color: var(--accent); }
+  .receipt-rows .row .t { color: rgba(242,246,255,0.72); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
+  .receipt-foot { padding: 14px 20px; border-top: 1px dashed rgba(242,246,255,0.18); font-size: 10.5px; letter-spacing: 2.4px; color: rgba(242,246,255,0.4); }
+
+  /* ---------- footer (unified mega-footer, scoped to the cinematic palette) ---------- */
+  footer.mb-footer { border-top: 1px solid rgba(242,246,255,0.1); background: rgba(255,255,255,0.015); padding: 64px 0 30px; margin-top: 40px; }
+  footer.mb-footer .mb-container { max-width: 1200px; margin: 0 auto; padding: 0 44px; }
+  .mb-footer-cols { display: grid; grid-template-columns: 1.4fr repeat(5, 1fr); gap: 34px; margin-bottom: 34px; }
+  .mb-footer .mb-brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; margin-bottom: 16px; }
+  .mb-footer .mb-brand-name { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 20px; color: var(--ice); }
+  .mb-footer-brand p { margin: 0; color: rgba(242,246,255,0.5); font-size: 14px; line-height: 1.55; max-width: 260px; text-wrap: pretty; }
+  .mb-footer-col h4 { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(242,246,255,0.5); margin: 0 0 14px; }
+  .mb-footer-col a { display: block; padding: 5px 0; color: rgba(242,246,255,0.72); text-decoration: none; font-size: 14px; }
+  .mb-footer-col a:hover { color: var(--accent); }
+  .mb-footer-bottom { border-top: 1px solid rgba(242,246,255,0.1); padding-top: 24px; display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; color: rgba(242,246,255,0.5); font-size: 13px; }
+  .mb-footer-legal { max-width: 620px; line-height: 1.5; }
+  .mb-footer-legal strong { color: rgba(242,246,255,0.72); }
+
+  /* below this the seven labels + CTAs no longer fit, so collapse to a hamburger */
+  @media (max-width: 1120px) {
+    .mb-nav-links { display: none; }
+    .mb-nav-cta .mb-nav-cta-btn { display: none; }
+    .mb-hamburger { display: flex; }
   }
 
-  h1 {
-    font-size: clamp(1.75rem, 5vw, 3rem);
-    font-weight: 700;
-    line-height: 1.2;
-    margin: 0 0 0.5rem 0;
-    color: var(--neutral-900);
+  /* ---------- tablet ---------- */
+  @media (max-width: 1024px) {
+    .mb-nav-inner { padding: 0 32px; }
+    .hero { padding: 150px 32px 30px; }
+    .reactor { padding: 96px 32px; gap: 46px; }
+    .waysin { padding: 40px 32px 96px; }
+    .proof { padding: 0 32px 96px; }
+    .firstbite { padding: 0 32px 100px; }
+    .fb-box { padding: 44px 32px; gap: 40px; }
+    footer.mb-footer .mb-container { padding: 0 32px; }
+    .mb-footer-cols { grid-template-columns: 1fr 1fr; }
+    .receipt { justify-self: stretch; max-width: 100%; }
   }
 
-  h2 {
-    font-size: clamp(1.35rem, 4vw, 2rem);
-    font-weight: 700;
-    line-height: 1.2;
-    margin: 2.5rem 0 1rem 0;
-    color: var(--neutral-900);
+  /* ---------- mobile ---------- */
+  @media (max-width: 640px) {
+    .mb-nav-inner { padding: 0 20px; }
+    .hero { padding: 132px 20px 24px; }
+    h1.head { letter-spacing: -1.5px; }
+    .lead { font-size: 17px; }
+    .reactor { padding: 70px 20px; gap: 40px; }
+    .waysin { padding: 32px 20px 70px; }
+    .proof { padding: 0 20px 70px; }
+    .firstbite { padding: 0 20px 84px; }
+    .sec-head { flex-wrap: wrap; }
+    .fb-box { padding: 32px 20px; gap: 30px; }
+    .wcard { padding: 26px; }
+    footer.mb-footer .mb-container { padding: 0 20px; }
+    .mb-footer-cols { grid-template-columns: 1fr; gap: 26px; }
+    .mb-footer-bottom { flex-direction: column; align-items: flex-start; gap: 14px; }
   }
 
-  h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin: 1.5rem 0 0.75rem 0;
-    color: var(--neutral-900);
+  /* ---------- small phones ---------- */
+  @media (max-width: 400px) {
+    .mb-nav-inner { padding: 0 16px; }
+    .hero { padding: 120px 16px 20px; }
+    .reactor, .waysin, .proof, .firstbite, footer.site { padding-left: 16px; padding-right: 16px; }
+    .btn { padding: 15px 22px; }
   }
 
-  p {
-    margin: 0 0 1rem 0;
-    color: var(--neutral-700);
-    font-size: 1rem;
-  }
-
-  a {
-    color: var(--primary);
-    text-decoration: none;
-  }
-
-  a:hover {
-    text-decoration: underline;
-  }
-
-  /* Container and layout */
-  .lw-container {
-    max-width: 640px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-  }
-
-  .lw-container-wide {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-  }
-
-  /* Hero: clear value prop + immediate CTA */
-  .lw-hero {
-    padding: 3rem 0;
-    text-align: center;
-  }
-
-  .lw-hero h1 {
-    margin-bottom: 1rem;
-  }
-
-  .lw-hero-subheading {
-    font-size: clamp(1.1rem, 2.5vw, 1.35rem);
-    color: var(--neutral-700);
-    margin-bottom: 2rem;
-    line-height: 1.4;
-  }
-
-  .lw-hero-stat {
-    display: inline-block;
-    margin: 0.5rem;
-    font-size: 0.9rem;
-    color: var(--neutral-500);
-  }
-
-  /* Primary CTA button: high contrast, thumb-friendly */
-  .lw-btn {
-    display: inline-block;
-    padding: 1rem 2rem;
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    min-height: 48px;
-    min-width: 48px;
-    text-align: center;
-    letter-spacing: 0.3px;
-  }
-
-  .lw-btn:hover {
-    background: var(--secondary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
-  }
-
-  .lw-btn-secondary {
-    background: var(--neutral-100);
-    color: var(--primary);
-    border: 2px solid var(--neutral-200);
-  }
-
-  .lw-btn-secondary:hover {
-    background: var(--neutral-50);
-    border-color: var(--primary);
-  }
-
-  .lw-btn-group {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin: 2rem 0;
-  }
-
-  /* Live proof section: show social proof immediately */
-  .lw-proof {
-    background: var(--neutral-50);
-    border-top: 1px solid var(--neutral-200);
-    border-bottom: 1px solid var(--neutral-200);
-    padding: 2rem 0;
-    margin: 2rem 0;
-  }
-
-  .lw-proof-title {
-    font-size: 0.9rem;
-    color: var(--neutral-500);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-weight: 600;
-    margin-bottom: 1rem;
-  }
-
-  .lw-proof-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 2rem;
-  }
-
-  .lw-proof-item {
-    text-align: center;
-  }
-
-  .lw-proof-number {
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--primary);
-    font-family: 'Courier New', monospace;
-    margin-bottom: 0.5rem;
-  }
-
-  .lw-proof-label {
-    font-size: 0.85rem;
-    color: var(--neutral-500);
-    line-height: 1.3;
-  }
-
-  /* Task-based sections: scannable, action-oriented */
-  .lw-section {
-    padding: 2.5rem 0;
-  }
-
-  .lw-section-title {
-    margin-bottom: 1.5rem;
-  }
-
-  /* Two-column task list for larger screens */
-  .lw-tasks {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  .lw-task {
-    padding: 1.5rem;
-    background: var(--neutral-50);
-    border-radius: 0.5rem;
-    border-left: 4px solid var(--primary);
-  }
-
-  .lw-task h3 {
-    margin-top: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .lw-task-icon {
-    font-size: 1.5rem;
-    flex-shrink: 0;
-  }
-
-  .lw-task p {
-    margin-bottom: 0.75rem;
-  }
-
-  .lw-task-link {
-    font-weight: 600;
-    font-size: 0.95rem;
-  }
-
-  /* Social proof: leaderboard preview */
-  .lw-leaderboard-preview {
-    background: var(--neutral-50);
-    padding: 1.5rem;
-    border-radius: 0.5rem;
-    margin: 2rem 0;
-    border: 1px solid var(--neutral-200);
-  }
-
-  .lw-leaderboard-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.95rem;
-  }
-
-  .lw-leaderboard-table th {
-    text-align: left;
-    padding: 0.75rem 0;
-    border-bottom: 2px solid var(--neutral-200);
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    color: var(--neutral-500);
-    letter-spacing: 0.05em;
-  }
-
-  .lw-leaderboard-table td {
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--neutral-200);
-  }
-
-  .lw-rank-badge {
-    font-weight: 700;
-    min-width: 2rem;
-  }
-
-  .lw-rank-1 {
-    color: var(--primary);
-    font-size: 1.1rem;
-  }
-
-  .lw-address {
-    font-family: 'Courier New', monospace;
-    font-size: 0.9rem;
-    color: var(--neutral-500);
-  }
-
-  /* Trust signals: simple, scannable */
-  .lw-trust {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 1.5rem;
-    margin: 2rem 0;
-  }
-
-  .lw-trust-item {
-    text-align: center;
-    padding: 1rem;
-  }
-
-  .lw-trust-icon {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .lw-trust-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--neutral-900);
-    margin-bottom: 0.25rem;
-  }
-
-  .lw-trust-desc {
-    font-size: 0.8rem;
-    color: var(--neutral-500);
-    line-height: 1.4;
-  }
-
-  /* Feature list: readable, benefit-focused */
-  .lw-features {
-    list-style: none;
-    padding: 0;
-    margin: 1.5rem 0;
-  }
-
-  .lw-features li {
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--neutral-200);
-    display: flex;
-    gap: 1rem;
-  }
-
-  .lw-features li:last-child {
-    border-bottom: none;
-  }
-
-  .lw-features-check {
-    font-size: 1.5rem;
-    flex-shrink: 0;
-    color: var(--success);
-  }
-
-  .lw-features-text strong {
-    display: block;
-    font-weight: 600;
-    color: var(--neutral-900);
-    margin-bottom: 0.25rem;
-  }
-
-  .lw-features-text {
-    color: var(--neutral-700);
-    font-size: 0.95rem;
-  }
-
-  /* Timeline: scannable milestone view */
-  .lw-timeline {
-    margin: 2rem 0;
-  }
-
-  .lw-timeline-item {
-    padding: 1.5rem 0;
-    padding-left: 2rem;
-    position: relative;
-    border-left: 2px solid var(--neutral-200);
-  }
-
-  .lw-timeline-item::before {
-    content: '';
-    position: absolute;
-    left: -6px;
-    top: 1.75rem;
-    width: 12px;
-    height: 12px;
-    background: var(--primary);
-    border-radius: 50%;
-  }
-
-  .lw-timeline-date {
-    font-size: 0.85rem;
-    color: var(--neutral-500);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.25rem;
-  }
-
-  .lw-timeline-title {
-    font-weight: 600;
-    color: var(--neutral-900);
-    margin-bottom: 0.5rem;
-  }
-
-  .lw-timeline-desc {
-    font-size: 0.95rem;
-    color: var(--neutral-700);
-    line-height: 1.5;
-  }
-
-  /* CTA band: conversion focus */
-  .lw-cta-band {
-    background: var(--primary);
-    color: white;
-    padding: 3rem 1.5rem;
-    text-align: center;
-    margin: 3rem 0;
-  }
-
-  .lw-cta-band h2 {
-    color: white;
-    margin-top: 0;
-  }
-
-  .lw-cta-band p {
-    color: rgba(255, 255, 255, 0.9);
-  }
-
-  /* Responsive: mobile-first */
-  @media (min-width: 640px) {
-    .lw-hero {
-      padding: 4rem 0;
-    }
-
-    .lw-tasks {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .lw-proof-grid {
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1.5rem;
-    }
-
-    .lw-trust {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .lw-home {
-      background: #111827;
-      color: #f3f4f6;
-    }
-
-    .lw-hero h1,
-    h1, h2, h3 {
-      color: #f9fafb;
-    }
-
-    p {
-      color: #d1d5db;
-    }
-
-    .lw-proof,
-    .lw-task,
-    .lw-leaderboard-preview {
-      background: #1f2937;
-      border-color: #374151;
-    }
-
-    .lw-leaderboard-table th,
-    .lw-leaderboard-table td {
-      border-color: #374151;
-    }
-
-    .lw-cta-band {
-      background: #6d28d9;
-    }
+  @media (prefers-reduced-motion: reduce) {
+    .mb-meganav, .chip, h1.head, .lead, .hero-cta, .statgrid { animation: none !important; }
+    .chip, h1.head, .lead, .hero-cta, .statgrid, .mb-meganav { opacity: 1 !important; transform: none !important; }
   }
 </style>
-{% endblock %}
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div class="bg-scan"></div>
 
-{% block content %}
-<!-- Hero: Clear, immediate value prop -->
-<section class="lw-hero">
-  <div class="lw-container">
-    <h1>Mine your first block in 30 seconds</h1>
-    <p class="lw-hero-subheading">No signup. No fees. No ICO. Earn real MBITE directly to your wallet.</p>
+  {% include "partials/mega_nav.html" %}
 
-    <div style="margin: 1.5rem 0;">
-      <span class="lw-hero-stat">50K+ miners</span>
-      <span class="lw-hero-stat">•</span>
-      <span class="lw-hero-stat">Testnet live</span>
-      <span class="lw-hero-stat">•</span>
-      <span class="lw-hero-stat">Fair launch</span>
-    </div>
-
-    <div class="lw-btn-group">
-      <a href="/mining" class="lw-btn">Start Mining Now</a>
-      <a href="/wallet" class="lw-btn lw-btn-secondary">Get Wallet</a>
-    </div>
-  </div>
-</section>
-
-<!-- Live proof: Show it working right now -->
-<section class="lw-proof">
-  <div class="lw-container">
-    <div class="lw-proof-title">Network Activity Right Now</div>
-    <div class="lw-proof-grid">
-      <div class="lw-proof-item">
-        <div class="lw-proof-number" id="lw-blocks">0</div>
-        <div class="lw-proof-label">Blocks Mined</div>
-      </div>
-      <div class="lw-proof-item">
-        <div class="lw-proof-number" id="lw-miners">0</div>
-        <div class="lw-proof-label">Active Miners</div>
-      </div>
-      <div class="lw-proof-item">
-        <div class="lw-proof-number" id="lw-difficulty">0</div>
-        <div class="lw-proof-label">Difficulty</div>
-      </div>
-      <div class="lw-proof-item">
-        <div class="lw-proof-number" id="lw-circulation">0</div>
-        <div class="lw-proof-label">MBITE in Circulation</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Top miners: Social proof in action -->
-<section class="lw-section">
-  <div class="lw-container">
-    <h2>Who's Mining Right Now</h2>
-    <p>Real miners, real blocks, real earnings. Leaderboard updates every few minutes.</p>
-
-    <div class="lw-leaderboard-preview">
-      <table class="lw-leaderboard-table">
-        <thead>
-          <tr>
-            <th>Rank</th>
-            <th>Miner</th>
-            <th>Blocks</th>
-            <th>MBITE</th>
-          </tr>
-        </thead>
-        <tbody id="lw-leaderboard-body">
-          <tr>
-            <td colspan="4" style="text-align: center; padding: 2rem; color: var(--neutral-500);">Loading leaderboard…</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div style="text-align: center; margin-top: 1.5rem;">
-      <a href="/leaderboard" class="lw-task-link">View full leaderboard →</a>
-    </div>
-  </div>
-</section>
-
-<!-- How to mine: Task-focused sections -->
-<section class="lw-section">
-  <div class="lw-container">
-    <h2>Three Ways to Mine</h2>
-
-    <div class="lw-tasks">
-      <div class="lw-task">
-        <h3><span class="lw-task-icon">⚡</span> Browser Mining</h3>
-        <p>Mine in your browser right now. No download. No setup. Works on any device.</p>
-        <a href="/mining" class="lw-task-link">Start mining →</a>
-      </div>
-
-      <div class="lw-task">
-        <h3><span class="lw-task-icon">💻</span> Download Miner</h3>
-        <p>Run our optimized miner for 10x faster hashing. Works on Windows, Mac, Linux.</p>
-        <a href="/get-wallet" class="lw-task-link">Get miner →</a>
-      </div>
-
-      <div class="lw-task">
-        <h3><span class="lw-task-icon">🔗</span> Run Your Node</h3>
-        <p>Full node mining. Complete network security. For advanced miners.</p>
-        <a href="/developers" class="lw-task-link">Learn more →</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Why this works: Feature benefits -->
-<section class="lw-section">
-  <div class="lw-container">
-    <h2>Why Miners Choose MoonBite</h2>
-
-    <ul class="lw-features">
-      <li>
-        <span class="lw-features-check">✓</span>
-        <div class="lw-features-text">
-          <strong>You control your coins</strong>
-          MBITE goes straight to your wallet address. No account. No intermediary.
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="chip"><span class="dot"></span><span>PRE-MAINNET &middot; LIVE TESTNET &middot; MBITE</span></div>
+        <h1 class="head">Mine the moon.</h1>
+        <p class="lead">You can't buy MBITE. It isn't listed anywhere &mdash; and that's the point. Proof-of-work money you mine on your own hardware, hold in your own wallet, and verify with your own node. No premine. No gatekeepers.</p>
+        <div class="hero-cta">
+          <a href="/mine" class="btn solid">START MINING<span>&#8599;</span></a>
+          <a href="/get-wallet" class="btn line">GET THE WALLET</a>
+          <a href="#reactor" class="btn text">or watch blocks get mined &rarr;</a>
         </div>
-      </li>
-      <li>
-        <span class="lw-features-check">✓</span>
-        <div class="lw-features-text">
-          <strong>No premine or founder advantage</strong>
-          Everyone mines the same 50 MBITE per block. Same rules for everyone, forever.
+      </div>
+      <div class="statgrid" id="statgrid">
+        <div class="statcell"><span class="k">BLOCK HEIGHT</span><span class="v" id="stHeight">&mdash;</span></div>
+        <div class="statcell"><span class="k">MBITE MINED</span><span class="v" id="stMined">&mdash;</span></div>
+        <div class="statcell"><span class="k">TRANSACTIONS</span><span class="v" id="stTx">&mdash;</span></div>
+        <div class="statcell"><span class="k">MEMPOOL</span><span class="v" id="stMempool">&mdash;</span></div>
+      </div>
+    </section>
+
+    <!-- REACTOR -->
+    <section id="reactor" class="reactor">
+      <div class="reactor-copy" id="supply">
+        <span class="eyebrow">THE MECHANIC</span>
+        <h2>Every block is a bite.</h2>
+        <p>The supply is fixed and public. Each block mined takes a piece out of it &mdash; one published emission schedule, no insider allocation, nothing held back. The mark isn't decoration: it's the ledger, mid-bite.</p>
+        <div class="specs">
+          <div class="spec"><span class="v">21,000,000</span><span class="k">MAX SUPPLY</span></div>
+          <div class="spec"><span class="v">50 MBITE</span><span class="k">GENESIS REWARD</span></div>
+          <div class="spec"><span class="v">210,000</span><span class="k">BLOCKS PER HALVING</span></div>
+          <div class="spec"><span class="v">2.5 min</span><span class="k">TARGET BLOCK TIME</span></div>
         </div>
-      </li>
-      <li>
-        <span class="lw-features-check">✓</span>
-        <div class="lw-features-text">
-          <strong>Proof you were early</strong>
-          Your mining receipt is cryptographic fact. Share #MinedMyFirstBlock. It's verifiable.
+      </div>
+      <div class="reactor-side">
+        <div class="bigmoon">
+          <div class="spin">
+            <svg viewBox="-120 -120 240 240">
+              <circle cx="0" cy="0" r="112" fill="none" stroke="#F2F6FF" stroke-opacity="0.14" stroke-width="0.8"/>
+              <circle cx="0" cy="0" r="104" fill="none" stroke="#5FE9D0" stroke-opacity="0.3" stroke-width="0.8" stroke-dasharray="1 9"/>
+            </svg>
+          </div>
+          <svg viewBox="-120 -120 240 240">
+            <mask id="mbBigBite" maskUnits="userSpaceOnUse" x="-120" y="-120" width="240" height="240">
+              <rect x="-120" y="-120" width="240" height="240" fill="#fff"/>
+              <circle cx="45" cy="-12" r="76" fill="#000"/>
+            </mask>
+            <g mask="url(#mbBigBite)">
+              <circle cx="-4" cy="0" r="86" fill="#5FE9D0" opacity="0.5"/>
+              <circle cx="4" cy="0" r="86" fill="#5B7BFF" opacity="0.5"/>
+              <circle cx="0" cy="0" r="86" fill="#F2F6FF"/>
+              <circle cx="0" cy="0" r="57" fill="none" stroke="#04050a" stroke-opacity="0.14" stroke-width="1.4"/>
+              <circle cx="-32" cy="-26" r="5" fill="#04050a" opacity="0.13"/>
+              <circle cx="-14" cy="34" r="3" fill="#04050a" opacity="0.11"/>
+            </g>
+            <circle id="reactorPulse" cx="0" cy="0" r="86" fill="none" stroke="#5FE9D0" stroke-width="1.6" opacity="0"/>
+          </svg>
         </div>
-      </li>
-      <li>
-        <span class="lw-features-check">✓</span>
-        <div class="lw-features-text">
-          <strong>Real blockchain security</strong>
-          Every block you mine makes the network stronger and more decentralized.
+        <div class="feed">
+          <div class="feed-head">
+            <span class="live"><span class="dot"></span>LIVE REACTOR</span>
+            <span id="feedNote">TESTNET &middot; CONNECTING&hellip;</span>
+          </div>
+          <div id="feedRows">
+            <div class="feed-empty" id="feedEmpty">Waiting for the node&hellip;</div>
+          </div>
         </div>
-      </li>
-      <li>
-        <span class="lw-features-check">✓</span>
-        <div class="lw-features-text">
-          <strong>Immutable, predictable economics</strong>
-          50 MBITE per block. Halving every 700K blocks. Rules can't change.
+      </div>
+    </section>
+
+    <!-- WAYS IN -->
+    <section id="mine" class="waysin">
+      <div class="sec-head">
+        <h2>Two honest ways in.</h2>
+        <span class="note">ONE OF THEM WORKS TODAY</span>
+      </div>
+      <div class="cards2">
+        <a href="/mine" class="wcard open">
+          <span class="tag">01 &middot; OPEN NOW</span>
+          <span class="title">Mine it</span>
+          <span class="desc">Point a miner at the network and earn the block reward directly. Windows, macOS, Linux &mdash; or watch it happen in your browser first.</span>
+          <span class="go">DOWNLOAD THE MINER &rarr;</span>
+        </a>
+        <div class="wcard soon">
+          <span class="tag">02 &middot; NOT YET</span>
+          <span class="title">Buy it</span>
+          <span class="desc">MBITE isn't trading on any exchange. When that changes we'll say so once, in plain language. No countdowns, no price talk.</span>
+          <a href="/markets" class="go">TELL ME WHEN IT LISTS &rarr;</a>
         </div>
-      </li>
-    </ul>
-  </div>
-</section>
-
-<!-- Timeline: What's next -->
-<section class="lw-section">
-  <div class="lw-container">
-    <h2>What Happens Next</h2>
-    <p>No surprises. No pivot. Clear milestones.</p>
-
-    <div class="lw-timeline">
-      <div class="lw-timeline-item">
-        <div class="lw-timeline-date">Now - Aug 2026</div>
-        <div class="lw-timeline-title">Testnet Mining</div>
-        <div class="lw-timeline-desc">Mine real blocks on testnet. Every block you mine will transfer to mainnet. Build your early-miner status now.</div>
       </div>
+    </section>
 
-      <div class="lw-timeline-item">
-        <div class="lw-timeline-date">Q3 2026</div>
-        <div class="lw-timeline-title">Mainnet Launch</div>
-        <div class="lw-timeline-desc">MoonBite goes live. Your testnet coins transfer to mainnet. Network becomes fully decentralized.</div>
+    <!-- PROOF -->
+    <section id="proof" class="proof">
+      <div class="sec-head">
+        <h2>Proof, not promises.</h2>
+        <a href="/whitepaper">READ THE DESIGN RECORDS &rarr;</a>
       </div>
-
-      <div class="lw-timeline-item">
-        <div class="lw-timeline-date">Q4 2026</div>
-        <div class="lw-timeline-title">Exchange Listings</div>
-        <div class="lw-timeline-desc">MBITE starts trading on crypto exchanges. Early miners have real market advantage.</div>
+      <div class="cards3">
+        <div class="pcard">
+          <span class="tag">NO PREMINE</span>
+          <span class="title">Fair launch, in the open</span>
+          <span class="body">Every MBITE is mined under one published emission schedule. No insider allocation, no head start, nothing reserved.</span>
+        </div>
+        <div class="pcard">
+          <span class="tag">SELF-CUSTODY</span>
+          <span class="title">Your keys, your coins</span>
+          <span class="body">Non-custodial by default. This site will never ask you for a seed phrase or a private key &mdash; and never needs to.</span>
+        </div>
+        <div class="pcard">
+          <span class="tag">VERIFY</span>
+          <span class="title">Don't trust, check</span>
+          <span class="body">An open explorer and a read-only API. Every claim on this page can be tested against the chain by you, right now.</span>
+        </div>
       </div>
+    </section>
 
-      <div class="lw-timeline-item">
-        <div class="lw-timeline-date">2027+</div>
-        <div class="lw-timeline-title">Adoption</div>
-        <div class="lw-timeline-desc">Merchants accept MBITE. Wallets integrate it. MoonBite becomes the reference fair-launch design.</div>
+    <!-- FIRST BITE -->
+    <section id="firstbite" class="firstbite">
+      <div class="fb-box">
+        <div class="fb-copy">
+          <span class="eyebrow">THE RITUAL</span>
+          <h2>Take your first bite.</h2>
+          <p>Mine your first block and the wallet issues a receipt: height, timestamp, hash. It can't be bought and it can't be faked &mdash; anyone can check it against the chain. That's the only membership card this network has.</p>
+          <div class="fb-cta">
+            <a href="/mine" class="solid">MINE MY FIRST BLOCK<span>&#8599;</span></a>
+            <a href="/explorer" class="line">VERIFY A RECEIPT</a>
+          </div>
+        </div>
+        <div class="receipt">
+          <div class="receipt-top"><span>FIRST BITE &middot; RECEIPT</span><span>MBITE</span></div>
+          <div class="receipt-body">
+            <div class="mk">
+              <svg viewBox="-100 -100 200 200">
+                <mask id="mbReceiptBite" maskUnits="userSpaceOnUse" x="-100" y="-100" width="200" height="200">
+                  <rect x="-100" y="-100" width="200" height="200" fill="#fff"/>
+                  <circle cx="50" cy="-13" r="84" fill="#000"/>
+                </mask>
+                <g mask="url(#mbReceiptBite)"><circle cx="0" cy="0" r="92" fill="#F2F6FF"/></g>
+              </svg>
+            </div>
+            <div class="blk"><span class="k">BLOCK</span><span class="v" id="receiptHeight">&mdash;</span></div>
+          </div>
+          <div class="receipt-rows">
+            <div class="row"><span class="k">REWARD</span><span class="a">+10.00000000</span></div>
+            <div class="row"><span class="k">HASH</span><span class="t" id="receiptHash">&mdash;</span></div>
+            <div class="row"><span class="k">MINED BY</span><span class="t">you</span></div>
+          </div>
+          <div class="receipt-foot">VERIFIABLE IN THE EXPLORER</div>
+        </div>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<!-- Trust signals: Verifiable claims -->
-<section class="lw-section">
-  <div class="lw-container">
-    <h2>You Can Verify Everything</h2>
+    {% include "partials/mega_footer.html" %}
+  </main>
 
-    <div class="lw-trust">
-      <div class="lw-trust-item">
-        <div class="lw-trust-icon">📖</div>
-        <div class="lw-trust-label">Open Source</div>
-        <div class="lw-trust-desc">Code on GitHub. Audit it. Fork it. Run it yourself.</div>
-      </div>
-
-      <div class="lw-trust-item">
-        <div class="lw-trust-icon">✓</div>
-        <div class="lw-trust-label">No Premine</div>
-        <div class="lw-trust-desc">Genesis block contains zero reserved coins. Founders mine like everyone.</div>
-      </div>
-
-      <div class="lw-trust-item">
-        <div class="lw-trust-icon">⚖️</div>
-        <div class="lw-trust-label">Fair Launch</div>
-        <div class="lw-trust-desc">No ICO. No founder allocation. No venture funding. Mining only.</div>
-      </div>
-
-      <div class="lw-trust-item">
-        <div class="lw-trust-icon">📊</div>
-        <div class="lw-trust-label">Transparent</div>
-        <div class="lw-trust-desc">All data on-chain. No secrets. No hidden supply. No surprises.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Conversion band: Final CTA -->
-<section class="lw-cta-band">
-  <div class="lw-container">
-    <h2>Ready to Mine?</h2>
-    <p>Start in your browser. No download. No signup. You already have what you need.</p>
-    <div class="lw-btn-group" style="margin-top: 2rem;">
-      <a href="/mining" class="lw-btn">Start Mining Now</a>
-      <a href="/wallet" class="lw-btn lw-btn-secondary" style="background: white; color: var(--primary);">Get Wallet</a>
-    </div>
-  </div>
-</section>
-{% endblock %}
-
-{% block scripts_extra %}
 <script>
-  async function loadLWStats() {
-    try {
-      const res = await fetch('/api/mining/status?include=leaderboard');
-      const data = await res.json();
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  function num(n) { return Number(n).toLocaleString("en-US"); }
 
-      // Update stats with animation
-      animateNumber('lw-blocks', data.current_height || 0);
-      animateNumber('lw-miners', data.active_jobs || 0);
-      animateNumber('lw-difficulty', Math.round(data.difficulty || 0));
-      animateNumber('lw-circulation', Math.round((data.current_height || 0) * 50));
+  /* ---- live network data (real endpoints, honest empty state) ---- */
+  function subsidyFor(height) {
+    var halvings = Math.floor(height / 1000000);
+    return 10 / Math.pow(2, halvings);
+  }
+  function shortHash(h) {
+    if (!h) return "\u2014";
+    return h.length > 26 ? h.slice(0, 20) + "\u2026" + h.slice(-4) : h;
+  }
 
-      // Update leaderboard
-      if (data.leaderboard && data.leaderboard.length) {
-        const tbody = document.getElementById('lw-leaderboard-body');
-        tbody.innerHTML = '';
-        data.leaderboard.slice(0, 5).forEach((miner, i) => {
-          const row = document.createElement('tr');
-          const rankClass = i === 0 ? 'lw-rank-1' : '';
-          row.innerHTML = `
-            <td><span class="lw-rank-badge ${rankClass}">#${i + 1}</span></td>
-            <td><span class="lw-address">${miner.address.substring(0, 16)}…</span></td>
-            <td>${miner.blocks}</td>
-            <td>${(miner.blocks * 50).toLocaleString()}</td>
-          `;
-          tbody.appendChild(row);
-        });
+  var newestSeen = null;
+
+  function loadInfo() {
+    fetch("/api/blockchain/info").then(function (r) { return r.json(); }).then(function (d) {
+      if (!d || d.status !== "success") throw new Error("bad");
+      $("stHeight").textContent = num(d.height);
+      $("stMined").textContent = num(Math.round(d.total_money_coins || 0));
+      $("stTx").textContent = num(d.tx_count || 0);
+      $("stMempool").textContent = num(d.mempool_size || 0) + " tx";
+    }).catch(function () { /* leave the em-dashes: never fabricate */ });
+  }
+
+  function loadBlocks() {
+    fetch("/api/explorer/blocks?limit=4").then(function (r) { return r.json(); }).then(function (d) {
+      if (!d || d.status !== "success" || !d.blocks) throw new Error("bad");
+      var blocks = d.blocks;
+      $("feedNote").innerHTML = "TESTNET &middot; LIVE";
+      if (!blocks.length) {
+        $("feedRows").innerHTML = '<div class="feed-empty">No blocks yet &mdash; be the first to mine one.</div>';
+        return;
       }
-    } catch (error) {
-      console.error('Stats load failed:', error);
-    }
+      var isNew = newestSeen !== null && blocks[0] && blocks[0].height > newestSeen;
+      var html = blocks.map(function (b, i) {
+        var cls = (i === 0 && isNew) ? "feed-row newest" : "feed-row";
+        return '<div class="' + cls + '">' +
+          '<span class="h">#' + num(b.height) + '</span>' +
+          '<span class="x">' + shortHash(b.hash) + '</span>' +
+          '<span class="r">+' + subsidyFor(b.height).toFixed(2) + '</span>' +
+        '</div>';
+      }).join("");
+      $("feedRows").innerHTML = html;
+      if (blocks[0]) newestSeen = blocks[0].height;
+
+      // pulse the reactor moon when a new block lands
+      if (isNew) {
+        var pulse = $("reactorPulse");
+        pulse.style.animation = "none"; void pulse.offsetWidth;
+        pulse.style.animation = "mbPulseA 1.5s ease-out";
+      }
+
+      // fill the "first bite" receipt from the oldest visible real block
+      var recv = blocks[blocks.length - 1];
+      if (recv) {
+        $("receiptHeight").textContent = "#" + num(recv.height);
+        $("receiptHash").textContent = shortHash(recv.hash);
+      }
+    }).catch(function () {
+      $("feedNote").innerHTML = "TESTNET &middot; OFFLINE";
+      $("feedRows").innerHTML = '<div class="feed-empty">Node unreachable &mdash; start it to see live blocks.</div>';
+    });
   }
 
-  function animateNumber(id, target) {
-    const elem = document.getElementById(id);
-    if (!elem) return;
-    const start = parseInt(elem.textContent) || 0;
-    const diff = target - start;
-    const steps = 30;
-    let current = 0;
-    const interval = setInterval(() => {
-      current++;
-      const val = Math.floor(start + (diff * current / steps));
-      elem.textContent = val.toLocaleString();
-      if (current >= steps) clearInterval(interval);
-    }, 30);
-  }
+  function tick() { loadInfo(); loadBlocks(); }
+  tick();
+  setInterval(tick, 5000);
 
-  loadLWStats();
-  setInterval(loadLWStats, 12000);
+  // ---------- mega-nav dropdowns (same behaviour as site.js on every other page) ----------
+  var navItems = Array.prototype.slice.call(document.querySelectorAll(".mb-nav-item"));
+  function closeAllDropdowns() { navItems.forEach(function (i) { i.classList.remove("is-open"); }); }
+  navItems.forEach(function (item) {
+    var trigger = item.querySelector(".mb-nav-trigger");
+    if (!trigger || !item.querySelector(".mb-dropdown")) return;
+    trigger.addEventListener("click", function (e) {
+      e.preventDefault();
+      var wasOpen = item.classList.contains("is-open");
+      closeAllDropdowns();
+      if (!wasOpen) item.classList.add("is-open");
+    });
+  });
+
+  // ---------- mobile sheet ----------
+  var hamburger = document.querySelector(".mb-hamburger");
+  var sheet = document.querySelector(".mb-mobile-sheet");
+  var sheetClose = document.querySelector(".mb-mobile-close");
+  function openMobileSheet() { if (sheet) { sheet.classList.add("is-open"); document.body.style.overflow = "hidden"; } }
+  function closeMobileSheet() { if (sheet) { sheet.classList.remove("is-open"); document.body.style.overflow = ""; } }
+  if (hamburger) hamburger.addEventListener("click", openMobileSheet);
+  if (sheetClose) sheetClose.addEventListener("click", closeMobileSheet);
+  document.querySelectorAll(".mb-mobile-group > button").forEach(function (btn) {
+    btn.addEventListener("click", function () { btn.parentElement.classList.toggle("is-open"); });
+  });
+  document.querySelectorAll(".mb-mobile-links a").forEach(function (a) {
+    a.addEventListener("click", closeMobileSheet);
+  });
+
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest(".mb-nav-item")) closeAllDropdowns();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { closeAllDropdowns(); closeMobileSheet(); }
+  });
+})();
 </script>
-{% endblock %}
+</body>
+</html>
