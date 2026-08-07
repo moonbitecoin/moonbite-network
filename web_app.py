@@ -72,18 +72,21 @@ if _TRUSTED_PROXY_COUNT > 0:
         app.wsgi_app, x_for=_TRUSTED_PROXY_COUNT, x_proto=1, x_host=1
     )
 
-# Force HTTPS in production
+# Force HTTPS and canonical domain (www.moonbite.org)
 @app.before_request
-def force_https():
-    """Force all traffic to HTTPS in production."""
+def force_https_and_www():
+    """Force HTTPS and redirect bare domain to www subdomain."""
+    # Force HTTPS in production
     if os.environ.get("RAILWAY_ENVIRONMENT") == "production":
         if request.headers.get("X-Forwarded-Proto", "http") != "https":
             url = request.url.replace("http://", "https://", 1)
             return redirect(url, code=301)
-    # Also set HSTS header
-    if request.headers.get("X-Forwarded-Proto", "http") == "https":
-        # HSTS header already set by nginx, but ensure it's present
-        pass
+
+    # Redirect moonbite.org to www.moonbite.org for consistent SSL certificate
+    host = request.host.lower()
+    if host in ["moonbite.org", "moonbite.org:443"]:
+        url = request.url.replace(host, "www.moonbite.org", 1)
+        return redirect(url, code=301)
 
 # Hard cap on request body size. Flask/Werkzeug default to unlimited, so without
 # this a single POST with a multi-hundred-MB body forces the worker to buffer +
