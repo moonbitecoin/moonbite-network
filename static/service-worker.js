@@ -4,7 +4,7 @@
  * TLS 1.3 compliant, secure headers support
  */
 
-const CACHE_VERSION = 'moonbite-v3-ssl-fix';
+const CACHE_VERSION = 'moonbite-v4-bulletproof-wallet';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
 const API_CACHE = `${CACHE_VERSION}-api`;
