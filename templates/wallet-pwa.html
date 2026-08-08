@@ -2275,12 +2275,14 @@
         });
 
         // ====== Initialization ======
-        // Load settings and preferences first
-        await settingsManager.load();
+        (async () => {
+            // Load settings and preferences first
+            await settingsManager.load();
 
-        // Start blockchain monitor for offline detection
-        blockchainMonitor = new BlockchainMonitor(30000); // Poll every 30 seconds
-        blockchainMonitor.start();
+            // Start blockchain monitor for offline detection
+            blockchainMonitor = new BlockchainMonitor(30000); // Poll every 30 seconds
+            blockchainMonitor.start();
+        })();
 
         // ====== Price Ticker Manager ======
         class PriceTickerManager {
