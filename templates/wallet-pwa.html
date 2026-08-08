@@ -1100,6 +1100,159 @@
         </div>
     </div>
 
+    <!-- Price Ticker Modal -->
+    <div class="modal" id="priceTickerModal">
+        <div class="modal-content">
+            <div class="modal-header">📊 MBITE Price Details</div>
+            <div class="card" style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div>
+                        <div class="card-subtitle">Current Price</div>
+                        <div class="card-value" id="tickerPrice">$0.00</div>
+                    </div>
+                    <div id="tickerTrend" style="font-size: 32px;">📈</div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 14px;">
+                    <div>
+                        <div class="card-subtitle">24h Change</div>
+                        <div id="ticker24hChange" style="color: var(--success);">+2.5%</div>
+                    </div>
+                    <div>
+                        <div class="card-subtitle">24h High</div>
+                        <div id="tickerHigh24h">$48.32</div>
+                    </div>
+                    <div>
+                        <div class="card-subtitle">24h Low</div>
+                        <div id="tickerLow24h">$43.21</div>
+                    </div>
+                    <div>
+                        <div class="card-subtitle">24h Volume</div>
+                        <div id="tickerVolume24h">$45.6M</div>
+                    </div>
+                </div>
+            </div>
+            <canvas id="priceChart" style="width: 100%; height: 200px; margin-bottom: 16px; display: none;"></canvas>
+            <button class="btn btn-secondary" id="closePriceBtn" style="width: 100%;">Close</button>
+        </div>
+    </div>
+
+    <!-- Transaction Search Modal -->
+    <div class="modal" id="transactionSearchModal">
+        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">🔍 Search Transactions</div>
+
+            <div class="input-group">
+                <label class="input-label">Search Query</label>
+                <input type="text" id="searchQuery" placeholder="TXID, address, or memo...">
+            </div>
+
+            <div style="border-top: 1px solid var(--border); margin: 16px 0; padding-top: 16px;">
+                <div style="font-weight: 500; margin-bottom: 12px;">Filters</div>
+
+                <div class="input-group">
+                    <label class="input-label">Status</label>
+                    <select id="searchStatus" class="input-field" style="width: 100%; padding: 8px;">
+                        <option value="">All</option>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="failed">Failed</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Type</label>
+                    <select id="searchDirection" class="input-field" style="width: 100%; padding: 8px;">
+                        <option value="">All</option>
+                        <option value="send">Sent</option>
+                        <option value="receive">Received</option>
+                    </select>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="input-group">
+                        <label class="input-label">Min Amount</label>
+                        <input type="number" id="searchAmountMin" placeholder="0.00" min="0" step="0.001">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Max Amount</label>
+                        <input type="number" id="searchAmountMax" placeholder="No limit" min="0" step="0.001">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="input-group">
+                        <label class="input-label">From Date</label>
+                        <input type="date" id="searchDateFrom">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">To Date</label>
+                        <input type="date" id="searchDateTo">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="applySearchBtn" style="width: 100%; margin-top: 16px;">Search</button>
+                <button class="btn btn-secondary" id="clearSearchBtn" style="width: 100%; margin-top: 8px;">Clear Filters</button>
+            </div>
+
+            <div style="border-top: 1px solid var(--border); margin: 16px 0; padding-top: 16px;">
+                <div style="font-weight: 500; margin-bottom: 12px;">Results (<span id="searchResultCount">0</span>)</div>
+                <div id="searchResults" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 12px;">
+                    <p style="color: var(--text-secondary); text-align: center;">No results yet</p>
+                </div>
+            </div>
+
+            <button class="btn btn-secondary" id="closeSearchBtn" style="width: 100%; margin-top: 16px;">Close</button>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">📥 Export Transactions</div>
+
+            <div class="input-group">
+                <label class="input-label">Export Format</label>
+                <select id="exportFormat" class="input-field" style="width: 100%; padding: 8px;">
+                    <option value="csv">CSV (Spreadsheet)</option>
+                    <option value="json">JSON (Data)</option>
+                </select>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Choose your preferred export format</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="input-group">
+                    <label class="input-label">From Date</label>
+                    <input type="date" id="exportDateFrom">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">To Date</label>
+                    <input type="date" id="exportDateTo">
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(0, 212, 255, 0.05); margin-top: 16px;">
+                <div>
+                    <div style="font-weight: 500;">Include Fees</div>
+                    <p style="font-size: 12px; color: var(--text-secondary);">Add fee information to export</p>
+                </div>
+                <input type="checkbox" id="exportIncludeFees" checked style="cursor: pointer; width: 20px; height: 20px;">
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(0, 212, 255, 0.05); margin-top: 8px;">
+                <div>
+                    <div style="font-weight: 500;">Include Memo</div>
+                    <p style="font-size: 12px; color: var(--text-secondary);">Add memo notes to export</p>
+                </div>
+                <input type="checkbox" id="exportIncludeMemo" checked style="cursor: pointer; width: 20px; height: 20px;">
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-top: 24px;">
+                <button class="btn btn-secondary" id="closeExportBtn" style="flex: 1;">Cancel</button>
+                <button class="btn btn-primary" id="confirmExportBtn" style="flex: 1;">Export</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Check for service worker support and register
         if ('serviceWorker' in navigator) {
@@ -2018,9 +2171,295 @@
         blockchainMonitor = new BlockchainMonitor(30000); // Poll every 30 seconds
         blockchainMonitor.start();
 
+        // ====== Price Ticker Manager ======
+        class PriceTickerManager {
+            constructor() {
+                this.CACHE_KEY = 'moonbite_price_cache';
+                this.CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+                this.priceData = null;
+                this.lastUpdate = 0;
+            }
+
+            async fetchPrice() {
+                try {
+                    const cached = this.getCache();
+                    if (cached && (Date.now() - this.lastUpdate) < this.CACHE_TTL) {
+                        return cached;
+                    }
+
+                    const response = await fetch('/api/price/mbite');
+                    if (!response.ok) throw new Error('Price fetch failed');
+
+                    const json = await response.json();
+                    if (json.status === 'success') {
+                        this.priceData = json.data;
+                        this.lastUpdate = Date.now();
+                        localStorage.setItem(this.CACHE_KEY, JSON.stringify({
+                            data: this.priceData,
+                            timestamp: this.lastUpdate
+                        }));
+                        return this.priceData;
+                    }
+                } catch (e) {
+                    console.log('[PriceTickerManager] Error:', e);
+                    return this.getCache();
+                }
+            }
+
+            getCache() {
+                try {
+                    const cached = localStorage.getItem(this.CACHE_KEY);
+                    return cached ? JSON.parse(cached).data : null;
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            async showDetails() {
+                const price = await this.fetchPrice();
+                if (!price) {
+                    showAlert('❌ Could not fetch price data', 'danger');
+                    return;
+                }
+
+                document.getElementById('tickerPrice').textContent = `$${price.price_usd.toFixed(2)}`;
+                document.getElementById('ticker24hChange').textContent = `${price.change_24h > 0 ? '+' : ''}${price.change_24h.toFixed(2)}%`;
+                document.getElementById('ticker24hChange').style.color = price.change_24h > 0 ? 'var(--success)' : 'var(--danger)';
+                document.getElementById('tickerTrend').textContent = price.change_24h > 0 ? '📈' : '📉';
+                document.getElementById('tickerHigh24h').textContent = `$${price.high_24h.toFixed(2)}`;
+                document.getElementById('tickerLow24h').textContent = `$${price.low_24h.toFixed(2)}`;
+
+                const vol = price.volume_24h / 1000000;
+                document.getElementById('tickerVolume24h').textContent = `$${vol.toFixed(1)}M`;
+
+                // Try to load price history chart
+                await this.loadPriceChart();
+
+                document.getElementById('priceTickerModal').classList.add('active');
+            }
+
+            async loadPriceChart() {
+                try {
+                    const response = await fetch('/api/price/mbite/history?hours=24');
+                    if (!response.ok) return;
+
+                    const json = await response.json();
+                    if (json.status === 'success' && json.data.prices.length > 0) {
+                        this.drawChart(json.data.prices);
+                    }
+                } catch (e) {
+                    console.log('[PriceTickerManager] Could not load chart:', e);
+                }
+            }
+
+            drawChart(prices) {
+                const canvas = document.getElementById('priceChart');
+                if (!canvas || !prices || prices.length < 2) return;
+
+                canvas.style.display = 'block';
+                const ctx = canvas.getContext('2d');
+
+                // Simple line chart
+                const padding = 30;
+                const width = canvas.width - 2 * padding;
+                const height = canvas.height - 2 * padding;
+
+                const minPrice = Math.min(...prices.map(p => p.price_usd));
+                const maxPrice = Math.max(...prices.map(p => p.price_usd));
+                const range = maxPrice - minPrice || 1;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = 'var(--primary)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+
+                prices.forEach((p, i) => {
+                    const x = padding + (i / (prices.length - 1)) * width;
+                    const y = canvas.height - padding - ((p.price_usd - minPrice) / range) * height;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+
+                ctx.stroke();
+            }
+        }
+
+        const priceTickerManager = new PriceTickerManager();
+
+        // ====== Transaction Search Manager ======
+        class TransactionSearchManager {
+            async search() {
+                const query = document.getElementById('searchQuery').value;
+                const status = document.getElementById('searchStatus').value;
+                const direction = document.getElementById('searchDirection').value;
+                const amountMin = document.getElementById('searchAmountMin').value;
+                const amountMax = document.getElementById('searchAmountMax').value;
+                const dateFrom = document.getElementById('searchDateFrom').value;
+                const dateTo = document.getElementById('searchDateTo').value;
+
+                try {
+                    const params = new URLSearchParams();
+                    if (query) params.append('q', query);
+                    if (status) params.append('status', status);
+                    if (direction) params.append('direction', direction);
+                    if (amountMin) params.append('amount_min', parseInt(amountMin * 100));
+                    if (amountMax) params.append('amount_max', parseInt(amountMax * 100));
+                    if (dateFrom) params.append('date_from', Math.floor(new Date(dateFrom).getTime() / 1000));
+                    if (dateTo) params.append('date_to', Math.floor(new Date(dateTo).getTime() / 1000));
+
+                    const response = await fetch(`/api/wallet/transactions/search?${params}`);
+                    if (!response.ok) throw new Error('Search failed');
+
+                    const json = await response.json();
+                    if (json.status === 'success') {
+                        this.displayResults(json.data.transactions, json.data.total);
+                    }
+                } catch (e) {
+                    showAlert(`❌ Search error: ${e.message}`, 'danger');
+                }
+            }
+
+            displayResults(transactions, total) {
+                document.getElementById('searchResultCount').textContent = total;
+                const resultsDiv = document.getElementById('searchResults');
+
+                if (!transactions || transactions.length === 0) {
+                    resultsDiv.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">No transactions found</p>';
+                    return;
+                }
+
+                resultsDiv.innerHTML = transactions.map(tx => `
+                    <div style="padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <span style="font-weight: 500;">${tx.direction === 'send' ? '📤' : '📥'} ${tx.direction === 'send' ? 'Sent' : 'Received'}</span>
+                            <span style="color: ${tx.direction === 'send' ? 'var(--danger)' : 'var(--success)'};">${tx.direction === 'send' ? '-' : '+'}${(tx.amount_units / 100).toFixed(8)} MBITE</span>
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 12px; word-break: break-all;">${tx.txid.substring(0, 16)}...</div>
+                        <div style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
+                            Status: <span style="color: ${tx.status === 'confirmed' ? 'var(--success)' : tx.status === 'pending' ? 'var(--warning)' : 'var(--danger)'};">${tx.status}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            clearFilters() {
+                document.getElementById('searchQuery').value = '';
+                document.getElementById('searchStatus').value = '';
+                document.getElementById('searchDirection').value = '';
+                document.getElementById('searchAmountMin').value = '';
+                document.getElementById('searchAmountMax').value = '';
+                document.getElementById('searchDateFrom').value = '';
+                document.getElementById('searchDateTo').value = '';
+                document.getElementById('searchResults').innerHTML = '<p style="color: var(--text-secondary); text-align: center;">No results yet</p>';
+                document.getElementById('searchResultCount').textContent = '0';
+            }
+        }
+
+        const transactionSearchManager = new TransactionSearchManager();
+
+        // ====== Event Listeners for New Features ======
+
+        // Price Ticker Modal
+        document.getElementById('closePriceBtn').addEventListener('click', () => {
+            document.getElementById('priceTickerModal').classList.remove('active');
+        });
+
+        // Transaction Search Modal
+        document.getElementById('applySearchBtn').addEventListener('click', () => {
+            transactionSearchManager.search();
+        });
+
+        document.getElementById('clearSearchBtn').addEventListener('click', () => {
+            transactionSearchManager.clearFilters();
+        });
+
+        document.getElementById('closeSearchBtn').addEventListener('click', () => {
+            document.getElementById('transactionSearchModal').classList.remove('active');
+        });
+
+        // Export Modal
+        document.getElementById('confirmExportBtn').addEventListener('click', async () => {
+            const format = document.getElementById('exportFormat').value;
+            const dateFrom = document.getElementById('exportDateFrom').value;
+            const dateTo = document.getElementById('exportDateTo').value;
+            const includeFees = document.getElementById('exportIncludeFees').checked;
+            const includeMemo = document.getElementById('exportIncludeMemo').checked;
+
+            try {
+                const params = new URLSearchParams({
+                    format: format,
+                    include_fees: includeFees,
+                    include_memo: includeMemo,
+                });
+                if (dateFrom) params.append('date_from', Math.floor(new Date(dateFrom).getTime() / 1000));
+                if (dateTo) params.append('date_to', Math.floor(new Date(dateTo).getTime() / 1000));
+
+                const response = await fetch(`/api/wallet/transactions/export?${params}`);
+                if (!response.ok) throw new Error('Export failed');
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `transactions_${new Date().toISOString().split('T')[0]}.${format}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showAlert('✅ Transactions exported successfully', 'success');
+                document.getElementById('exportModal').classList.remove('active');
+            } catch (e) {
+                showAlert(`❌ Export error: ${e.message}`, 'danger');
+            }
+        });
+
+        document.getElementById('closeExportBtn').addEventListener('click', () => {
+            document.getElementById('exportModal').classList.remove('active');
+        });
+
+        // Add buttons to dashboard when it loads
+        const originalShowScreen = window.showScreen;
+        window.showScreen = function(screenName) {
+            originalShowScreen(screenName);
+            if (screenName === 'dashboard') {
+                // Add price ticker and search/export buttons to dashboard
+                const btnRow = document.querySelector('.btn-row');
+                if (btnRow && !document.getElementById('priceTickerBtn')) {
+                    const priceBtn = document.createElement('button');
+                    priceBtn.id = 'priceTickerBtn';
+                    priceBtn.className = 'btn btn-secondary btn-small';
+                    priceBtn.textContent = '💰 Price';
+                    priceBtn.addEventListener('click', () => priceTickerManager.showDetails());
+                    btnRow.appendChild(priceBtn);
+
+                    const searchBtn = document.createElement('button');
+                    searchBtn.id = 'searchBtn';
+                    searchBtn.className = 'btn btn-secondary btn-small';
+                    searchBtn.textContent = '🔍 Search';
+                    searchBtn.addEventListener('click', () => {
+                        document.getElementById('transactionSearchModal').classList.add('active');
+                    });
+                    btnRow.appendChild(searchBtn);
+
+                    const exportBtn = document.createElement('button');
+                    exportBtn.id = 'exportBtn';
+                    exportBtn.className = 'btn btn-secondary btn-small';
+                    exportBtn.textContent = '📥 Export';
+                    exportBtn.addEventListener('click', () => {
+                        document.getElementById('exportModal').classList.add('active');
+                    });
+                    btnRow.appendChild(exportBtn);
+                }
+            }
+        };
+
         // Load wallet and set up balance refresh
         loadWallet();
         setInterval(updateBalance, 10000); // Refresh every 10 seconds
+
+        // Periodically update price (every 5 minutes)
+        setInterval(() => priceTickerManager.fetchPrice(), 5 * 60 * 1000);
 
         // Load cached blockchain status if available
         const cachedStatus = localStorage.getItem('moonbite_blockchain_status');

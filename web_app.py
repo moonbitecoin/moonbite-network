@@ -29,6 +29,7 @@ from typing import Optional
 from flask import (
     Flask,
     jsonify,
+    make_response,
     redirect,
     render_template,
     request,
@@ -42,6 +43,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 import exchange
 import forum
 import merchants
+import price_feed
 import swap_verifier
 import wallet_history
 from node import Node
@@ -1313,6 +1315,151 @@ def api_wallet_transaction_update_memo(txid: str):
         return jsonify({"status": "error", "message": str(e)}), 400
     except Exception as e:
         print(f"[api_wallet_transaction_update_memo] Unexpected error: {e}", flush=True)
+        return jsonify({"status": "error", "message": "internal server error"}), 500
+
+
+@app.route("/api/wallet/transactions/search", methods=["GET"])
+def api_wallet_transactions_search():
+    """Search transactions with full-text and filter options.
+
+    Query params:
+        q: Search query (matches txid, addresses, memo)
+        amount_min: Minimum amount in base units (optional)
+        amount_max: Maximum amount in base units (optional)
+        date_from: Start timestamp (optional)
+        date_to: End timestamp (optional)
+        status: Filter by 'pending', 'confirmed', or 'failed'
+        direction: Filter by 'send' or 'receive'
+        limit: Max records per page (1-100, default 20)
+        offset: Pagination offset (default 0)
+    """
+    session_id = _get_session_id()
+
+    try:
+        query = request.args.get("q", "")
+        amount_min = request.args.get("amount_min")
+        amount_max = request.args.get("amount_max")
+        date_from = request.args.get("date_from")
+        date_to = request.args.get("date_to")
+        status = request.args.get("status")
+        direction = request.args.get("direction")
+        limit = int(request.args.get("limit", 20))
+        offset = int(request.args.get("offset", 0))
+
+        result = wallet_history.search_transactions(
+            session_id=session_id,
+            query=query,
+            amount_min=amount_min,
+            amount_max=amount_max,
+            date_from=date_from,
+            date_to=date_to,
+            status=status,
+            direction=direction,
+            limit=limit,
+            offset=offset,
+        )
+        return jsonify({"status": "success", "data": result}), 200
+
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+    except Exception as e:
+        print(f"[api_wallet_transactions_search] Unexpected error: {e}", flush=True)
+        return jsonify({"status": "error", "message": "internal server error"}), 500
+
+
+@app.route("/api/wallet/transactions/export", methods=["GET"])
+def api_wallet_transactions_export():
+    """Export transactions as CSV file.
+
+    Query params:
+        date_from: Start timestamp (optional)
+        date_to: End timestamp (optional)
+        format: 'csv' (default) or 'json'
+        include_fees: 'true' (default) or 'false'
+        include_memo: 'true' (default) or 'false'
+    """
+    session_id = _get_session_id()
+
+    try:
+        date_from = request.args.get("date_from")
+        date_to = request.args.get("date_to")
+        format_type = request.args.get("format", "csv").lower()
+        include_fees = request.args.get("include_fees", "true").lower() == "true"
+        include_memo = request.args.get("include_memo", "true").lower() == "true"
+
+        date_from = int(date_from) if date_from else None
+        date_to = int(date_to) if date_to else None
+
+        if format_type == "csv":
+            csv_data = wallet_history.export_transactions_csv(
+                session_id=session_id,
+                date_from=date_from,
+                date_to=date_to,
+                include_fees=include_fees,
+                include_memo=include_memo,
+            )
+            response = make_response(csv_data)
+            response.headers["Content-Type"] = "text/csv; charset=utf-8"
+            response.headers["Content-Disposition"] = "attachment; filename=transactions.csv"
+            return response, 200
+        elif format_type == "json":
+            result = wallet_history.get_transactions(
+                session_id=session_id,
+                limit=10000,
+                offset=0,
+            )
+            response = make_response(jsonify({"status": "success", "data": result}))
+            response.headers["Content-Disposition"] = "attachment; filename=transactions.json"
+            return response, 200
+        else:
+            return jsonify({"status": "error", "message": "format must be 'csv' or 'json'"}), 400
+
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+    except Exception as e:
+        print(f"[api_wallet_transactions_export] Unexpected error: {e}", flush=True)
+        return jsonify({"status": "error", "message": "internal server error"}), 500
+
+
+# ============================================================================= #
+# API Routes — Price Ticker
+# ============================================================================= #
+
+
+@app.route("/api/price/mbite", methods=["GET"])
+def api_price_mbite():
+    """Get current MBITE price.
+
+    Returns:
+        dict with price_usd, change_24h, high_24h, low_24h, market_cap, volume_24h, timestamp
+    """
+    try:
+        price_data = price_feed.get_price()
+        return jsonify({"status": "success", "data": price_data}), 200
+
+    except Exception as e:
+        print(f"[api_price_mbite] Unexpected error: {e}", flush=True)
+        return jsonify({"status": "error", "message": "internal server error"}), 500
+
+
+@app.route("/api/price/mbite/history", methods=["GET"])
+def api_price_mbite_history():
+    """Get MBITE price history.
+
+    Query params:
+        hours: Number of hours to retrieve (default 24, max 720)
+    """
+    try:
+        hours = int(request.args.get("hours", 24))
+        hours = max(1, min(hours, 720))  # Clamp to 1-720 hours
+
+        history_data = price_feed.get_price_history(hours=hours)
+        return jsonify({"status": "success", "data": history_data}), 200
+
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+    except Exception as e:
+        print(f"[api_price_mbite_history] Unexpected error: {e}", flush=True)
         return jsonify({"status": "error", "message": "internal server error"}), 500
 
 

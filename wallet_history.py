@@ -410,6 +410,199 @@ def update_transaction_memo(session_id: str, txid: str, memo: str) -> Optional[d
     return dict(row) if row else None
 
 
+def search_transactions(
+    session_id: str,
+    query: str = "",
+    amount_min: Optional[int] = None,
+    amount_max: Optional[int] = None,
+    date_from: Optional[int] = None,
+    date_to: Optional[int] = None,
+    status: Optional[str] = None,
+    direction: Optional[str] = None,
+    limit: int = 20,
+    offset: int = 0,
+) -> dict:
+    """Search transactions with full-text and filter options.
+
+    Args:
+        session_id: User session identifier
+        query: Search query (matches txid, addresses, or memo)
+        amount_min: Minimum amount in base units (optional)
+        amount_max: Maximum amount in base units (optional)
+        date_from: Start timestamp (optional)
+        date_to: End timestamp (optional)
+        status: Filter by status ('pending', 'confirmed', 'failed')
+        direction: Filter by direction ('send', 'receive')
+        limit: Max records per page (capped at 100)
+        offset: Pagination offset
+
+    Returns:
+        dict with 'transactions', 'total', 'limit', 'offset'
+    """
+    limit = max(1, min(int(limit), 100))
+    offset = max(0, int(offset))
+
+    query = str(query or "").strip().lower()
+    amount_min = int(amount_min) if amount_min is not None else None
+    amount_max = int(amount_max) if amount_max is not None else None
+    date_from = int(date_from) if date_from is not None else None
+    date_to = int(date_to) if date_to is not None else None
+
+    with get_connection() as conn:
+        where_clause = "user_session_id = ?"
+        params = [session_id]
+
+        # Text search on txid, addresses, memo
+        if query:
+            where_clause += (
+                " AND (LOWER(txid) LIKE ? OR LOWER(from_address) LIKE ? "
+                "OR LOWER(to_address) LIKE ? OR LOWER(memo) LIKE ?)"
+            )
+            search_term = f"%{query}%"
+            params.extend([search_term, search_term, search_term, search_term])
+
+        # Amount range filter
+        if amount_min is not None:
+            where_clause += " AND amount_units >= ?"
+            params.append(amount_min)
+        if amount_max is not None:
+            where_clause += " AND amount_units <= ?"
+            params.append(amount_max)
+
+        # Date range filter
+        if date_from is not None:
+            where_clause += " AND timestamp >= ?"
+            params.append(date_from)
+        if date_to is not None:
+            where_clause += " AND timestamp <= ?"
+            params.append(date_to)
+
+        # Status filter
+        if status:
+            where_clause += " AND status = ?"
+            params.append(status)
+
+        # Direction filter
+        if direction:
+            where_clause += " AND direction = ?"
+            params.append(direction)
+
+        # Total count
+        total = conn.execute(
+            f"SELECT COUNT(*) AS n FROM transactions WHERE {where_clause}",
+            params,
+        ).fetchone()["n"]
+
+        # Paginated results (newest first)
+        rows = conn.execute(
+            f"SELECT * FROM transactions WHERE {where_clause} "
+            f"ORDER BY timestamp DESC, id DESC "
+            f"LIMIT ? OFFSET ?",
+            params + [limit, offset],
+        ).fetchall()
+
+    return {
+        "transactions": [dict(r) for r in rows],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "query": query,
+    }
+
+
+def export_transactions_csv(
+    session_id: str,
+    date_from: Optional[int] = None,
+    date_to: Optional[int] = None,
+    include_fees: bool = True,
+    include_memo: bool = True,
+) -> str:
+    """Export transactions as CSV.
+
+    Args:
+        session_id: User session identifier
+        date_from: Start timestamp (optional)
+        date_to: End timestamp (optional)
+        include_fees: Include fee column
+        include_memo: Include memo column
+
+    Returns:
+        CSV-formatted string with header row and summary
+    """
+    with get_connection() as conn:
+        where_clause = "user_session_id = ?"
+        params = [session_id]
+
+        if date_from is not None:
+            where_clause += " AND timestamp >= ?"
+            params.append(date_from)
+        if date_to is not None:
+            where_clause += " AND timestamp <= ?"
+            params.append(date_to)
+
+        rows = conn.execute(
+            f"SELECT * FROM transactions WHERE {where_clause} ORDER BY timestamp DESC",
+            params,
+        ).fetchall()
+
+        # Calculate totals
+        sent_total = 0
+        received_total = 0
+        fees_total = 0
+
+        for row in rows:
+            if row["direction"] == "send":
+                sent_total += row["amount_units"]
+                fees_total += row["fee_units"]
+            else:
+                received_total += row["amount_units"]
+
+    # Build CSV header
+    header_cols = ["Date", "Type", "Address", "Amount", "Status", "TXID"]
+    if include_fees:
+        header_cols.insert(4, "Fee")
+    if include_memo:
+        header_cols.append("Memo")
+
+    lines = [",".join(header_cols)]
+
+    # Add transaction rows
+    for row in rows:
+        r = dict(row)
+        # Format timestamp as ISO 8601
+        from datetime import datetime
+        tx_date = datetime.utcfromtimestamp(r["timestamp"]).isoformat()
+
+        tx_type = "Send" if r["direction"] == "send" else "Receive"
+        address = r["to_address"] if r["direction"] == "send" else r["from_address"]
+        amount = r["amount_units"] / 100  # Convert to display units (cents to MBITE)
+        fee = r["fee_units"] / 100 if include_fees else None
+        status = r["status"].capitalize()
+        txid = r["txid"]
+        memo = r["memo"] if include_memo else None
+
+        row_data = [tx_date, tx_type, address, f"{amount:.8f}", status, txid]
+        if include_fees:
+            row_data.insert(4, f"{fee:.8f}" if fee else "0.00000000")
+        if include_memo:
+            # Escape quotes in memo
+            escaped_memo = f'"{memo.replace(chr(34), chr(34) + chr(34))}"' if memo else '""'
+            row_data.append(escaped_memo)
+
+        lines.append(",".join(str(v) for v in row_data))
+
+    # Add summary rows
+    lines.append("")  # Blank line
+    lines.append("Summary")
+    lines.append(f"Total Sent,{sent_total / 100:.8f}")
+    lines.append(f"Total Received,{received_total / 100:.8f}")
+    if include_fees:
+        lines.append(f"Total Fees,{fees_total / 100:.8f}")
+    lines.append(f"Net,{(received_total - sent_total) / 100:.8f}")
+
+    return "\n".join(lines)
+
+
 # --------------------------------------------------------------------------- #
 # Address book operations
 # --------------------------------------------------------------------------- #
