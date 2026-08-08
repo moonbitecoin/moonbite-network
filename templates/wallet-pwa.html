@@ -749,6 +749,18 @@
                         <button class="btn btn-secondary" style="flex: 1;" id="cancelPasswordBtn">Cancel</button>
                         <button class="btn btn-primary" style="flex: 1;" id="confirmPasswordBtn">Continue</button>
                     </div>
+
+                    <!-- Biometric setup option (shown if supported) -->
+                    <div id="biometricSetupOption" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+                            💡 Tip: Add biometric authentication (fingerprint/face) for faster, more secure access.
+                        </p>
+                        <button class="btn btn-secondary" style="width: 100%;" id="setupBiometricBtn">👆 Set up Biometric</button>
+                        <p style="font-size: 11px; color: var(--text-secondary); margin-top: 8px; line-height: 1.4;">
+                            Your biometric data never leaves your device. Only a credential ID is stored on the server.
+                        </p>
+                    </div>
+
                     <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.5;">
                         ⚠️ You cannot reset a forgotten password. Keep it safe.
                     </p>
@@ -762,6 +774,19 @@
                     <p style="color: var(--text-secondary); font-size: 14px;">
                         Enter your password to access your wallet.
                     </p>
+
+                    <!-- Biometric unlock option (shown only if enabled) -->
+                    <div id="biometricUnlockOption" style="display: none;">
+                        <button class="btn btn-primary" id="unlockWithBiometricBtn" style="width: 100%; margin-bottom: 16px;">
+                            👆 Unlock with Biometric
+                        </button>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                            <div style="flex: 1; height: 1px; background: var(--border);"></div>
+                            <span style="color: var(--text-secondary); font-size: 12px;">or</span>
+                            <div style="flex: 1; height: 1px; background: var(--border);"></div>
+                        </div>
+                    </div>
+
                     <div class="input-group">
                         <label class="input-label">Password</label>
                         <input type="password" id="unlockPassword" placeholder="Enter password">
@@ -899,6 +924,72 @@
         </div>
     </div>
 
+    <!-- Biometric Setup Modal -->
+    <div class="modal" id="biometricModal">
+        <div class="modal-content">
+            <div class="modal-header">👆 Set Up Biometric</div>
+
+            <div id="biometricSetupStep" style="display: block;">
+                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">
+                    Add biometric authentication (fingerprint or face recognition) for faster, more secure access to your wallet.
+                </p>
+
+                <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                    <div style="font-size: 13px; color: var(--success); line-height: 1.5;">
+                        ✓ Your biometric data never leaves your device<br>
+                        ✓ Only a credential ID is stored on the server<br>
+                        ✓ Your password is always available as a fallback
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Device Name (Optional)</label>
+                    <input type="text" id="biometricDeviceName" placeholder="e.g., My iPhone, Samsung Phone">
+                </div>
+
+                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;">
+                    You will be prompted to scan your fingerprint or face.
+                </p>
+
+                <button class="btn btn-primary" id="startBiometricRegistrationBtn" style="width: 100%;">Start Registration</button>
+            </div>
+
+            <div id="biometricProgressStep" style="display: none; text-align: center;">
+                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 24px;">
+                    Waiting for biometric scan...
+                </p>
+                <div style="font-size: 48px; margin-bottom: 16px;">👆</div>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;">
+                    Place your finger on the scanner or look at the camera
+                </p>
+                <button class="btn btn-secondary" id="cancelBiometricBtn">Cancel</button>
+            </div>
+
+            <div id="biometricSuccessStep" style="display: none;">
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <div style="font-size: 64px; margin-bottom: 16px;">✓</div>
+                    <p style="font-size: 16px; font-weight: 600; color: var(--success); margin-bottom: 8px;">Biometric Registered!</p>
+                    <p style="font-size: 12px; color: var(--text-secondary);">You can now unlock your wallet with biometric authentication.</p>
+                </div>
+                <button class="btn btn-primary" id="closeBiometricModalBtn" style="width: 100%;">Done</button>
+            </div>
+
+            <div id="biometricErrorStep" style="display: none;">
+                <div style="background: rgba(255, 51, 51, 0.1); border: 1px solid rgba(255, 51, 51, 0.3); border-radius: 8px; padding: 16px; margin-bottom: 16px; text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 12px;">⚠️</div>
+                    <div style="color: var(--danger); font-weight: 600; margin-bottom: 8px;">Registration Failed</div>
+                    <p id="biometricErrorMessage" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+                        Please try again or use a different authentication method.
+                    </p>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" id="retryBiometricBtn" style="flex: 1;">Retry</button>
+                    <button class="btn" style="flex: 1; background: var(--bg-card); color: var(--primary); border: 1px solid var(--border);" id="closeBiometricErrorBtn">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal" id="menuModal">
         <div class="modal-content">
             <div class="modal-header">Menu</div>
@@ -1013,6 +1104,26 @@
 
             <!-- Security Settings -->
             <div class="settings-tab" id="security-tab" style="display: none;">
+                <!-- Biometric Authentication -->
+                <div id="biometricSettingsSection" style="display: none; margin-bottom: 20px;">
+                    <div style="background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.3); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                        <div style="color: var(--primary); font-weight: 600; margin-bottom: 8px;">👆 Biometric Authentication</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">Faster, more secure access using fingerprint or face recognition.</div>
+                        <div id="biometricStatusDiv" style="display: none; margin-bottom: 12px;">
+                            <div style="font-size: 12px; margin-bottom: 6px;">
+                                <strong>Device:</strong> <span id="biometricDeviceNameSpan">—</span>
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">
+                                <strong>Last Login:</strong> <span id="biometricLastLoginSpan">—</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-secondary" id="setupBiometricSettingBtn" style="flex: 1; font-size: 14px;">Set up Biometric</button>
+                            <button class="btn" style="background: var(--danger); color: white; flex: 1; font-size: 14px; display: none;" id="disableBiometricBtn">Disable</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div style="margin-bottom: 20px;">
                     <label class="input-label">Auto-Lock Timeout</label>
                     <select id="autoLockSetting" class="input-field" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
@@ -2503,6 +2614,166 @@
 
             resetAutoLock(); // Start the timer
         }
+
+        // ====== Biometric Authentication ======
+
+        const biometricAuth = new BiometricAuth('/api/auth/biometric');
+
+        async function initializeBiometric() {
+            if (!biometricAuth.isSupported) {
+                console.log('[Biometric] Browser does not support WebAuthn');
+                return;
+            }
+
+            // Check if biometric is available for this session
+            const status = await biometricAuth.isAvailable();
+            if (status.device_support) {
+                document.getElementById('biometricSettingsSection').style.display = 'block';
+                if (status.user_enabled) {
+                    document.getElementById('biometricUnlockOption').style.display = 'block';
+                    document.getElementById('setupBiometricSettingBtn').style.display = 'none';
+                    document.getElementById('disableBiometricBtn').style.display = 'block';
+                    document.getElementById('biometricStatusDiv').style.display = 'block';
+                    if (status.device_name) {
+                        document.getElementById('biometricDeviceNameSpan').textContent = status.device_name;
+                    }
+                } else {
+                    document.getElementById('setupBiometricSettingBtn').style.display = 'block';
+                    document.getElementById('disableBiometricBtn').style.display = 'none';
+                }
+            }
+
+            // Show biometric setup option on password setup screen
+            if (biometricAuth.isSupported) {
+                document.getElementById('biometricSetupOption').style.display = 'block';
+            }
+        }
+
+        // Setup biometric on password confirmation
+        document.getElementById('setupBiometricBtn').addEventListener('click', async () => {
+            if (!isWalletUnlocked) {
+                showAlert('❌ Please set your password first', 'danger');
+                return;
+            }
+            showBiometricModal();
+        });
+
+        // Setup biometric from settings
+        document.getElementById('setupBiometricSettingBtn').addEventListener('click', () => {
+            showBiometricModal();
+        });
+
+        // Unlock with biometric
+        document.getElementById('unlockWithBiometricBtn').addEventListener('click', async () => {
+            try {
+                document.getElementById('unlockWithBiometricBtn').disabled = true;
+                document.getElementById('unlockWithBiometricBtn').textContent = '🔄 Authenticating...';
+
+                const result = await biometricAuth.authenticate();
+                if (result.status === 'success') {
+                    isWalletUnlocked = true;
+                    showScreen('dashboard');
+                    showAlert('✅ Wallet unlocked with biometric', 'success');
+                    updateBalance();
+                } else {
+                    showAlert('❌ Biometric verification failed', 'danger');
+                }
+            } catch (error) {
+                console.error('[Biometric] Authentication error:', error);
+                if (error.message.includes('not recognised') || error.message.includes('cancelled')) {
+                    showAlert('❌ Fingerprint/face not recognized. Try again or use password.', 'danger');
+                } else if (error.message.includes('timeout')) {
+                    showAlert('⏱️ Biometric verification timed out. Please try again.', 'warning');
+                } else {
+                    showAlert(`❌ ${error.message}`, 'danger');
+                }
+            } finally {
+                document.getElementById('unlockWithBiometricBtn').disabled = false;
+                document.getElementById('unlockWithBiometricBtn').textContent = '👆 Unlock with Biometric';
+            }
+        });
+
+        // Disable biometric
+        document.getElementById('disableBiometricBtn').addEventListener('click', async () => {
+            if (!confirm('Disable biometric authentication?')) {
+                return;
+            }
+
+            try {
+                await biometricAuth.disable();
+                document.getElementById('biometricUnlockOption').style.display = 'none';
+                document.getElementById('biometricStatusDiv').style.display = 'none';
+                document.getElementById('setupBiometricSettingBtn').style.display = 'block';
+                document.getElementById('disableBiometricBtn').style.display = 'none';
+                showAlert('✅ Biometric authentication disabled', 'success');
+            } catch (error) {
+                console.error('[Biometric] Error disabling:', error);
+                showAlert(`❌ ${error.message}`, 'danger');
+            }
+        });
+
+        function showBiometricModal() {
+            if (!biometricAuth.isSupported) {
+                showAlert('Your device does not support biometric authentication', 'danger');
+                return;
+            }
+
+            document.getElementById('biometricModal').classList.add('active');
+            document.getElementById('biometricSetupStep').style.display = 'block';
+            document.getElementById('biometricProgressStep').style.display = 'none';
+            document.getElementById('biometricSuccessStep').style.display = 'none';
+            document.getElementById('biometricErrorStep').style.display = 'none';
+        }
+
+        document.getElementById('startBiometricRegistrationBtn').addEventListener('click', async () => {
+            const deviceName = document.getElementById('biometricDeviceName').value.trim() || 'My Device';
+
+            try {
+                document.getElementById('biometricSetupStep').style.display = 'none';
+                document.getElementById('biometricProgressStep').style.display = 'block';
+
+                const userId = `user_${Math.random().toString(36).substr(2, 9)}`;
+                const result = await biometricAuth.register(userId, deviceName);
+
+                document.getElementById('biometricProgressStep').style.display = 'none';
+                document.getElementById('biometricSuccessStep').style.display = 'block';
+
+                // Update UI to reflect enabled biometric
+                document.getElementById('biometricUnlockOption').style.display = 'block';
+                document.getElementById('biometricStatusDiv').style.display = 'block';
+                document.getElementById('biometricDeviceNameSpan').textContent = deviceName;
+            } catch (error) {
+                console.error('[Biometric] Registration error:', error);
+                document.getElementById('biometricProgressStep').style.display = 'none';
+                document.getElementById('biometricErrorStep').style.display = 'block';
+                document.getElementById('biometricErrorMessage').textContent = error.message || 'Registration failed. Please try again.';
+            }
+        });
+
+        document.getElementById('cancelBiometricBtn').addEventListener('click', () => {
+            document.getElementById('biometricModal').classList.remove('active');
+        });
+
+        document.getElementById('closeBiometricModalBtn').addEventListener('click', () => {
+            document.getElementById('biometricModal').classList.remove('active');
+            document.getElementById('biometricDeviceName').value = '';
+        });
+
+        document.getElementById('closeBiometricErrorBtn').addEventListener('click', () => {
+            document.getElementById('biometricErrorStep').style.display = 'none';
+            document.getElementById('biometricSetupStep').style.display = 'block';
+        });
+
+        document.getElementById('retryBiometricBtn').addEventListener('click', () => {
+            document.getElementById('biometricErrorStep').style.display = 'none';
+            document.getElementById('biometricSetupStep').style.display = 'block';
+        });
+
+        // Initialize biometric on page load
+        initializeBiometric();
     </script>
+
+    <!-- Load biometric authentication module -->
+    <script src="/static/wallet-biometric.js"></script>
 </body>
 </html>

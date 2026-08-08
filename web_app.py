@@ -2523,6 +2523,306 @@ def api_wallet_preferences_reset():
 
 
 # ============================================================================= #
+# API Routes — Biometric Authentication (WebAuthn/FIDO2)
+# ============================================================================= #
+
+
+@app.route("/api/auth/biometric/available", methods=["GET"])
+@rate_limit(30, 60)
+def api_biometric_available():
+    """Check if device supports WebAuthn/FIDO2 and if biometric is enabled for this session.
+
+    Returns:
+        - device_support: boolean indicating browser WebAuthn support
+        - user_enabled: boolean indicating if user has biometric enabled
+        - device_name: string of registered device name if enabled
+    """
+    try:
+        session_id = request.remote_addr or "unknown"
+
+        # Check if user has biometric enabled
+        is_enabled = wallet_history.is_biometric_available(session_id)
+        auth_state = wallet_history.get_auth_state(session_id) if is_enabled else None
+
+        return jsonify(
+            {
+                "status": "success",
+                "device_support": True,  # Server assumes browser has WebAuthn support
+                "user_enabled": is_enabled,
+                "device_name": auth_state.get("biometric_device_name") if auth_state else None,
+            }
+        ), 200
+    except Exception as e:
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            status_code=500,
+        )
+
+
+@app.route("/api/auth/biometric/register", methods=["POST"])
+@rate_limit(10, 60)
+def api_biometric_register():
+    """Register a biometric credential (fingerprint/face).
+
+    Expected JSON payload:
+    {
+        "credential_id": "base64-encoded-credential-id",
+        "public_key": "base64-encoded-cose-public-key",
+        "device_name": "My Device"  # optional
+    }
+
+    Returns:
+        - success: boolean
+        - device_name: registered device name
+        - message: confirmation message
+    """
+    try:
+        session_id = request.remote_addr or "unknown"
+        data = request.get_json() or {}
+
+        # Validate required fields
+        credential_id = str(data.get("credential_id", "")).strip()
+        public_key = str(data.get("public_key", "")).strip()
+        device_name = str(data.get("device_name", "Default Device")).strip()[:100]
+
+        if not credential_id or not public_key:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="credential_id and public_key are required",
+                status_code=400,
+            )
+
+        # Register biometric
+        auth_state = wallet_history.setup_biometric(
+            session_id,
+            credential_id,
+            public_key,
+            device_name,
+        )
+
+        # Log the event
+        try:
+            conn = wallet_history.get_connection()
+            wallet_history._log_biometric_event(
+                conn,
+                session_id,
+                "register",
+                "success",
+                credential_id=credential_id,
+                ip_address=request.remote_addr,
+                user_agent=request.headers.get("User-Agent", ""),
+            )
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass  # Non-fatal logging failure
+
+        return jsonify(
+            {
+                "status": "success",
+                "message": f"Biometric registered for {device_name}",
+                "device_name": device_name,
+            }
+        ), 200
+    except Exception as e:
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            status_code=500,
+        )
+
+
+@app.route("/api/auth/biometric/verify", methods=["POST"])
+@rate_limit(10, 60)  # Rate limited to prevent brute force
+def api_biometric_verify():
+    """Verify a biometric credential assertion.
+
+    Expected JSON payload:
+    {
+        "assertion_id": "base64-encoded-assertion-credential-id"
+    }
+
+    Returns:
+        - success: boolean
+        - message: confirmation or error message
+        - remaining_attempts: attempts remaining before rate limit (on failure)
+    """
+    try:
+        session_id = request.remote_addr or "unknown"
+        data = request.get_json() or {}
+
+        # Check rate limiting
+        is_rate_limited, attempts = wallet_history.check_biometric_rate_limit(
+            session_id, max_attempts=5, window_seconds=60
+        )
+        if is_rate_limited:
+            return json_error(
+                "SECURITY_RATE_LIMITED",
+                user_message="Too many failed biometric attempts. Please use password instead.",
+                status_code=429,
+            )
+
+        assertion_id = str(data.get("assertion_id", "")).strip()
+        if not assertion_id:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="assertion_id is required",
+                status_code=400,
+            )
+
+        # Verify biometric
+        verified = wallet_history.verify_biometric(session_id, assertion_id)
+
+        if verified:
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": "Biometric verification successful",
+                }
+            ), 200
+        else:
+            # Record failure and check new count
+            attempt_count = wallet_history.record_biometric_failure(session_id)
+            remaining = max(0, 5 - attempt_count)
+
+            return json_error(
+                "SECURITY_INVALID_PASSWORD",  # Reuse error code for failed verification
+                user_message="Fingerprint/face not recognized. Try again or use password.",
+                status_code=401,
+            )
+    except Exception as e:
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            status_code=500,
+        )
+
+
+@app.route("/api/auth/biometric/disable", methods=["POST"])
+@rate_limit(10, 60)
+def api_biometric_disable():
+    """Disable biometric authentication for this session.
+
+    Returns:
+        - success: boolean
+        - message: confirmation message
+    """
+    try:
+        session_id = request.remote_addr or "unknown"
+
+        # Disable biometric
+        success = wallet_history.disable_biometric(session_id)
+
+        if success:
+            return jsonify(
+                {
+                    "status": "success",
+                    "message": "Biometric authentication disabled",
+                }
+            ), 200
+        else:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="Biometric not enabled for this session",
+                status_code=400,
+            )
+    except Exception as e:
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            status_code=500,
+        )
+
+
+@app.route("/api/auth/biometric/status", methods=["GET"])
+@rate_limit(30, 60)
+def api_biometric_status():
+    """Get current biometric authentication status for this session.
+
+    Returns:
+        - enabled: boolean
+        - device_name: registered device name (if enabled)
+        - last_login: timestamp of last successful verification
+        - failed_attempts: number of failed attempts since last success
+    """
+    try:
+        session_id = request.remote_addr or "unknown"
+        auth_state = wallet_history.get_auth_state(session_id)
+
+        if not auth_state:
+            return jsonify(
+                {
+                    "status": "success",
+                    "enabled": False,
+                    "device_name": None,
+                    "last_login": None,
+                    "failed_attempts": 0,
+                }
+            ), 200
+
+        return jsonify(
+            {
+                "status": "success",
+                "enabled": auth_state.get("biometric_enabled", 0) == 1,
+                "device_name": auth_state.get("biometric_device_name"),
+                "last_login": auth_state.get("last_login"),
+                "failed_attempts": auth_state.get("failed_attempts", 0),
+            }
+        ), 200
+    except Exception as e:
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            status_code=500,
+        )
+
+
+@app.route("/api/auth/biometric/audit", methods=["GET"])
+@rate_limit(30, 60)
+def api_biometric_audit():
+    """Get audit log for biometric events.
+
+    Query parameters:
+        - action: filter by action (register, verify, disable)
+        - limit: max records per page (default 50, max 100)
+        - offset: pagination offset (default 0)
+
+    Returns:
+        - events: list of audit log entries
+        - total: total number of matching events
+        - limit: page size
+        - offset: current offset
+    """
+    try:
+        session_id = request.remote_addr or "unknown"
+
+        action = request.args.get("action", None)
+        limit = int(request.args.get("limit", 50))
+        offset = int(request.args.get("offset", 0))
+
+        audit_log = wallet_history.get_biometric_audit_log(
+            session_id,
+            action=action,
+            limit=limit,
+            offset=offset,
+        )
+
+        return jsonify(
+            {
+                "status": "success",
+                **audit_log,
+            }
+        ), 200
+    except Exception as e:
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            status_code=500,
+        )
+
+
+# ============================================================================= #
 # API Routes — Blockchain Info
 # ============================================================================= #
 

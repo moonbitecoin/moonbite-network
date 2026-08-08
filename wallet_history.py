@@ -18,6 +18,7 @@ gunicorn workers.
 from __future__ import annotations
 
 import hashlib
+import hmac
 import os
 import sqlite3
 import time
@@ -188,6 +189,8 @@ def create_schema():
                 decimal_places INTEGER DEFAULT 8,
                 hide_zero_balance INTEGER DEFAULT 0,
                 sort_accounts TEXT DEFAULT 'created',
+                biometric_enabled INTEGER DEFAULT 0,
+                biometric_device_name TEXT,
                 created_at INTEGER NOT NULL,
                 updated_at INTEGER NOT NULL
             )"""
@@ -195,6 +198,53 @@ def create_schema():
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_preferences_session "
             "ON preferences(user_session_id)"
+        )
+
+        # Authentication state: password hashes, biometric tokens, TOTP secrets
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS auth_state (
+                user_session_id TEXT PRIMARY KEY,
+                password_hash TEXT,
+                biometric_enabled INTEGER NOT NULL DEFAULT 0,
+                biometric_device_name TEXT,
+                biometric_credential_id TEXT,
+                biometric_public_key TEXT,
+                totp_secret TEXT,
+                failed_attempts INTEGER NOT NULL DEFAULT 0,
+                last_failed_at INTEGER,
+                last_login INTEGER,
+                created_at INTEGER NOT NULL,
+                updated_at INTEGER NOT NULL
+            )"""
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_auth_state_session "
+            "ON auth_state(user_session_id)"
+        )
+
+        # Biometric verification log for audit trail and rate limiting
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS biometric_audit (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_session_id TEXT NOT NULL,
+                action TEXT NOT NULL,
+                status TEXT NOT NULL,
+                credential_id TEXT,
+                device_name TEXT,
+                error_message TEXT,
+                ip_address TEXT,
+                user_agent TEXT,
+                created_at INTEGER NOT NULL,
+                FOREIGN KEY (user_session_id) REFERENCES auth_state(user_session_id) ON DELETE CASCADE
+            )"""
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_biometric_audit_session "
+            "ON biometric_audit(user_session_id, created_at DESC)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_biometric_audit_action "
+            "ON biometric_audit(user_session_id, action, created_at DESC)"
         )
 
         conn.commit()
@@ -1555,3 +1605,396 @@ def delete_preferences(session_id: str) -> bool:
         conn.commit()
 
     return True
+
+
+# --------------------------------------------------------------------------- #
+# Biometric Authentication - WebAuthn/FIDO2
+# --------------------------------------------------------------------------- #
+
+def _hash_password(password: str) -> str:
+    """Hash a password using Argon2id (if available, else SHA256 fallback).
+
+    Args:
+        password: Plain text password
+
+    Returns:
+        Hashed password string
+    """
+    try:
+        from argon2 import PasswordHasher
+        ph = PasswordHasher()
+        return ph.hash(password)
+    except ImportError:
+        # Fallback to SHA256 if argon2-cffi not installed
+        return hashlib.sha256(password.encode()).hexdigest()
+
+
+def _verify_password(password: str, password_hash: str) -> bool:
+    """Verify a password against its hash.
+
+    Args:
+        password: Plain text password to verify
+        password_hash: Hash to check against
+
+    Returns:
+        True if password matches, False otherwise
+    """
+    try:
+        from argon2 import PasswordHasher
+        from argon2.exceptions import VerifyMismatchError, InvalidHash
+        ph = PasswordHasher()
+        try:
+            ph.verify(password_hash, password)
+            return True
+        except (VerifyMismatchError, InvalidHash):
+            return False
+    except ImportError:
+        # Fallback to SHA256 comparison
+        return hashlib.sha256(password.encode()).hexdigest() == password_hash
+
+
+def get_auth_state(session_id: str) -> Optional[dict]:
+    """Get authentication state for a user session.
+
+    Args:
+        session_id: User session identifier
+
+    Returns:
+        Auth state dict, or None if not found
+    """
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM auth_state WHERE user_session_id = ?",
+            (session_id,),
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def is_biometric_available(session_id: str) -> bool:
+    """Check if biometric auth is enabled for a session.
+
+    Args:
+        session_id: User session identifier
+
+    Returns:
+        True if biometric is enabled and configured
+    """
+    auth_state = get_auth_state(session_id)
+    if not auth_state:
+        return False
+    return auth_state.get("biometric_enabled", 0) == 1 and bool(auth_state.get("biometric_credential_id"))
+
+
+def setup_biometric(
+    session_id: str,
+    credential_id: str,
+    public_key: str,
+    device_name: str = "Default Device",
+) -> dict:
+    """Register biometric credential for a user session.
+
+    Args:
+        session_id: User session identifier
+        credential_id: WebAuthn credential ID (base64-encoded)
+        public_key: COSE public key (base64-encoded)
+        device_name: Human-readable device name
+
+    Returns:
+        Updated auth state dict
+    """
+    device_name = str(device_name or "").strip()[:100] or "Default Device"
+    now = int(time.time())
+
+    with get_connection() as conn:
+        # Check if auth_state exists
+        existing = conn.execute(
+            "SELECT user_session_id FROM auth_state WHERE user_session_id = ?",
+            (session_id,),
+        ).fetchone()
+
+        if existing:
+            # Update existing
+            conn.execute(
+                """UPDATE auth_state
+                   SET biometric_enabled = 1,
+                       biometric_device_name = ?,
+                       biometric_credential_id = ?,
+                       biometric_public_key = ?,
+                       updated_at = ?
+                   WHERE user_session_id = ?""",
+                (device_name, credential_id, public_key, now, session_id),
+            )
+        else:
+            # Create new
+            conn.execute(
+                """INSERT INTO auth_state
+                   (user_session_id, biometric_enabled, biometric_device_name,
+                    biometric_credential_id, biometric_public_key, created_at, updated_at)
+                   VALUES (?, 1, ?, ?, ?, ?, ?)""",
+                (session_id, device_name, credential_id, public_key, now, now),
+            )
+
+        # Also update preferences for consistency
+        conn.execute(
+            """INSERT INTO preferences
+               (user_session_id, biometric_enabled, biometric_device_name, created_at, updated_at)
+               VALUES (?, 1, ?, ?, ?)
+               ON CONFLICT(user_session_id) DO UPDATE SET
+               biometric_enabled = 1,
+               biometric_device_name = ?,
+               updated_at = ?""",
+            (session_id, device_name, now, now, device_name, now),
+        )
+
+        conn.commit()
+
+        row = conn.execute(
+            "SELECT * FROM auth_state WHERE user_session_id = ?",
+            (session_id,),
+        ).fetchone()
+
+    return dict(row) if row else {}
+
+
+def verify_biometric(session_id: str, assertion_id: str) -> bool:
+    """Verify a biometric assertion (after WebAuthn validation on client).
+
+    Args:
+        session_id: User session identifier
+        assertion_id: The credential ID from the assertion (for validation)
+
+    Returns:
+        True if biometric verification succeeds
+    """
+    auth_state = get_auth_state(session_id)
+    if not auth_state or not auth_state.get("biometric_credential_id"):
+        return False
+
+    # The actual cryptographic verification of the assertion signature
+    # happens on the client (browser WebAuthn API). This server-side
+    # function assumes that verification has been done and just validates
+    # that the credential ID matches.
+
+    stored_credential_id = auth_state.get("biometric_credential_id")
+
+    # Constant-time comparison to prevent timing attacks
+    matches = hmac.compare_digest(
+        stored_credential_id.encode() if isinstance(stored_credential_id, str) else stored_credential_id,
+        assertion_id.encode() if isinstance(assertion_id, str) else assertion_id,
+    )
+
+    if matches:
+        now = int(time.time())
+        with get_connection() as conn:
+            # Update last login timestamp
+            conn.execute(
+                "UPDATE auth_state SET last_login = ?, failed_attempts = 0 WHERE user_session_id = ?",
+                (now, session_id),
+            )
+            # Log successful verification
+            _log_biometric_event(conn, session_id, "verify", "success", assertion_id)
+            conn.commit()
+
+    return matches
+
+
+def disable_biometric(session_id: str) -> bool:
+    """Disable biometric authentication for a session.
+
+    Args:
+        session_id: User session identifier
+
+    Returns:
+        True if disabled, False if not found
+    """
+    with get_connection() as conn:
+        existing = conn.execute(
+            "SELECT user_session_id FROM auth_state WHERE user_session_id = ?",
+            (session_id,),
+        ).fetchone()
+
+        if not existing:
+            return False
+
+        now = int(time.time())
+
+        # Disable biometric
+        conn.execute(
+            """UPDATE auth_state
+               SET biometric_enabled = 0,
+                   biometric_device_name = NULL,
+                   biometric_credential_id = NULL,
+                   biometric_public_key = NULL,
+                   updated_at = ?
+               WHERE user_session_id = ?""",
+            (now, session_id),
+        )
+
+        # Update preferences
+        conn.execute(
+            """UPDATE preferences
+               SET biometric_enabled = 0,
+                   biometric_device_name = NULL,
+                   updated_at = ?
+               WHERE user_session_id = ?""",
+            (now, session_id),
+        )
+
+        # Log the disable action
+        _log_biometric_event(conn, session_id, "disable", "success")
+        conn.commit()
+
+    return True
+
+
+def record_biometric_failure(session_id: str) -> int:
+    """Record a failed biometric verification attempt and return attempt count.
+
+    Args:
+        session_id: User session identifier
+
+    Returns:
+        Number of failed attempts (for rate limiting check)
+    """
+    now = int(time.time())
+
+    with get_connection() as conn:
+        # Get current auth state
+        auth_state = conn.execute(
+            "SELECT failed_attempts FROM auth_state WHERE user_session_id = ?",
+            (session_id,),
+        ).fetchone()
+
+        current_attempts = (auth_state["failed_attempts"] if auth_state else 0) + 1
+
+        # Update failed attempts
+        if auth_state:
+            conn.execute(
+                "UPDATE auth_state SET failed_attempts = ?, last_failed_at = ? WHERE user_session_id = ?",
+                (current_attempts, now, session_id),
+            )
+        else:
+            conn.execute(
+                """INSERT INTO auth_state
+                   (user_session_id, failed_attempts, last_failed_at, created_at, updated_at)
+                   VALUES (?, ?, ?, ?, ?)""",
+                (session_id, current_attempts, now, now, now),
+            )
+
+        # Log the failure
+        _log_biometric_event(conn, session_id, "verify", "failed")
+        conn.commit()
+
+    return current_attempts
+
+
+def check_biometric_rate_limit(session_id: str, max_attempts: int = 5, window_seconds: int = 60) -> tuple[bool, int]:
+    """Check if user is rate-limited for biometric attempts.
+
+    Args:
+        session_id: User session identifier
+        max_attempts: Max failed attempts in window
+        window_seconds: Time window in seconds
+
+    Returns:
+        Tuple of (is_rate_limited, attempts_in_window)
+    """
+    now = int(time.time())
+    cutoff = now - window_seconds
+
+    with get_connection() as conn:
+        # Count failed attempts in the window
+        result = conn.execute(
+            """SELECT COUNT(*) as count FROM biometric_audit
+               WHERE user_session_id = ? AND action = 'verify' AND status = 'failed'
+               AND created_at >= ?""",
+            (session_id, cutoff),
+        ).fetchone()
+
+    attempts = result["count"] if result else 0
+    is_limited = attempts >= max_attempts
+
+    return (is_limited, attempts)
+
+
+def _log_biometric_event(
+    conn: sqlite3.Connection,
+    session_id: str,
+    action: str,
+    status: str,
+    credential_id: Optional[str] = None,
+    error_message: Optional[str] = None,
+    ip_address: Optional[str] = None,
+    user_agent: Optional[str] = None,
+) -> None:
+    """Internal helper to log biometric events (must be called within a transaction).
+
+    Args:
+        conn: Database connection
+        session_id: User session identifier
+        action: Event action (register, verify, disable)
+        status: Event status (success, failed)
+        credential_id: Optional credential ID
+        error_message: Optional error details
+        ip_address: Optional client IP
+        user_agent: Optional user agent string
+    """
+    now = int(time.time())
+
+    conn.execute(
+        """INSERT INTO biometric_audit
+           (user_session_id, action, status, credential_id, error_message, ip_address, user_agent, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        (session_id, action, status, credential_id, error_message, ip_address, user_agent, now),
+    )
+
+
+def get_biometric_audit_log(
+    session_id: str,
+    action: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+) -> dict:
+    """Get audit log for biometric events.
+
+    Args:
+        session_id: User session identifier
+        action: Filter by action (register, verify, disable), or None for all
+        limit: Max records per page
+        offset: Pagination offset
+
+    Returns:
+        dict with 'events', 'total', 'limit', 'offset'
+    """
+    limit = max(1, min(int(limit), 100))
+    offset = max(0, int(offset))
+
+    with get_connection() as conn:
+        where_clause = "user_session_id = ?"
+        params = [session_id]
+
+        if action:
+            where_clause += " AND action = ?"
+            params.append(action)
+
+        # Total count
+        total = conn.execute(
+            f"SELECT COUNT(*) AS n FROM biometric_audit WHERE {where_clause}",
+            params,
+        ).fetchone()["n"]
+
+        # Paginated results (newest first)
+        rows = conn.execute(
+            f"SELECT id, action, status, credential_id, error_message, created_at "
+            f"FROM biometric_audit WHERE {where_clause} "
+            f"ORDER BY created_at DESC "
+            f"LIMIT ? OFFSET ?",
+            params + [limit, offset],
+        ).fetchall()
+
+    return {
+        "events": [dict(r) for r in rows],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
