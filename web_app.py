@@ -804,16 +804,8 @@ def why_page():
 @app.route("/wallet")
 def wallet_page():
     """Render the mobile PWA wallet page with bulletproof security (AES-256-GCM + PBKDF2)."""
-    import os
     print("[WALLET_ROUTE] Loading /wallet endpoint - AES-256-GCM bulletproof wallet", flush=True)
-    wallet_file = os.path.join("templates", "wallet-pwa.html")
-    if not os.path.exists(wallet_file):
-        print("[WALLET_ROUTE] ERROR: wallet-pwa.html file not found at", wallet_file, flush=True)
-        return "ERROR: wallet-pwa.html not found", 500
-    print("[WALLET_ROUTE] Rendering wallet-pwa.html from", wallet_file, flush=True)
-    result = render_template("wallet-pwa.html")
-    print("[WALLET_ROUTE] Successfully rendered wallet-pwa.html, length:", len(result), flush=True)
-    return result
+    return send_file("templates/wallet-pwa.html", mimetype="text/html")
 
 @app.route("/wallet-manifest.json")
 def wallet_manifest():
