@@ -1364,6 +1364,9 @@
         </div>
     </div>
 
+    <!-- Load biometric authentication module FIRST -->
+    <script src="/static/wallet-biometric.js"></script>
+
     <script>
         // Check for service worker support and register
         if ('serviceWorker' in navigator) {
@@ -2774,8 +2777,5 @@
         // Initialize biometric on page load
         initializeBiometric();
     </script>
-
-    <!-- Load biometric authentication module -->
-    <script src="/static/wallet-biometric.js"></script>
 </body>
 </html>
