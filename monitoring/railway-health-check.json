@@ -1,0 +1,61 @@
+{
+  "railway_monitoring": {
+    "service": "moonbite-production",
+    "environment": "production",
+    "deployment_url": "https://helios-production-5ad6.up.railway.app",
+    "health_checks": {
+      "endpoint": "/api/blockchain/status",
+      "interval": 30,
+      "timeout": 10,
+      "expected_status": 200
+    },
+    "restart_policy": {
+      "type": "ON_FAILURE",
+      "max_retries": 5,
+      "restart_delay_seconds": 10
+    },
+    "alerts": [
+      {
+        "name": "High Error Rate",
+        "condition": "error_rate > 5%",
+        "severity": "critical",
+        "action": "notify_ops"
+      },
+      {
+        "name": "High Response Time",
+        "condition": "p95_response_time > 5s",
+        "severity": "warning",
+        "action": "log_alert"
+      },
+      {
+        "name": "Database Connection Failed",
+        "condition": "db_connection_error",
+        "severity": "critical",
+        "action": "restart_service"
+      },
+      {
+        "name": "Out of Memory",
+        "condition": "memory_usage > 90%",
+        "severity": "critical",
+        "action": "scale_up"
+      }
+    ],
+    "metrics_to_track": [
+      "cpu_usage_percent",
+      "memory_usage_percent",
+      "disk_usage_percent",
+      "request_count_per_minute",
+      "error_rate_percent",
+      "response_time_p50_ms",
+      "response_time_p95_ms",
+      "response_time_p99_ms",
+      "database_connection_pool",
+      "active_sessions"
+    ],
+    "dashboards": {
+      "realtime": "https://railway.app/project/moonbite-production",
+      "metrics": "See Railway Dashboard > Logs & Metrics",
+      "status_page": "https://status.moonbite.org"
+    }
+  }
+}

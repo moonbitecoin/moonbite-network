@@ -1,0 +1,88 @@
+{
+  "monitoring_config": {
+    "service_name": "MoonBite Production",
+    "environment": "production",
+    "check_interval_seconds": 300,
+    "alert_threshold": 2,
+    "endpoints": [
+      {
+        "name": "Wallet PWA",
+        "url": "https://www.moonbite.org/wallet",
+        "method": "GET",
+        "expected_status": 200,
+        "expected_content": "MoonBite Wallet",
+        "timeout_seconds": 10,
+        "critical": true
+      },
+      {
+        "name": "Homepage",
+        "url": "https://www.moonbite.org/",
+        "method": "GET",
+        "expected_status": 200,
+        "timeout_seconds": 10,
+        "critical": true
+      },
+      {
+        "name": "HD Wallet API",
+        "url": "https://helios-production-5ad6.up.railway.app/api/wallet/hd/new",
+        "method": "GET",
+        "expected_status": 200,
+        "expected_fields": ["mnemonic", "address"],
+        "timeout_seconds": 10,
+        "critical": true
+      },
+      {
+        "name": "Blockchain Status",
+        "url": "https://helios-production-5ad6.up.railway.app/api/blockchain/status",
+        "method": "GET",
+        "expected_status": 200,
+        "timeout_seconds": 10,
+        "critical": false
+      },
+      {
+        "name": "Wallet Manifest",
+        "url": "https://www.moonbite.org/wallet-manifest.json",
+        "method": "GET",
+        "expected_status": 200,
+        "timeout_seconds": 10,
+        "critical": false
+      }
+    ],
+    "alerts": {
+      "email": {
+        "enabled": true,
+        "recipients": ["admin@moonbite.org"],
+        "on_failure": true,
+        "on_recovery": true
+      },
+      "slack": {
+        "enabled": false,
+        "webhook_url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
+        "on_failure": true
+      },
+      "pagerduty": {
+        "enabled": false,
+        "integration_key": "YOUR_PAGERDUTY_KEY",
+        "on_critical_failure": true
+      }
+    },
+    "sla": {
+      "target_uptime_percent": 99.9,
+      "max_response_time_seconds": 5,
+      "check_window_hours": 24
+    },
+    "logging": {
+      "enabled": true,
+      "log_directory": "./monitoring/logs",
+      "retention_days": 30,
+      "include_response_times": true,
+      "include_error_details": true
+    }
+  },
+  "health_check_commands": {
+    "curl_wallet": "curl -s -f https://www.moonbite.org/wallet -o /dev/null && echo 'PASS' || echo 'FAIL'",
+    "curl_api": "curl -s -f https://helios-production-5ad6.up.railway.app/api/wallet/hd/new -o /dev/null && echo 'PASS' || echo 'FAIL'",
+    "dns_check": "nslookup www.moonbite.org 8.8.8.8 | grep -q '69.46.46.28' && echo 'PASS' || echo 'FAIL'",
+    "ssl_check": "openssl s_client -connect www.moonbite.org:443 -servername www.moonbite.org < /dev/null 2>/dev/null | openssl x509 -noout -dates"
+  }
+}
