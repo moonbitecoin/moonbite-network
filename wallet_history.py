@@ -17,9 +17,11 @@ gunicorn workers.
 
 from __future__ import annotations
 
+import hashlib
 import os
 import sqlite3
 import time
+import uuid
 from typing import Optional
 
 _DB_PATH = os.environ.get("MOONBITE_WALLET_HISTORY_DB", "").strip() or "wallet_history.db"
@@ -40,7 +42,7 @@ def get_connection() -> sqlite3.Connection:
 
 
 def create_schema():
-    """Initialize transaction and address book tables if they don't exist."""
+    """Initialize transaction, address book, accounts, preferences, and account_addresses tables if they don't exist."""
     conn = get_connection()
     try:
         # Transaction table: tracks all send/receive activity
@@ -48,6 +50,7 @@ def create_schema():
             """CREATE TABLE IF NOT EXISTS transactions (
                 id              INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_session_id TEXT NOT NULL,
+                account_id      TEXT,
                 txid            TEXT NOT NULL,
                 direction       TEXT NOT NULL,  -- 'send' or 'receive'
                 amount_units    INTEGER NOT NULL,
@@ -77,6 +80,10 @@ def create_schema():
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_transactions_txid "
             "ON transactions(txid)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_transactions_account "
+            "ON transactions(user_session_id, account_id)"
         )
 
         # Address book: labeled contacts per user session
@@ -110,6 +117,86 @@ def create_schema():
             "ON address_book(address)"
         )
 
+        # Accounts table: multi-account support per user session
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS accounts (
+                id                  TEXT PRIMARY KEY,
+                user_session_id     TEXT NOT NULL,
+                name                TEXT NOT NULL,
+                display_order       INTEGER NOT NULL DEFAULT 0,
+                color               TEXT,
+                is_default          INTEGER NOT NULL DEFAULT 0,
+                mnemonic_hash       TEXT,
+                balance_cache       INTEGER DEFAULT 0,
+                is_deleted          INTEGER NOT NULL DEFAULT 0,
+                created_at          INTEGER NOT NULL,
+                updated_at          INTEGER NOT NULL,
+                UNIQUE(user_session_id, name)
+            )"""
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_accounts_session "
+            "ON accounts(user_session_id)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_accounts_session_default "
+            "ON accounts(user_session_id, is_default)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_accounts_not_deleted "
+            "ON accounts(user_session_id, is_deleted)"
+        )
+
+        # Account addresses table: addresses derived from account mnemonics
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS account_addresses (
+                id              TEXT PRIMARY KEY,
+                account_id      TEXT NOT NULL,
+                address         TEXT NOT NULL UNIQUE,
+                derivation_path TEXT,
+                pubkey_hash     TEXT,
+                is_active       INTEGER NOT NULL DEFAULT 1,
+                created_at      INTEGER NOT NULL,
+                FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+            )"""
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_account_addresses_account "
+            "ON account_addresses(account_id)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_account_addresses_address "
+            "ON account_addresses(address)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_account_addresses_active "
+            "ON account_addresses(account_id, is_active)"
+        )
+
+        # Preferences table: user settings per session
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS preferences (
+                user_session_id TEXT PRIMARY KEY,
+                language TEXT DEFAULT 'en',
+                currency TEXT DEFAULT 'USD',
+                theme TEXT DEFAULT 'auto',
+                time_format TEXT DEFAULT 'relative',
+                amount_format TEXT DEFAULT 'full',
+                notification_tx INTEGER DEFAULT 1,
+                notification_price INTEGER DEFAULT 1,
+                auto_lock_mins INTEGER DEFAULT 15,
+                decimal_places INTEGER DEFAULT 8,
+                hide_zero_balance INTEGER DEFAULT 0,
+                sort_accounts TEXT DEFAULT 'created',
+                created_at INTEGER NOT NULL,
+                updated_at INTEGER NOT NULL
+            )"""
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_preferences_session "
+            "ON preferences(user_session_id)"
+        )
+
         conn.commit()
         print(f"[wallet_history] Schema initialized in {_DB_PATH}")
     finally:
@@ -132,6 +219,7 @@ def add_transaction(
     block_height: Optional[int] = None,
     confirmations: int = 0,
     memo: str = "",
+    account_id: Optional[str] = None,
 ) -> dict:
     """Insert or update a transaction record. Returns the stored transaction dict.
 
@@ -147,6 +235,7 @@ def add_transaction(
         block_height: Height at which tx was confirmed (None if pending)
         confirmations: Current confirmation count
         memo: Optional user-supplied note
+        account_id: Optional account ID for multi-account tracking
 
     Returns:
         dict with inserted transaction data
@@ -179,12 +268,13 @@ def add_transaction(
             # Insert new record
             conn.execute(
                 """INSERT INTO transactions
-                   (user_session_id, txid, direction, amount_units, fee_units,
+                   (user_session_id, account_id, txid, direction, amount_units, fee_units,
                     from_address, to_address, status, block_height, confirmations,
                     memo, timestamp, confirmed_at, created_at, updated_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
                     session_id,
+                    account_id,
                     txid,
                     direction,
                     amount_units,
@@ -665,3 +755,610 @@ def import_address_book_csv(session_id: str, csv_data: str) -> dict:
         "skipped": skipped,
         "errors": errors,
     }
+
+
+# --------------------------------------------------------------------------- #
+# Account management (multi-account support)
+# --------------------------------------------------------------------------- #
+
+def create_account(
+    session_id: str,
+    name: str,
+    mnemonic: Optional[str] = None,
+    color: Optional[str] = None,
+    is_default: bool = False,
+) -> dict:
+    """Create a new account with optional mnemonic.
+
+    Args:
+        session_id: User session identifier
+        name: Account display name (max 100 chars, unique per session)
+        mnemonic: Optional BIP39 mnemonic seed (if None, caller must provide one)
+        color: Optional color tag for UI (e.g., #FF5733, max 20 chars)
+        is_default: Whether this is the default account
+
+    Returns:
+        dict with created account data
+
+    Raises:
+        ValueError: If name already exists or validation fails
+    """
+    name = str(name or "").strip()[:100]
+    if not name:
+        raise ValueError("name is required")
+
+    color = str(color or "").strip()[:20] if color else None
+
+    now = int(time.time())
+    account_id = str(uuid.uuid4())
+
+    # Hash the mnemonic if provided (don't store raw mnemonic in DB)
+    mnemonic_hash = None
+    if mnemonic:
+        mnemonic_hash = hashlib.sha256(mnemonic.encode()).hexdigest()
+
+    with get_connection() as conn:
+        # Check for duplicate name in this session
+        existing = conn.execute(
+            "SELECT id FROM accounts WHERE user_session_id = ? AND name = ? AND is_deleted = 0",
+            (session_id, name),
+        ).fetchone()
+
+        if existing:
+            raise ValueError(f"account with name '{name}' already exists")
+
+        # If this is the first account or explicitly default, set as default
+        # and unset any other default accounts
+        if is_default:
+            conn.execute(
+                "UPDATE accounts SET is_default = 0 WHERE user_session_id = ? AND is_default = 1",
+                (session_id,),
+            )
+
+        # Get next display order
+        display_order_result = conn.execute(
+            "SELECT MAX(display_order) as max_order FROM accounts WHERE user_session_id = ? AND is_deleted = 0",
+            (session_id,),
+        ).fetchone()
+        display_order = (display_order_result["max_order"] or 0) + 1
+
+        conn.execute(
+            """INSERT INTO accounts
+               (id, user_session_id, name, display_order, color, is_default, mnemonic_hash, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (account_id, session_id, name, display_order, color, 1 if is_default else 0, mnemonic_hash, now, now),
+        )
+        conn.commit()
+
+        row = conn.execute(
+            "SELECT * FROM accounts WHERE id = ?",
+            (account_id,),
+        ).fetchone()
+
+    return dict(row) if row else {}
+
+
+def list_accounts(session_id: str, include_deleted: bool = False) -> list[dict]:
+    """Get all accounts for a user session.
+
+    Args:
+        session_id: User session identifier
+        include_deleted: Whether to include soft-deleted accounts
+
+    Returns:
+        list of account dicts, ordered by display_order
+    """
+    with get_connection() as conn:
+        if include_deleted:
+            rows = conn.execute(
+                "SELECT * FROM accounts WHERE user_session_id = ? ORDER BY display_order ASC",
+                (session_id,),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM accounts WHERE user_session_id = ? AND is_deleted = 0 ORDER BY display_order ASC",
+                (session_id,),
+            ).fetchall()
+
+    return [dict(r) for r in rows]
+
+
+def get_account(session_id: str, account_id: str) -> Optional[dict]:
+    """Fetch a single account by ID.
+
+    Args:
+        session_id: User session identifier
+        account_id: Account ID
+
+    Returns:
+        Account dict, or None if not found or deleted
+    """
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM accounts WHERE id = ? AND user_session_id = ? AND is_deleted = 0",
+            (account_id, session_id),
+        ).fetchone()
+
+    return dict(row) if row else None
+
+
+def get_default_account(session_id: str) -> Optional[dict]:
+    """Get the current default account for a user session.
+
+    Args:
+        session_id: User session identifier
+
+    Returns:
+        Default account dict, or None if no default set
+    """
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM accounts WHERE user_session_id = ? AND is_default = 1 AND is_deleted = 0",
+            (session_id,),
+        ).fetchone()
+
+    return dict(row) if row else None
+
+
+def update_account(
+    session_id: str,
+    account_id: str,
+    name: Optional[str] = None,
+    color: Optional[str] = None,
+) -> Optional[dict]:
+    """Update account name and/or color.
+
+    Args:
+        session_id: User session identifier
+        account_id: Account ID
+        name: New account name (optional)
+        color: New color tag (optional)
+
+    Returns:
+        Updated account dict, or None if not found
+
+    Raises:
+        ValueError: If new name conflicts with existing account
+    """
+    with get_connection() as conn:
+        existing = conn.execute(
+            "SELECT * FROM accounts WHERE id = ? AND user_session_id = ? AND is_deleted = 0",
+            (account_id, session_id),
+        ).fetchone()
+
+        if not existing:
+            return None
+
+        existing_dict = dict(existing)
+        now = int(time.time())
+        updates = {}
+
+        if name is not None:
+            new_name = str(name).strip()[:100]
+            if new_name and new_name != existing_dict["name"]:
+                # Check for duplicate
+                conflict = conn.execute(
+                    "SELECT id FROM accounts WHERE user_session_id = ? AND name = ? AND id != ? AND is_deleted = 0",
+                    (session_id, new_name, account_id),
+                ).fetchone()
+                if conflict:
+                    raise ValueError(f"account with name '{new_name}' already exists")
+                updates["name"] = new_name
+
+        if color is not None:
+            color_val = str(color).strip()[:20] if color else None
+            updates["color"] = color_val
+
+        if updates:
+            updates["updated_at"] = now
+            cols = ", ".join(f"{k} = ?" for k in updates)
+            vals = list(updates.values())
+            conn.execute(
+                f"UPDATE accounts SET {cols} WHERE id = ? AND user_session_id = ?",
+                vals + [account_id, session_id],
+            )
+            conn.commit()
+
+        row = conn.execute(
+            "SELECT * FROM accounts WHERE id = ? AND user_session_id = ?",
+            (account_id, session_id),
+        ).fetchone()
+
+    return dict(row) if row else None
+
+
+def set_default_account(session_id: str, account_id: str) -> Optional[dict]:
+    """Set an account as the default (unsets any previous default).
+
+    Args:
+        session_id: User session identifier
+        account_id: Account ID to set as default
+
+    Returns:
+        Updated account dict, or None if not found
+
+    Raises:
+        ValueError: If account belongs to different session
+    """
+    with get_connection() as conn:
+        # Verify account exists and belongs to this session
+        existing = conn.execute(
+            "SELECT * FROM accounts WHERE id = ? AND user_session_id = ? AND is_deleted = 0",
+            (account_id, session_id),
+        ).fetchone()
+
+        if not existing:
+            return None
+
+        now = int(time.time())
+
+        # Unset all other defaults
+        conn.execute(
+            "UPDATE accounts SET is_default = 0 WHERE user_session_id = ? AND is_default = 1",
+            (session_id,),
+        )
+
+        # Set this as default
+        conn.execute(
+            "UPDATE accounts SET is_default = 1, updated_at = ? WHERE id = ?",
+            (now, account_id),
+        )
+        conn.commit()
+
+        row = conn.execute(
+            "SELECT * FROM accounts WHERE id = ?",
+            (account_id,),
+        ).fetchone()
+
+    return dict(row) if row else None
+
+
+def delete_account(session_id: str, account_id: str) -> bool:
+    """Soft-delete an account (mark as deleted, don't remove data).
+
+    Args:
+        session_id: User session identifier
+        account_id: Account ID
+
+    Returns:
+        True if deleted, False if not found or already deleted
+    """
+    with get_connection() as conn:
+        existing = conn.execute(
+            "SELECT id FROM accounts WHERE id = ? AND user_session_id = ? AND is_deleted = 0",
+            (account_id, session_id),
+        ).fetchone()
+
+        if not existing:
+            return False
+
+        now = int(time.time())
+
+        # Soft delete
+        conn.execute(
+            "UPDATE accounts SET is_deleted = 1, updated_at = ? WHERE id = ?",
+            (now, account_id),
+        )
+
+        # If this was the default, unset it
+        conn.execute(
+            "UPDATE accounts SET is_default = 0 WHERE id = ?",
+            (account_id,),
+        )
+
+        conn.commit()
+
+    return True
+
+
+def add_account_address(
+    account_id: str,
+    address: str,
+    derivation_path: Optional[str] = None,
+    pubkey_hash: Optional[str] = None,
+) -> dict:
+    """Add an address to an account.
+
+    Args:
+        account_id: Account ID
+        address: MoonBite address
+        derivation_path: BIP32 derivation path (e.g., m/44'/0'/0'/0/0)
+        pubkey_hash: Hex pubkey hash for balance tracking
+
+    Returns:
+        dict with created address data
+    """
+    now = int(time.time())
+    addr_id = str(uuid.uuid4())
+
+    with get_connection() as conn:
+        conn.execute(
+            """INSERT INTO account_addresses
+               (id, account_id, address, derivation_path, pubkey_hash, created_at)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (addr_id, account_id, address, derivation_path, pubkey_hash, now),
+        )
+        conn.commit()
+
+        row = conn.execute(
+            "SELECT * FROM account_addresses WHERE id = ?",
+            (addr_id,),
+        ).fetchone()
+
+    return dict(row) if row else {}
+
+
+def get_account_addresses(account_id: str, active_only: bool = True) -> list[dict]:
+    """Get all addresses for an account.
+
+    Args:
+        account_id: Account ID
+        active_only: Only return active addresses
+
+    Returns:
+        list of address dicts
+    """
+    with get_connection() as conn:
+        if active_only:
+            rows = conn.execute(
+                "SELECT * FROM account_addresses WHERE account_id = ? AND is_active = 1 ORDER BY created_at ASC",
+                (account_id,),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM account_addresses WHERE account_id = ? ORDER BY created_at ASC",
+                (account_id,),
+            ).fetchall()
+
+    return [dict(r) for r in rows]
+
+
+def get_account_balance(session_id: str, account_id: str) -> int:
+    """Get total balance for an account by summing its addresses' UTXOs.
+
+    Args:
+        session_id: User session identifier
+        account_id: Account ID
+
+    Returns:
+        Total balance in base units (cents for MoonBite)
+    """
+    with get_connection() as conn:
+        # Get all active addresses for this account
+        addresses = conn.execute(
+            "SELECT pubkey_hash FROM account_addresses WHERE account_id = ? AND is_active = 1",
+            (account_id,),
+        ).fetchall()
+
+    # This will be filled by the caller with actual UTXO lookup
+    # For now, return cached balance
+    with get_connection() as conn:
+        account = conn.execute(
+            "SELECT balance_cache FROM accounts WHERE id = ?",
+            (account_id,),
+        ).fetchone()
+
+    return account["balance_cache"] if account else 0
+
+
+def update_account_balance(session_id: str, account_id: str, balance: int) -> bool:
+    """Update cached balance for an account.
+
+    Args:
+        session_id: User session identifier
+        account_id: Account ID
+        balance: New balance in base units
+
+    Returns:
+        True if updated, False if not found
+    """
+    with get_connection() as conn:
+        existing = conn.execute(
+            "SELECT id FROM accounts WHERE id = ? AND user_session_id = ?",
+            (account_id, session_id),
+        ).fetchone()
+
+        if not existing:
+            return False
+
+        now = int(time.time())
+        conn.execute(
+            "UPDATE accounts SET balance_cache = ?, updated_at = ? WHERE id = ?",
+            (balance, now, account_id),
+        )
+        conn.commit()
+
+    return True
+
+
+# --------------------------------------------------------------------------- #
+# Preferences and settings management
+# --------------------------------------------------------------------------- #
+
+def get_preference_defaults() -> dict:
+    """Get default preferences for a new user."""
+    return {
+        "language": "en",
+        "currency": "USD",
+        "theme": "auto",
+        "time_format": "relative",
+        "amount_format": "full",
+        "notification_tx": 1,
+        "notification_price": 1,
+        "auto_lock_mins": 15,
+        "decimal_places": 8,
+        "hide_zero_balance": 0,
+        "sort_accounts": "created",
+    }
+
+
+def validate_preference_value(key: str, value: any) -> bool:
+    """Validate a preference key-value pair before storing.
+
+    Args:
+        key: Preference key
+        value: Value to validate
+
+    Returns:
+        True if valid, raises ValueError otherwise
+    """
+    valid_keys = {
+        "language": {"type": str, "allowed": ["en", "es", "fr", "de", "ja", "zh"]},
+        "currency": {"type": str, "allowed": ["USD", "EUR", "GBP", "JPY", "CNY", "BTC", "MBITE"]},
+        "theme": {"type": str, "allowed": ["light", "dark", "auto"]},
+        "time_format": {"type": str, "allowed": ["relative", "absolute", "unix"]},
+        "amount_format": {"type": str, "allowed": ["full", "short", "scientific"]},
+        "notification_tx": {"type": int, "allowed": [0, 1]},
+        "notification_price": {"type": int, "allowed": [0, 1]},
+        "auto_lock_mins": {"type": int, "min": 0, "max": 120},
+        "decimal_places": {"type": int, "min": 2, "max": 8},
+        "hide_zero_balance": {"type": int, "allowed": [0, 1]},
+        "sort_accounts": {"type": str, "allowed": ["created", "updated", "name", "balance"]},
+    }
+
+    if key not in valid_keys:
+        raise ValueError(f"unknown preference key: {key}")
+
+    spec = valid_keys[key]
+    expected_type = spec["type"]
+
+    if not isinstance(value, expected_type):
+        raise ValueError(f"{key} must be {expected_type.__name__}, got {type(value).__name__}")
+
+    if "allowed" in spec and value not in spec["allowed"]:
+        raise ValueError(f"{key}={value} not in allowed values: {spec['allowed']}")
+
+    if "min" in spec and value < spec["min"]:
+        raise ValueError(f"{key}={value} must be >= {spec['min']}")
+
+    if "max" in spec and value > spec["max"]:
+        raise ValueError(f"{key}={value} must be <= {spec['max']}")
+
+    return True
+
+
+def get_preferences(session_id: str) -> dict:
+    """Get all user preferences with defaults filled in.
+
+    Args:
+        session_id: User session identifier
+
+    Returns:
+        dict with all preference keys (uses defaults for missing values)
+    """
+    defaults = get_preference_defaults()
+
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM preferences WHERE user_session_id = ?",
+            (session_id,),
+        ).fetchone()
+
+    if row:
+        prefs = dict(row)
+        # Remove session_id and timestamps from returned dict
+        prefs.pop("user_session_id", None)
+        prefs.pop("created_at", None)
+        prefs.pop("updated_at", None)
+        # Merge with defaults (prefer stored values)
+        result = {**defaults, **prefs}
+    else:
+        result = defaults
+
+    return result
+
+
+def update_preferences(session_id: str, updates: dict) -> dict:
+    """Update user preferences. Creates row if doesn't exist.
+
+    Args:
+        session_id: User session identifier
+        updates: dict with preference keys to update
+
+    Returns:
+        dict with all current preferences after update
+
+    Raises:
+        ValueError: If any preference value is invalid
+    """
+    # Validate all updates first
+    for key, value in updates.items():
+        validate_preference_value(key, value)
+
+    now = int(time.time())
+
+    with get_connection() as conn:
+        # Check if preferences exist for this session
+        existing = conn.execute(
+            "SELECT user_session_id FROM preferences WHERE user_session_id = ?",
+            (session_id,),
+        ).fetchone()
+
+        if existing:
+            # Update existing preferences
+            update_fields = {**updates, "updated_at": now}
+            cols = ", ".join(f"{k} = ?" for k in update_fields)
+            vals = list(update_fields.values())
+            conn.execute(
+                f"UPDATE preferences SET {cols} WHERE user_session_id = ?",
+                vals + [session_id],
+            )
+        else:
+            # Create new preferences with defaults + updates
+            defaults = get_preference_defaults()
+            all_prefs = {**defaults, **updates}
+            all_prefs["user_session_id"] = session_id
+            all_prefs["created_at"] = now
+            all_prefs["updated_at"] = now
+
+            cols = ", ".join(all_prefs.keys())
+            placeholders = ", ".join("?" * len(all_prefs))
+            conn.execute(
+                f"INSERT INTO preferences ({cols}) VALUES ({placeholders})",
+                list(all_prefs.values()),
+            )
+
+        conn.commit()
+
+    # Return all preferences after update
+    return get_preferences(session_id)
+
+
+def reset_preferences(session_id: str) -> dict:
+    """Reset user preferences to defaults.
+
+    Args:
+        session_id: User session identifier
+
+    Returns:
+        dict with reset preferences
+    """
+    defaults = get_preference_defaults()
+    return update_preferences(session_id, defaults)
+
+
+def delete_preferences(session_id: str) -> bool:
+    """Delete all preferences for a user session.
+
+    Args:
+        session_id: User session identifier
+
+    Returns:
+        True if deleted, False if not found
+    """
+    with get_connection() as conn:
+        existing = conn.execute(
+            "SELECT user_session_id FROM preferences WHERE user_session_id = ?",
+            (session_id,),
+        ).fetchone()
+
+        if not existing:
+            return False
+
+        conn.execute(
+            "DELETE FROM preferences WHERE user_session_id = ?",
+            (session_id,),
+        )
+        conn.commit()
+
+    return True

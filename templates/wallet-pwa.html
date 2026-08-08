@@ -625,6 +625,37 @@
             }
         }
 
+        /* Settings Tabs */
+        .settings-tab {
+            animation: fadeIn 0.3s;
+        }
+
+        .settings-tab.active {
+            display: block;
+        }
+
+        .settings-tab-btn {
+            flex: 1;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .input-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .input-field {
+            font-family: inherit;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         /* Dark mode already applied */
         @media (prefers-color-scheme: light) {
             :root {
@@ -872,9 +903,200 @@
         <div class="modal-content">
             <div class="modal-header">Menu</div>
             <button class="btn btn-secondary" id="dashboardBtn">Dashboard</button>
+            <button class="btn btn-secondary" id="settingsMenuBtn">⚙️ Settings</button>
             <button class="btn btn-secondary" id="exportBtn">Export Wallet</button>
             <button class="btn btn-secondary" id="logoutBtn">Logout</button>
             <button class="btn btn-secondary" id="closeMenuBtn">Close</button>
+        </div>
+    </div>
+
+    <div class="modal" id="settingsModal">
+        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">⚙️ Settings & Preferences</div>
+
+            <div style="border-bottom: 1px solid var(--border); margin-bottom: 16px; display: flex; gap: 0;">
+                <button class="tab-btn active settings-tab-btn" data-tab="display">Display</button>
+                <button class="tab-btn settings-tab-btn" data-tab="security">Security</button>
+                <button class="tab-btn settings-tab-btn" data-tab="notifications">Notifications</button>
+                <button class="tab-btn settings-tab-btn" data-tab="about">About</button>
+            </div>
+
+            <!-- Display Settings -->
+            <div class="settings-tab active" id="display-tab">
+                <div style="margin-bottom: 20px;">
+                    <label class="input-label">Language</label>
+                    <select id="languageSetting" class="input-field" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                        <option value="de">Deutsch</option>
+                        <option value="ja">日本語</option>
+                        <option value="zh">中文</option>
+                    </select>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Select your preferred language</p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label class="input-label">Theme</label>
+                    <select id="themeSetting" class="input-field" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
+                        <option value="auto">Auto (System)</option>
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Choose light, dark, or system preference</p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label class="input-label">Currency</label>
+                    <select id="currencySetting" class="input-field" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
+                        <option value="USD">USD (US Dollar)</option>
+                        <option value="EUR">EUR (Euro)</option>
+                        <option value="GBP">GBP (British Pound)</option>
+                        <option value="JPY">JPY (Japanese Yen)</option>
+                        <option value="CNY">CNY (Chinese Yuan)</option>
+                        <option value="BTC">BTC (Bitcoin)</option>
+                        <option value="MBITE">MBITE (Native)</option>
+                    </select>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Display currency for balance conversions</p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label class="input-label">Decimal Places</label>
+                    <select id="decimalPlacesSetting" class="input-field" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
+                        <option value="2">2 Decimals</option>
+                        <option value="4">4 Decimals</option>
+                        <option value="6">6 Decimals</option>
+                        <option value="8">8 Decimals (Full Precision)</option>
+                    </select>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">How many decimal places to display</p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label class="input-label">Amount Format</label>
+                    <select id="amountFormatSetting" class="input-field" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
+                        <option value="full">Full (12.34567890)</option>
+                        <option value="short">Short (12.35)</option>
+                        <option value="scientific">Scientific (1.23e+1)</option>
+                    </select>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">How to display amounts</p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label class="input-label">Time Format</label>
+                    <select id="timeFormatSetting" class="input-field" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
+                        <option value="relative">Relative (2 hours ago)</option>
+                        <option value="absolute">Absolute (2024-01-15 14:30)</option>
+                        <option value="unix">Unix Timestamp (1705332600)</option>
+                    </select>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">How to display transaction times</p>
+                </div>
+
+                <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(0, 212, 255, 0.05);">
+                    <div>
+                        <div style="font-weight: 500;">Hide Zero Balances</div>
+                        <p style="font-size: 12px; color: var(--text-secondary);">Hide accounts with zero balance</p>
+                    </div>
+                    <input type="checkbox" id="hideZeroBalanceSetting" style="cursor: pointer; width: 20px; height: 20px;">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label class="input-label">Sort Accounts By</label>
+                    <select id="sortAccountsSetting" class="input-field" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
+                        <option value="created">Created Date</option>
+                        <option value="updated">Last Updated</option>
+                        <option value="name">Name</option>
+                        <option value="balance">Balance</option>
+                    </select>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">How to order accounts in list</p>
+                </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="settings-tab" id="security-tab" style="display: none;">
+                <div style="margin-bottom: 20px;">
+                    <label class="input-label">Auto-Lock Timeout</label>
+                    <select id="autoLockSetting" class="input-field" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
+                        <option value="0">Never (Not Recommended)</option>
+                        <option value="5">5 Minutes</option>
+                        <option value="10">10 Minutes</option>
+                        <option value="15">15 Minutes</option>
+                        <option value="30">30 Minutes</option>
+                        <option value="60">1 Hour</option>
+                        <option value="120">2 Hours</option>
+                    </select>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Lock wallet after inactivity</p>
+                </div>
+
+                <div style="background: rgba(255, 51, 51, 0.1); border: 1px solid rgba(255, 51, 51, 0.3); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                    <div style="color: var(--danger); font-weight: 600; margin-bottom: 8px;">⚠️ Danger Zone</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">These actions are irreversible.</div>
+                    <button class="btn" style="background: var(--danger); color: white; width: 100%;" id="resetWalletSettingBtn">Reset Wallet</button>
+                </div>
+
+                <div style="background: rgba(255, 183, 0, 0.1); border: 1px solid rgba(255, 183, 0, 0.3); border-radius: 8px; padding: 16px;">
+                    <div style="color: var(--warning); font-weight: 600; margin-bottom: 8px;">🔐 Backup</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">Export your seed phrase for recovery</div>
+                    <button class="btn btn-secondary" id="exportSeedSettingBtn" style="width: 100%;">Show Seed Phrase</button>
+                </div>
+            </div>
+
+            <!-- Notifications Settings -->
+            <div class="settings-tab" id="notifications-tab" style="display: none;">
+                <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(0, 255, 136, 0.05);">
+                    <div>
+                        <div style="font-weight: 500;">Transaction Notifications</div>
+                        <p style="font-size: 12px; color: var(--text-secondary);">Alert on send/receive</p>
+                    </div>
+                    <input type="checkbox" id="notificationTxSetting" checked style="cursor: pointer; width: 20px; height: 20px;">
+                </div>
+
+                <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(0, 255, 136, 0.05);">
+                    <div>
+                        <div style="font-weight: 500;">Price Alerts</div>
+                        <p style="font-size: 12px; color: var(--text-secondary);">Alert on price changes</p>
+                    </div>
+                    <input type="checkbox" id="notificationPriceSetting" style="cursor: pointer; width: 20px; height: 20px;">
+                </div>
+
+                <div style="background: rgba(0, 212, 255, 0.05); border: 1px solid var(--border); border-radius: 8px; padding: 12px;">
+                    <p style="font-size: 12px; color: var(--text-secondary);">Notifications are stored locally in your browser. We never track your activity.</p>
+                </div>
+            </div>
+
+            <!-- About Settings -->
+            <div class="settings-tab" id="about-tab" style="display: none;">
+                <div style="margin-bottom: 20px; padding: 16px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border);">
+                    <div style="font-weight: 600; margin-bottom: 8px;">🌙 MoonBite Wallet</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+                        A secure, lightweight wallet for MoonBite (MBITE) cryptocurrency.
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
+                        <strong>Version:</strong> <span id="appVersion">1.0.0</span>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">
+                        <strong>Build Date:</strong> <span id="buildDate">Unknown</span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px; padding: 16px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border);">
+                    <div style="font-weight: 600; margin-bottom: 12px;">Links & Resources</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <a href="https://github.com/moonbitecoin/moonbite-wallet" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 14px;">📘 GitHub Repository</a>
+                        <a href="https://moonbite.org" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 14px;">🌐 Official Website</a>
+                        <a href="#" id="privacyPolicyLink" style="color: var(--primary); text-decoration: none; font-size: 14px;">📋 Privacy Policy</a>
+                    </div>
+                </div>
+
+                <div style="padding: 16px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border); font-size: 12px; color: var(--text-secondary);">
+                    <div style="font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">License</div>
+                    <p>MoonBite Wallet is licensed under the MIT License. This is open-source software maintained by the community.</p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-top: 24px;">
+                <button class="btn btn-secondary" id="resetSettingsBtn" style="flex: 1;">Reset to Defaults</button>
+                <button class="btn btn-primary" id="closeSettingsBtn" style="flex: 1;">Done</button>
+            </div>
         </div>
     </div>
 
@@ -883,6 +1105,160 @@
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/static/wallet-sw.js').catch(err => console.log('SW registration failed:', err));
         }
+
+        // ====== SettingsManager Class ======
+        class SettingsManager {
+            constructor() {
+                this.STORAGE_KEY = 'moonbite_preferences';
+                this.API_ENDPOINT = '/api/wallet/preferences';
+                this.preferences = {};
+                this.defaults = {
+                    language: 'en',
+                    currency: 'USD',
+                    theme: 'auto',
+                    time_format: 'relative',
+                    amount_format: 'full',
+                    notification_tx: true,
+                    notification_price: false,
+                    auto_lock_mins: 15,
+                    decimal_places: 8,
+                    hide_zero_balance: false,
+                    sort_accounts: 'created',
+                };
+            }
+
+            async load() {
+                try {
+                    const response = await fetch(this.API_ENDPOINT);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.preferences) {
+                            this.preferences = data.preferences;
+                            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.preferences));
+                            this.applyPreferences();
+                            console.log('[SettingsManager] Preferences loaded from server');
+                        }
+                    }
+                } catch (e) {
+                    // Load from localStorage as fallback
+                    const cached = localStorage.getItem(this.STORAGE_KEY);
+                    if (cached) {
+                        try {
+                            this.preferences = JSON.parse(cached);
+                            this.applyPreferences();
+                            console.log('[SettingsManager] Preferences loaded from cache');
+                        } catch (e) {
+                            this.preferences = { ...this.defaults };
+                            console.log('[SettingsManager] Using defaults');
+                        }
+                    } else {
+                        this.preferences = { ...this.defaults };
+                    }
+                }
+            }
+
+            async update(updates) {
+                try {
+                    const response = await fetch(this.API_ENDPOINT, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updates),
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.preferences) {
+                            this.preferences = data.preferences;
+                            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.preferences));
+                            this.applyPreferences();
+                            console.log('[SettingsManager] Preferences updated:', updates);
+                            return true;
+                        }
+                    } else {
+                        const error = await response.json();
+                        console.error('[SettingsManager] Update failed:', error);
+                    }
+                } catch (e) {
+                    console.error('[SettingsManager] Update error:', e);
+                }
+                return false;
+            }
+
+            async reset() {
+                try {
+                    const response = await fetch(`${this.API_ENDPOINT}/reset`, {
+                        method: 'POST',
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.preferences) {
+                            this.preferences = data.preferences;
+                            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.preferences));
+                            this.applyPreferences();
+                            this.updateUI();
+                            console.log('[SettingsManager] Preferences reset to defaults');
+                            return true;
+                        }
+                    }
+                } catch (e) {
+                    console.error('[SettingsManager] Reset error:', e);
+                }
+                return false;
+            }
+
+            applyPreferences() {
+                // Apply theme
+                const theme = this.preferences.theme || 'auto';
+                if (theme === 'auto') {
+                    document.documentElement.style.colorScheme = 'light dark';
+                } else {
+                    document.documentElement.style.colorScheme = theme;
+                }
+
+                // Apply language (future enhancement for i18n)
+                console.log('[SettingsManager] Language set to:', this.preferences.language);
+
+                // Apply auto-lock timeout
+                const autoLockMins = this.preferences.auto_lock_mins || 15;
+                window.AUTO_LOCK_TIMEOUT = autoLockMins * 60 * 1000;
+            }
+
+            updateUI() {
+                // Update all form inputs to match current preferences
+                const mapping = {
+                    'languageSetting': 'language',
+                    'themeSetting': 'theme',
+                    'currencySetting': 'currency',
+                    'decimalPlacesSetting': 'decimal_places',
+                    'amountFormatSetting': 'amount_format',
+                    'timeFormatSetting': 'time_format',
+                    'hideZeroBalanceSetting': 'hide_zero_balance',
+                    'sortAccountsSetting': 'sort_accounts',
+                    'autoLockSetting': 'auto_lock_mins',
+                    'notificationTxSetting': 'notification_tx',
+                    'notificationPriceSetting': 'notification_price',
+                };
+
+                for (const [elementId, prefKey] of Object.entries(mapping)) {
+                    const elem = document.getElementById(elementId);
+                    if (elem) {
+                        const value = this.preferences[prefKey];
+                        if (elem.type === 'checkbox') {
+                            elem.checked = value ? true : false;
+                        } else {
+                            elem.value = value;
+                        }
+                    }
+                }
+            }
+
+            get(key) {
+                return this.preferences[key] !== undefined ? this.preferences[key] : this.defaults[key];
+            }
+        }
+
+        const settingsManager = new SettingsManager();
 
         // BlockchainMonitor class — monitors sync status and manages offline mode
         class BlockchainMonitor {
@@ -1467,8 +1843,135 @@
         });
 
         document.getElementById('themeToggle').addEventListener('click', () => {
-            document.documentElement.style.colorScheme =
-                document.documentElement.style.colorScheme === 'dark' ? 'light' : 'dark';
+            const currentScheme = document.documentElement.style.colorScheme;
+            const newScheme = currentScheme === 'dark' ? 'light' : currentScheme === 'light' ? 'auto' : 'dark';
+            settingsManager.update({ theme: newScheme });
+        });
+
+        // ====== Settings Modal Event Listeners ======
+        document.getElementById('settingsBtn').addEventListener('click', () => {
+            settingsManager.updateUI();
+            document.getElementById('settingsModal').classList.add('active');
+        });
+
+        document.getElementById('settingsMenuBtn').addEventListener('click', () => {
+            settingsManager.updateUI();
+            document.getElementById('menuModal').classList.remove('active');
+            document.getElementById('settingsModal').classList.add('active');
+        });
+
+        document.getElementById('closeSettingsBtn').addEventListener('click', () => {
+            document.getElementById('settingsModal').classList.remove('active');
+        });
+
+        // Settings tab switching
+        document.querySelectorAll('.settings-tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tabName = e.target.dataset.tab;
+
+                // Hide all tabs
+                document.querySelectorAll('.settings-tab').forEach(tab => {
+                    tab.style.display = 'none';
+                    tab.classList.remove('active');
+                });
+
+                // Remove active from all buttons
+                document.querySelectorAll('.settings-tab-btn').forEach(b => {
+                    b.classList.remove('active');
+                });
+
+                // Show selected tab
+                const tabElement = document.getElementById(`${tabName}-tab`);
+                if (tabElement) {
+                    tabElement.style.display = 'block';
+                    tabElement.classList.add('active');
+                }
+                e.target.classList.add('active');
+            });
+        });
+
+        // Settings change handlers
+        document.getElementById('languageSetting').addEventListener('change', (e) => {
+            settingsManager.update({ language: e.target.value });
+        });
+
+        document.getElementById('themeSetting').addEventListener('change', (e) => {
+            settingsManager.update({ theme: e.target.value });
+        });
+
+        document.getElementById('currencySetting').addEventListener('change', (e) => {
+            settingsManager.update({ currency: e.target.value });
+        });
+
+        document.getElementById('decimalPlacesSetting').addEventListener('change', (e) => {
+            settingsManager.update({ decimal_places: parseInt(e.target.value) });
+        });
+
+        document.getElementById('amountFormatSetting').addEventListener('change', (e) => {
+            settingsManager.update({ amount_format: e.target.value });
+        });
+
+        document.getElementById('timeFormatSetting').addEventListener('change', (e) => {
+            settingsManager.update({ time_format: e.target.value });
+        });
+
+        document.getElementById('hideZeroBalanceSetting').addEventListener('change', (e) => {
+            settingsManager.update({ hide_zero_balance: e.target.checked ? 1 : 0 });
+        });
+
+        document.getElementById('sortAccountsSetting').addEventListener('change', (e) => {
+            settingsManager.update({ sort_accounts: e.target.value });
+        });
+
+        document.getElementById('autoLockSetting').addEventListener('change', (e) => {
+            settingsManager.update({ auto_lock_mins: parseInt(e.target.value) });
+        });
+
+        document.getElementById('notificationTxSetting').addEventListener('change', (e) => {
+            settingsManager.update({ notification_tx: e.target.checked ? 1 : 0 });
+        });
+
+        document.getElementById('notificationPriceSetting').addEventListener('change', (e) => {
+            settingsManager.update({ notification_price: e.target.checked ? 1 : 0 });
+        });
+
+        document.getElementById('resetSettingsBtn').addEventListener('click', async () => {
+            if (confirm('Reset all settings to defaults? This cannot be undone.')) {
+                const success = await settingsManager.reset();
+                if (success) {
+                    showAlert('✅ Settings reset to defaults', 'success');
+                } else {
+                    showAlert('❌ Failed to reset settings', 'danger');
+                }
+            }
+        });
+
+        document.getElementById('resetWalletSettingBtn').addEventListener('click', () => {
+            if (confirm('⚠️ This will permanently delete your wallet! Make sure you have a backup seed phrase.')) {
+                localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem(ENCRYPTED_KEY);
+                wallet = null;
+                walletPassword = null;
+                isWalletUnlocked = false;
+                document.getElementById('settingsModal').classList.remove('active');
+                showScreen('welcome');
+                showAlert('✅ Wallet deleted', 'success');
+            }
+        });
+
+        document.getElementById('exportSeedSettingBtn').addEventListener('click', () => {
+            if (wallet && wallet.seed) {
+                document.getElementById('seedDisplay').value = wallet.seed;
+                document.getElementById('settingsModal').classList.remove('active');
+                document.getElementById('seedModal').classList.add('active');
+            } else {
+                showAlert('❌ Wallet seed not available', 'danger');
+            }
+        });
+
+        document.getElementById('privacyPolicyLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            showAlert('📋 Privacy Policy: Your data is encrypted locally. We do not collect personal information.', 'info');
         });
 
         function closeMenuModal() {
@@ -1508,6 +2011,9 @@
         });
 
         // ====== Initialization ======
+        // Load settings and preferences first
+        await settingsManager.load();
+
         // Start blockchain monitor for offline detection
         blockchainMonitor = new BlockchainMonitor(30000); // Poll every 30 seconds
         blockchainMonitor.start();
@@ -1532,6 +2038,31 @@
             } catch (e) {
                 console.log('[Wallet] Could not load cached blockchain status');
             }
+        }
+
+        // Set up auto-lock timer based on preferences
+        let autoLockTimer = null;
+        const AUTO_LOCK_TIMEOUT = settingsManager.get('auto_lock_mins') * 60 * 1000;
+
+        if (AUTO_LOCK_TIMEOUT > 0) {
+            const resetAutoLock = () => {
+                clearTimeout(autoLockTimer);
+                autoLockTimer = setTimeout(() => {
+                    if (isWalletUnlocked) {
+                        isWalletUnlocked = false;
+                        walletPassword = null;
+                        showScreen('unlock');
+                        showAlert('🔒 Wallet auto-locked due to inactivity', 'warning');
+                    }
+                }, AUTO_LOCK_TIMEOUT);
+            };
+
+            // Reset auto-lock timer on user activity
+            document.addEventListener('click', resetAutoLock);
+            document.addEventListener('keypress', resetAutoLock);
+            document.addEventListener('touchstart', resetAutoLock);
+
+            resetAutoLock(); // Start the timer
         }
     </script>
 </body>

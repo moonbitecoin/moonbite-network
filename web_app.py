@@ -1136,7 +1136,9 @@ def api_merchant_invoice_status(invoice_id: str):
 
 def _get_session_id() -> str:
     """Extract user session ID from the session cookie for wallet isolation."""
-    return session.get("session_id") or secrets.token_hex(16)
+    if "session_id" not in session:
+        session["session_id"] = secrets.token_hex(16)
+    return session["session_id"]
 
 
 @app.route("/api/wallet/transaction/send", methods=["POST"])
@@ -1191,6 +1193,7 @@ def api_wallet_transaction_send():
         fee_units = int(data.get("fee_units", 0))
         status = str(data.get("status", "pending")).strip()
         memo = str(data.get("memo", "")).strip()[:500]
+        account_id = data.get("account_id")  # Optional: link to specific account
 
         tx = wallet_history.add_transaction(
             session_id=session_id,
@@ -1203,6 +1206,21 @@ def api_wallet_transaction_send():
             status=status,
             memo=memo,
         )
+
+        # Update transaction with account_id if provided
+        if account_id:
+            try:
+                import sqlite3
+                conn = wallet_history.get_connection()
+                conn.execute(
+                    "UPDATE transactions SET account_id = ? WHERE user_session_id = ? AND txid = ?",
+                    (account_id, session_id, txid)
+                )
+                conn.commit()
+                conn.close()
+            except Exception:
+                pass  # Account_id is optional, don't fail the transaction
+
         return jsonify({"status": "success", "transaction": tx}), 201
 
     except ValueError as e:
@@ -1758,6 +1776,603 @@ def api_wallet_hd_seed():
         ), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+
+# ============================================================================= #
+# API Routes — Multi-Account Management
+# ============================================================================= #
+
+
+@app.route("/api/wallet/accounts", methods=["GET"])
+@rate_limit(30, 60)
+def api_wallet_accounts_list():
+    """List all accounts for the current user session with their balances."""
+    try:
+        session_id = request.remote_addr or "unknown"
+
+        accounts = wallet_history.list_accounts(session_id)
+        result = []
+
+        for account in accounts:
+            # Get addresses for this account
+            addresses = wallet_history.get_account_addresses(account["id"])
+            account_dict = dict(account)
+
+            # Calculate balance by summing UTXOs from all active addresses
+            total_balance = 0
+            utxo_count = 0
+            node = get_node()
+
+            for addr_record in addresses:
+                pkh = addr_record["pubkey_hash"]
+                if pkh:
+                    for _txid, _idx, out in node.chain.utxo.items():
+                        if out.pubkey_hash == pkh:
+                            total_balance += out.amount
+                            utxo_count += 1
+
+            # Update cached balance
+            wallet_history.update_account_balance(session_id, account["id"], total_balance)
+
+            account_dict["balance_units"] = total_balance
+            account_dict["balance_coins"] = total_balance / 100000000  # CENTS_PER_COIN
+            account_dict["utxo_count"] = utxo_count
+            account_dict["address_count"] = len(addresses)
+
+            result.append(account_dict)
+
+        return jsonify(
+            {
+                "status": "success",
+                "accounts": result,
+                "total_count": len(result),
+            }
+        ), 200
+    except Exception as e:
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            suggested_action="Please try again",
+        )
+
+
+@app.route("/api/wallet/accounts/<account_id>", methods=["GET"])
+@rate_limit(30, 60)
+def api_wallet_account_detail(account_id: str):
+    """Get details for a specific account including addresses and balance."""
+    try:
+        session_id = request.remote_addr or "unknown"
+
+        account = wallet_history.get_account(session_id, account_id)
+        if not account:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="Account not found",
+                status_code=404,
+            )
+
+        account_dict = dict(account)
+
+        # Get all addresses for this account
+        addresses = wallet_history.get_account_addresses(account_id)
+        address_list = [dict(addr) for addr in addresses]
+
+        # Calculate balance
+        total_balance = 0
+        utxo_count = 0
+        node = get_node()
+
+        for addr_record in addresses:
+            pkh = addr_record["pubkey_hash"]
+            if pkh:
+                for _txid, _idx, out in node.chain.utxo.items():
+                    if out.pubkey_hash == pkh:
+                        total_balance += out.amount
+                        utxo_count += 1
+
+        wallet_history.update_account_balance(session_id, account_id, total_balance)
+
+        account_dict["addresses"] = address_list
+        account_dict["balance_units"] = total_balance
+        account_dict["balance_coins"] = total_balance / 100000000
+        account_dict["utxo_count"] = utxo_count
+
+        return jsonify(
+            {
+                "status": "success",
+                "account": account_dict,
+            }
+        ), 200
+    except Exception as e:
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            suggested_action="Please try again",
+        )
+
+
+@app.route("/api/wallet/accounts/create", methods=["POST"])
+@rate_limit(10, 60)
+def api_wallet_accounts_create():
+    """Create a new account with a generated HD wallet."""
+    try:
+        session_id = request.remote_addr or "unknown"
+        data = request.get_json() or {}
+
+        name = (data.get("name") or "").strip()
+        if not name:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="Account name is required",
+                suggested_action="Please provide a name like 'Main', 'Savings', etc.",
+            )
+
+        color = (data.get("color") or "").strip()
+        is_default = bool(data.get("is_default", False))
+
+        # Generate a new HD wallet
+        wallet = HDWallet()
+        mnemonic = wallet.export_seed()
+
+        # Create account with mnemonic hash
+        account = wallet_history.create_account(
+            session_id,
+            name,
+            mnemonic=mnemonic,
+            color=color or None,
+            is_default=is_default,
+        )
+
+        # Generate first address for the account
+        first_address = wallet.derive_address(0)
+        pkh = pubkey_hash_from_address(first_address)
+
+        wallet_history.add_account_address(
+            account["id"],
+            address=first_address,
+            derivation_path="m/44'/0'/0'/0/0",
+            pubkey_hash=pkh,
+        )
+
+        # Store account info in session for immediate access
+        session_key = f"account_{account['id']}"
+        session[session_key] = {
+            "id": account["id"],
+            "name": account["name"],
+            "mnemonic": mnemonic,
+            "hd_index": 1,
+        }
+
+        return jsonify(
+            {
+                "status": "success",
+                "account": {
+                    "id": account["id"],
+                    "name": account["name"],
+                    "color": account["color"],
+                    "is_default": bool(account["is_default"]),
+                    "created_at": account["created_at"],
+                },
+                "mnemonic": mnemonic,
+                "first_address": first_address,
+                "message": "BACKUP THIS SEED PHRASE! You can recover all addresses with it.",
+            }
+        ), 201
+    except ValueError as e:
+        return json_error(
+            "VALIDATION_MISSING_FIELD",
+            user_message=str(e),
+            suggested_action="Please try again with a different name",
+        )
+    except Exception as e:
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            suggested_action="Please try again",
+        )
+
+
+@app.route("/api/wallet/accounts/import", methods=["POST"])
+@rate_limit(5, 60)
+def api_wallet_accounts_import():
+    """Import an account from an existing mnemonic."""
+    try:
+        session_id = request.remote_addr or "unknown"
+        data = request.get_json() or {}
+
+        name = (data.get("name") or "").strip()
+        if not name:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="Account name is required",
+                suggested_action="Please provide a name",
+            )
+
+        mnemonic = (data.get("mnemonic") or "").strip()
+        if not mnemonic:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="Seed phrase is required",
+                suggested_action="Please enter your 12 or 24 word seed phrase",
+            )
+
+        color = (data.get("color") or "").strip()
+        passphrase = (data.get("passphrase") or "").strip()
+        is_default = bool(data.get("is_default", False))
+
+        # Validate mnemonic by trying to load wallet
+        try:
+            wallet = HDWallet.from_mnemonic(mnemonic, passphrase)
+        except ValueError as e:
+            return json_error(
+                "VALIDATION_INVALID_MNEMONIC",
+                user_message="Invalid seed phrase",
+                debug_message=str(e),
+                suggested_action="Please check that you entered the seed phrase correctly",
+            )
+
+        # Create account with mnemonic hash
+        account = wallet_history.create_account(
+            session_id,
+            name,
+            mnemonic=mnemonic,
+            color=color or None,
+            is_default=is_default,
+        )
+
+        # Generate first address(es) from imported wallet
+        first_address = wallet.derive_address(0)
+        pkh = pubkey_hash_from_address(first_address)
+
+        wallet_history.add_account_address(
+            account["id"],
+            address=first_address,
+            derivation_path="m/44'/0'/0'/0/0",
+            pubkey_hash=pkh,
+        )
+
+        # Store in session
+        session_key = f"account_{account['id']}"
+        session[session_key] = {
+            "id": account["id"],
+            "name": account["name"],
+            "mnemonic": mnemonic,
+            "hd_index": 1,
+        }
+
+        return jsonify(
+            {
+                "status": "success",
+                "account": {
+                    "id": account["id"],
+                    "name": account["name"],
+                    "color": account["color"],
+                    "is_default": bool(account["is_default"]),
+                    "created_at": account["created_at"],
+                },
+                "first_address": first_address,
+                "message": "Account imported successfully",
+            }
+        ), 201
+    except ValueError as e:
+        return json_error(
+            "VALIDATION_MISSING_FIELD",
+            user_message=str(e),
+            suggested_action="Please try again with different parameters",
+        )
+    except Exception as e:
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            suggested_action="Please try again",
+        )
+
+
+@app.route("/api/wallet/accounts/<account_id>", methods=["PATCH"])
+@rate_limit(20, 60)
+def api_wallet_accounts_update(account_id: str):
+    """Update account name and/or color."""
+    try:
+        session_id = request.remote_addr or "unknown"
+        data = request.get_json() or {}
+
+        name = data.get("name")
+        color = data.get("color")
+
+        if name is None and color is None:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="Please provide name and/or color to update",
+            )
+
+        account = wallet_history.update_account(session_id, account_id, name, color)
+
+        if not account:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="Account not found",
+                status_code=404,
+            )
+
+        return jsonify(
+            {
+                "status": "success",
+                "account": dict(account),
+            }
+        ), 200
+    except ValueError as e:
+        return json_error(
+            "VALIDATION_MISSING_FIELD",
+            user_message=str(e),
+            suggested_action="Please try again with a different name",
+        )
+    except Exception as e:
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            suggested_action="Please try again",
+        )
+
+
+@app.route("/api/wallet/accounts/<account_id>/switch", methods=["POST"])
+@rate_limit(20, 60)
+def api_wallet_accounts_switch(account_id: str):
+    """Switch to an account (set as current in session)."""
+    try:
+        session_id = request.remote_addr or "unknown"
+
+        account = wallet_history.get_account(session_id, account_id)
+        if not account:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="Account not found",
+                status_code=404,
+            )
+
+        # Store current account in session
+        session["current_account_id"] = account_id
+
+        return jsonify(
+            {
+                "status": "success",
+                "current_account_id": account_id,
+                "account_name": account["name"],
+            }
+        ), 200
+    except Exception as e:
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            suggested_action="Please try again",
+        )
+
+
+@app.route("/api/wallet/accounts/<account_id>/set-default", methods=["POST"])
+@rate_limit(20, 60)
+def api_wallet_accounts_set_default(account_id: str):
+    """Set an account as the default."""
+    try:
+        session_id = request.remote_addr or "unknown"
+
+        account = wallet_history.set_default_account(session_id, account_id)
+        if not account:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="Account not found",
+                status_code=404,
+            )
+
+        return jsonify(
+            {
+                "status": "success",
+                "account": dict(account),
+            }
+        ), 200
+    except Exception as e:
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            suggested_action="Please try again",
+        )
+
+
+@app.route("/api/wallet/accounts/<account_id>", methods=["DELETE"])
+@rate_limit(10, 60)
+def api_wallet_accounts_delete(account_id: str):
+    """Delete (soft-delete) an account."""
+    try:
+        session_id = request.remote_addr or "unknown"
+
+        deleted = wallet_history.delete_account(session_id, account_id)
+
+        if not deleted:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="Account not found",
+                status_code=404,
+            )
+
+        # Clear from session if it was the current account
+        if session.get("current_account_id") == account_id:
+            session.pop("current_account_id", None)
+
+        return jsonify(
+            {
+                "status": "success",
+                "message": "Account deleted",
+            }
+        ), 200
+    except Exception as e:
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            suggested_action="Please try again",
+        )
+
+
+@app.route("/api/wallet/accounts/<account_id>/balance", methods=["GET"])
+@rate_limit(30, 60)
+def api_wallet_accounts_balance(account_id: str):
+    """Get balance for a specific account."""
+    try:
+        session_id = request.remote_addr or "unknown"
+
+        account = wallet_history.get_account(session_id, account_id)
+        if not account:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="Account not found",
+                status_code=404,
+            )
+
+        # Get addresses for this account
+        addresses = wallet_history.get_account_addresses(account_id)
+
+        # Calculate balance by summing UTXOs
+        total_balance = 0
+        utxo_count = 0
+        node = get_node()
+
+        for addr_record in addresses:
+            pkh = addr_record["pubkey_hash"]
+            if pkh:
+                for _txid, _idx, out in node.chain.utxo.items():
+                    if out.pubkey_hash == pkh:
+                        total_balance += out.amount
+                        utxo_count += 1
+
+        wallet_history.update_account_balance(session_id, account_id, total_balance)
+
+        from params import CENTS_PER_COIN
+
+        return jsonify(
+            {
+                "status": "success",
+                "account_id": account_id,
+                "balance_coins": total_balance / CENTS_PER_COIN,
+                "balance_units": total_balance,
+                "balance_display": f"{total_balance / CENTS_PER_COIN:.8f}".rstrip("0").rstrip(".") or "0",
+                "utxo_count": utxo_count,
+            }
+        ), 200
+    except Exception as e:
+        return json_error(
+            "NETWORK_CONNECTION_ERROR",
+            debug_message=str(e),
+            suggested_action="Please wait and try again",
+        )
+
+
+# ============================================================================= #
+# API Routes — Wallet Preferences
+# ============================================================================= #
+
+
+@app.route("/api/wallet/preferences", methods=["GET"])
+@rate_limit(30, 60)
+def api_wallet_preferences_get():
+    """Get all user preferences with defaults filled in."""
+    try:
+        session_id = request.remote_addr or "unknown"
+
+        prefs = wallet_history.get_preferences(session_id)
+
+        return jsonify(
+            {
+                "status": "success",
+                "preferences": prefs,
+            }
+        ), 200
+    except Exception as e:
+        return json_error(
+            "INTERNAL_SERVER_ERROR",
+            debug_message=str(e),
+            status_code=500,
+        )
+
+
+@app.route("/api/wallet/preferences", methods=["PATCH"])
+@rate_limit(20, 60)
+def api_wallet_preferences_update():
+    """Update user preferences. Returns all current preferences after update."""
+    try:
+        session_id = request.remote_addr or "unknown"
+        data = request.get_json() or {}
+
+        if not isinstance(data, dict):
+            return json_error(
+                "VALIDATION_INVALID_TYPE",
+                user_message="Request body must be a JSON object",
+                status_code=400,
+            )
+
+        # Update preferences (validates all keys/values internally)
+        updated_prefs = wallet_history.update_preferences(session_id, data)
+
+        return jsonify(
+            {
+                "status": "success",
+                "preferences": updated_prefs,
+            }
+        ), 200
+
+    except ValueError as e:
+        return json_error(
+            "VALIDATION_INVALID_VALUE",
+            user_message=str(e),
+            status_code=400,
+        )
+    except Exception as e:
+        return json_error(
+            "INTERNAL_SERVER_ERROR",
+            debug_message=str(e),
+            status_code=500,
+        )
+
+
+@app.route("/api/wallet/preferences/defaults", methods=["GET"])
+@rate_limit(30, 60)
+def api_wallet_preferences_defaults():
+    """Get default preference values."""
+    try:
+        defaults = wallet_history.get_preference_defaults()
+
+        return jsonify(
+            {
+                "status": "success",
+                "defaults": defaults,
+            }
+        ), 200
+    except Exception as e:
+        return json_error(
+            "INTERNAL_SERVER_ERROR",
+            debug_message=str(e),
+            status_code=500,
+        )
+
+
+@app.route("/api/wallet/preferences/reset", methods=["POST"])
+@rate_limit(10, 60)
+def api_wallet_preferences_reset():
+    """Reset all user preferences to defaults."""
+    try:
+        session_id = request.remote_addr or "unknown"
+
+        reset_prefs = wallet_history.reset_preferences(session_id)
+
+        return jsonify(
+            {
+                "status": "success",
+                "message": "Preferences reset to defaults",
+                "preferences": reset_prefs,
+            }
+        ), 200
+    except Exception as e:
+        return json_error(
+            "INTERNAL_SERVER_ERROR",
+            debug_message=str(e),
+            status_code=500,
+        )
 
 
 # ============================================================================= #
