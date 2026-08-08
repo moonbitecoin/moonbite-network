@@ -1824,13 +1824,13 @@
         // ====== Wallet Functions ======
         async function createNewWallet() {
             try {
-                const response = await fetch(`${API_BASE}/api/wallet/new`);
+                const response = await fetch(`${API_BASE}/api/wallet/hd/new`);
                 const data = await response.json();
 
-                if (data.address) {
+                if (data.mnemonic) {
                     wallet = {
-                        address: data.address,
-                        seed: 'local-wallet-' + Date.now(),
+                        address: data.address || 'pending',
+                        seed: data.mnemonic,
                         createdAt: new Date().toISOString()
                     };
                     await saveWallet();
