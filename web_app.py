@@ -805,7 +805,8 @@ def why_page():
 def wallet_page():
     """Render the mobile PWA wallet page with bulletproof security (AES-256-GCM + PBKDF2)."""
     print("[WALLET_ROUTE] Loading /wallet endpoint - AES-256-GCM bulletproof wallet", flush=True)
-    return send_file("templates/wallet-pwa.html", mimetype="text/html")
+    # Use render_template which is safe since wallet-pwa.html has no Jinja2 syntax
+    return render_template("wallet-pwa.html")
 
 @app.route("/wallet-manifest.json")
 def wallet_manifest():
