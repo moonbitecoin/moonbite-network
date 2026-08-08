@@ -83,6 +83,178 @@
             gap: 8px;
         }
 
+        /* Connection Indicator Styles */
+        .connection-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 8px;
+        }
+
+        .connection-indicator.synced {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .connection-indicator.syncing {
+            background: rgba(255, 183, 0, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(255, 183, 0, 0.3);
+            animation: pulse-warning 2s infinite;
+        }
+
+        .connection-indicator.offline {
+            background: rgba(255, 51, 51, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(255, 51, 51, 0.3);
+            animation: pulse-danger 1s infinite;
+        }
+
+        @keyframes pulse-warning {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        @keyframes pulse-danger {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.synced {
+            background: var(--success);
+            box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+        }
+
+        .status-dot.syncing {
+            background: var(--warning);
+            box-shadow: 0 0 8px rgba(255, 183, 0, 0.6);
+            animation: blink 1s infinite;
+        }
+
+        .status-dot.offline {
+            background: var(--danger);
+            box-shadow: 0 0 8px rgba(255, 51, 51, 0.6);
+            animation: blink 0.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Status Tooltip */
+        .status-tooltip {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            min-width: 220px;
+            font-size: 12px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+
+        .status-tooltip.visible {
+            display: block;
+        }
+
+        .tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .tooltip-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .tooltip-label {
+            color: var(--text-secondary);
+            flex: 0 0 auto;
+        }
+
+        .tooltip-value {
+            color: var(--text-primary);
+            font-weight: 500;
+            text-align: right;
+            flex: 1;
+        }
+
+        /* Offline Warning Banner */
+        .offline-warning {
+            background: rgba(255, 51, 51, 0.1);
+            border: 1px solid rgba(255, 51, 51, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .offline-warning.visible {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .offline-warning-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .offline-warning-text {
+            flex: 1;
+            font-size: 13px;
+            color: var(--danger);
+        }
+
+        .offline-warning-close {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Cached Data Indicator */
+        .cached-data-badge {
+            display: inline-block;
+            background: rgba(255, 183, 0, 0.15);
+            color: var(--warning);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-left: 4px;
+            border: 1px solid rgba(255, 183, 0, 0.3);
+        }
+
         .header-actions {
             display: flex;
             gap: 8px;
@@ -470,12 +642,45 @@
         <header class="app-header">
             <h1>🌙 MoonBite</h1>
             <div class="header-actions">
+                <div style="position: relative;">
+                    <div class="connection-indicator synced" id="connectionIndicator" title="Blockchain status">
+                        <span class="status-dot synced"></span>
+                        <span id="statusText">Synced</span>
+                    </div>
+                    <div class="status-tooltip" id="statusTooltip">
+                        <div class="tooltip-row">
+                            <span class="tooltip-label">Status:</span>
+                            <span class="tooltip-value" id="tooltipStatus">Synced</span>
+                        </div>
+                        <div class="tooltip-row">
+                            <span class="tooltip-label">Height:</span>
+                            <span class="tooltip-value" id="tooltipHeight">0</span>
+                        </div>
+                        <div class="tooltip-row">
+                            <span class="tooltip-label">Progress:</span>
+                            <span class="tooltip-value" id="tooltipProgress">100%</span>
+                        </div>
+                        <div class="tooltip-row">
+                            <span class="tooltip-label">Last Block:</span>
+                            <span class="tooltip-value" id="tooltipLastBlock">Just now</span>
+                        </div>
+                    </div>
+                </div>
                 <button class="icon-btn" id="themeToggle" title="Toggle theme">🌓</button>
                 <button class="icon-btn" id="menuBtn" title="Menu">⋮</button>
             </div>
         </header>
 
         <main class="app-main">
+            <!-- Offline Warning Banner -->
+            <div class="offline-warning" id="offlineWarning">
+                <span class="offline-warning-icon">⚠️</span>
+                <span class="offline-warning-text">
+                    Using cached data. Blockchain is offline or syncing.
+                </span>
+                <button class="offline-warning-close" id="closeOfflineWarning">✕</button>
+            </div>
+
             <!-- Welcome Screen -->
             <div class="screen welcome-screen active">
                 <div class="welcome-content">
@@ -679,6 +884,147 @@
             navigator.serviceWorker.register('/static/wallet-sw.js').catch(err => console.log('SW registration failed:', err));
         }
 
+        // BlockchainMonitor class — monitors sync status and manages offline mode
+        class BlockchainMonitor {
+            constructor(pollIntervalMs = 30000) {
+                this.pollIntervalMs = pollIntervalMs;
+                this.pollTimer = null;
+                this.lastStatus = null;
+                this.statusHistory = [];
+                this.maxHistorySize = 10;
+            }
+
+            async start() {
+                console.log('[BlockchainMonitor] Starting blockchain monitor');
+                await this.poll(); // Initial check
+                this.pollTimer = setInterval(() => this.poll(), this.pollIntervalMs);
+            }
+
+            stop() {
+                if (this.pollTimer) {
+                    clearInterval(this.pollTimer);
+                    this.pollTimer = null;
+                }
+            }
+
+            async poll() {
+                try {
+                    const response = await fetch(`${API_BASE}/api/blockchain/status`);
+                    const data = await response.json();
+
+                    if (data.status === 'success' || response.status === 200) {
+                        this.handleStatusUpdate(data);
+                    } else {
+                        this.handleOffline();
+                    }
+                } catch (err) {
+                    console.log('[BlockchainMonitor] Poll error:', err.message);
+                    this.handleOffline();
+                }
+            }
+
+            handleStatusUpdate(status) {
+                this.lastStatus = status;
+                this.statusHistory.push({ timestamp: Date.now(), status });
+                if (this.statusHistory.length > this.maxHistorySize) {
+                    this.statusHistory.shift();
+                }
+
+                // Update global blockchain status
+                blockchainStatus = {
+                    is_synced: status.is_synced || false,
+                    current_height: status.current_height || 0,
+                    sync_percentage: status.sync_percentage || 0,
+                    last_block_time: status.last_block_time || 0,
+                    blockchain_healthy: status.blockchain_healthy || false,
+                };
+
+                // Update UI
+                this.updateUI();
+
+                // Update cache
+                localStorage.setItem('moonbite_blockchain_status', JSON.stringify({
+                    ...blockchainStatus,
+                    cached_at: Date.now(),
+                }));
+            }
+
+            handleOffline() {
+                blockchainStatus = {
+                    is_synced: false,
+                    current_height: this.lastStatus?.current_height || 0,
+                    sync_percentage: this.lastStatus?.sync_percentage || 0,
+                    last_block_time: this.lastStatus?.last_block_time || 0,
+                    blockchain_healthy: false,
+                };
+                this.updateUI();
+            }
+
+            updateUI() {
+                const indicator = document.getElementById('connectionIndicator');
+                const statusText = document.getElementById('statusText');
+                const offlineWarning = document.getElementById('offlineWarning');
+                const tooltip = document.getElementById('statusTooltip');
+
+                if (!indicator) return;
+
+                // Update indicator appearance
+                indicator.classList.remove('synced', 'syncing', 'offline');
+
+                if (!blockchainStatus.blockchain_healthy) {
+                    indicator.classList.add('offline');
+                    statusText.textContent = 'Offline';
+                    offlineWarning?.classList.add('visible');
+                } else if (blockchainStatus.is_synced) {
+                    indicator.classList.add('synced');
+                    statusText.textContent = 'Synced';
+                    offlineWarning?.classList.remove('visible');
+                } else {
+                    indicator.classList.add('syncing');
+                    statusText.textContent = 'Syncing';
+                    offlineWarning?.classList.add('visible');
+                }
+
+                // Update tooltip
+                if (tooltip) {
+                    const lastBlock = blockchainStatus.last_block_time
+                        ? this.formatTimeSince(blockchainStatus.last_block_time)
+                        : 'Unknown';
+
+                    document.getElementById('tooltipStatus').textContent =
+                        blockchainStatus.is_synced ? 'Synced' : 'Syncing...';
+                    document.getElementById('tooltipHeight').textContent =
+                        `${blockchainStatus.current_height}`;
+                    document.getElementById('tooltipProgress').textContent =
+                        `${blockchainStatus.sync_percentage.toFixed(1)}%`;
+                    document.getElementById('tooltipLastBlock').textContent = lastBlock;
+                }
+
+                // Disable send/receive buttons when offline
+                const sendBtn = document.getElementById('sendBtn');
+                const receiveBtn = document.getElementById('receiveBtn');
+                if (sendBtn) sendBtn.disabled = !blockchainStatus.blockchain_healthy;
+                if (receiveBtn) receiveBtn.disabled = !blockchainStatus.blockchain_healthy;
+            }
+
+            formatTimeSince(timestamp) {
+                if (!timestamp) return 'Unknown';
+                const seconds = Math.floor((Date.now() / 1000) - timestamp);
+                if (seconds < 60) return 'Just now';
+                if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+                if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+                return `${Math.floor(seconds / 86400)}d ago`;
+            }
+
+            isHealthy() {
+                return blockchainStatus.blockchain_healthy;
+            }
+
+            getStatus() {
+                return blockchainStatus;
+            }
+        }
+
         const API_BASE = window.location.origin;
         const STORAGE_KEY = 'moonbite_wallet';
         const ENCRYPTED_KEY = 'moonbite_wallet_encrypted';
@@ -687,6 +1033,14 @@
         let walletPassword = null;
         let isWalletUnlocked = false;
         let currentScreen = 'welcome';
+        let blockchainMonitor = null;
+        let blockchainStatus = {
+            is_synced: true,
+            current_height: 0,
+            sync_percentage: 100,
+            last_block_time: 0,
+            blockchain_healthy: true,
+        };
 
         // ====== Encryption Functions ======
         async function deriveKey(password, salt) {
@@ -942,15 +1296,50 @@
                 const response = await fetch(`${API_BASE}/api/wallet/balance?address=${wallet.address}`);
                 const data = await response.json();
 
-                if (data.status === 'success') {
-                    document.getElementById('balanceAmount').textContent = data.balance_coins.toFixed(2);
+                if (data.status === 'success' || response.ok) {
+                    const balanceCoins = data.balance_coins || 0;
+                    document.getElementById('balanceAmount').textContent = balanceCoins.toFixed(2);
                     document.getElementById('addressDisplay').textContent = wallet.address;
                     document.getElementById('receiveAddress').textContent = wallet.address;
-                    document.getElementById('availableBalance').textContent = data.balance_coins.toFixed(2) + ' MBITE';
+                    document.getElementById('availableBalance').textContent = balanceCoins.toFixed(2) + ' MBITE';
+
+                    // Cache the balance for offline access
+                    localStorage.setItem('moonbite_balance_cache', JSON.stringify({
+                        balance_coins: balanceCoins,
+                        updated_at: Date.now(),
+                        is_stale: false,
+                    }));
+
+                    // Remove cached data badge
+                    const badge = document.querySelector('.cached-data-badge');
+                    if (badge) badge.remove();
+
                     updateChainStatus();
+                } else {
+                    throw new Error('Invalid balance response');
                 }
             } catch (err) {
                 console.error('Balance update failed:', err);
+                // Try to load from cache
+                const cached = localStorage.getItem('moonbite_balance_cache');
+                if (cached) {
+                    try {
+                        const cache = JSON.parse(cached);
+                        document.getElementById('balanceAmount').textContent = cache.balance_coins.toFixed(2);
+                        document.getElementById('availableBalance').textContent = cache.balance_coins.toFixed(2) + ' MBITE';
+
+                        // Add cached data badge if not already present
+                        const existing = document.querySelector('.cached-data-badge');
+                        if (!existing && document.getElementById('balanceAmount')) {
+                            const badge = document.createElement('span');
+                            badge.className = 'cached-data-badge';
+                            badge.textContent = 'Cached';
+                            document.getElementById('balanceAmount').parentElement.appendChild(badge);
+                        }
+                    } catch (e) {
+                        console.log('Could not load cached balance');
+                    }
+                }
             }
         }
 
@@ -983,6 +1372,12 @@
         });
 
         document.getElementById('confirmSendBtn').addEventListener('click', async () => {
+            // Check blockchain health before sending
+            if (!blockchainMonitor.isHealthy()) {
+                showAlert('❌ Blockchain is offline or syncing. Please wait and try again.', 'danger');
+                return;
+            }
+
             const recipient = document.getElementById('recipientAddr').value;
             const amount = parseFloat(document.getElementById('sendAmount').value);
 
@@ -1102,9 +1497,42 @@
             ctx.fillText('...', 10, 115);
         }
 
+        // ====== Connection Indicator and Offline Mode ======
+        document.getElementById('connectionIndicator').addEventListener('click', () => {
+            const tooltip = document.getElementById('statusTooltip');
+            tooltip.classList.toggle('visible');
+        });
+
+        document.getElementById('closeOfflineWarning').addEventListener('click', (e) => {
+            e.target.closest('.offline-warning').classList.remove('visible');
+        });
+
         // ====== Initialization ======
+        // Start blockchain monitor for offline detection
+        blockchainMonitor = new BlockchainMonitor(30000); // Poll every 30 seconds
+        blockchainMonitor.start();
+
+        // Load wallet and set up balance refresh
         loadWallet();
         setInterval(updateBalance, 10000); // Refresh every 10 seconds
+
+        // Load cached blockchain status if available
+        const cachedStatus = localStorage.getItem('moonbite_blockchain_status');
+        if (cachedStatus) {
+            try {
+                const cached = JSON.parse(cachedStatus);
+                blockchainStatus = {
+                    is_synced: cached.is_synced,
+                    current_height: cached.current_height,
+                    sync_percentage: cached.sync_percentage,
+                    last_block_time: cached.last_block_time,
+                    blockchain_healthy: cached.blockchain_healthy,
+                };
+                blockchainMonitor.updateUI();
+            } catch (e) {
+                console.log('[Wallet] Could not load cached blockchain status');
+            }
+        }
     </script>
 </body>
 </html>

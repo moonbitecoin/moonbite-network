@@ -43,6 +43,7 @@ import exchange
 import forum
 import merchants
 import swap_verifier
+import wallet_history
 from node import Node
 from store import BlockStore
 from transaction import generate_keypair, pubkey_hash
@@ -90,6 +91,18 @@ def force_https_and_www():
     if host in ["moonbite.org", "moonbite.org:443"]:
         url = request.url.replace(host, "www.moonbite.org", 1)
         return redirect(url, code=301)
+
+# Initialize databases on first request (for production gunicorn deploys)
+_schemas_initialized = False
+@app.before_request
+def init_schemas():
+    global _schemas_initialized
+    if not _schemas_initialized:
+        try:
+            wallet_history.create_schema()
+            _schemas_initialized = True
+        except Exception as e:
+            print(f"[init_schemas] Warning: {e}", flush=True)
 
 # Hard cap on request body size. Flask/Werkzeug default to unlimited, so without
 # this a single POST with a multi-hundred-MB body forces the worker to buffer +
@@ -169,6 +182,128 @@ def rate_limit(max_calls: int, window_seconds: int = 60):
             return fn(*args, **kwargs)
         return wrapper
     return decorator
+
+
+# --------------------------------------------------------------------------- #
+# Error Standardization — Consistent API error responses
+# --------------------------------------------------------------------------- #
+
+# Standard error code definitions for wallet and blockchain operations
+ERRORS = {
+    # Validation errors
+    "VALIDATION_INVALID_ADDRESS": {
+        "user_message": "Invalid address format",
+        "http_status": 400,
+    },
+    "VALIDATION_INSUFFICIENT_BALANCE": {
+        "user_message": "Insufficient balance for this transaction",
+        "http_status": 400,
+    },
+    "VALIDATION_INVALID_AMOUNT": {
+        "user_message": "Invalid or negative amount specified",
+        "http_status": 400,
+    },
+    "VALIDATION_INVALID_MNEMONIC": {
+        "user_message": "Invalid seed phrase (must be valid BIP39 mnemonic)",
+        "http_status": 400,
+    },
+    "VALIDATION_MISSING_FIELD": {
+        "user_message": "Required field is missing from request",
+        "http_status": 400,
+    },
+
+    # Network/sync errors
+    "NETWORK_NOT_SYNCED": {
+        "user_message": "Blockchain is still syncing, please wait",
+        "http_status": 503,
+    },
+    "NETWORK_TX_REJECTED": {
+        "user_message": "Transaction was rejected by the network",
+        "http_status": 400,
+    },
+    "NETWORK_OFFLINE": {
+        "user_message": "Unable to reach the blockchain (offline mode)",
+        "http_status": 503,
+    },
+    "NETWORK_CONNECTION_ERROR": {
+        "user_message": "Connection error, retrying...",
+        "http_status": 503,
+    },
+
+    # Security errors
+    "SECURITY_SESSION_EXPIRED": {
+        "user_message": "Session has expired, please reload",
+        "http_status": 401,
+    },
+    "SECURITY_INVALID_PASSWORD": {
+        "user_message": "Incorrect password",
+        "http_status": 401,
+    },
+    "SECURITY_RATE_LIMITED": {
+        "user_message": "Too many requests, please wait before trying again",
+        "http_status": 429,
+    },
+
+    # Storage/persistence errors
+    "STORAGE_QUOTA_EXCEEDED": {
+        "user_message": "Local storage quota exceeded",
+        "http_status": 507,
+    },
+    "STORAGE_CORRUPTED": {
+        "user_message": "Local data is corrupted, unable to proceed",
+        "http_status": 500,
+    },
+
+    # General errors
+    "INTERNAL_ERROR": {
+        "user_message": "An unexpected error occurred",
+        "http_status": 500,
+    },
+}
+
+
+def json_error(
+    error_code: str,
+    user_message: Optional[str] = None,
+    debug_message: Optional[str] = None,
+    suggested_action: Optional[str] = None,
+    status_code: Optional[int] = None,
+) -> tuple:
+    """Create a standardized error response.
+
+    Args:
+        error_code: Unique error identifier (e.g., "VALIDATION_INVALID_ADDRESS")
+        user_message: User-friendly message (overrides default if provided)
+        debug_message: Developer-focused debug info (only if debug=true in request)
+        suggested_action: What the user should do to recover
+        status_code: HTTP status code (overrides error definition if provided)
+
+    Returns:
+        Tuple of (response_dict, http_status_code) for Flask to return
+    """
+    error_def = ERRORS.get(error_code, ERRORS["INTERNAL_ERROR"])
+
+    http_status = status_code or error_def.get("http_status", 500)
+    message = user_message or error_def.get("user_message", "An error occurred")
+
+    response = {
+        "status": "error",
+        "error_code": error_code,
+        "message": message,
+        "timestamp": time.time(),
+    }
+
+    if suggested_action:
+        response["action"] = suggested_action
+
+    # Include debug info only if requested and in non-production or explicitly enabled
+    if debug_message and (
+        os.environ.get("FLASK_DEBUG") == "1"
+        or request.args.get("debug") == "true"
+    ):
+        response["debug"] = debug_message
+
+    return jsonify(response), http_status
 
 
 def get_node() -> Node:
@@ -994,6 +1129,355 @@ def api_merchant_invoice_status(invoice_id: str):
         return jsonify({"status": "error", "message": str(e)}), 404
 
 
+# ============================================================================= #
+# API Routes — Wallet Transaction History
+# ============================================================================= #
+
+
+def _get_session_id() -> str:
+    """Extract user session ID from the session cookie for wallet isolation."""
+    return session.get("session_id") or secrets.token_hex(16)
+
+
+@app.route("/api/wallet/transaction/send", methods=["POST"])
+@rate_limit(30, 60)
+def api_wallet_transaction_send():
+    """Create a new send transaction record.
+
+    The wallet app creates this after sending coins on-chain. The server
+    records the transaction for history/audit purposes (never custodial).
+    """
+    data = request.get_json(silent=True) or {}
+    session_id = _get_session_id()
+
+    try:
+        txid = str(data.get("txid", "")).strip()
+        if not txid:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="Transaction ID is required",
+            )
+
+        amount_units = int(data.get("amount_units", 0))
+        if amount_units <= 0:
+            return json_error(
+                "VALIDATION_INVALID_AMOUNT",
+                user_message="Amount must be greater than zero",
+                suggested_action="Please check the amount and try again",
+            )
+
+        from_address = str(data.get("from_address", "")).strip()
+        to_address = str(data.get("to_address", "")).strip()
+        if not from_address or not to_address:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="Both sender and recipient addresses are required",
+            )
+
+        # Validate addresses
+        if not is_valid_address(from_address):
+            return json_error(
+                "VALIDATION_INVALID_ADDRESS",
+                user_message="Sender address is invalid",
+                suggested_action="Please check the sender address",
+            )
+        if not is_valid_address(to_address):
+            return json_error(
+                "VALIDATION_INVALID_ADDRESS",
+                user_message="Recipient address is invalid",
+                suggested_action="Please check the recipient address format",
+            )
+
+        fee_units = int(data.get("fee_units", 0))
+        status = str(data.get("status", "pending")).strip()
+        memo = str(data.get("memo", "")).strip()[:500]
+
+        tx = wallet_history.add_transaction(
+            session_id=session_id,
+            txid=txid,
+            direction="send",
+            amount_units=amount_units,
+            from_address=from_address,
+            to_address=to_address,
+            fee_units=fee_units,
+            status=status,
+            memo=memo,
+        )
+        return jsonify({"status": "success", "transaction": tx}), 201
+
+    except ValueError as e:
+        return json_error(
+            "VALIDATION_INVALID_AMOUNT",
+            debug_message=str(e),
+            suggested_action="Please check all fields and try again",
+        )
+    except Exception as e:
+        print(f"[api_wallet_transaction_send] Unexpected error: {e}", flush=True)
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            suggested_action="Please try again or contact support if the problem persists",
+        )
+
+
+@app.route("/api/wallet/transactions", methods=["GET"])
+def api_wallet_transactions_list():
+    """List user's transactions with optional pagination and filtering.
+
+    Query params:
+        limit: Max records per page (1-100, default 20)
+        offset: Pagination offset (default 0)
+        status: Filter by 'pending', 'confirmed', or 'failed'
+        sort: 'asc' or 'desc' (default desc = newest first)
+    """
+    session_id = _get_session_id()
+
+    try:
+        limit = int(request.args.get("limit", 20))
+        offset = int(request.args.get("offset", 0))
+        status = request.args.get("status")
+        sort = request.args.get("sort", "desc")
+
+        result = wallet_history.get_transactions(
+            session_id=session_id,
+            limit=limit,
+            offset=offset,
+            status=status,
+            sort=sort,
+        )
+        return jsonify({"status": "success", "data": result}), 200
+
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+    except Exception as e:
+        print(f"[api_wallet_transactions_list] Unexpected error: {e}", flush=True)
+        return jsonify({"status": "error", "message": "internal server error"}), 500
+
+
+@app.route("/api/wallet/transactions/<txid>", methods=["GET"])
+def api_wallet_transaction_detail(txid: str):
+    """Fetch a single transaction by txid."""
+    session_id = _get_session_id()
+
+    try:
+        tx = wallet_history.get_transaction(session_id=session_id, txid=txid)
+        if not tx:
+            return jsonify({"status": "error", "message": "transaction not found"}), 404
+
+        return jsonify({"status": "success", "data": tx}), 200
+
+    except Exception as e:
+        print(f"[api_wallet_transaction_detail] Unexpected error: {e}", flush=True)
+        return jsonify({"status": "error", "message": "internal server error"}), 500
+
+
+@app.route("/api/wallet/transactions/<txid>", methods=["PATCH"])
+@rate_limit(60, 60)
+def api_wallet_transaction_update_memo(txid: str):
+    """Update the memo of a transaction."""
+    data = request.get_json(silent=True) or {}
+    session_id = _get_session_id()
+
+    try:
+        memo = str(data.get("memo", "")).strip()
+
+        tx = wallet_history.update_transaction_memo(
+            session_id=session_id,
+            txid=txid,
+            memo=memo,
+        )
+        if not tx:
+            return jsonify({"status": "error", "message": "transaction not found"}), 404
+
+        return jsonify({"status": "success", "data": tx}), 200
+
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+    except Exception as e:
+        print(f"[api_wallet_transaction_update_memo] Unexpected error: {e}", flush=True)
+        return jsonify({"status": "error", "message": "internal server error"}), 500
+
+
+# ============================================================================= #
+# API Routes — Address Book
+# ============================================================================= #
+
+
+@app.route("/api/address-book/add", methods=["POST"])
+@rate_limit(30, 60)
+def api_address_book_add():
+    """Add a labeled contact to the address book."""
+    data = request.get_json(silent=True) or {}
+    session_id = _get_session_id()
+
+    try:
+        label = str(data.get("label", "")).strip()
+        address = str(data.get("address", "")).strip()
+        category = str(data.get("category", "general")).strip()
+        notes = str(data.get("notes", "")).strip()
+
+        contact = wallet_history.add_contact(
+            session_id=session_id,
+            label=label,
+            address=address,
+            category=category,
+            notes=notes,
+        )
+        return jsonify({"status": "success", "data": contact}), 201
+
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+    except Exception as e:
+        print(f"[api_address_book_add] Unexpected error: {e}", flush=True)
+        return jsonify({"status": "error", "message": "internal server error"}), 500
+
+
+@app.route("/api/address-book", methods=["GET"])
+def api_address_book_list():
+    """List all contacts in the address book.
+
+    Query params:
+        category: Filter by category (optional)
+        sort: 'created', 'updated', 'label', 'times_sent' (default 'created')
+    """
+    session_id = _get_session_id()
+
+    try:
+        category = request.args.get("category")
+        sort = request.args.get("sort", "created")
+
+        contacts = wallet_history.get_contacts(
+            session_id=session_id,
+            category=category,
+            sort=sort,
+        )
+        return jsonify({"status": "success", "data": contacts}), 200
+
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+    except Exception as e:
+        print(f"[api_address_book_list] Unexpected error: {e}", flush=True)
+        return jsonify({"status": "error", "message": "internal server error"}), 500
+
+
+@app.route("/api/address-book/<int:contact_id>", methods=["GET"])
+def api_address_book_detail(contact_id: int):
+    """Fetch a single contact by ID."""
+    session_id = _get_session_id()
+
+    try:
+        contact = wallet_history.get_contact(session_id=session_id, contact_id=contact_id)
+        if not contact:
+            return jsonify({"status": "error", "message": "contact not found"}), 404
+
+        return jsonify({"status": "success", "data": contact}), 200
+
+    except Exception as e:
+        print(f"[api_address_book_detail] Unexpected error: {e}", flush=True)
+        return jsonify({"status": "error", "message": "internal server error"}), 500
+
+
+@app.route("/api/address-book/<int:contact_id>", methods=["PATCH"])
+@rate_limit(60, 60)
+def api_address_book_update(contact_id: int):
+    """Update a contact's fields (label, address, category, notes, is_favorite)."""
+    data = request.get_json(silent=True) or {}
+    session_id = _get_session_id()
+
+    try:
+        contact = wallet_history.update_contact(
+            session_id=session_id,
+            contact_id=contact_id,
+            updates=data,
+        )
+        if not contact:
+            return jsonify({"status": "error", "message": "contact not found"}), 404
+
+        return jsonify({"status": "success", "data": contact}), 200
+
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+    except Exception as e:
+        print(f"[api_address_book_update] Unexpected error: {e}", flush=True)
+        return jsonify({"status": "error", "message": "internal server error"}), 500
+
+
+@app.route("/api/address-book/<int:contact_id>", methods=["DELETE"])
+@rate_limit(30, 60)
+def api_address_book_delete(contact_id: int):
+    """Delete a contact from the address book."""
+    session_id = _get_session_id()
+
+    try:
+        deleted = wallet_history.delete_contact(
+            session_id=session_id,
+            contact_id=contact_id,
+        )
+        if not deleted:
+            return jsonify({"status": "error", "message": "contact not found"}), 404
+
+        return jsonify({"status": "success", "message": "contact deleted"}), 200
+
+    except Exception as e:
+        print(f"[api_address_book_delete] Unexpected error: {e}", flush=True)
+        return jsonify({"status": "error", "message": "internal server error"}), 500
+
+
+@app.route("/api/address-book/export", methods=["GET"])
+@rate_limit(10, 60)
+def api_address_book_export():
+    """Export address book as CSV file."""
+    session_id = _get_session_id()
+
+    try:
+        csv_data = wallet_history.export_address_book_csv(session_id=session_id)
+        return app.response_class(
+            csv_data,
+            mimetype="text/csv",
+            headers={"Content-Disposition": "attachment;filename=address-book.csv"},
+        )
+
+    except Exception as e:
+        print(f"[api_address_book_export] Unexpected error: {e}", flush=True)
+        return jsonify({"status": "error", "message": "internal server error"}), 500
+
+
+@app.route("/api/address-book/import", methods=["POST"])
+@rate_limit(10, 60)
+def api_address_book_import():
+    """Bulk import contacts from CSV.
+
+    Expects CSV with headers: label, address, category, notes
+    Skips rows with missing label/address or duplicate labels.
+    """
+    session_id = _get_session_id()
+
+    try:
+        # Get CSV data from multipart form or raw body
+        csv_data = None
+
+        if "file" in request.files:
+            file = request.files["file"]
+            csv_data = file.read().decode("utf-8")
+        elif request.data:
+            csv_data = request.data.decode("utf-8")
+
+        if not csv_data:
+            raise ValueError("CSV data is required")
+
+        result = wallet_history.import_address_book_csv(
+            session_id=session_id,
+            csv_data=csv_data,
+        )
+        return jsonify({"status": "success", "data": result}), 200
+
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+    except Exception as e:
+        print(f"[api_address_book_import] Unexpected error: {e}", flush=True)
+        return jsonify({"status": "error", "message": "internal server error"}), 500
+
+
 def _qr_svg(payload: str) -> Optional[str]:
     """Render `payload` as an SVG QR code, or None if the encoder is unavailable.
 
@@ -1094,7 +1578,11 @@ def api_wallet_new():
             }
         ), 200
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            suggested_action="Please try again or reload the page",
+        )
 
 
 @app.route("/api/wallet/balance", methods=["GET"])
@@ -1128,7 +1616,11 @@ def api_wallet_balance():
             }
         ), 200
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        return json_error(
+            "NETWORK_CONNECTION_ERROR",
+            debug_message=str(e),
+            suggested_action="Please wait and try again",
+        )
 
 
 # ============================================================================= #
@@ -1156,7 +1648,11 @@ def api_wallet_hd_new():
             }
         ), 200
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            suggested_action="Please reload the wallet and try creating a new wallet again",
+        )
 
 
 @app.route("/api/wallet/hd/import", methods=["POST"])
@@ -1169,7 +1665,11 @@ def api_wallet_hd_import():
         passphrase = (data.get("passphrase") or "").strip()
 
         if not mnemonic:
-            return jsonify({"status": "error", "message": "missing mnemonic"}), 400
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="Seed phrase is required",
+                suggested_action="Please enter your 12 or 24 word seed phrase",
+            )
 
         # Validate and recover wallet from mnemonic
         wallet = HDWallet.from_mnemonic(mnemonic, passphrase)
@@ -1185,9 +1685,17 @@ def api_wallet_hd_import():
             }
         ), 200
     except ValueError as e:
-        return jsonify({"status": "error", "message": f"invalid mnemonic: {str(e)}"}), 400
+        return json_error(
+            "VALIDATION_INVALID_MNEMONIC",
+            debug_message=str(e),
+            suggested_action="Please check that you entered the seed phrase correctly",
+        )
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        return json_error(
+            "INTERNAL_ERROR",
+            debug_message=str(e),
+            suggested_action="Please try again or reload the wallet",
+        )
 
 
 @app.route("/api/wallet/hd/address", methods=["GET"])
@@ -1197,7 +1705,11 @@ def api_wallet_hd_address():
     try:
         mnemonic = session.get("hd_wallet_mnemonic")
         if not mnemonic:
-            return jsonify({"status": "error", "message": "no HD wallet in session. Use /api/wallet/hd/new first"}), 400
+            return json_error(
+                "SECURITY_SESSION_EXPIRED",
+                user_message="Wallet session has ended",
+                suggested_action="Please import your seed phrase again",
+            )
 
         wallet = HDWallet.from_mnemonic(mnemonic)
         index = session.get("hd_wallet_count", 0)
@@ -1295,7 +1807,77 @@ def api_blockchain_info():
             }
         ), 200
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        return json_error(
+            "NETWORK_CONNECTION_ERROR",
+            debug_message=str(e),
+            suggested_action="Please try again",
+        )
+
+
+@app.route("/api/blockchain/status", methods=["GET"])
+@rate_limit(60, 60)  # Public status endpoint
+def api_blockchain_status():
+    """Get blockchain sync status for offline mode indicator.
+
+    Returns:
+        {
+            is_synced: bool - true if blockchain is fully synced
+            current_height: int - current block height
+            peers_connected: int - number of connected peers
+            blocks_behind: int - estimated blocks behind (0 if synced)
+            sync_percentage: float - sync progress 0-100
+            last_block_time: float - unix timestamp of last block
+            blockchain_healthy: bool - true if sync is progressing normally
+            estimated_sync_seconds: int - estimated seconds until synced (-1 if unknown)
+        }
+    """
+    try:
+        node = get_node()
+        chain = node.chain
+
+        # Get current blockchain state
+        current_height = chain.height
+        last_block = chain.blocks.get(chain.tip)
+        last_block_time = last_block.header.timestamp if last_block else time.time()
+
+        # For demo/educational network, assume we're synced if we have blocks
+        # In production, this would check against known peer heights
+        is_synced = current_height > 1 or current_height == 1
+
+        # Track if blockchain is healthy (has recent blocks)
+        time_since_last_block = time.time() - last_block_time
+        blockchain_healthy = time_since_last_block < 600  # Healthy if block within 10 min
+
+        return jsonify(
+            {
+                "status": "success",
+                "is_synced": is_synced,
+                "current_height": current_height,
+                "peers_connected": 0,  # Demo network, no peer tracking
+                "blocks_behind": 0 if is_synced else 1,
+                "sync_percentage": 100.0 if is_synced else 50.0,
+                "last_block_time": last_block_time,
+                "blockchain_healthy": blockchain_healthy,
+                "estimated_sync_seconds": 0 if is_synced else 30,
+                "timestamp": time.time(),
+            }
+        ), 200
+    except Exception as e:
+        # Return offline status on any error
+        return jsonify(
+            {
+                "status": "error",
+                "is_synced": False,
+                "current_height": 0,
+                "peers_connected": 0,
+                "blocks_behind": -1,
+                "sync_percentage": 0,
+                "last_block_time": 0,
+                "blockchain_healthy": False,
+                "estimated_sync_seconds": -1,
+                "timestamp": time.time(),
+            }
+        ), 503
 
 
 # ============================================================================= #
@@ -2074,6 +2656,8 @@ def add_security_headers(response):
 if __name__ == "__main__":
     # Initialize the node on startup
     get_node()
+    # Initialize wallet history database
+    wallet_history.create_schema()
     # Production deploys run this under gunicorn (web_app:app) and never reach
     # this block. When launched directly, honor the environment so the same
     # file works locally (defaults) and on a server/PaaS (PORT/HOST/FLASK_DEBUG).
