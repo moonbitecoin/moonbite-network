@@ -3065,7 +3065,7 @@ def api_mining_status():
                         try:
                             addr = address_from_pubkey_hash(output.pubkey_hash)
                             address_blocks[addr] = address_blocks.get(addr, 0) + 1
-                        except:
+                        except Exception:
                             pass
 
             leaderboard = sorted(
@@ -3208,7 +3208,6 @@ def api_merchants_create_invoice():
         return jsonify({
             "status": "success",
             "invoice_id": invoice_id,
-            "status": "pending",
             "payment_address": payment_address,
             "amount_mbite": amount_mbite,
             "fee_mbite": round(fee_mbite, 8),
@@ -3246,7 +3245,7 @@ def api_mining_leaderboard():
                     try:
                         addr = address_from_pubkey_hash(output.pubkey_hash)
                         address_blocks[addr] = address_blocks.get(addr, 0) + 1
-                    except:
+                    except Exception:
                         pass
 
         # Sort by blocks mined
