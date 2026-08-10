@@ -78,21 +78,15 @@ if _TRUSTED_PROXY_COUNT > 0:
         app.wsgi_app, x_for=_TRUSTED_PROXY_COUNT, x_proto=1, x_host=1
     )
 
-# Force HTTPS and canonical domain (www.moonbite.org)
+# Force HTTPS (both moonbite.org and www.moonbite.org work equally)
 @app.before_request
-def force_https_and_www():
-    """Force HTTPS and redirect bare domain to www subdomain."""
+def force_https():
+    """Force HTTPS in production. Both moonbite.org and www.moonbite.org work equally."""
     # Force HTTPS in production
     if os.environ.get("RAILWAY_ENVIRONMENT") == "production":
         if request.headers.get("X-Forwarded-Proto", "http") != "https":
             url = request.url.replace("http://", "https://", 1)
             return redirect(url, code=301)
-
-    # Redirect moonbite.org to www.moonbite.org for consistent SSL certificate
-    host = request.host.lower()
-    if host in ["moonbite.org", "moonbite.org:443"]:
-        url = request.url.replace(host, "www.moonbite.org", 1)
-        return redirect(url, code=301)
 
 # Initialize databases on first request (for production gunicorn deploys)
 _schemas_initialized = False
