@@ -3144,7 +3144,6 @@ def api_merchants_invoice_status(invoice_id):
     try:
         # In production: look up invoice in database
         # For MVP: check if payment address received MBITE
-        node = get_node()
 
         # Mock response (would check actual payment in production)
         return jsonify({
@@ -3283,7 +3282,6 @@ def api_mining_share(job_id):
             return jsonify({"status": "error", "message": "Job not found"}), 404
 
         blocks_mined = job.get("blocks_mined", 0)
-        address = job.get("mining_address", "Unknown")
         hashrate = job.get("hashrate", 0)
 
         if blocks_mined == 0:
@@ -3293,7 +3291,9 @@ def api_mining_share(job_id):
         mbite_earned = blocks_mined * 50
 
         # Generate share text for different platforms
-        share_text = f"I just mined {blocks_mined} MoonBite block{'s' if blocks_mined > 1 else ''}! Earned {mbite_earned:,.0f} MBITE 🌙⛏️"
+        s = 's' if blocks_mined > 1 else ''
+        share_text = (f"I just mined {blocks_mined} MoonBite block{s}! "
+                      f"Earned {mbite_earned:,.0f} MBITE 🌙⛏️")
         twitter_text = f"{share_text} Join me: https://moonbite.org/mining"
         tiktok_text = f"Mining crypto with {share_text} #MoonBite #Mining"
 
@@ -3314,7 +3314,8 @@ def api_mining_share(job_id):
                 },
                 "og_tags": {
                     "title": f"I mined {mbite_earned:,.0f} MBITE! 🚀",
-                    "description": f"Mined {blocks_mined} block{'s' if blocks_mined > 1 else ''} using the MoonBite browser miner",
+                    "description": (f"Mined {blocks_mined} block{s} "
+                                   "using the MoonBite browser miner"),
                     "image": "https://moonbite.org/favicon.svg",
                     "url": f"https://moonbite.org/mining?receipt={job_id}",
                 },
