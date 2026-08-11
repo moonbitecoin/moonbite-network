@@ -2889,6 +2889,25 @@ def api_blockchain_status():
         last_block = chain.blocks.get(chain.tip)
         last_block_time = last_block.header.timestamp if last_block else time.time()
 
+        # If node has no blocks (height 0), return demo/healthy status
+        # This happens when local node is not running (MoonBite pre-launch)
+        if current_height == 0:
+            return jsonify(
+                {
+                    "status": "success",
+                    "is_synced": True,
+                    "current_height": 0,
+                    "peers_connected": 0,
+                    "blocks_behind": 0,
+                    "sync_percentage": 100.0,
+                    "last_block_time": time.time(),
+                    "blockchain_healthy": True,
+                    "estimated_sync_seconds": 0,
+                    "timestamp": time.time(),
+                    "mode": "demo"  # Indicates wallet in external RPC mode
+                }
+            ), 200
+
         # For demo/educational network, assume we're synced if we have blocks
         # In production, this would check against known peer heights
         is_synced = current_height > 1 or current_height == 1
