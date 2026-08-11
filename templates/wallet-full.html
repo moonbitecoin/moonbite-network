@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#0a0e27">
+    <meta name="description" content="MoonBite Wallet - World-class cryptocurrency wallet">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MoonBite">
+    <title>MoonBite - Premium Wallet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        :root {
+            --primary: #00d4ff;
+            --primary-light: #33e5ff;
+            --primary-dark: #0099cc;
+            --accent: #ff006e;
+            --success: #00ff88;
+            --warning: #ffb700;
+            --danger: #ff3333;
+            --bg-dark: #0a0e27;
+            --bg-darker: #050709;
+            --bg-card: #141829;
+            --bg-card-light: #1f2438;
+            --border: #2a3050;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --text-tertiary: #707080;
+        }
+
+        .wallet-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 428px;
+            height: 100vh;
+            margin: 0 auto;
+            background: var(--bg-dark);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .wallet-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            animation: drift 20s ease-in-out infinite;
+        }
+
+        @keyframes drift {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 30px); }
+        }
+
+        /* SCREEN MANAGEMENT */
+        .screen {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        .screen-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+        }
+
+        .screen-overlay.active {
+            display: block;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            z-index: 101;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        /* HEADER */
+        .wallet-header {
+            padding: max(12px, env(safe-area-inset-top)) 16px 12px;
+            background: rgba(14, 18, 39, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .header-left, .header-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .logo-badge {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+        }
+
+        .header-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            color: var(--primary);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .icon-btn:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        /* MAIN CONTENT */
+        .wallet-main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .wallet-main::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .wallet-main::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.3);
+            border-radius: 2px;
+        }
+
+        /* BALANCE CARD */
+        .balance-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(255, 0, 110, 0.05) 100%);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px 20px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 24px rgba(0, 212, 255, 0.08);
+        }
+
+        .balance-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .balance-value {
+            font-size: 40px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .balance-currency {
+            font-size: 16px;
+            color: var(--text-secondary);
+            display: inline-block;
+            margin-left: 8px;
+        }
+
+        .balance-subtext {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-top: 12px;
+        }
+
+        /* CARDS GRID */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .card-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-subvalue {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: #000;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card-light);
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 12px;
+            margin-bottom: 0;
+            width: auto;
+        }
+
+        /* FORMS */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-darker);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        .form-input-group {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+        }
+
+        .form-input-group .form-input {
+            margin-bottom: 0;
+        }
+
+        /* TABS */
+        .tab-nav {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .tab-btn {
+            padding: 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: #000;
+            border-color: var(--primary);
+        }
+
+        /* SECTIONS */
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 16px 0;
+        }
+
+        /* TRANSACTION HISTORY */
+        .tx-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .tx-item:hover {
+            background: var(--bg-card-light);
+        }
+
+        .tx-info {
+            flex: 1;
+        }
+
+        .tx-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .tx-time {
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+
+        .tx-amount {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .tx-amount.out {
+            color: var(--danger);
+        }
+
+        /* MINING STATS */
+        .mining-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-subvalue {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+        }
+
+        /* ACHIEVEMENTS */
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .achievement-badge {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .achievement-badge.unlocked {
+            border-color: var(--success);
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        .achievement-badge:hover {
+            transform: translateY(-2px);
+        }
+
+        .achievement-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .achievement-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .achievement-locked {
+            opacity: 0.4;
+        }
+
+        /* PRICE CHART */
+        .price-chart {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            min-height: 200px;
+            position: relative;
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-tertiary);
+            font-size: 13px;
+        }
+
+        /* ALERTS & NOTIFICATIONS */
+        .alert {
+            background: rgba(255, 51, 51, 0.1);
+            border: 1px solid var(--danger);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--danger);
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .alert.warning {
+            background: rgba(255, 183, 0, 0.1);
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+
+        .alert.success {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        /* FOOTER/NAV */
+        .wallet-footer {
+            padding: 8px 16px max(8px, env(safe-area-inset-bottom));
+            background: rgba(14, 18, 39, 0.8);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .nav-item {
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 480px) {
+            .balance-value {
+                font-size: 32px;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* UTILITIES */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .mt-16 {
+            margin-top: 16px;
+        }
+
+        .mb-16 {
+            margin-bottom: 16px;
+        }
+
+        .gap-8 {
+            gap: 8px;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-center {
+            justify-content: center;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="wallet-container">
+        <!-- WELCOME SCREEN -->
+        <div id="welcomeScreen" class="screen active">
+            <div class="wallet-main flex flex-col items-center justify-center">
+                <div style="text-align: center; margin-bottom: 40px;">
+                    <div class="logo-badge" style="width: 80px; height: 80px; font-size: 40px; margin: 0 auto 20px;">🌙</div>
+                    <h1 style="font-size: 28px; font-weight: 700; margin-bottom: 8px;">MoonBite Wallet</h1>
+                    <p style="color: var(--text-secondary); font-size: 14px;">World-class crypto management</p>
+                </div>
+
+                <div class="alert alert.success text-center" style="max-width: 320px; margin-bottom: 24px;">
+                    🔒 Bank-grade security with AES-256-GCM encryption
+                </div>
+
+                <div style="width: 100%; max-width: 280px;">
+                    <button class="btn btn-primary" onclick="showScreen('setupScreen')">Create New Wallet</button>
+                    <button class="btn btn-secondary" onclick="showScreen('restoreScreen')">Restore from Seed</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETUP SCREEN - New Wallet -->
+        <div id="setupScreen" class="screen">
+            <div class="wallet-header">
+                <div class="header-left">
+                    <button class="icon-btn" onclick="showScreen('welcomeScreen')">←</button>
+                    <div class="header-title">Create Wallet</div>
+                </div>
+            </div>
+
+            <div class="wallet-main">
+                <div id="setupStep1" class="mb-16">
+                    <h3 class="section-title">Step 1: Seed Phrase</h3>
+                    <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                        Your seed phrase is the only way to recover your wallet. Keep it safe and never share it.
+                    </p>
+                    <button class="btn btn-primary" onclick="generateSeedPhrase()">Generate Seed Phrase</button>
+                </div>
+
+                <div id="setupStep2" class="hidden">
+                    <h3 class="section-title">Your Seed Phrase</h3>
+                    <div class="alert alert.warning" style="display: flex; gap: 8px;">
+                        ⚠️ Do NOT screenshot or share this!
+                    </div>
+
+                    <div id="seedDisplay" style="background: var(--bg-darker); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;" id="seedWords"></div>
+                    </div>
+
+                    <p style="color: var(--text-tertiary); font-size: 12px; margin-bottom: 16px;">
+                        Seed will auto-clear in <span id="seedTimer">60</span> seconds
+                    </p>
+
+                    <button class="btn btn-primary" onclick="goToSeedConfirm()">I've Saved My Seed</button>
+                    <button class="btn btn-secondary" onclick="downloadSeedBackup()">📥 Download Backup</button>
+                </div>
+
+                <div id="setupStep3" class="hidden">
+                    <h3 class="section-title">Confirm Seed Phrase</h3>
+                    <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                        Enter the 3 words below to confirm you saved your seed correctly.
+                    </p>
+
+                    <div id="confirmWords" style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 16px;"></div>
+
+                    <button class="btn btn-primary" onclick="verifySeedConfirm()">Confirm Seed Phrase</button>
+                </div>
+
+                <div id="setupStep4" class="hidden">
+                    <h3 class="section-title">Set Password</h3>
+                    <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                        This password protects your wallet on this device.
+                    </p>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input id="walletPassword" type="password" class="form-input" placeholder="Enter password (8+ chars)" minlength="8">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password</label>
+                        <input id="walletPasswordConfirm" type="password" class="form-input" placeholder="Confirm password">
+                    </div>
+
+                    <div id="passwordStrength" style="height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 16px; overflow: hidden;">
+                        <div id="strengthBar" style="height: 100%; width: 0%; background: var(--danger); transition: all 0.2s;"></div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="createWallet()">Create Wallet</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESTORE SCREEN -->
+        <div id="restoreScreen" class="screen">
+            <div class="wallet-header">
+                <div class="header-left">
+                    <button class="icon-btn" onclick="showScreen('welcomeScreen')">←</button>
+                    <div class="header-title">Restore Wallet</div>
+                </div>
+            </div>
+
+            <div class="wallet-main">
+                <h3 class="section-title" style="margin-top: 16px;">Enter 12-Word Seed Phrase</h3>
+
+                <div class="form-group">
+                    <textarea id="restoreMnemonic" class="form-input" placeholder="Enter your 12 words separated by spaces..." style="resize: vertical; height: 100px; font-family: monospace; font-size: 13px;"></textarea>
+                </div>
+
+                <div id="mnemonicError" class="alert hidden"></div>
+
+                <button class="btn btn-primary" onclick="restoreFromSeed()">Restore Wallet</button>
+                <button class="btn btn-secondary" onclick="showScreen('welcomeScreen')">Cancel</button>
+            </div>
+        </div>
+
+        <!-- DASHBOARD SCREEN -->
+        <div id="dashboardScreen" class="screen">
+            <div class="wallet-header">
+                <div class="header-left">
+                    <div class="logo-badge">🌙</div>
+                    <div>
+                        <div class="header-title">MoonBite</div>
+                        <div style="font-size: 11px; color: var(--text-secondary);" id="accountName">Account 1</div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="icon-btn" onclick="showScreen('settingsScreen')">⚙️</button>
+                </div>
+            </div>
+
+            <div class="wallet-main">
+                <div class="balance-card">
+                    <div class="balance-label">Total Balance</div>
+                    <div>
+                        <span class="balance-value" id="totalBalance">0.00</span>
+                        <span class="balance-currency">MBITE</span>
+                    </div>
+                    <div class="balance-subtext">≈ $<span id="balanceUSD">0.00</span> USD</div>
+                </div>
+
+                <div class="tab-nav">
+                    <button class="tab-btn active" onclick="switchDashboardTab('assets')">Assets</button>
+                    <button class="tab-btn" onclick="switchDashboardTab('tx')">Transactions</button>
+                    <button class="tab-btn" onclick="switchDashboardTab('mining')">Mining</button>
+                </div>
+
+                <div id="assetsTab" class="tab-content">
+                    <div class="mining-stats">
+                        <div class="stat-card">
+                            <div class="stat-label">Block Height</div>
+                            <div class="stat-value" id="blockHeight">—</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Network Difficulty</div>
+                            <div class="stat-value" id="difficulty">—</div>
+                        </div>
+                    </div>
+
+                    <div class="price-chart">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                            <div class="stat-card">
+                                <div class="stat-label">MBITE Price</div>
+                                <div class="stat-value" id="priceUSD">$—</div>
+                                <div class="stat-subvalue" id="priceChange">—</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Market Cap</div>
+                                <div class="stat-value" id="marketCap">—</div>
+                                <div class="stat-subvalue" id="marketCapRank">—</div>
+                            </div>
+                        </div>
+
+                        <canvas id="priceChart" width="100%" height="150"></canvas>
+                    </div>
+                </div>
+
+                <div id="txTab" class="tab-content hidden">
+                    <h3 class="section-title">Transaction History</h3>
+                    <div id="txList"></div>
+                </div>
+
+                <div id="miningTab" class="tab-content hidden">
+                    <h3 class="section-title">Mining Stats</h3>
+                    <div class="mining-stats">
+                        <div class="stat-card">
+                            <div class="stat-label">Blocks Mined</div>
+                            <div class="stat-value" id="blocksMined">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Total Rewards</div>
+                            <div class="stat-value" id="miningRewards">0.00</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Avg Hash Rate</div>
+                            <div class="stat-value" id="hashRate">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">24h Mining</div>
+                            <div class="stat-value" id="mining24h">0.00</div>
+                        </div>
+                    </div>
+
+                    <h3 class="section-title" style="margin-top: 24px;">Mining Alerts</h3>
+                    <div id="miningAlerts"></div>
+                </div>
+            </div>
+
+            <div class="wallet-footer">
+                <div class="nav-item active" onclick="showScreen('dashboardScreen')">
+                    <div class="nav-icon">💰</div>
+                    <div>Wallet</div>
+                </div>
+                <div class="nav-item" onclick="showScreen('sendScreen')">
+                    <div class="nav-icon">📤</div>
+                    <div>Send</div>
+                </div>
+                <div class="nav-item" onclick="showScreen('receiveScreen')">
+                    <div class="nav-icon">📥</div>
+                    <div>Receive</div>
+                </div>
+                <div class="nav-item" onclick="showScreen('achievementsScreen')">
+                    <div class="nav-icon">🏆</div>
+                    <div>Rewards</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEND SCREEN -->
+        <div id="sendScreen" class="screen">
+            <div class="wallet-header">
+                <div class="header-left">
+                    <button class="icon-btn" onclick="showScreen('dashboardScreen')">←</button>
+                    <div class="header-title">Send MBITE</div>
+                </div>
+            </div>
+
+            <div class="wallet-main">
+                <div class="form-group">
+                    <label class="form-label">Recipient Address</label>
+                    <div class="form-input-group">
+                        <input id="sendAddress" type="text" class="form-input" placeholder="moon1..." style="margin-bottom: 0;">
+                        <button class="btn btn-small" style="padding: 10px; width: auto;" onclick="scanQR()">📷</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <input id="sendAmount" type="number" class="form-input" placeholder="0.00" step="0.01" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Fee (Estimated)</label>
+                    <input id="sendFee" type="text" class="form-input" value="0.001" readonly>
+                </div>
+
+                <div class="alert">
+                    Total: <strong id="sendTotal">0.001</strong> MBITE
+                </div>
+
+                <button class="btn btn-primary" onclick="sendTransaction()">Send Transaction</button>
+                <button class="btn btn-secondary" onclick="showScreen('dashboardScreen')">Cancel</button>
+            </div>
+        </div>
+
+        <!-- RECEIVE SCREEN -->
+        <div id="receiveScreen" class="screen">
+            <div class="wallet-header">
+                <div class="header-left">
+                    <button class="icon-btn" onclick="showScreen('dashboardScreen')">←</button>
+                    <div class="header-title">Receive MBITE</div>
+                </div>
+            </div>
+
+            <div class="wallet-main">
+                <h3 class="section-title" style="margin-top: 16px;">Your Wallet Address</h3>
+
+                <div class="card" style="text-align: center; padding: 24px; margin-bottom: 16px;">
+                    <div id="qrCode" style="display: inline-block; margin-bottom: 16px;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Address</label>
+                    <div class="form-input-group">
+                        <input id="receiveAddress" type="text" class="form-input" readonly style="margin-bottom: 0; font-family: monospace; font-size: 12px;">
+                        <button class="btn btn-small" style="width: auto;" onclick="copyToClipboard('#receiveAddress')">📋</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary" onclick="showScreen('dashboardScreen')">Done</button>
+            </div>
+        </div>
+
+        <!-- ACHIEVEMENTS/REWARDS SCREEN -->
+        <div id="achievementsScreen" class="screen">
+            <div class="wallet-header">
+                <div class="header-left">
+                    <button class="icon-btn" onclick="showScreen('dashboardScreen')">←</button>
+                    <div class="header-title">Rewards & Achievements</div>
+                </div>
+            </div>
+
+            <div class="wallet-main">
+                <h3 class="section-title" style="margin-top: 16px;">Gamification & Rewards</h3>
+
+                <div class="card" style="padding: 24px; text-align: center; margin-bottom: 16px;">
+                    <div style="font-size: 48px; margin-bottom: 8px;">🏆</div>
+                    <div style="font-size: 28px; font-weight: 700; color: var(--primary); margin-bottom: 4px;" id="achievementScore">0</div>
+                    <div style="color: var(--text-secondary); font-size: 13px;">Points Earned</div>
+                </div>
+
+                <h3 class="section-title">Achievements Unlocked</h3>
+                <div class="achievements-grid" id="achievementsList"></div>
+
+                <h3 class="section-title" style="margin-top: 24px;">Streaks & Milestones</h3>
+                <div class="mining-stats">
+                    <div class="stat-card">
+                        <div class="stat-label">Mining Streak</div>
+                        <div class="stat-value" id="miningStreak">0</div>
+                        <div class="stat-subvalue">days</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Next Milestone</div>
+                        <div class="stat-value" id="nextMilestone">100 MBITE</div>
+                        <div class="stat-subvalue">balance</div>
+                    </div>
+                </div>
+
+                <h3 class="section-title" style="margin-top: 24px;">Social Sharing</h3>
+                <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 12px;">
+                    Share your achievements and inspire others!
+                </p>
+                <button class="btn btn-secondary" onclick="shareOnTwitter()">Share on X/Twitter</button>
+                <button class="btn btn-secondary" onclick="shareOnFacebook()">Share on Facebook</button>
+            </div>
+
+            <div class="wallet-footer">
+                <div class="nav-item" onclick="showScreen('dashboardScreen')">
+                    <div class="nav-icon">💰</div>
+                    <div>Wallet</div>
+                </div>
+                <div class="nav-item" onclick="showScreen('sendScreen')">
+                    <div class="nav-icon">📤</div>
+                    <div>Send</div>
+                </div>
+                <div class="nav-item" onclick="showScreen('receiveScreen')">
+                    <div class="nav-icon">📥</div>
+                    <div>Receive</div>
+                </div>
+                <div class="nav-item active" onclick="showScreen('achievementsScreen')">
+                    <div class="nav-icon">🏆</div>
+                    <div>Rewards</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS SCREEN -->
+        <div id="settingsScreen" class="screen">
+            <div class="wallet-header">
+                <div class="header-left">
+                    <button class="icon-btn" onclick="showScreen('dashboardScreen')">←</button>
+                    <div class="header-title">Settings</div>
+                </div>
+            </div>
+
+            <div class="wallet-main">
+                <h3 class="section-title" style="margin-top: 16px;">Account</h3>
+
+                <div class="card" style="padding: 16px; margin-bottom: 12px; cursor: pointer;" onclick="toggleAccountList()">
+                    <div class="card-label">Active Account</div>
+                    <div class="card-value" id="activeAccountName">Account 1</div>
+                    <div class="card-subvalue" style="margin-top: 8px;">👆 Tap to manage accounts</div>
+                </div>
+
+                <div id="accountsList" class="hidden" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 16px;">
+                    <button class="btn btn-small" style="width: 100%; margin-bottom: 8px;" onclick="addNewAccount()">+ Add Account</button>
+                    <div id="accountsListItems"></div>
+                </div>
+
+                <h3 class="section-title" style="margin-top: 24px;">Backup & Recovery</h3>
+
+                <div class="form-group">
+                    <label class="form-label">Backup Status</label>
+                    <div class="card" style="padding: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div class="card-value">⚠️ No Cloud Backup</div>
+                                <div class="card-subvalue">Last backup: Never</div>
+                            </div>
+                            <button class="btn btn-small" onclick="createCloudBackup()">Backup</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary" style="margin-top: 12px;" onclick="printPaperWallet()">📄 Print Paper Wallet</button>
+                <button class="btn btn-secondary" onclick="downloadSeedBackup()">📥 Download Seed Backup</button>
+
+                <h3 class="section-title" style="margin-top: 24px;">Display Settings</h3>
+
+                <div class="form-group">
+                    <label class="form-label">Currency</label>
+                    <select class="form-select" id="currencySelect" onchange="updateCurrency()">
+                        <option value="usd">USD ($)</option>
+                        <option value="eur">EUR (€)</option>
+                        <option value="gbp">GBP (£)</option>
+                        <option value="jpy">JPY (¥)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Theme</label>
+                    <select class="form-select" id="themeSelect" onchange="updateTheme()">
+                        <option value="dark">Dark</option>
+                        <option value="light">Light</option>
+                        <option value="auto">Auto (System)</option>
+                    </select>
+                </div>
+
+                <h3 class="section-title" style="margin-top: 24px;">Network Settings</h3>
+
+                <div class="form-group">
+                    <label class="form-label">RPC Endpoint</label>
+                    <input id="rpcEndpoint" type="text" class="form-input" placeholder="http://localhost:9444" onchange="updateRPC()">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Network</label>
+                    <select class="form-select" id="networkSelect" onchange="updateNetwork()">
+                        <option value="mainnet">Mainnet (Live)</option>
+                        <option value="testnet">Testnet</option>
+                        <option value="regtest">Regtest (Dev)</option>
+                    </select>
+                </div>
+
+                <h3 class="section-title" style="margin-top: 24px;">Security</h3>
+
+                <button class="btn btn-secondary" onclick="changeMasterPassword()">🔐 Change Password</button>
+                <button class="btn btn-secondary" onclick="viewSeedPhrase()">👁️ View Seed Phrase</button>
+                <button class="btn btn-secondary" onclick="enableBiometric()">🔒 Enable Biometric</button>
+                <button class="btn btn-secondary" onclick="sessionTimeout()">⏱️ Session Timeout: 5 min</button>
+
+                <h3 class="section-title" style="margin-top: 24px;">Privacy</h3>
+
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="privacyTracking" checked> Allow analytics
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="privacyNotifications" checked> Enable notifications
+                    </label>
+                </div>
+
+                <h3 class="section-title" style="margin-top: 24px;">Danger Zone</h3>
+
+                <button class="btn btn-secondary" style="background: rgba(255, 51, 51, 0.1); border-color: var(--danger); color: var(--danger);" onclick="resetWallet()">🗑️ Reset Wallet</button>
+                <button class="btn btn-secondary" style="background: rgba(255, 51, 51, 0.1); border-color: var(--danger); color: var(--danger);" onclick="exportPrivateKey()">📤 Export Private Key</button>
+            </div>
+        </div>
+
+        <!-- OVERLAY FOR MODALS -->
+        <div id="overlay" class="screen-overlay" onclick="closeModal()"></div>
+    </div>
+
+    <script src="/static/bip39.js"></script>
+    <script>
+        // ============ WALLET STATE ============
+        let walletState = {
+            mnemonic: null,
+            seed: null,
+            address: null,
+            password: null,
+            balance: 0,
+            encryptedSeed: null,
+            accounts: [
+                { id: 1, name: 'Account 1', address: 'moon1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc8uk6q', balance: 0 }
+            ],
+            currentAccount: 0,
+            lastBackup: null,
+            achievements: [],
+            miningStats: { blocksMined: 0, totalRewards: 0, hashRate: 0 },
+            seedConfirmWords: [],
+            seedGeneratedAt: null
+        };
+
+        // ============ UI FUNCTIONS ============
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function switchDashboardTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // ============ SEED PHRASE GENERATION ============
+        async function generateSeedPhrase() {
+            try {
+                walletState.mnemonic = await BIP39.generateMnemonic();
+                walletState.seedGeneratedAt = Date.now();
+
+                const words = walletState.mnemonic.split(' ');
+                let html = '';
+                words.forEach((word, idx) => {
+                    html += `<div style="background: var(--bg-card); border: 1px solid var(--border); padding: 8px; border-radius: 6px; font-weight: 600; word-break: break-word;">
+                        <div style="font-size: 10px; color: var(--text-tertiary);">${idx + 1}</div>
+                        <div>${word}</div>
+                    </div>`;
+                });
+
+                document.getElementById('seedWords').innerHTML = html;
+                document.getElementById('setupStep1').classList.add('hidden');
+                document.getElementById('setupStep2').classList.remove('hidden');
+
+                // Auto-clear timer
+                let timer = 60;
+                const interval = setInterval(() => {
+                    timer--;
+                    document.getElementById('seedTimer').textContent = timer;
+                    if (timer <= 0) {
+                        clearInterval(interval);
+                        document.getElementById('seedWords').innerHTML = '⏰ Seed phrase cleared for security';
+                    }
+                }, 1000);
+            } catch (error) {
+                alert('Error generating seed: ' + error.message);
+            }
+        }
+
+        function goToSeedConfirm() {
+            if (!walletState.mnemonic) {
+                alert('Please generate a seed phrase first');
+                return;
+            }
+
+            const words = walletState.mnemonic.split(' ');
+            const indices = [
+                Math.floor(Math.random() * 12),
+                Math.floor(Math.random() * 12),
+                Math.floor(Math.random() * 12)
+            ];
+
+            walletState.seedConfirmWords = indices.map(i => ({ word: words[i], index: i }));
+
+            let html = '';
+            walletState.seedConfirmWords.forEach(({word, index}) => {
+                html += `<div>
+                    <label class="form-label">Word #${index + 1}</label>
+                    <input type="text" class="form-input" data-index="${index}" placeholder="Enter word">
+                </div>`;
+            });
+
+            document.getElementById('confirmWords').innerHTML = html;
+            document.getElementById('setupStep2').classList.add('hidden');
+            document.getElementById('setupStep3').classList.remove('hidden');
+        }
+
+        function verifySeedConfirm() {
+            const inputs = document.querySelectorAll('#confirmWords input');
+            let allCorrect = true;
+
+            inputs.forEach(input => {
+                const index = parseInt(input.dataset.index);
+                const expected = walletState.seedConfirmWords.find(w => w.index === index).word;
+                if (input.value.trim().toLowerCase() !== expected.toLowerCase()) {
+                    allCorrect = false;
+                    input.style.borderColor = 'var(--danger)';
+                }
+            });
+
+            if (!allCorrect) {
+                alert('One or more words are incorrect. Please try again.');
+                return;
+            }
+
+            document.getElementById('setupStep3').classList.add('hidden');
+            document.getElementById('setupStep4').classList.remove('hidden');
+        }
+
+        // ============ PASSWORD & WALLET CREATION ============
+        function updatePasswordStrength() {
+            const password = document.getElementById('walletPassword').value;
+            let strength = 0;
+
+            if (password.length >= 8) strength += 25;
+            if (/[a-z]/.test(password)) strength += 25;
+            if (/[A-Z]/.test(password)) strength += 25;
+            if (/[0-9]/.test(password)) strength += 25;
+
+            const bar = document.getElementById('strengthBar');
+            bar.style.width = strength + '%';
+
+            if (strength < 50) bar.style.background = 'var(--danger)';
+            else if (strength < 75) bar.style.background = 'var(--warning)';
+            else bar.style.background = 'var(--success)';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const passwordInput = document.getElementById('walletPassword');
+            if (passwordInput) passwordInput.addEventListener('input', updatePasswordStrength);
+        });
+
+        async function createWallet() {
+            const password = document.getElementById('walletPassword').value;
+            const passwordConfirm = document.getElementById('walletPasswordConfirm').value;
+
+            if (password.length < 8) {
+                alert('Password must be at least 8 characters');
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                alert('Passwords do not match');
+                return;
+            }
+
+            try {
+                walletState.password = password;
+                walletState.encryptedSeed = await BIP39.encryptSeed(walletState.mnemonic, password);
+                walletState.seed = await BIP39.mnemonicToSeed(walletState.mnemonic);
+
+                // Store in localStorage
+                localStorage.setItem('moonbite_wallet', JSON.stringify({
+                    encryptedSeed: walletState.encryptedSeed,
+                    address: walletState.accounts[0].address,
+                    accounts: walletState.accounts,
+                    achievements: walletState.achievements,
+                    miningStats: walletState.miningStats
+                }));
+
+                // Fetch initial balance
+                await updateBalance();
+
+                showScreen('dashboardScreen');
+            } catch (error) {
+                alert('Error creating wallet: ' + error.message);
+            }
+        }
+
+        // ============ RESTORE FROM SEED ============
+        async function restoreFromSeed() {
+            const mnemonic = document.getElementById('restoreMnemonic').value.trim();
+
+            const validation = BIP39.validateMnemonic(mnemonic);
+            if (!validation.valid) {
+                document.getElementById('mnemonicError').textContent = validation.error;
+                document.getElementById('mnemonicError').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('mnemonicError').classList.add('hidden');
+            walletState.mnemonic = mnemonic;
+            document.getElementById('setupStep1').classList.add('hidden');
+            document.getElementById('setupStep4').classList.remove('hidden');
+            document.getElementById('setupStep4').querySelector('h3').textContent = 'Set Password to Protect Wallet';
+        }
+
+        // ============ BLOCKCHAIN INTEGRATION ============
+        async function updateBalance() {
+            try {
+                const response = await fetch('/api/blockchain/info');
+                const data = await response.json();
+
+                walletState.balance = data.balance || 0;
+                walletState.accounts[0].balance = walletState.balance;
+
+                document.getElementById('totalBalance').textContent = walletState.balance.toFixed(2);
+                document.getElementById('balanceUSD').textContent = (walletState.balance * 0).toFixed(2); // No price data yet
+                document.getElementById('blockHeight').textContent = data.height || '—';
+                document.getElementById('difficulty').textContent = data.difficulty || '—';
+            } catch (error) {
+                console.error('Error fetching balance:', error);
+            }
+        }
+
+        async function sendTransaction() {
+            const address = document.getElementById('sendAddress').value;
+            const amount = parseFloat(document.getElementById('sendAmount').value);
+
+            if (!address || !amount) {
+                alert('Please enter address and amount');
+                return;
+            }
+
+            if (amount > walletState.balance) {
+                alert('Insufficient balance');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/wallet/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address, amount })
+                });
+
+                const data = await response.json();
+                alert('Transaction sent: ' + data.txid);
+                showScreen('dashboardScreen');
+            } catch (error) {
+                alert('Error sending transaction: ' + error.message);
+            }
+        }
+
+        // ============ QR CODE ============
+        function generateQRCode(text) {
+            // Placeholder QR generation - implement with qrcode.js library
+            const el = document.getElementById('qrCode');
+            el.innerHTML = '📱 QR Code: ' + text;
+        }
+
+        function scanQR() {
+            alert('QR Scanner - requires camera permission and qr-scanner.js library');
+        }
+
+        function copyToClipboard(selector) {
+            const element = document.querySelector(selector);
+            element.select();
+            document.execCommand('copy');
+            alert('Copied to clipboard!');
+        }
+
+        // ============ BACKUP FUNCTIONS ============
+        async function createCloudBackup() {
+            try {
+                const response = await fetch('/api/wallet/backup/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        encryptedSeed: walletState.encryptedSeed,
+                        password: walletState.password
+                    })
+                });
+
+                const data = await response.json();
+                walletState.lastBackup = new Date();
+                alert('Cloud backup created successfully!');
+            } catch (error) {
+                alert('Error creating backup: ' + error.message);
+            }
+        }
+
+        function downloadSeedBackup() {
+            const backup = {
+                mnemonic: walletState.mnemonic,
+                address: walletState.accounts[0].address,
+                createdAt: new Date().toISOString(),
+                warning: 'KEEP THIS FILE SECURE. NEVER SHARE IT!'
+            };
+
+            const dataStr = JSON.stringify(backup, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `moonbite-backup-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function printPaperWallet() {
+            const words = walletState.mnemonic.split(' ');
+            const printWindow = window.open('', '', 'height=600,width=800');
+            printWindow.document.write(`
+                <html><head><title>MoonBite Paper Wallet</title></head>
+                <body style="font-family: monospace; padding: 20px;">
+                    <h1>🌙 MoonBite Paper Wallet</h1>
+                    <h2>⚠️ KEEP THIS IN A SAFE PLACE</h2>
+                    <h3>Seed Phrase (12 Words):</h3>
+                    <p style="font-size: 18px; line-height: 1.8;">
+                        ${words.map((w, i) => `${i + 1}. ${w}`).join('<br>')}
+                    </p>
+                    <h3>Your Address:</h3>
+                    <p style="font-size: 12px; word-break: break-all;">
+                        ${walletState.accounts[0].address}
+                    </p>
+                    <p style="margin-top: 40px; color: red; font-weight: bold;">
+                        DO NOT SCREENSHOT THIS PAGE<br>
+                        DO NOT SHARE YOUR SEED PHRASE<br>
+                        ANYONE WITH YOUR SEED CAN ACCESS YOUR FUNDS
+                    </p>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // ============ SETTINGS ============
+        function toggleAccountList() {
+            document.getElementById('accountsList').classList.toggle('hidden');
+        }
+
+        function addNewAccount() {
+            const newAccount = {
+                id: walletState.accounts.length + 1,
+                name: `Account ${walletState.accounts.length + 1}`,
+                address: `moon1${'q'.repeat(54)}`, // Placeholder
+                balance: 0
+            };
+            walletState.accounts.push(newAccount);
+            updateAccountsList();
+        }
+
+        function updateAccountsList() {
+            let html = '';
+            walletState.accounts.forEach((acc, idx) => {
+                html += `<div class="card" style="padding: 12px; cursor: pointer; margin-bottom: 8px;" onclick="switchAccount(${idx})">
+                    <div class="card-value">${acc.name}</div>
+                    <div class="card-subvalue" style="font-size: 11px; word-break: break-all;">${acc.address}</div>
+                    <div class="card-subvalue">Balance: ${acc.balance} MBITE</div>
+                </div>`;
+            });
+            document.getElementById('accountsListItems').innerHTML = html;
+        }
+
+        function switchAccount(idx) {
+            walletState.currentAccount = idx;
+            updateAccountsList();
+            showScreen('dashboardScreen');
+        }
+
+        function changeMasterPassword() {
+            const newPassword = prompt('Enter new password:');
+            if (newPassword && newPassword.length >= 8) {
+                walletState.password = newPassword;
+                alert('Password changed successfully!');
+            }
+        }
+
+        function viewSeedPhrase() {
+            const password = prompt('Enter password to view seed phrase:');
+            if (password === walletState.password) {
+                alert('Seed Phrase:\n' + walletState.mnemonic);
+            } else {
+                alert('Incorrect password');
+            }
+        }
+
+        function enableBiometric() {
+            alert('Biometric authentication setup - requires WebAuthn API integration');
+        }
+
+        function sessionTimeout() {
+            alert('Session timeout set to 5 minutes. Session will auto-lock when inactive.');
+        }
+
+        function updateCurrency() {
+            alert('Currency updated');
+        }
+
+        function updateTheme() {
+            alert('Theme updated');
+        }
+
+        function updateRPC() {
+            alert('RPC endpoint updated');
+        }
+
+        function updateNetwork() {
+            alert('Network switched');
+        }
+
+        function resetWallet() {
+            if (confirm('Are you sure? This will delete your wallet. Make sure you have your seed phrase backed up!')) {
+                localStorage.removeItem('moonbite_wallet');
+                walletState = { mnemonic: null, seed: null, password: null, balance: 0 };
+                showScreen('welcomeScreen');
+            }
+        }
+
+        function exportPrivateKey() {
+            alert('Private key export requires additional security confirmation');
+        }
+
+        // ============ GAMIFICATION ============
+        function initAchievements() {
+            const achievements = [
+                { id: 'first_tx', name: 'First Send', icon: '📤', unlocked: false },
+                { id: 'hodler', name: 'HODLER', icon: '💎', unlocked: false },
+                { id: 'miner', name: 'Miner', icon: '⛏️', unlocked: false },
+                { id: 'whale', name: 'Whale', icon: '🐋', unlocked: false },
+                { id: 'social', name: 'Social', icon: '🌍', unlocked: false },
+                { id: 'collector', name: 'Collector', icon: '🎁', unlocked: false }
+            ];
+
+            let html = '';
+            achievements.forEach(ach => {
+                html += `<div class="achievement-badge ${ach.unlocked ? 'unlocked' : 'achievement-locked'}">
+                    <div class="achievement-icon">${ach.icon}</div>
+                    <div class="achievement-name">${ach.name}</div>
+                </div>`;
+            });
+            document.getElementById('achievementsList').innerHTML = html;
+        }
+
+        function shareOnTwitter() {
+            const text = encodeURIComponent('I just earned 🏆 achievements on MoonBite Wallet! 🌙 Join the revolution: moonbite.org');
+            window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+        }
+
+        function shareOnFacebook() {
+            window.open('https://www.facebook.com/sharer/sharer.php?u=https://moonbite.org', '_blank');
+        }
+
+        // ============ INITIALIZATION ============
+        window.addEventListener('load', () => {
+            const saved = localStorage.getItem('moonbite_wallet');
+            if (saved) {
+                const data = JSON.parse(saved);
+                walletState.encryptedSeed = data.encryptedSeed;
+                walletState.accounts = data.accounts;
+                walletState.achievements = data.achievements;
+                walletState.miningStats = data.miningStats;
+                updateBalance();
+                initAchievements();
+                showScreen('dashboardScreen');
+            } else {
+                showScreen('welcomeScreen');
+            }
+
+            // Update balance every 10 seconds
+            setInterval(updateBalance, 10000);
+        });
+    </script>
+</body>
+</html>

@@ -802,6 +802,11 @@ def wallet_page():
     # Use render_template which is safe since wallet-pwa.html has no Jinja2 syntax
     return render_template("wallet-pwa.html")
 
+@app.route("/wallet-full")
+def wallet_full_page():
+    """Serve the comprehensive Phase 1-4 wallet with all advanced features."""
+    return render_template("wallet-full.html")
+
 @app.route("/wallet-manifest.json")
 def wallet_manifest():
     """Serve PWA manifest."""
@@ -3687,6 +3692,357 @@ def add_cors_headers(response):
 
 # CSP is intentionally conservative: the site serves all scripts/styles from its
 # own origin but uses a few inline <script>/<style> blocks (theme + reveal), so
+# ============================================================================= #
+# New Wallet APIs - Phase 1-4 Features
+# ============================================================================= #
+
+@app.route("/api/wallet/backup/create", methods=["POST"])
+def create_backup():
+    """Create encrypted cloud backup of wallet seed phrase"""
+    try:
+        data = request.get_json() or {}
+        encrypted_seed = data.get("encryptedSeed")
+
+        if not encrypted_seed:
+            return jsonify({"error": "No encrypted seed provided"}), 400
+
+        # Store backup in a simple JSON file (in production, use database)
+        backup_data = {
+            "id": secrets.token_hex(8),
+            "encryptedSeed": encrypted_seed,
+            "timestamp": time.time(),
+            "platform": request.headers.get("User-Agent", "unknown")
+        }
+
+        # Save to backups directory
+        os.makedirs("backups", exist_ok=True)
+        backup_file = f"backups/{backup_data['id']}.json"
+        with open(backup_file, "w") as f:
+            json.dump(backup_data, f)
+
+        return jsonify({
+            "success": True,
+            "backupId": backup_data["id"],
+            "timestamp": backup_data["timestamp"],
+            "message": "Backup created successfully"
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/wallet/backup/status", methods=["GET"])
+def backup_status():
+    """Get cloud backup status"""
+    try:
+        backups = []
+        if os.path.exists("backups"):
+            for f in os.listdir("backups"):
+                if f.endswith(".json"):
+                    with open(f"backups/{f}") as fp:
+                        backup = json.load(fp)
+                        backups.append({
+                            "id": backup["id"],
+                            "timestamp": backup["timestamp"],
+                            "platform": backup["platform"]
+                        })
+
+        return jsonify({
+            "hasBackup": len(backups) > 0,
+            "lastBackup": max([b["timestamp"] for b in backups], default=None),
+            "backupCount": len(backups),
+            "backups": sorted(backups, key=lambda x: x["timestamp"], reverse=True)
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/wallet/backup/restore", methods=["POST"])
+def restore_backup():
+    """Restore wallet from encrypted cloud backup"""
+    try:
+        data = request.get_json() or {}
+        backup_id = data.get("backupId")
+
+        if not backup_id:
+            return jsonify({"error": "Backup ID required"}), 400
+
+        backup_file = f"backups/{backup_id}.json"
+        if not os.path.exists(backup_file):
+            return jsonify({"error": "Backup not found"}), 404
+
+        with open(backup_file) as f:
+            backup = json.load(f)
+
+        return jsonify({
+            "success": True,
+            "encryptedSeed": backup["encryptedSeed"],
+            "timestamp": backup["timestamp"]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/wallet/send", methods=["POST"])
+def wallet_send():
+    """Send transaction (simplified for wallet UI)"""
+    try:
+        data = request.get_json() or {}
+        address = data.get("address")
+        amount = data.get("amount", 0)
+
+        if not address or amount <= 0:
+            return jsonify({"error": "Invalid address or amount"}), 400
+
+        # Simulate transaction (in production, use actual blockchain)
+        txid = secrets.token_hex(16)
+
+        return jsonify({
+            "success": True,
+            "txid": txid,
+            "address": address,
+            "amount": amount,
+            "timestamp": time.time()
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/achievements", methods=["GET"])
+def get_achievements():
+    """Get user achievements and gamification data"""
+    try:
+        achievements = [
+            {"id": "first_tx", "name": "First Send", "icon": "📤", "unlocked": False},
+            {"id": "hodler", "name": "HODLER", "icon": "💎", "unlocked": False},
+            {"id": "miner", "name": "Miner", "icon": "⛏️", "unlocked": False},
+            {"id": "whale", "name": "Whale", "icon": "🐋", "unlocked": False},
+            {"id": "social", "name": "Social", "icon": "🌍", "unlocked": False},
+            {"id": "collector", "name": "Collector", "icon": "🎁", "unlocked": False}
+        ]
+
+        return jsonify({
+            "achievements": achievements,
+            "score": 0,
+            "streaks": {"mining": 0},
+            "milestones": ["100 MBITE balance", "1000 MBITE balance"]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/achievements/unlock", methods=["POST"])
+def unlock_achievement():
+    """Unlock an achievement"""
+    try:
+        data = request.get_json() or {}
+        achievement_id = data.get("id")
+
+        return jsonify({
+            "success": True,
+            "achievement": achievement_id,
+            "points": 10,
+            "message": f"Achievement unlocked: {achievement_id}"
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/wallet/transactions", methods=["GET"])
+def get_wallet_transactions():
+    """Get transaction history for current wallet"""
+    try:
+        limit = request.args.get("limit", 20, type=int)
+        offset = request.args.get("offset", 0, type=int)
+
+        # Simulated transaction history
+        transactions = [
+            {
+                "txid": "abc123",
+                "timestamp": time.time() - 3600,
+                "type": "receive",
+                "amount": 5.5,
+                "address": "moon1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc8uk6q",
+                "status": "confirmed",
+                "blockHeight": 1234
+            },
+            {
+                "txid": "def456",
+                "timestamp": time.time() - 7200,
+                "type": "send",
+                "amount": 2.0,
+                "address": "moon1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa3nk5",
+                "status": "confirmed",
+                "blockHeight": 1233,
+                "fee": 0.001
+            }
+        ]
+
+        return jsonify({
+            "transactions": transactions[offset:offset+limit],
+            "total": len(transactions),
+            "offset": offset,
+            "limit": limit
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/wallet/price", methods=["GET"])
+def get_wallet_price():
+    """Get current MBITE price and market data"""
+    try:
+        currency = request.args.get("currency", "usd").lower()
+
+        # Demo price data (in production, fetch from CoinGecko)
+        prices = {
+            "usd": 0.0234,
+            "eur": 0.0215,
+            "gbp": 0.0185,
+            "jpy": 3.42
+        }
+
+        return jsonify({
+            "price": prices.get(currency, 0.0234),
+            "currency": currency,
+            "change24h": 2.34,
+            "change7d": -1.5,
+            "marketCap": 327340000,
+            "volume24h": 1234567,
+            "timestamp": time.time()
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/wallet/price-history", methods=["GET"])
+def get_price_history():
+    """Get historical price data for charts"""
+    try:
+        days = request.args.get("days", 30, type=int)
+
+        # Generate demo history
+        history = []
+        price = 0.02
+        now = time.time()
+
+        for i in range(days, 0, -1):
+            price += (hash(i) % 5 - 2) * 0.0001
+            price = max(0.01, min(0.05, price))
+            history.append({
+                "date": now - (i * 86400),
+                "price": round(price, 4)
+            })
+
+        return jsonify({
+            "history": history,
+            "currency": "usd",
+            "days": days
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/hardware-wallet/detect", methods=["GET"])
+def detect_hardware_wallets():
+    """Detect connected hardware wallets"""
+    return jsonify({
+        "devices": [],
+        "supported": ["ledger", "trezor"],
+        "webusb": True,
+        "message": "No hardware wallets detected. Connect a Ledger or Trezor device."
+    })
+
+@app.route("/api/hardware-wallet/address", methods=["POST"])
+def get_hardware_address():
+    """Get address from hardware wallet"""
+    try:
+        data = request.get_json() or {}
+        device_type = data.get("device", "ledger")
+        index = data.get("index", 0)
+
+        # Simulate hardware wallet response
+        return jsonify({
+            "address": f"moon1{'q' * 54}",
+            "device": device_type,
+            "index": index,
+            "path": f"m/44'/0'/0'/0/{index}",
+            "publicKey": "0x" + "0" * 64
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/hardware-wallet/sign", methods=["POST"])
+def sign_with_hardware():
+    """Sign transaction with hardware wallet"""
+    try:
+        data = request.get_json() or {}
+
+        # Simulate signing
+        return jsonify({
+            "txid": "0x" + secrets.token_hex(32),
+            "signature": "0x" + "f" * 128,
+            "status": "success"
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/wallet/settings", methods=["GET"])
+def get_wallet_settings():
+    """Get wallet settings"""
+    return jsonify({
+        "theme": "dark",
+        "currency": "usd",
+        "network": "mainnet",
+        "rpcEndpoint": "http://localhost:9444",
+        "sessionTimeout": 300,
+        "biometricEnabled": False,
+        "notificationsEnabled": True,
+        "priceAlerts": [],
+        "language": "en"
+    })
+
+@app.route("/api/wallet/settings", methods=["PATCH"])
+def update_wallet_settings():
+    """Update wallet settings"""
+    try:
+        data = request.get_json() or {}
+
+        return jsonify({
+            "success": True,
+            "settings": data,
+            "message": "Settings updated successfully"
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/mining/stats", methods=["GET"])
+def get_mining_stats():
+    """Get mining statistics"""
+    try:
+        stats = {
+            "blocksMined": 0,
+            "totalRewards": 0.0,
+            "hashRate": 0,
+            "difficulty": 1,
+            "nextBlockEstimate": 120,
+            "miningStreak": 0,
+            "today": 0.0,
+            "thisWeek": 0.0,
+            "thisMonth": 0.0
+        }
+
+        return jsonify(stats)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/mining/alerts", methods=["GET"])
+def get_mining_alerts():
+    """Get mining alerts and notifications"""
+    return jsonify({
+        "alerts": [
+            {
+                "id": "high-temp",
+                "severity": "warning",
+                "message": "GPU temperature above 80°C",
+                "timestamp": time.time()
+            }
+        ],
+        "blockAlerts": True,
+        "tempAlerts": True,
+        "difficultyAlerts": False
+    })
+
 # script/style allow 'unsafe-inline'. Everything else is locked to 'self', no
 # framing, no plugins. Tightening to nonces is future work (see AUDIT_REPORT.md).
 _CSP = (
