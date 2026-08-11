@@ -1003,11 +1003,69 @@
             showWelcome();
         }
 
+        // LIVE BLOCKCHAIN DATA
+        async function fetchBlockchainData() {
+            try {
+                const response = await fetch('/api/blockchain/info');
+                const data = await response.json();
+                return data;
+            } catch (e) {
+                console.error('Blockchain fetch error:', e);
+                return null;
+            }
+        }
+
+        async function fetchBalance() {
+            try {
+                const response = await fetch('/api/wallet/balance');
+                const data = await response.json();
+                return data;
+            } catch (e) {
+                console.error('Balance fetch error:', e);
+                return null;
+            }
+        }
+
+        async function updateDashboardData() {
+            // Fetch blockchain info
+            const blockchainData = await fetchBlockchainData();
+            const balanceData = await fetchBalance();
+
+            if (blockchainData && balanceData) {
+                // Update balance
+                const balanceValue = document.querySelector('.balance-value');
+                const balanceSubtext = document.querySelector('.balance-subtext');
+
+                if (balanceValue) {
+                    const balance = parseFloat(balanceData.balance_display || '0').toFixed(2);
+                    balanceValue.textContent = balance;
+                }
+
+                if (balanceSubtext) {
+                    const balance = parseFloat(balanceData.balance_display || '0');
+                    const usdValue = (balance * 0).toFixed(2); // Price TBD
+                    balanceSubtext.innerHTML = `≈ $${usdValue} USD <span class="balance-change">↑ Live</span>`;
+                }
+
+                // Update blockchain stats (add to page if needed)
+                console.log('📊 Live Blockchain Data:', {
+                    height: blockchainData.height,
+                    difficulty: blockchainData.difficulty,
+                    balance: balanceData.balance_display,
+                    utxos: balanceData.utxo_count
+                });
+            }
+        }
+
         // Initialize on load
         window.addEventListener('load', () => {
             initWallet();
             if (walletData.passwordHash && walletData.isUnlocked) {
                 showDashboard();
+                // Fetch and update live data
+                updateDashboardData();
+                // Update every 10 seconds
+                setInterval(updateDashboardData, 10000);
             } else {
                 showWelcome();
             }
@@ -1021,7 +1079,7 @@
             }
         });
 
-        console.log('🌙 MoonBite Premium Wallet v1.0 - Zero Bugs, 100% Functional');
+        console.log('🌙 MoonBite Premium Wallet v1.0 - LIVE BLOCKCHAIN CONNECTED');
     </script>
 </body>
 </html>
