@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <meta name="theme-color" content="#0f1419">
-    <meta name="description" content="MoonBite Mobile Wallet - Mine and manage MBITE on the go">
+    <meta name="theme-color" content="#0a0e27">
+    <meta name="description" content="MoonBite Wallet - Premium, billion-dollar cryptocurrency wallet">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="MoonBite">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%230f1419' width='180' height='180'/><text x='50%' y='50%' font-size='80' fill='%2300d4ff' text-anchor='middle' dominant-baseline='central' font-weight='bold'>🌙</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%230a0e27' width='180' height='180'/><circle cx='90' cy='90' r='70' fill='%2300d4ff' opacity='0.1'/><text x='50%' y='50%' font-size='80' fill='%2300d4ff' text-anchor='middle' dominant-baseline='central' font-weight='bold'>🌙</text></svg>">
     <link rel="manifest" href="/wallet-manifest.json">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50%' y='50%' font-size='50' fill='%2300d4ff' text-anchor='middle' dominant-baseline='central'>🌙</text></svg>">
-    <title>MoonBite Wallet</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%2300d4ff' opacity='0.15'/><text x='50%' y='50%' font-size='50' fill='%2300d4ff' text-anchor='middle' dominant-baseline='central'>🌙</text></svg>">
+    <title>MoonBite - Premium Wallet</title>
     <style>
         * {
             margin: 0;
@@ -23,632 +23,506 @@
         html, body {
             width: 100%;
             height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
             color: #e0e0e0;
             overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
         :root {
             --primary: #00d4ff;
-            --primary-dark: #00a8cc;
+            --primary-light: #33e5ff;
+            --primary-dark: #0099cc;
             --accent: #ff006e;
             --success: #00ff88;
             --warning: #ffb700;
             --danger: #ff3333;
-            --bg-dark: #0f1419;
-            --bg-card: #1a1f2e;
-            --border: #2a2f3f;
+            --bg-dark: #0a0e27;
+            --bg-darker: #050709;
+            --bg-card: #141829;
+            --bg-card-light: #1f2438;
+            --border: #2a3050;
             --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
+            --text-secondary: #a0a0b0;
+            --text-tertiary: #707080;
+            --glass-blur: 20px;
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 8px 24px rgba(0, 212, 255, 0.08);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.4);
         }
 
         body {
             display: flex;
             flex-direction: column;
-            font-size: 16px;
+            background: var(--bg-dark);
         }
 
-        .app-container {
+        .wallet-container {
             flex: 1;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
             width: 100%;
             max-width: 428px;
-            height: 100%;
+            height: 100vh;
             max-height: 100vh;
-            background: inherit;
-            border-radius: 0;
+            margin: 0 auto;
+            background: var(--bg-dark);
+            overflow: hidden;
+            position: relative;
         }
 
-        .app-header {
-            padding: max(12px, env(safe-area-inset-top)) 16px 16px;
-            background: rgba(15, 20, 25, 0.95);
+        /* Background effects */
+        .wallet-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            animation: drift 20s ease-in-out infinite;
+        }
+
+        @keyframes drift {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 30px); }
+        }
+
+        /* === HEADER / STATUS BAR === */
+        .wallet-header {
+            padding: max(12px, env(safe-area-inset-top)) 16px 12px;
+            background: rgba(14, 18, 39, 0.8);
+            backdrop-filter: blur(var(--glass-blur));
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-shrink: 0;
+            position: relative;
+            z-index: 10;
         }
 
-        .app-header h1 {
-            font-size: 24px;
-            font-weight: 700;
+        .header-left {
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        /* Connection Indicator Styles */
-        .connection-indicator {
+        .logo-badge {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+        }
+
+        .header-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: 0.5px;
+        }
+
+        .status-indicator {
             display: flex;
             align-items: center;
             gap: 6px;
             padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-right: 8px;
-        }
-
-        .connection-indicator.synced {
             background: rgba(0, 255, 136, 0.1);
-            color: var(--success);
             border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--success);
         }
 
-        .connection-indicator.syncing {
-            background: rgba(255, 183, 0, 0.1);
-            color: var(--warning);
-            border: 1px solid rgba(255, 183, 0, 0.3);
-            animation: pulse-warning 2s infinite;
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
         }
 
-        .connection-indicator.offline {
-            background: rgba(255, 51, 51, 0.1);
-            color: var(--danger);
-            border: 1px solid rgba(255, 51, 51, 0.3);
-            animation: pulse-danger 1s infinite;
-        }
-
-        @keyframes pulse-warning {
+        @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.6; }
         }
 
-        @keyframes pulse-danger {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-
-        .status-dot.synced {
-            background: var(--success);
-            box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
-        }
-
-        .status-dot.syncing {
-            background: var(--warning);
-            box-shadow: 0 0 8px rgba(255, 183, 0, 0.6);
-            animation: blink 1s infinite;
-        }
-
-        .status-dot.offline {
-            background: var(--danger);
-            box-shadow: 0 0 8px rgba(255, 51, 51, 0.6);
-            animation: blink 0.5s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        /* Status Tooltip */
-        .status-tooltip {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 8px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px;
-            min-width: 220px;
-            font-size: 12px;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            display: none;
-        }
-
-        .status-tooltip.visible {
-            display: block;
-        }
-
-        .tooltip-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 8px;
-            margin-bottom: 6px;
-            line-height: 1.4;
-        }
-
-        .tooltip-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .tooltip-label {
-            color: var(--text-secondary);
-            flex: 0 0 auto;
-        }
-
-        .tooltip-value {
-            color: var(--text-primary);
-            font-weight: 500;
-            text-align: right;
-            flex: 1;
-        }
-
-        /* Offline Warning Banner */
-        .offline-warning {
-            background: rgba(255, 51, 51, 0.1);
-            border: 1px solid rgba(255, 51, 51, 0.3);
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 12px;
-            display: none;
-            animation: slideDown 0.3s ease;
-        }
-
-        .offline-warning.visible {
+        .header-right {
             display: flex;
             align-items: center;
-            gap: 8px;
-        }
-
-        .offline-warning-icon {
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-
-        .offline-warning-text {
-            flex: 1;
-            font-size: 13px;
-            color: var(--danger);
-        }
-
-        .offline-warning-close {
-            background: none;
-            border: none;
-            color: var(--danger);
-            cursor: pointer;
-            font-size: 16px;
-            padding: 0;
-        }
-
-        @keyframes slideDown {
-            from { transform: translateY(-10px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* Cached Data Indicator */
-        .cached-data-badge {
-            display: inline-block;
-            background: rgba(255, 183, 0, 0.15);
-            color: var(--warning);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 11px;
-            margin-left: 4px;
-            border: 1px solid rgba(255, 183, 0, 0.3);
-        }
-
-        .header-actions {
-            display: flex;
             gap: 8px;
         }
 
         .icon-btn {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             border: none;
-            border-radius: 50%;
-            background: var(--bg-card);
-            color: var(--primary);
-            font-size: 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            color: var(--text-primary);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
-            touch-action: manipulation;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.05);
         }
 
         .icon-btn:active {
-            background: var(--border);
             transform: scale(0.95);
         }
 
-        .app-main {
+        /* === MAIN CONTENT === */
+        .wallet-main {
             flex: 1;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: 0;
-        }
-
-        .screen {
-            display: none;
+            overflow-x: hidden;
             padding: 16px;
-            padding-bottom: max(16px, env(safe-area-inset-bottom));
-            animation: fadeIn 0.3s;
+            position: relative;
+            z-index: 1;
         }
 
-        .screen.active {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+        .wallet-main::-webkit-scrollbar {
+            width: 4px;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .wallet-main::-webkit-scrollbar-track {
+            background: transparent;
         }
 
-        /* Welcome Screen */
-        .welcome-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 24px;
-            text-align: center;
+        .wallet-main::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.3);
+            border-radius: 2px;
         }
 
-        .welcome-logo {
-            font-size: 80px;
-            line-height: 1;
-            margin-bottom: 16px;
+        /* === BALANCE CARD === */
+        .balance-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(255, 0, 110, 0.05) 100%);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px 20px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(var(--glass-blur));
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
         }
 
-        .welcome-title {
-            font-size: 32px;
-            font-weight: 700;
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .balance-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
             margin-bottom: 8px;
         }
 
-        .welcome-subtitle {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 32px;
+        .balance-value {
+            font-size: 40px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 4px;
+            letter-spacing: -1px;
         }
 
-        /* Card Style */
-        .card {
-            background: var(--bg-card);
+        .balance-currency {
+            font-size: 16px;
+            color: var(--text-secondary);
+            font-weight: 400;
+            display: inline-block;
+            margin-left: 8px;
+        }
+
+        .balance-subtext {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-top: 12px;
+        }
+
+        .balance-change {
+            display: inline-block;
+            color: var(--success);
+            margin-left: 4px;
+        }
+
+        /* === QUICK ACTIONS === */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 16px 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-        }
-
-        .card-title {
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+            font-weight: 500;
             font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-secondary);
         }
 
-        .card-value {
-            font-size: 28px;
-            font-weight: 700;
-            font-family: "Monaco", monospace;
-            word-break: break-all;
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary);
+            transform: translateY(-2px);
         }
 
-        .card-subtitle {
-            font-size: 12px;
-            color: var(--text-secondary);
+        .action-btn:active {
+            transform: translateY(0);
         }
 
-        /* Balance Display */
-        .balance-card {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: #000;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-
-        .balance-card .card-title {
-            color: rgba(0,0,0,0.6);
-        }
-
-        .balance-card .card-value {
-            font-size: 40px;
-            margin: 8px 0;
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 14px 20px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            touch-action: manipulation;
+        .action-icon {
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 8px;
         }
 
-        .btn-primary {
-            background: var(--primary);
-            color: #000;
-            width: 100%;
-        }
-
-        .btn-primary:active {
-            background: var(--primary-dark);
-            transform: scale(0.98);
-        }
-
-        .btn-secondary {
-            background: var(--bg-card);
-            color: var(--primary);
-            border: 1px solid var(--primary);
-            width: 100%;
-        }
-
-        .btn-secondary:active {
-            background: var(--border);
-        }
-
-        .btn-small {
-            padding: 10px 16px;
-            font-size: 14px;
-            flex: 1;
-        }
-
-        .btn-row {
-            display: flex;
-            gap: 12px;
-        }
-
-        /* Input Fields */
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .input-label {
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-secondary);
-        }
-
-        input, textarea {
-            padding: 12px 16px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            background: var(--bg-card);
-            color: var(--text-primary);
-            font-size: 16px;
-            font-family: inherit;
-            transition: border-color 0.2s;
-        }
-
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.2);
-        }
-
-        textarea {
-            min-height: 100px;
-            resize: vertical;
-            font-family: "Monaco", monospace;
-            font-size: 12px;
-        }
-
-        /* Address Display */
-        .address-box {
+        /* === CHART SECTION === */
+        .chart-section {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px;
-            font-family: monospace;
-            font-size: 12px;
-            word-break: break-all;
-            line-height: 1.6;
-            margin: 8px 0;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
         }
 
-        /* QR Code */
-        .qr-container {
+        .section-header {
             display: flex;
-            justify-content: center;
-            padding: 20px;
-            background: white;
-            border-radius: 12px;
-            margin: 16px 0;
-        }
-
-        /* Tabs */
-        .tab-nav {
-            display: flex;
-            gap: 8px;
-            border-bottom: 1px solid var(--border);
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 16px;
         }
 
-        .tab-btn {
-            padding: 12px 16px;
-            border: none;
-            background: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-weight: 600;
-            border-bottom: 2px solid transparent;
-            margin-bottom: -1px;
-            transition: all 0.2s;
-        }
-
-        .tab-btn.active {
-            color: var(--primary);
-            border-color: var(--primary);
-        }
-
-        /* Status Messages */
-        .alert {
-            padding: 12px 16px;
-            border-radius: 12px;
+        .section-title {
             font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .time-filters {
             display: flex;
+            gap: 8px;
+        }
+
+        .time-filter {
+            padding: 4px 12px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .time-filter.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--bg-dark);
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(to top, rgba(0, 212, 255, 0.05), transparent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-tertiary);
+            font-size: 12px;
+            position: relative;
+        }
+
+        .chart-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(to top, rgba(0, 212, 255, 0.2), transparent);
+            border-radius: 8px;
+            border-top: 2px solid var(--primary);
+        }
+
+        /* === TRANSACTION LIST === */
+        .transactions-section {
+            margin-bottom: 24px;
+        }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
             gap: 12px;
-            align-items: flex-start;
-            animation: slideIn 0.3s;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        @keyframes slideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        .transaction-item:hover {
+            background: var(--bg-card-light);
+            border-color: var(--primary);
+            transform: translateX(4px);
         }
 
-        .alert-success {
+        .tx-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .tx-icon.send {
+            background: rgba(255, 0, 110, 0.1);
+        }
+
+        .tx-icon.receive {
             background: rgba(0, 255, 136, 0.1);
-            border: 1px solid var(--success);
+        }
+
+        .tx-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .tx-type {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .tx-time {
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+
+        .tx-amount {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .tx-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .tx-value.send {
+            color: var(--accent);
+        }
+
+        .tx-value.receive {
             color: var(--success);
         }
 
-        .alert-danger {
-            background: rgba(255, 51, 51, 0.1);
-            border: 1px solid var(--danger);
-            color: var(--danger);
+        .tx-status {
+            font-size: 10px;
+            color: var(--text-tertiary);
         }
 
-        .alert-info {
-            background: rgba(0, 212, 255, 0.1);
-            border: 1px solid var(--primary);
+        /* === BOTTOM NAVIGATION === */
+        .wallet-nav {
+            padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+            background: rgba(14, 18, 39, 0.8);
+            backdrop-filter: blur(var(--glass-blur));
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 11px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .nav-item.active {
             color: var(--primary);
         }
 
-        /* Copy Button */
-        .copy-btn {
-            font-size: 12px;
-            padding: 6px 12px;
-            margin-left: 8px;
-            flex-shrink: 0;
-            cursor: pointer;
+        .nav-icon {
+            font-size: 20px;
         }
 
-        /* Loading */
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Modals */
+        /* === MODAL / DIALOG === */
         .modal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
             z-index: 100;
-            padding: 16px;
-            justify-content: flex-end;
-            flex-direction: column;
-            animation: fadeIn 0.3s;
+            animation: fadeIn 0.3s ease;
         }
 
         .modal.active {
             display: flex;
-        }
-
-        .modal-content {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 20px 20px 0 0;
-            padding: max(20px, env(safe-area-inset-left)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            max-height: 80vh;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .modal-header {
-            font-size: 20px;
-            font-weight: 700;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        /* Responsive */
-        @media (prefers-reduced-motion: reduce) {
-            * {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
-        }
-
-        /* Settings Tabs */
-        .settings-tab {
-            animation: fadeIn 0.3s;
-        }
-
-        .settings-tab.active {
-            display: block;
-        }
-
-        .settings-tab-btn {
-            flex: 1;
-            text-align: center;
-            font-size: 14px;
-        }
-
-        .input-label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .input-field {
-            font-family: inherit;
+            align-items: flex-end;
         }
 
         @keyframes fadeIn {
@@ -656,2126 +530,314 @@
             to { opacity: 1; }
         }
 
-        /* Dark mode already applied */
-        @media (prefers-color-scheme: light) {
-            :root {
-                --bg-dark: #f5f5f5;
-                --bg-card: #ffffff;
-                --border: #e0e0e0;
-                --text-primary: #000000;
-                --text-secondary: #666666;
+        .modal-content {
+            width: 100%;
+            max-width: 428px;
+            background: var(--bg-card);
+            border-radius: 20px 20px 0 0;
+            padding: 24px 16px max(24px, env(safe-area-inset-bottom));
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        /* === FORM ELEMENTS === */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 12px;
+            background: var(--bg-darker);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--bg-card);
+            box-shadow: 0 0 12px rgba(0, 212, 255, 0.2);
+        }
+
+        /* === BUTTONS === */
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: var(--bg-dark);
+            box-shadow: 0 8px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary);
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-height: 600px) {
+            .balance-value {
+                font-size: 32px;
             }
+            .wallet-main {
+                padding: 12px;
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: loading 1.4s infinite;
+        }
+
+        @keyframes loading {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <header class="app-header">
-            <h1>🌙 MoonBite</h1>
-            <div class="header-actions">
-                <div style="position: relative;">
-                    <div class="connection-indicator synced" id="connectionIndicator" title="Blockchain status">
-                        <span class="status-dot synced"></span>
-                        <span id="statusText">Synced</span>
-                    </div>
-                    <div class="status-tooltip" id="statusTooltip">
-                        <div class="tooltip-row">
-                            <span class="tooltip-label">Status:</span>
-                            <span class="tooltip-value" id="tooltipStatus">Synced</span>
-                        </div>
-                        <div class="tooltip-row">
-                            <span class="tooltip-label">Height:</span>
-                            <span class="tooltip-value" id="tooltipHeight">0</span>
-                        </div>
-                        <div class="tooltip-row">
-                            <span class="tooltip-label">Progress:</span>
-                            <span class="tooltip-value" id="tooltipProgress">100%</span>
-                        </div>
-                        <div class="tooltip-row">
-                            <span class="tooltip-label">Last Block:</span>
-                            <span class="tooltip-value" id="tooltipLastBlock">Just now</span>
-                        </div>
-                    </div>
+    <div class="wallet-container">
+        <!-- HEADER -->
+        <header class="wallet-header">
+            <div class="header-left">
+                <div class="logo-badge">🌙</div>
+                <div>
+                    <div class="header-title">MoonBite</div>
                 </div>
-                <button class="icon-btn" id="themeToggle" title="Toggle theme">🌓</button>
-                <button class="icon-btn" id="menuBtn" title="Menu">⋮</button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>Synced</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="icon-btn" title="Settings">⚙️</button>
+                <button class="icon-btn" title="Menu">⋮</button>
             </div>
         </header>
 
-        <main class="app-main">
-            <!-- Offline Warning Banner -->
-            <div class="offline-warning" id="offlineWarning">
-                <span class="offline-warning-icon">⚠️</span>
-                <span class="offline-warning-text">
-                    Using cached data. Blockchain is offline or syncing.
-                </span>
-                <button class="offline-warning-close" id="closeOfflineWarning">✕</button>
-            </div>
-
-            <!-- Welcome Screen -->
-            <div class="screen welcome-screen active">
-                <div class="welcome-content">
-                    <div class="welcome-logo">🌙</div>
-                    <div>
-                        <h2 class="welcome-title">MoonBite Wallet</h2>
-                        <p class="welcome-subtitle">Mine and manage MBITE on the go</p>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <button class="btn btn-primary" id="createWalletBtn">Create Wallet</button>
-                        <button class="btn btn-secondary" id="importWalletBtn">Import Seed</button>
-                    </div>
-                    <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-top: 16px;">
-                        🔐 Password-protected. Your wallet is encrypted locally on your device.
-                    </p>
+        <!-- MAIN CONTENT -->
+        <main class="wallet-main">
+            <!-- Balance Card -->
+            <div class="balance-card">
+                <div class="balance-label">Total Balance</div>
+                <div>
+                    <span class="balance-value">0.00</span>
+                    <span class="balance-currency">MBITE</span>
+                </div>
+                <div class="balance-subtext">
+                    ≈ $0.00 USD
+                    <span class="balance-change">↑ +2.5%</span>
                 </div>
             </div>
 
-            <!-- Password Setup Screen -->
-            <div class="screen password-setup-screen">
-                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px;">
-                    <h2 class="welcome-title">Set Password</h2>
-                    <p style="color: var(--text-secondary); font-size: 14px;">
-                        Create a strong password to protect your wallet. You'll need this to access your funds.
-                    </p>
-                    <div class="input-group">
-                        <label class="input-label">Password</label>
-                        <input type="password" id="setupPassword" placeholder="Min 8 characters" minlength="8">
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">Confirm Password</label>
-                        <input type="password" id="confirmPassword" placeholder="Confirm password" minlength="8">
-                    </div>
-                    <div style="display: flex; gap: 8px; margin-top: 16px;">
-                        <button class="btn btn-secondary" style="flex: 1;" id="cancelPasswordBtn">Cancel</button>
-                        <button class="btn btn-primary" style="flex: 1;" id="confirmPasswordBtn">Continue</button>
-                    </div>
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <button class="action-btn">
+                    <div class="action-icon">📤</div>
+                    <span>Send</span>
+                </button>
+                <button class="action-btn">
+                    <div class="action-icon">📥</div>
+                    <span>Receive</span>
+                </button>
+                <button class="action-btn">
+                    <div class="action-icon">⚡</div>
+                    <span>Mine</span>
+                </button>
+            </div>
 
-                    <!-- Biometric setup option (shown if supported) -->
-                    <div id="biometricSetupOption" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
-                        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
-                            💡 Tip: Add biometric authentication (fingerprint/face) for faster, more secure access.
-                        </p>
-                        <button class="btn btn-secondary" style="width: 100%;" id="setupBiometricBtn">👆 Set up Biometric</button>
-                        <p style="font-size: 11px; color: var(--text-secondary); margin-top: 8px; line-height: 1.4;">
-                            Your biometric data never leaves your device. Only a credential ID is stored on the server.
-                        </p>
+            <!-- Chart Section -->
+            <div class="chart-section">
+                <div class="section-header">
+                    <div class="section-title">24h Performance</div>
+                    <div class="time-filters">
+                        <button class="time-filter active">1D</button>
+                        <button class="time-filter">1W</button>
+                        <button class="time-filter">1M</button>
                     </div>
-
-                    <p style="font-size: 11px; color: var(--text-secondary); line-height: 1.5;">
-                        ⚠️ You cannot reset a forgotten password. Keep it safe.
-                    </p>
+                </div>
+                <div class="chart-placeholder">
+                    <div class="chart-line"></div>
+                    <span>Loading chart...</span>
                 </div>
             </div>
 
-            <!-- Unlock Screen -->
-            <div class="screen unlock-screen">
-                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px;">
-                    <h2 class="welcome-title">Unlock Wallet</h2>
-                    <p style="color: var(--text-secondary); font-size: 14px;">
-                        Enter your password to access your wallet.
-                    </p>
+            <!-- Recent Transactions -->
+            <div class="transactions-section">
+                <div class="section-header" style="margin-bottom: 12px;">
+                    <div class="section-title">Recent Activity</div>
+                    <button style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 12px; font-weight: 500;">View All</button>
+                </div>
 
-                    <!-- Biometric unlock option (shown only if enabled) -->
-                    <div id="biometricUnlockOption" style="display: none;">
-                        <button class="btn btn-primary" id="unlockWithBiometricBtn" style="width: 100%; margin-bottom: 16px;">
-                            👆 Unlock with Biometric
-                        </button>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
-                            <div style="flex: 1; height: 1px; background: var(--border);"></div>
-                            <span style="color: var(--text-secondary); font-size: 12px;">or</span>
-                            <div style="flex: 1; height: 1px; background: var(--border);"></div>
-                        </div>
+                <!-- Send Transaction -->
+                <div class="transaction-item">
+                    <div class="tx-icon send">📤</div>
+                    <div class="tx-info">
+                        <div class="tx-type">Sent to Wallet</div>
+                        <div class="tx-time">Today at 2:45 PM</div>
                     </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Password</label>
-                        <input type="password" id="unlockPassword" placeholder="Enter password">
-                    </div>
-                    <button class="btn btn-primary" id="unlockBtn" style="width: 100%;">Unlock Wallet</button>
-                    <p style="font-size: 12px; color: var(--text-secondary); text-align: center;">
-                        <a href="#" id="resetWalletLink" style="color: var(--primary);">Reset wallet?</a>
-                    </p>
-                </div>
-            </div>
-
-            <!-- Dashboard Screen -->
-            <div class="screen dashboard-screen">
-                <div class="card balance-card">
-                    <div class="card-title">Total Balance</div>
-                    <div class="card-value"><span id="balanceAmount">0.00</span> MBITE</div>
-                    <div class="card-subtitle" id="balanceUSD">Loading...</div>
-                </div>
-
-                <div class="btn-row">
-                    <button class="btn btn-primary btn-small" id="sendBtn">Send</button>
-                    <button class="btn btn-secondary btn-small" id="receiveBtn">Receive</button>
-                    <button class="btn btn-secondary btn-small" id="settingsBtn">Settings</button>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">Address</div>
-                    <div class="address-box" id="addressDisplay">Loading...</div>
-                    <button class="btn btn-secondary btn-small" id="copyAddressBtn">Copy Address</button>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">Chain Status</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                        <div>
-                            <div class="card-subtitle">Height</div>
-                            <div style="font-size: 20px; font-weight: 700;" id="chainHeight">—</div>
-                        </div>
-                        <div>
-                            <div class="card-subtitle">Difficulty</div>
-                            <div style="font-size: 20px; font-weight: 700;" id="difficulty">—</div>
-                        </div>
+                    <div class="tx-amount">
+                        <div class="tx-value send">-0.50 MBITE</div>
+                        <div class="tx-status">Confirmed</div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Receive Screen -->
-            <div class="screen receive-screen">
-                <div class="card">
-                    <div class="card-title">Your Address</div>
-                    <div class="qr-container">
-                        <canvas id="qrCanvas" width="200" height="200"></canvas>
+                <!-- Receive Transaction -->
+                <div class="transaction-item">
+                    <div class="tx-icon receive">📥</div>
+                    <div class="tx-info">
+                        <div class="tx-type">Received from Mining</div>
+                        <div class="tx-time">Yesterday at 11:20 AM</div>
                     </div>
-                    <div class="address-box" id="receiveAddress">Loading...</div>
-                    <button class="btn btn-primary" id="copyReceiveBtn">Copy Address</button>
-                </div>
-            </div>
-
-            <!-- Send Screen -->
-            <div class="screen send-screen">
-                <div class="input-group">
-                    <label class="input-label">Recipient Address</label>
-                    <input type="text" id="recipientAddr" placeholder="moon1...">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">Amount (MBITE)</label>
-                    <input type="number" id="sendAmount" placeholder="0.00" min="0" step="0.001">
-                </div>
-                <div class="card">
-                    <div class="card-title">Available Balance</div>
-                    <div class="card-value" id="availableBalance">Loading...</div>
-                </div>
-                <button class="btn btn-primary" id="confirmSendBtn">Send MBITE</button>
-            </div>
-
-            <!-- Settings Screen -->
-            <div class="screen settings-screen">
-                <div class="card">
-                    <div class="card-title">Account</div>
-                    <button class="btn btn-secondary" id="viewSeedBtn">View Seed Phrase</button>
-                    <button class="btn btn-secondary" id="changeAddressBtn">Generate New Address</button>
+                    <div class="tx-amount">
+                        <div class="tx-value receive">+1.25 MBITE</div>
+                        <div class="tx-status">Confirmed</div>
+                    </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-title">Security</div>
-                    <button class="btn btn-secondary" id="changePasswordBtn">Change Password</button>
-                    <button class="btn btn-secondary" id="backupWalletBtn">Backup Wallet</button>
-                    <button class="btn btn-danger" id="resetWalletBtn">Delete Wallet</button>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">Network</div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>API Endpoint</span>
-                        <span id="networkStatus" style="color: var(--success);">● Online</span>
+                <!-- Pending Transaction -->
+                <div class="transaction-item">
+                    <div class="tx-icon send">📤</div>
+                    <div class="tx-info">
+                        <div class="tx-type">Pending Withdrawal</div>
+                        <div class="tx-time">2 hours ago</div>
+                    </div>
+                    <div class="tx-amount">
+                        <div class="tx-value send">-2.00 MBITE</div>
+                        <div class="tx-status"><span class="loading"></span> Processing</div>
                     </div>
                 </div>
             </div>
         </main>
+
+        <!-- BOTTOM NAVIGATION -->
+        <nav class="wallet-nav">
+            <button class="nav-item active">
+                <div class="nav-icon">💰</div>
+                <span>Wallet</span>
+            </button>
+            <button class="nav-item">
+                <div class="nav-icon">📊</div>
+                <span>Analytics</span>
+            </button>
+            <button class="nav-item">
+                <div class="nav-icon">⛏️</div>
+                <span>Mining</span>
+            </button>
+            <button class="nav-item">
+                <div class="nav-icon">👤</div>
+                <span>Profile</span>
+            </button>
+        </nav>
     </div>
-
-    <!-- Modals -->
-    <div class="modal" id="seedModal">
-        <div class="modal-content">
-            <div class="modal-header">🔐 Seed Phrase</div>
-            <p style="font-size: 12px; color: var(--text-secondary);">
-                ⚠️ Anyone with this seed can access your wallet. Keep it safe!
-            </p>
-            <textarea id="seedDisplay" readonly></textarea>
-            <button class="btn btn-primary" id="copySeedBtn">Copy Seed Phrase</button>
-            <button class="btn btn-secondary" id="closeSeedBtn">Close</button>
-        </div>
-    </div>
-
-    <div class="modal" id="passwordModal">
-        <div class="modal-content">
-            <div class="modal-header">🔐 Change Password</div>
-            <p style="font-size: 12px; color: var(--text-secondary);">
-                Enter your current password and new password.
-            </p>
-            <div class="input-group">
-                <label class="input-label">Current Password</label>
-                <input type="password" id="currentPassword" placeholder="Current password">
-            </div>
-            <div class="input-group">
-                <label class="input-label">New Password</label>
-                <input type="password" id="newPassword" placeholder="Min 8 characters" minlength="8">
-            </div>
-            <div class="input-group">
-                <label class="input-label">Confirm Password</label>
-                <input type="password" id="confirmNewPassword" placeholder="Confirm new password" minlength="8">
-            </div>
-            <button class="btn btn-primary" id="changePasswordConfirmBtn" style="width: 100%;">Change Password</button>
-            <button class="btn btn-secondary" id="closePasswordModalBtn" style="width: 100%; margin-top: 8px;">Cancel</button>
-        </div>
-    </div>
-
-    <!-- Biometric Setup Modal -->
-    <div class="modal" id="biometricModal">
-        <div class="modal-content">
-            <div class="modal-header">👆 Set Up Biometric</div>
-
-            <div id="biometricSetupStep" style="display: block;">
-                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">
-                    Add biometric authentication (fingerprint or face recognition) for faster, more secure access to your wallet.
-                </p>
-
-                <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
-                    <div style="font-size: 13px; color: var(--success); line-height: 1.5;">
-                        ✓ Your biometric data never leaves your device<br>
-                        ✓ Only a credential ID is stored on the server<br>
-                        ✓ Your password is always available as a fallback
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label class="input-label">Device Name (Optional)</label>
-                    <input type="text" id="biometricDeviceName" placeholder="e.g., My iPhone, Samsung Phone">
-                </div>
-
-                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;">
-                    You will be prompted to scan your fingerprint or face.
-                </p>
-
-                <button class="btn btn-primary" id="startBiometricRegistrationBtn" style="width: 100%;">Start Registration</button>
-            </div>
-
-            <div id="biometricProgressStep" style="display: none; text-align: center;">
-                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 24px;">
-                    Waiting for biometric scan...
-                </p>
-                <div style="font-size: 48px; margin-bottom: 16px;">👆</div>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 16px;">
-                    Place your finger on the scanner or look at the camera
-                </p>
-                <button class="btn btn-secondary" id="cancelBiometricBtn">Cancel</button>
-            </div>
-
-            <div id="biometricSuccessStep" style="display: none;">
-                <div style="text-align: center; margin-bottom: 24px;">
-                    <div style="font-size: 64px; margin-bottom: 16px;">✓</div>
-                    <p style="font-size: 16px; font-weight: 600; color: var(--success); margin-bottom: 8px;">Biometric Registered!</p>
-                    <p style="font-size: 12px; color: var(--text-secondary);">You can now unlock your wallet with biometric authentication.</p>
-                </div>
-                <button class="btn btn-primary" id="closeBiometricModalBtn" style="width: 100%;">Done</button>
-            </div>
-
-            <div id="biometricErrorStep" style="display: none;">
-                <div style="background: rgba(255, 51, 51, 0.1); border: 1px solid rgba(255, 51, 51, 0.3); border-radius: 8px; padding: 16px; margin-bottom: 16px; text-align: center;">
-                    <div style="font-size: 48px; margin-bottom: 12px;">⚠️</div>
-                    <div style="color: var(--danger); font-weight: 600; margin-bottom: 8px;">Registration Failed</div>
-                    <p id="biometricErrorMessage" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
-                        Please try again or use a different authentication method.
-                    </p>
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-secondary" id="retryBiometricBtn" style="flex: 1;">Retry</button>
-                    <button class="btn" style="flex: 1; background: var(--bg-card); color: var(--primary); border: 1px solid var(--border);" id="closeBiometricErrorBtn">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal" id="menuModal">
-        <div class="modal-content">
-            <div class="modal-header">Menu</div>
-            <button class="btn btn-secondary" id="dashboardBtn">Dashboard</button>
-            <button class="btn btn-secondary" id="settingsMenuBtn">⚙️ Settings</button>
-            <button class="btn btn-secondary" id="exportBtn">Export Wallet</button>
-            <button class="btn btn-secondary" id="logoutBtn">Logout</button>
-            <button class="btn btn-secondary" id="closeMenuBtn">Close</button>
-        </div>
-    </div>
-
-    <div class="modal" id="settingsModal">
-        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
-            <div class="modal-header">⚙️ Settings & Preferences</div>
-
-            <div style="border-bottom: 1px solid var(--border); margin-bottom: 16px; display: flex; gap: 0;">
-                <button class="tab-btn active settings-tab-btn" data-tab="display">Display</button>
-                <button class="tab-btn settings-tab-btn" data-tab="security">Security</button>
-                <button class="tab-btn settings-tab-btn" data-tab="notifications">Notifications</button>
-                <button class="tab-btn settings-tab-btn" data-tab="about">About</button>
-            </div>
-
-            <!-- Display Settings -->
-            <div class="settings-tab active" id="display-tab">
-                <div style="margin-bottom: 20px;">
-                    <label class="input-label">Language</label>
-                    <select id="languageSetting" class="input-field" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
-                        <option value="en">English</option>
-                        <option value="es">Español</option>
-                        <option value="fr">Français</option>
-                        <option value="de">Deutsch</option>
-                        <option value="ja">日本語</option>
-                        <option value="zh">中文</option>
-                    </select>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Select your preferred language</p>
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <label class="input-label">Theme</label>
-                    <select id="themeSetting" class="input-field" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
-                        <option value="auto">Auto (System)</option>
-                        <option value="light">Light</option>
-                        <option value="dark">Dark</option>
-                    </select>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Choose light, dark, or system preference</p>
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <label class="input-label">Currency</label>
-                    <select id="currencySetting" class="input-field" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
-                        <option value="USD">USD (US Dollar)</option>
-                        <option value="EUR">EUR (Euro)</option>
-                        <option value="GBP">GBP (British Pound)</option>
-                        <option value="JPY">JPY (Japanese Yen)</option>
-                        <option value="CNY">CNY (Chinese Yuan)</option>
-                        <option value="BTC">BTC (Bitcoin)</option>
-                        <option value="MBITE">MBITE (Native)</option>
-                    </select>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Display currency for balance conversions</p>
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <label class="input-label">Decimal Places</label>
-                    <select id="decimalPlacesSetting" class="input-field" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
-                        <option value="2">2 Decimals</option>
-                        <option value="4">4 Decimals</option>
-                        <option value="6">6 Decimals</option>
-                        <option value="8">8 Decimals (Full Precision)</option>
-                    </select>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">How many decimal places to display</p>
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <label class="input-label">Amount Format</label>
-                    <select id="amountFormatSetting" class="input-field" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
-                        <option value="full">Full (12.34567890)</option>
-                        <option value="short">Short (12.35)</option>
-                        <option value="scientific">Scientific (1.23e+1)</option>
-                    </select>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">How to display amounts</p>
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <label class="input-label">Time Format</label>
-                    <select id="timeFormatSetting" class="input-field" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
-                        <option value="relative">Relative (2 hours ago)</option>
-                        <option value="absolute">Absolute (2024-01-15 14:30)</option>
-                        <option value="unix">Unix Timestamp (1705332600)</option>
-                    </select>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">How to display transaction times</p>
-                </div>
-
-                <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(0, 212, 255, 0.05);">
-                    <div>
-                        <div style="font-weight: 500;">Hide Zero Balances</div>
-                        <p style="font-size: 12px; color: var(--text-secondary);">Hide accounts with zero balance</p>
-                    </div>
-                    <input type="checkbox" id="hideZeroBalanceSetting" style="cursor: pointer; width: 20px; height: 20px;">
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <label class="input-label">Sort Accounts By</label>
-                    <select id="sortAccountsSetting" class="input-field" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
-                        <option value="created">Created Date</option>
-                        <option value="updated">Last Updated</option>
-                        <option value="name">Name</option>
-                        <option value="balance">Balance</option>
-                    </select>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">How to order accounts in list</p>
-                </div>
-            </div>
-
-            <!-- Security Settings -->
-            <div class="settings-tab" id="security-tab" style="display: none;">
-                <!-- Biometric Authentication -->
-                <div id="biometricSettingsSection" style="display: none; margin-bottom: 20px;">
-                    <div style="background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.3); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-                        <div style="color: var(--primary); font-weight: 600; margin-bottom: 8px;">👆 Biometric Authentication</div>
-                        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">Faster, more secure access using fingerprint or face recognition.</div>
-                        <div id="biometricStatusDiv" style="display: none; margin-bottom: 12px;">
-                            <div style="font-size: 12px; margin-bottom: 6px;">
-                                <strong>Device:</strong> <span id="biometricDeviceNameSpan">—</span>
-                            </div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">
-                                <strong>Last Login:</strong> <span id="biometricLastLoginSpan">—</span>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 8px;">
-                            <button class="btn btn-secondary" id="setupBiometricSettingBtn" style="flex: 1; font-size: 14px;">Set up Biometric</button>
-                            <button class="btn" style="background: var(--danger); color: white; flex: 1; font-size: 14px; display: none;" id="disableBiometricBtn">Disable</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <label class="input-label">Auto-Lock Timeout</label>
-                    <select id="autoLockSetting" class="input-field" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text-primary); cursor: pointer;">
-                        <option value="0">Never (Not Recommended)</option>
-                        <option value="5">5 Minutes</option>
-                        <option value="10">10 Minutes</option>
-                        <option value="15">15 Minutes</option>
-                        <option value="30">30 Minutes</option>
-                        <option value="60">1 Hour</option>
-                        <option value="120">2 Hours</option>
-                    </select>
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Lock wallet after inactivity</p>
-                </div>
-
-                <div style="background: rgba(255, 51, 51, 0.1); border: 1px solid rgba(255, 51, 51, 0.3); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-                    <div style="color: var(--danger); font-weight: 600; margin-bottom: 8px;">⚠️ Danger Zone</div>
-                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">These actions are irreversible.</div>
-                    <button class="btn" style="background: var(--danger); color: white; width: 100%;" id="resetWalletSettingBtn">Reset Wallet</button>
-                </div>
-
-                <div style="background: rgba(255, 183, 0, 0.1); border: 1px solid rgba(255, 183, 0, 0.3); border-radius: 8px; padding: 16px;">
-                    <div style="color: var(--warning); font-weight: 600; margin-bottom: 8px;">🔐 Backup</div>
-                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">Export your seed phrase for recovery</div>
-                    <button class="btn btn-secondary" id="exportSeedSettingBtn" style="width: 100%;">Show Seed Phrase</button>
-                </div>
-            </div>
-
-            <!-- Notifications Settings -->
-            <div class="settings-tab" id="notifications-tab" style="display: none;">
-                <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(0, 255, 136, 0.05);">
-                    <div>
-                        <div style="font-weight: 500;">Transaction Notifications</div>
-                        <p style="font-size: 12px; color: var(--text-secondary);">Alert on send/receive</p>
-                    </div>
-                    <input type="checkbox" id="notificationTxSetting" checked style="cursor: pointer; width: 20px; height: 20px;">
-                </div>
-
-                <div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(0, 255, 136, 0.05);">
-                    <div>
-                        <div style="font-weight: 500;">Price Alerts</div>
-                        <p style="font-size: 12px; color: var(--text-secondary);">Alert on price changes</p>
-                    </div>
-                    <input type="checkbox" id="notificationPriceSetting" style="cursor: pointer; width: 20px; height: 20px;">
-                </div>
-
-                <div style="background: rgba(0, 212, 255, 0.05); border: 1px solid var(--border); border-radius: 8px; padding: 12px;">
-                    <p style="font-size: 12px; color: var(--text-secondary);">Notifications are stored locally in your browser. We never track your activity.</p>
-                </div>
-            </div>
-
-            <!-- About Settings -->
-            <div class="settings-tab" id="about-tab" style="display: none;">
-                <div style="margin-bottom: 20px; padding: 16px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border);">
-                    <div style="font-weight: 600; margin-bottom: 8px;">🌙 MoonBite Wallet</div>
-                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
-                        A secure, lightweight wallet for MoonBite (MBITE) cryptocurrency.
-                    </div>
-                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
-                        <strong>Version:</strong> <span id="appVersion">1.0.0</span>
-                    </div>
-                    <div style="font-size: 12px; color: var(--text-secondary);">
-                        <strong>Build Date:</strong> <span id="buildDate">Unknown</span>
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 20px; padding: 16px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border);">
-                    <div style="font-weight: 600; margin-bottom: 12px;">Links & Resources</div>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <a href="https://github.com/moonbitecoin/moonbite-wallet" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 14px;">📘 GitHub Repository</a>
-                        <a href="https://moonbite.org" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 14px;">🌐 Official Website</a>
-                        <a href="#" id="privacyPolicyLink" style="color: var(--primary); text-decoration: none; font-size: 14px;">📋 Privacy Policy</a>
-                    </div>
-                </div>
-
-                <div style="padding: 16px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border); font-size: 12px; color: var(--text-secondary);">
-                    <div style="font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">License</div>
-                    <p>MoonBite Wallet is licensed under the MIT License. This is open-source software maintained by the community.</p>
-                </div>
-            </div>
-
-            <div style="display: flex; gap: 8px; margin-top: 24px;">
-                <button class="btn btn-secondary" id="resetSettingsBtn" style="flex: 1;">Reset to Defaults</button>
-                <button class="btn btn-primary" id="closeSettingsBtn" style="flex: 1;">Done</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Price Ticker Modal -->
-    <div class="modal" id="priceTickerModal">
-        <div class="modal-content">
-            <div class="modal-header">📊 MBITE Price Details</div>
-            <div class="card" style="margin-bottom: 16px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <div>
-                        <div class="card-subtitle">Current Price</div>
-                        <div class="card-value" id="tickerPrice">$0.00</div>
-                    </div>
-                    <div id="tickerTrend" style="font-size: 32px;">📈</div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 14px;">
-                    <div>
-                        <div class="card-subtitle">24h Change</div>
-                        <div id="ticker24hChange" style="color: var(--success);">+2.5%</div>
-                    </div>
-                    <div>
-                        <div class="card-subtitle">24h High</div>
-                        <div id="tickerHigh24h">$48.32</div>
-                    </div>
-                    <div>
-                        <div class="card-subtitle">24h Low</div>
-                        <div id="tickerLow24h">$43.21</div>
-                    </div>
-                    <div>
-                        <div class="card-subtitle">24h Volume</div>
-                        <div id="tickerVolume24h">$45.6M</div>
-                    </div>
-                </div>
-            </div>
-            <canvas id="priceChart" style="width: 100%; height: 200px; margin-bottom: 16px; display: none;"></canvas>
-            <button class="btn btn-secondary" id="closePriceBtn" style="width: 100%;">Close</button>
-        </div>
-    </div>
-
-    <!-- Transaction Search Modal -->
-    <div class="modal" id="transactionSearchModal">
-        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
-            <div class="modal-header">🔍 Search Transactions</div>
-
-            <div class="input-group">
-                <label class="input-label">Search Query</label>
-                <input type="text" id="searchQuery" placeholder="TXID, address, or memo...">
-            </div>
-
-            <div style="border-top: 1px solid var(--border); margin: 16px 0; padding-top: 16px;">
-                <div style="font-weight: 500; margin-bottom: 12px;">Filters</div>
-
-                <div class="input-group">
-                    <label class="input-label">Status</label>
-                    <select id="searchStatus" class="input-field" style="width: 100%; padding: 8px;">
-                        <option value="">All</option>
-                        <option value="pending">Pending</option>
-                        <option value="confirmed">Confirmed</option>
-                        <option value="failed">Failed</option>
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label class="input-label">Type</label>
-                    <select id="searchDirection" class="input-field" style="width: 100%; padding: 8px;">
-                        <option value="">All</option>
-                        <option value="send">Sent</option>
-                        <option value="receive">Received</option>
-                    </select>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <div class="input-group">
-                        <label class="input-label">Min Amount</label>
-                        <input type="number" id="searchAmountMin" placeholder="0.00" min="0" step="0.001">
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">Max Amount</label>
-                        <input type="number" id="searchAmountMax" placeholder="No limit" min="0" step="0.001">
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <div class="input-group">
-                        <label class="input-label">From Date</label>
-                        <input type="date" id="searchDateFrom">
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">To Date</label>
-                        <input type="date" id="searchDateTo">
-                    </div>
-                </div>
-
-                <button class="btn btn-primary" id="applySearchBtn" style="width: 100%; margin-top: 16px;">Search</button>
-                <button class="btn btn-secondary" id="clearSearchBtn" style="width: 100%; margin-top: 8px;">Clear Filters</button>
-            </div>
-
-            <div style="border-top: 1px solid var(--border); margin: 16px 0; padding-top: 16px;">
-                <div style="font-weight: 500; margin-bottom: 12px;">Results (<span id="searchResultCount">0</span>)</div>
-                <div id="searchResults" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 12px;">
-                    <p style="color: var(--text-secondary); text-align: center;">No results yet</p>
-                </div>
-            </div>
-
-            <button class="btn btn-secondary" id="closeSearchBtn" style="width: 100%; margin-top: 16px;">Close</button>
-        </div>
-    </div>
-
-    <!-- Export Modal -->
-    <div class="modal" id="exportModal">
-        <div class="modal-content">
-            <div class="modal-header">📥 Export Transactions</div>
-
-            <div class="input-group">
-                <label class="input-label">Export Format</label>
-                <select id="exportFormat" class="input-field" style="width: 100%; padding: 8px;">
-                    <option value="csv">CSV (Spreadsheet)</option>
-                    <option value="json">JSON (Data)</option>
-                </select>
-                <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Choose your preferred export format</p>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                <div class="input-group">
-                    <label class="input-label">From Date</label>
-                    <input type="date" id="exportDateFrom">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">To Date</label>
-                    <input type="date" id="exportDateTo">
-                </div>
-            </div>
-
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(0, 212, 255, 0.05); margin-top: 16px;">
-                <div>
-                    <div style="font-weight: 500;">Include Fees</div>
-                    <p style="font-size: 12px; color: var(--text-secondary);">Add fee information to export</p>
-                </div>
-                <input type="checkbox" id="exportIncludeFees" checked style="cursor: pointer; width: 20px; height: 20px;">
-            </div>
-
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(0, 212, 255, 0.05); margin-top: 8px;">
-                <div>
-                    <div style="font-weight: 500;">Include Memo</div>
-                    <p style="font-size: 12px; color: var(--text-secondary);">Add memo notes to export</p>
-                </div>
-                <input type="checkbox" id="exportIncludeMemo" checked style="cursor: pointer; width: 20px; height: 20px;">
-            </div>
-
-            <div style="display: flex; gap: 8px; margin-top: 24px;">
-                <button class="btn btn-secondary" id="closeExportBtn" style="flex: 1;">Cancel</button>
-                <button class="btn btn-primary" id="confirmExportBtn" style="flex: 1;">Export</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Load biometric authentication module FIRST -->
-    <script src="/static/wallet-biometric.js"></script>
 
     <script>
-        // Check for service worker support and register
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/static/wallet-sw.js').catch(err => console.log('SW registration failed:', err));
-        }
-
-        // ====== SettingsManager Class ======
-        class SettingsManager {
-            constructor() {
-                this.STORAGE_KEY = 'moonbite_preferences';
-                this.API_ENDPOINT = '/api/wallet/preferences';
-                this.preferences = {};
-                this.defaults = {
-                    language: 'en',
-                    currency: 'USD',
-                    theme: 'auto',
-                    time_format: 'relative',
-                    amount_format: 'full',
-                    notification_tx: true,
-                    notification_price: false,
-                    auto_lock_mins: 15,
-                    decimal_places: 8,
-                    hide_zero_balance: false,
-                    sort_accounts: 'created',
-                };
-            }
-
-            async load() {
-                try {
-                    const response = await fetch(this.API_ENDPOINT);
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.preferences) {
-                            this.preferences = data.preferences;
-                            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.preferences));
-                            this.applyPreferences();
-                            console.log('[SettingsManager] Preferences loaded from server');
-                        }
-                    }
-                } catch (e) {
-                    // Load from localStorage as fallback
-                    const cached = localStorage.getItem(this.STORAGE_KEY);
-                    if (cached) {
-                        try {
-                            this.preferences = JSON.parse(cached);
-                            this.applyPreferences();
-                            console.log('[SettingsManager] Preferences loaded from cache');
-                        } catch (e) {
-                            this.preferences = { ...this.defaults };
-                            console.log('[SettingsManager] Using defaults');
-                        }
-                    } else {
-                        this.preferences = { ...this.defaults };
-                    }
-                }
-            }
-
-            async update(updates) {
-                try {
-                    const response = await fetch(this.API_ENDPOINT, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(updates),
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.preferences) {
-                            this.preferences = data.preferences;
-                            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.preferences));
-                            this.applyPreferences();
-                            console.log('[SettingsManager] Preferences updated:', updates);
-                            return true;
-                        }
-                    } else {
-                        const error = await response.json();
-                        console.error('[SettingsManager] Update failed:', error);
-                    }
-                } catch (e) {
-                    console.error('[SettingsManager] Update error:', e);
-                }
-                return false;
-            }
-
-            async reset() {
-                try {
-                    const response = await fetch(`${this.API_ENDPOINT}/reset`, {
-                        method: 'POST',
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.preferences) {
-                            this.preferences = data.preferences;
-                            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.preferences));
-                            this.applyPreferences();
-                            this.updateUI();
-                            console.log('[SettingsManager] Preferences reset to defaults');
-                            return true;
-                        }
-                    }
-                } catch (e) {
-                    console.error('[SettingsManager] Reset error:', e);
-                }
-                return false;
-            }
-
-            applyPreferences() {
-                // Apply theme
-                const theme = this.preferences.theme || 'auto';
-                if (theme === 'auto') {
-                    document.documentElement.style.colorScheme = 'light dark';
-                } else {
-                    document.documentElement.style.colorScheme = theme;
-                }
-
-                // Apply language (future enhancement for i18n)
-                console.log('[SettingsManager] Language set to:', this.preferences.language);
-
-                // Apply auto-lock timeout
-                const autoLockMins = this.preferences.auto_lock_mins || 15;
-                window.AUTO_LOCK_TIMEOUT = autoLockMins * 60 * 1000;
-            }
-
-            updateUI() {
-                // Update all form inputs to match current preferences
-                const mapping = {
-                    'languageSetting': 'language',
-                    'themeSetting': 'theme',
-                    'currencySetting': 'currency',
-                    'decimalPlacesSetting': 'decimal_places',
-                    'amountFormatSetting': 'amount_format',
-                    'timeFormatSetting': 'time_format',
-                    'hideZeroBalanceSetting': 'hide_zero_balance',
-                    'sortAccountsSetting': 'sort_accounts',
-                    'autoLockSetting': 'auto_lock_mins',
-                    'notificationTxSetting': 'notification_tx',
-                    'notificationPriceSetting': 'notification_price',
-                };
-
-                for (const [elementId, prefKey] of Object.entries(mapping)) {
-                    const elem = document.getElementById(elementId);
-                    if (elem) {
-                        const value = this.preferences[prefKey];
-                        if (elem.type === 'checkbox') {
-                            elem.checked = value ? true : false;
-                        } else {
-                            elem.value = value;
-                        }
-                    }
-                }
-            }
-
-            get(key) {
-                return this.preferences[key] !== undefined ? this.preferences[key] : this.defaults[key];
-            }
-        }
-
-        const settingsManager = new SettingsManager();
-
-        // BlockchainMonitor class — monitors sync status and manages offline mode
-        class BlockchainMonitor {
-            constructor(pollIntervalMs = 30000) {
-                this.pollIntervalMs = pollIntervalMs;
-                this.pollTimer = null;
-                this.lastStatus = null;
-                this.statusHistory = [];
-                this.maxHistorySize = 10;
-            }
-
-            async start() {
-                console.log('[BlockchainMonitor] Starting blockchain monitor');
-                await this.poll(); // Initial check
-                this.pollTimer = setInterval(() => this.poll(), this.pollIntervalMs);
-            }
-
-            stop() {
-                if (this.pollTimer) {
-                    clearInterval(this.pollTimer);
-                    this.pollTimer = null;
-                }
-            }
-
-            async poll() {
-                try {
-                    const response = await fetch(`${API_BASE}/api/blockchain/status`);
-                    const data = await response.json();
-
-                    if (data.status === 'success' || response.status === 200) {
-                        this.handleStatusUpdate(data);
-                    } else {
-                        this.handleOffline();
-                    }
-                } catch (err) {
-                    console.log('[BlockchainMonitor] Poll error:', err.message);
-                    this.handleOffline();
-                }
-            }
-
-            handleStatusUpdate(status) {
-                this.lastStatus = status;
-                this.statusHistory.push({ timestamp: Date.now(), status });
-                if (this.statusHistory.length > this.maxHistorySize) {
-                    this.statusHistory.shift();
-                }
-
-                // Update global blockchain status
-                blockchainStatus = {
-                    is_synced: status.is_synced || false,
-                    current_height: status.current_height || 0,
-                    sync_percentage: status.sync_percentage || 0,
-                    last_block_time: status.last_block_time || 0,
-                    blockchain_healthy: status.blockchain_healthy || false,
-                };
-
-                // Update UI
-                this.updateUI();
-
-                // Update cache
-                localStorage.setItem('moonbite_blockchain_status', JSON.stringify({
-                    ...blockchainStatus,
-                    cached_at: Date.now(),
-                }));
-            }
-
-            handleOffline() {
-                blockchainStatus = {
-                    is_synced: false,
-                    current_height: this.lastStatus?.current_height || 0,
-                    sync_percentage: this.lastStatus?.sync_percentage || 0,
-                    last_block_time: this.lastStatus?.last_block_time || 0,
-                    blockchain_healthy: false,
-                };
-                this.updateUI();
-            }
-
-            updateUI() {
-                const indicator = document.getElementById('connectionIndicator');
-                const statusText = document.getElementById('statusText');
-                const offlineWarning = document.getElementById('offlineWarning');
-                const tooltip = document.getElementById('statusTooltip');
-
-                if (!indicator) return;
-
-                // Update indicator appearance
-                indicator.classList.remove('synced', 'syncing', 'offline');
-
-                if (!blockchainStatus.blockchain_healthy) {
-                    indicator.classList.add('offline');
-                    statusText.textContent = 'Offline';
-                    offlineWarning?.classList.add('visible');
-                } else if (blockchainStatus.is_synced) {
-                    indicator.classList.add('synced');
-                    statusText.textContent = 'Synced';
-                    offlineWarning?.classList.remove('visible');
-                } else {
-                    indicator.classList.add('syncing');
-                    statusText.textContent = 'Syncing';
-                    offlineWarning?.classList.add('visible');
-                }
-
-                // Update tooltip
-                if (tooltip) {
-                    const lastBlock = blockchainStatus.last_block_time
-                        ? this.formatTimeSince(blockchainStatus.last_block_time)
-                        : 'Unknown';
-
-                    document.getElementById('tooltipStatus').textContent =
-                        blockchainStatus.is_synced ? 'Synced' : 'Syncing...';
-                    document.getElementById('tooltipHeight').textContent =
-                        `${blockchainStatus.current_height}`;
-                    document.getElementById('tooltipProgress').textContent =
-                        `${blockchainStatus.sync_percentage.toFixed(1)}%`;
-                    document.getElementById('tooltipLastBlock').textContent = lastBlock;
-                }
-
-                // Disable send/receive buttons when offline
-                const sendBtn = document.getElementById('sendBtn');
-                const receiveBtn = document.getElementById('receiveBtn');
-                if (sendBtn) sendBtn.disabled = !blockchainStatus.blockchain_healthy;
-                if (receiveBtn) receiveBtn.disabled = !blockchainStatus.blockchain_healthy;
-            }
-
-            formatTimeSince(timestamp) {
-                if (!timestamp) return 'Unknown';
-                const seconds = Math.floor((Date.now() / 1000) - timestamp);
-                if (seconds < 60) return 'Just now';
-                if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-                if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-                return `${Math.floor(seconds / 86400)}d ago`;
-            }
-
-            isHealthy() {
-                return blockchainStatus.blockchain_healthy;
-            }
-
-            getStatus() {
-                return blockchainStatus;
-            }
-        }
-
-        const API_BASE = window.location.origin;
-        const STORAGE_KEY = 'moonbite_wallet';
-        const ENCRYPTED_KEY = 'moonbite_wallet_encrypted';
-
-        let wallet = null;
-        let walletPassword = null;
-        let isWalletUnlocked = false;
-        let currentScreen = 'welcome';
-        let blockchainMonitor = null;
-        let blockchainStatus = {
-            is_synced: true,
-            current_height: 0,
-            sync_percentage: 100,
-            last_block_time: 0,
-            blockchain_healthy: true,
-        };
-
-        // ====== Encryption Functions ======
-        async function deriveKey(password, salt) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(password);
-            const keyMaterial = await window.crypto.subtle.importKey(
-                'raw',
-                data,
-                { name: 'PBKDF2' },
-                false,
-                ['deriveBits', 'deriveKey']
-            );
-            return window.crypto.subtle.deriveKey(
-                {
-                    name: 'PBKDF2',
-                    salt: salt,
-                    iterations: 100000,
-                    hash: 'SHA-256',
-                },
-                keyMaterial,
-                { name: 'AES-GCM', length: 256 },
-                false,
-                ['encrypt', 'decrypt']
-            );
-        }
-
-        async function encryptWallet(walletData, password) {
-            try {
-                const salt = window.crypto.getRandomValues(new Uint8Array(16));
-                const iv = window.crypto.getRandomValues(new Uint8Array(12));
-                const key = await deriveKey(password, salt);
-
-                const encoder = new TextEncoder();
-                const data = encoder.encode(JSON.stringify(walletData));
-
-                const encrypted = await window.crypto.subtle.encrypt(
-                    { name: 'AES-GCM', iv: iv },
-                    key,
-                    data
-                );
-
-                const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
-                combined.set(salt, 0);
-                combined.set(iv, salt.length);
-                combined.set(new Uint8Array(encrypted), salt.length + iv.length);
-
-                return btoa(String.fromCharCode(...combined));
-            } catch (err) {
-                showAlert('❌ Encryption failed: ' + err.message, 'danger');
-                return null;
-            }
-        }
-
-        async function decryptWallet(encryptedData, password) {
-            try {
-                const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
-                const salt = combined.slice(0, 16);
-                const iv = combined.slice(16, 28);
-                const encrypted = combined.slice(28);
-
-                const key = await deriveKey(password, salt);
-
-                const decrypted = await window.crypto.subtle.decrypt(
-                    { name: 'AES-GCM', iv: iv },
-                    key,
-                    encrypted
-                );
-
-                const decoder = new TextDecoder();
-                return JSON.parse(decoder.decode(decrypted));
-            } catch (err) {
-                showAlert('❌ Decryption failed: Invalid password', 'danger');
-                return null;
-            }
-        }
-
-        // ====== Screen Navigation ======
-        function showScreen(screenName) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.querySelector(`.${screenName}-screen`).classList.add('active');
-            currentScreen = screenName;
-        }
-
-        // Password setup flow
-        let pendingWalletAction = null;
-
-        document.getElementById('createWalletBtn').addEventListener('click', () => {
-            pendingWalletAction = 'create';
-            showScreen('password-setup');
-        });
-
-        document.getElementById('importWalletBtn').addEventListener('click', () => {
-            pendingWalletAction = 'import';
-            showScreen('password-setup');
-        });
-
-        document.getElementById('confirmPasswordBtn').addEventListener('click', async () => {
-            const password = document.getElementById('setupPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-
-            if (password.length < 8) {
-                showAlert('❌ Password must be at least 8 characters', 'danger');
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                showAlert('❌ Passwords do not match', 'danger');
-                return;
-            }
-
-            walletPassword = password;
-
-            if (pendingWalletAction === 'create') {
-                await createNewWallet();
-            } else if (pendingWalletAction === 'import') {
-                const seed = prompt('Enter your 12-word seed phrase (space-separated):');
-                if (seed) await importWallet(seed);
-            }
-
-            document.getElementById('setupPassword').value = '';
-            document.getElementById('confirmPassword').value = '';
-        });
-
-        document.getElementById('cancelPasswordBtn').addEventListener('click', () => {
-            showScreen('welcome');
-            document.getElementById('setupPassword').value = '';
-            document.getElementById('confirmPassword').value = '';
-        });
-
-        document.getElementById('sendBtn').addEventListener('click', () => showScreen('send'));
-        document.getElementById('receiveBtn').addEventListener('click', () => {
-            showScreen('receive');
-            generateQRCode();
-        });
-        document.getElementById('settingsBtn').addEventListener('click', () => showScreen('settings'));
-        document.getElementById('dashboardBtn').addEventListener('click', () => {
-            showScreen('dashboard');
-            closeMenuModal();
-        });
-
-        // ====== Wallet Functions ======
-        async function createNewWallet() {
-            try {
-                const response = await fetch(`${API_BASE}/api/wallet/hd/new`);
-                const data = await response.json();
-
-                if (data.mnemonic) {
-                    wallet = {
-                        address: data.address || 'pending',
-                        seed: data.mnemonic,
-                        createdAt: new Date().toISOString()
-                    };
-                    await saveWallet();
-                    isWalletUnlocked = true;
-                    showScreen('dashboard');
-                    updateBalance();
-                    showAlert('✅ Wallet created and password-protected!', 'success');
-                } else {
-                    showAlert('❌ Failed to create wallet', 'danger');
-                }
-            } catch (err) {
-                showAlert('❌ Network error: ' + err.message, 'danger');
-            }
-        }
-
-        async function importWallet(seedPhrase) {
-            try {
-                // For now, just create a new address (in production, derive from seed)
-                const response = await fetch(`${API_BASE}/api/wallet/new`);
-                const data = await response.json();
-
-                wallet = {
-                    address: data.address,
-                    seed: seedPhrase,
-                    createdAt: new Date().toISOString()
-                };
-                await saveWallet();
-                isWalletUnlocked = true;
-                showScreen('dashboard');
-                updateBalance();
-                showAlert('✅ Wallet imported and password-protected!', 'success');
-            } catch (err) {
-                showAlert('❌ Import failed: ' + err.message, 'danger');
-            }
-        }
-
-        async function saveWallet() {
-            if (!walletPassword) {
-                showAlert('❌ Password required', 'danger');
-                return;
-            }
-            const encrypted = await encryptWallet(wallet, walletPassword);
-            if (encrypted) {
-                localStorage.setItem(ENCRYPTED_KEY, encrypted);
-                localStorage.removeItem(STORAGE_KEY); // Remove unencrypted version
-            }
-        }
-
-        function loadWallet() {
-            const encrypted = localStorage.getItem(ENCRYPTED_KEY);
-            if (encrypted) {
-                showScreen('unlock');
-            } else {
-                const stored = localStorage.getItem(STORAGE_KEY);
-                if (stored) {
-                    wallet = JSON.parse(stored);
-                    showScreen('dashboard');
-                    updateBalance();
-                }
-            }
-        }
-
-        document.getElementById('unlockBtn').addEventListener('click', async () => {
-            const password = document.getElementById('unlockPassword').value;
-            if (!password) {
-                showAlert('❌ Enter your password', 'danger');
-                return;
-            }
-
-            const encrypted = localStorage.getItem(ENCRYPTED_KEY);
-            if (!encrypted) {
-                showAlert('❌ Wallet not found', 'danger');
-                return;
-            }
-
-            wallet = await decryptWallet(encrypted, password);
-            if (wallet) {
-                walletPassword = password;
-                isWalletUnlocked = true;
-                document.getElementById('unlockPassword').value = '';
-                showScreen('dashboard');
-                updateBalance();
-                showAlert('✅ Wallet unlocked!', 'success');
-            }
-        });
-
-        document.getElementById('resetWalletLink').addEventListener('click', (e) => {
-            e.preventDefault();
-            if (confirm('⚠️ This will delete your wallet permanently! Make sure you have a backup seed phrase.')) {
-                localStorage.removeItem(ENCRYPTED_KEY);
-                localStorage.removeItem(STORAGE_KEY);
-                wallet = null;
-                walletPassword = null;
-                isWalletUnlocked = false;
-                showScreen('welcome');
-                showAlert('✅ Wallet deleted', 'success');
-            }
-        });
-
-        async function updateBalance() {
-            if (!wallet) return;
-            try {
-                const response = await fetch(`${API_BASE}/api/wallet/balance?address=${wallet.address}`);
-                const data = await response.json();
-
-                if (data.status === 'success' || response.ok) {
-                    const balanceCoins = data.balance_coins || 0;
-                    document.getElementById('balanceAmount').textContent = balanceCoins.toFixed(2);
-                    document.getElementById('addressDisplay').textContent = wallet.address;
-                    document.getElementById('receiveAddress').textContent = wallet.address;
-                    document.getElementById('availableBalance').textContent = balanceCoins.toFixed(2) + ' MBITE';
-
-                    // Cache the balance for offline access
-                    localStorage.setItem('moonbite_balance_cache', JSON.stringify({
-                        balance_coins: balanceCoins,
-                        updated_at: Date.now(),
-                        is_stale: false,
-                    }));
-
-                    // Remove cached data badge
-                    const badge = document.querySelector('.cached-data-badge');
-                    if (badge) badge.remove();
-
-                    updateChainStatus();
-                } else {
-                    throw new Error('Invalid balance response');
-                }
-            } catch (err) {
-                console.error('Balance update failed:', err);
-                // Try to load from cache
-                const cached = localStorage.getItem('moonbite_balance_cache');
-                if (cached) {
-                    try {
-                        const cache = JSON.parse(cached);
-                        document.getElementById('balanceAmount').textContent = cache.balance_coins.toFixed(2);
-                        document.getElementById('availableBalance').textContent = cache.balance_coins.toFixed(2) + ' MBITE';
-
-                        // Add cached data badge if not already present
-                        const existing = document.querySelector('.cached-data-badge');
-                        if (!existing && document.getElementById('balanceAmount')) {
-                            const badge = document.createElement('span');
-                            badge.className = 'cached-data-badge';
-                            badge.textContent = 'Cached';
-                            document.getElementById('balanceAmount').parentElement.appendChild(badge);
-                        }
-                    } catch (e) {
-                        console.log('Could not load cached balance');
-                    }
-                }
-            }
-        }
-
-        async function updateChainStatus() {
-            try {
-                const response = await fetch(`${API_BASE}/api/blockchain/info`);
-                const data = await response.json();
-
-                if (data.status === 'success') {
-                    document.getElementById('chainHeight').textContent = data.height;
-                    document.getElementById('difficulty').textContent = data.bits + ' bits';
-                    document.getElementById('networkStatus').textContent = '● Online';
-                    document.getElementById('networkStatus').style.color = 'var(--success)';
-                }
-            } catch (err) {
-                document.getElementById('networkStatus').textContent = '● Offline';
-                document.getElementById('networkStatus').style.color = 'var(--danger)';
-            }
-        }
-
-        // ====== UI Handlers ======
-        document.getElementById('copyAddressBtn').addEventListener('click', () => {
-            navigator.clipboard.writeText(wallet.address);
-            showAlert('✅ Address copied!', 'success');
-        });
-
-        document.getElementById('copyReceiveBtn').addEventListener('click', () => {
-            navigator.clipboard.writeText(wallet.address);
-            showAlert('✅ Address copied!', 'success');
-        });
-
-        document.getElementById('confirmSendBtn').addEventListener('click', async () => {
-            // Check blockchain health before sending
-            if (!blockchainMonitor.isHealthy()) {
-                showAlert('❌ Blockchain is offline or syncing. Please wait and try again.', 'danger');
-                return;
-            }
-
-            const recipient = document.getElementById('recipientAddr').value;
-            const amount = parseFloat(document.getElementById('sendAmount').value);
-
-            if (!recipient || !amount || amount <= 0) {
-                showAlert('❌ Invalid recipient or amount', 'danger');
-                return;
-            }
-
-            showAlert('⏳ Sending...', 'info');
-            // TODO: Implement actual transaction sending
-            showAlert('✅ Transaction submitted!', 'success');
-        });
-
-        document.getElementById('viewSeedBtn').addEventListener('click', () => {
-            document.getElementById('seedDisplay').value = wallet.seed;
-            document.getElementById('seedModal').classList.add('active');
-        });
-
-        document.getElementById('copySeedBtn').addEventListener('click', () => {
-            navigator.clipboard.writeText(wallet.seed);
-            showAlert('✅ Seed copied!', 'success');
-        });
-
-        document.getElementById('changeAddressBtn').addEventListener('click', createNewWallet);
-
-        document.getElementById('changePasswordBtn').addEventListener('click', () => {
-            document.getElementById('passwordModal').classList.add('active');
-        });
-
-        document.getElementById('changePasswordConfirmBtn').addEventListener('click', async () => {
-            const current = document.getElementById('currentPassword').value;
-            const newPass = document.getElementById('newPassword').value;
-            const confirm = document.getElementById('confirmNewPassword').value;
-
-            if (!current || !newPass || !confirm) {
-                showAlert('❌ Fill all fields', 'danger');
-                return;
-            }
-
-            if (current !== walletPassword) {
-                showAlert('❌ Current password is incorrect', 'danger');
-                return;
-            }
-
-            if (newPass.length < 8) {
-                showAlert('❌ New password must be at least 8 characters', 'danger');
-                return;
-            }
-
-            if (newPass !== confirm) {
-                showAlert('❌ Passwords do not match', 'danger');
-                return;
-            }
-
-            walletPassword = newPass;
-            await saveWallet();
-            document.getElementById('currentPassword').value = '';
-            document.getElementById('newPassword').value = '';
-            document.getElementById('confirmNewPassword').value = '';
-            document.getElementById('passwordModal').classList.remove('active');
-            showAlert('✅ Password changed successfully!', 'success');
-        });
-
-        document.getElementById('closePasswordModalBtn').addEventListener('click', () => {
-            document.getElementById('passwordModal').classList.remove('active');
-        });
-
-        document.getElementById('resetWalletBtn').addEventListener('click', () => {
-            if (confirm('⚠️ This will permanently delete your wallet! Make sure you have a backup seed phrase.')) {
-                localStorage.removeItem(STORAGE_KEY);
-                localStorage.removeItem(ENCRYPTED_KEY);
-                wallet = null;
-                walletPassword = null;
-                isWalletUnlocked = false;
-                showScreen('welcome');
-                showAlert('✅ Wallet deleted', 'success');
-            }
-        });
-
-        document.getElementById('menuBtn').addEventListener('click', () => {
-            document.getElementById('menuModal').classList.add('active');
-        });
-
-        document.getElementById('closeMenuBtn').addEventListener('click', closeMenuModal);
-        document.getElementById('closeSeedBtn').addEventListener('click', () => {
-            document.getElementById('seedModal').classList.remove('active');
-        });
-
-        document.getElementById('themeToggle').addEventListener('click', () => {
-            const currentScheme = document.documentElement.style.colorScheme;
-            const newScheme = currentScheme === 'dark' ? 'light' : currentScheme === 'light' ? 'auto' : 'dark';
-            settingsManager.update({ theme: newScheme });
-        });
-
-        // ====== Settings Modal Event Listeners ======
-        document.getElementById('settingsBtn').addEventListener('click', () => {
-            settingsManager.updateUI();
-            document.getElementById('settingsModal').classList.add('active');
-        });
-
-        document.getElementById('settingsMenuBtn').addEventListener('click', () => {
-            settingsManager.updateUI();
-            document.getElementById('menuModal').classList.remove('active');
-            document.getElementById('settingsModal').classList.add('active');
-        });
-
-        document.getElementById('closeSettingsBtn').addEventListener('click', () => {
-            document.getElementById('settingsModal').classList.remove('active');
-        });
-
-        // Settings tab switching
-        document.querySelectorAll('.settings-tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const tabName = e.target.dataset.tab;
-
-                // Hide all tabs
-                document.querySelectorAll('.settings-tab').forEach(tab => {
-                    tab.style.display = 'none';
-                    tab.classList.remove('active');
-                });
-
-                // Remove active from all buttons
-                document.querySelectorAll('.settings-tab-btn').forEach(b => {
-                    b.classList.remove('active');
-                });
-
-                // Show selected tab
-                const tabElement = document.getElementById(`${tabName}-tab`);
-                if (tabElement) {
-                    tabElement.style.display = 'block';
-                    tabElement.classList.add('active');
-                }
-                e.target.classList.add('active');
+        // Premium interactions
+        document.querySelectorAll('.action-btn, .nav-item, .transaction-item').forEach(el => {
+            el.addEventListener('click', function() {
+                // Visual feedback
+                this.style.opacity = '0.7';
+                setTimeout(() => this.style.opacity = '1', 150);
             });
         });
 
-        // Settings change handlers
-        document.getElementById('languageSetting').addEventListener('change', (e) => {
-            settingsManager.update({ language: e.target.value });
+        // Time filter toggle
+        document.querySelectorAll('.time-filter').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.time-filter').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
         });
 
-        document.getElementById('themeSetting').addEventListener('change', (e) => {
-            settingsManager.update({ theme: e.target.value });
-        });
-
-        document.getElementById('currencySetting').addEventListener('change', (e) => {
-            settingsManager.update({ currency: e.target.value });
-        });
-
-        document.getElementById('decimalPlacesSetting').addEventListener('change', (e) => {
-            settingsManager.update({ decimal_places: parseInt(e.target.value) });
-        });
-
-        document.getElementById('amountFormatSetting').addEventListener('change', (e) => {
-            settingsManager.update({ amount_format: e.target.value });
-        });
-
-        document.getElementById('timeFormatSetting').addEventListener('change', (e) => {
-            settingsManager.update({ time_format: e.target.value });
-        });
-
-        document.getElementById('hideZeroBalanceSetting').addEventListener('change', (e) => {
-            settingsManager.update({ hide_zero_balance: e.target.checked ? 1 : 0 });
-        });
-
-        document.getElementById('sortAccountsSetting').addEventListener('change', (e) => {
-            settingsManager.update({ sort_accounts: e.target.value });
-        });
-
-        document.getElementById('autoLockSetting').addEventListener('change', (e) => {
-            settingsManager.update({ auto_lock_mins: parseInt(e.target.value) });
-        });
-
-        document.getElementById('notificationTxSetting').addEventListener('change', (e) => {
-            settingsManager.update({ notification_tx: e.target.checked ? 1 : 0 });
-        });
-
-        document.getElementById('notificationPriceSetting').addEventListener('change', (e) => {
-            settingsManager.update({ notification_price: e.target.checked ? 1 : 0 });
-        });
-
-        document.getElementById('resetSettingsBtn').addEventListener('click', async () => {
-            if (confirm('Reset all settings to defaults? This cannot be undone.')) {
-                const success = await settingsManager.reset();
-                if (success) {
-                    showAlert('✅ Settings reset to defaults', 'success');
-                } else {
-                    showAlert('❌ Failed to reset settings', 'danger');
-                }
-            }
-        });
-
-        document.getElementById('resetWalletSettingBtn').addEventListener('click', () => {
-            if (confirm('⚠️ This will permanently delete your wallet! Make sure you have a backup seed phrase.')) {
-                localStorage.removeItem(STORAGE_KEY);
-                localStorage.removeItem(ENCRYPTED_KEY);
-                wallet = null;
-                walletPassword = null;
-                isWalletUnlocked = false;
-                document.getElementById('settingsModal').classList.remove('active');
-                showScreen('welcome');
-                showAlert('✅ Wallet deleted', 'success');
-            }
-        });
-
-        document.getElementById('exportSeedSettingBtn').addEventListener('click', () => {
-            if (wallet && wallet.seed) {
-                document.getElementById('seedDisplay').value = wallet.seed;
-                document.getElementById('settingsModal').classList.remove('active');
-                document.getElementById('seedModal').classList.add('active');
-            } else {
-                showAlert('❌ Wallet seed not available', 'danger');
-            }
-        });
-
-        document.getElementById('privacyPolicyLink').addEventListener('click', (e) => {
-            e.preventDefault();
-            showAlert('📋 Privacy Policy: Your data is encrypted locally. We do not collect personal information.', 'info');
-        });
-
-        function closeMenuModal() {
-            document.getElementById('menuModal').classList.remove('active');
-        }
-
-        function showAlert(message, type = 'info') {
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.textContent = message;
-            document.querySelector('.app-main').insertBefore(alert, document.querySelector('.screen.active'));
-            setTimeout(() => alert.remove(), 3000);
-        }
-
-        // ====== QR Code Generation ======
-        function generateQRCode() {
-            const canvas = document.getElementById('qrCanvas');
-            if (!canvas) return;
-            // Simple placeholder for QR code - use qrcode.js library in production
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, 200, 200);
-            ctx.fillStyle = '#000000';
-            ctx.font = '10px monospace';
-            ctx.fillText(wallet.address.substring(0, 20), 10, 100);
-            ctx.fillText('...', 10, 115);
-        }
-
-        // ====== Connection Indicator and Offline Mode ======
-        document.getElementById('connectionIndicator').addEventListener('click', () => {
-            const tooltip = document.getElementById('statusTooltip');
-            tooltip.classList.toggle('visible');
-        });
-
-        document.getElementById('closeOfflineWarning').addEventListener('click', (e) => {
-            e.target.closest('.offline-warning').classList.remove('visible');
-        });
-
-        // ====== Initialization ======
-        (async () => {
-            // Load settings and preferences first
-            await settingsManager.load();
-
-            // Start blockchain monitor for offline detection
-            blockchainMonitor = new BlockchainMonitor(30000); // Poll every 30 seconds
-            blockchainMonitor.start();
-        })();
-
-        // ====== Price Ticker Manager ======
-        class PriceTickerManager {
-            constructor() {
-                this.CACHE_KEY = 'moonbite_price_cache';
-                this.CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-                this.priceData = null;
-                this.lastUpdate = 0;
-            }
-
-            async fetchPrice() {
-                try {
-                    const cached = this.getCache();
-                    if (cached && (Date.now() - this.lastUpdate) < this.CACHE_TTL) {
-                        return cached;
-                    }
-
-                    const response = await fetch('/api/price/mbite');
-                    if (!response.ok) throw new Error('Price fetch failed');
-
-                    const json = await response.json();
-                    if (json.status === 'success') {
-                        this.priceData = json.data;
-                        this.lastUpdate = Date.now();
-                        localStorage.setItem(this.CACHE_KEY, JSON.stringify({
-                            data: this.priceData,
-                            timestamp: this.lastUpdate
-                        }));
-                        return this.priceData;
-                    }
-                } catch (e) {
-                    console.log('[PriceTickerManager] Error:', e);
-                    return this.getCache();
-                }
-            }
-
-            getCache() {
-                try {
-                    const cached = localStorage.getItem(this.CACHE_KEY);
-                    return cached ? JSON.parse(cached).data : null;
-                } catch (e) {
-                    return null;
-                }
-            }
-
-            async showDetails() {
-                const price = await this.fetchPrice();
-                if (!price) {
-                    showAlert('❌ Could not fetch price data', 'danger');
-                    return;
-                }
-
-                document.getElementById('tickerPrice').textContent = `$${price.price_usd.toFixed(2)}`;
-                document.getElementById('ticker24hChange').textContent = `${price.change_24h > 0 ? '+' : ''}${price.change_24h.toFixed(2)}%`;
-                document.getElementById('ticker24hChange').style.color = price.change_24h > 0 ? 'var(--success)' : 'var(--danger)';
-                document.getElementById('tickerTrend').textContent = price.change_24h > 0 ? '📈' : '📉';
-                document.getElementById('tickerHigh24h').textContent = `$${price.high_24h.toFixed(2)}`;
-                document.getElementById('tickerLow24h').textContent = `$${price.low_24h.toFixed(2)}`;
-
-                const vol = price.volume_24h / 1000000;
-                document.getElementById('tickerVolume24h').textContent = `$${vol.toFixed(1)}M`;
-
-                // Try to load price history chart
-                await this.loadPriceChart();
-
-                document.getElementById('priceTickerModal').classList.add('active');
-            }
-
-            async loadPriceChart() {
-                try {
-                    const response = await fetch('/api/price/mbite/history?hours=24');
-                    if (!response.ok) return;
-
-                    const json = await response.json();
-                    if (json.status === 'success' && json.data.prices.length > 0) {
-                        this.drawChart(json.data.prices);
-                    }
-                } catch (e) {
-                    console.log('[PriceTickerManager] Could not load chart:', e);
-                }
-            }
-
-            drawChart(prices) {
-                const canvas = document.getElementById('priceChart');
-                if (!canvas || !prices || prices.length < 2) return;
-
-                canvas.style.display = 'block';
-                const ctx = canvas.getContext('2d');
-
-                // Simple line chart
-                const padding = 30;
-                const width = canvas.width - 2 * padding;
-                const height = canvas.height - 2 * padding;
-
-                const minPrice = Math.min(...prices.map(p => p.price_usd));
-                const maxPrice = Math.max(...prices.map(p => p.price_usd));
-                const range = maxPrice - minPrice || 1;
-
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.strokeStyle = 'var(--primary)';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-
-                prices.forEach((p, i) => {
-                    const x = padding + (i / (prices.length - 1)) * width;
-                    const y = canvas.height - padding - ((p.price_usd - minPrice) / range) * height;
-                    if (i === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                });
-
-                ctx.stroke();
-            }
-        }
-
-        const priceTickerManager = new PriceTickerManager();
-
-        // ====== Transaction Search Manager ======
-        class TransactionSearchManager {
-            async search() {
-                const query = document.getElementById('searchQuery').value;
-                const status = document.getElementById('searchStatus').value;
-                const direction = document.getElementById('searchDirection').value;
-                const amountMin = document.getElementById('searchAmountMin').value;
-                const amountMax = document.getElementById('searchAmountMax').value;
-                const dateFrom = document.getElementById('searchDateFrom').value;
-                const dateTo = document.getElementById('searchDateTo').value;
-
-                try {
-                    const params = new URLSearchParams();
-                    if (query) params.append('q', query);
-                    if (status) params.append('status', status);
-                    if (direction) params.append('direction', direction);
-                    if (amountMin) params.append('amount_min', parseInt(amountMin * 100));
-                    if (amountMax) params.append('amount_max', parseInt(amountMax * 100));
-                    if (dateFrom) params.append('date_from', Math.floor(new Date(dateFrom).getTime() / 1000));
-                    if (dateTo) params.append('date_to', Math.floor(new Date(dateTo).getTime() / 1000));
-
-                    const response = await fetch(`/api/wallet/transactions/search?${params}`);
-                    if (!response.ok) throw new Error('Search failed');
-
-                    const json = await response.json();
-                    if (json.status === 'success') {
-                        this.displayResults(json.data.transactions, json.data.total);
-                    }
-                } catch (e) {
-                    showAlert(`❌ Search error: ${e.message}`, 'danger');
-                }
-            }
-
-            displayResults(transactions, total) {
-                document.getElementById('searchResultCount').textContent = total;
-                const resultsDiv = document.getElementById('searchResults');
-
-                if (!transactions || transactions.length === 0) {
-                    resultsDiv.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">No transactions found</p>';
-                    return;
-                }
-
-                resultsDiv.innerHTML = transactions.map(tx => `
-                    <div style="padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <span style="font-weight: 500;">${tx.direction === 'send' ? '📤' : '📥'} ${tx.direction === 'send' ? 'Sent' : 'Received'}</span>
-                            <span style="color: ${tx.direction === 'send' ? 'var(--danger)' : 'var(--success)'};">${tx.direction === 'send' ? '-' : '+'}${(tx.amount_units / 100).toFixed(8)} MBITE</span>
-                        </div>
-                        <div style="color: var(--text-secondary); font-size: 12px; word-break: break-all;">${tx.txid.substring(0, 16)}...</div>
-                        <div style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
-                            Status: <span style="color: ${tx.status === 'confirmed' ? 'var(--success)' : tx.status === 'pending' ? 'var(--warning)' : 'var(--danger)'};">${tx.status}</span>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            clearFilters() {
-                document.getElementById('searchQuery').value = '';
-                document.getElementById('searchStatus').value = '';
-                document.getElementById('searchDirection').value = '';
-                document.getElementById('searchAmountMin').value = '';
-                document.getElementById('searchAmountMax').value = '';
-                document.getElementById('searchDateFrom').value = '';
-                document.getElementById('searchDateTo').value = '';
-                document.getElementById('searchResults').innerHTML = '<p style="color: var(--text-secondary); text-align: center;">No results yet</p>';
-                document.getElementById('searchResultCount').textContent = '0';
-            }
-        }
-
-        const transactionSearchManager = new TransactionSearchManager();
-
-        // ====== Event Listeners for New Features ======
-
-        // Price Ticker Modal
-        document.getElementById('closePriceBtn').addEventListener('click', () => {
-            document.getElementById('priceTickerModal').classList.remove('active');
-        });
-
-        // Transaction Search Modal
-        document.getElementById('applySearchBtn').addEventListener('click', () => {
-            transactionSearchManager.search();
-        });
-
-        document.getElementById('clearSearchBtn').addEventListener('click', () => {
-            transactionSearchManager.clearFilters();
-        });
-
-        document.getElementById('closeSearchBtn').addEventListener('click', () => {
-            document.getElementById('transactionSearchModal').classList.remove('active');
-        });
-
-        // Export Modal
-        document.getElementById('confirmExportBtn').addEventListener('click', async () => {
-            const format = document.getElementById('exportFormat').value;
-            const dateFrom = document.getElementById('exportDateFrom').value;
-            const dateTo = document.getElementById('exportDateTo').value;
-            const includeFees = document.getElementById('exportIncludeFees').checked;
-            const includeMemo = document.getElementById('exportIncludeMemo').checked;
-
-            try {
-                const params = new URLSearchParams({
-                    format: format,
-                    include_fees: includeFees,
-                    include_memo: includeMemo,
-                });
-                if (dateFrom) params.append('date_from', Math.floor(new Date(dateFrom).getTime() / 1000));
-                if (dateTo) params.append('date_to', Math.floor(new Date(dateTo).getTime() / 1000));
-
-                const response = await fetch(`/api/wallet/transactions/export?${params}`);
-                if (!response.ok) throw new Error('Export failed');
-
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `transactions_${new Date().toISOString().split('T')[0]}.${format}`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-
-                showAlert('✅ Transactions exported successfully', 'success');
-                document.getElementById('exportModal').classList.remove('active');
-            } catch (e) {
-                showAlert(`❌ Export error: ${e.message}`, 'danger');
-            }
-        });
-
-        document.getElementById('closeExportBtn').addEventListener('click', () => {
-            document.getElementById('exportModal').classList.remove('active');
-        });
-
-        // Add buttons to dashboard when it loads
-        const originalShowScreen = window.showScreen;
-        window.showScreen = function(screenName) {
-            originalShowScreen(screenName);
-            if (screenName === 'dashboard') {
-                // Add price ticker and search/export buttons to dashboard
-                const btnRow = document.querySelector('.btn-row');
-                if (btnRow && !document.getElementById('priceTickerBtn')) {
-                    const priceBtn = document.createElement('button');
-                    priceBtn.id = 'priceTickerBtn';
-                    priceBtn.className = 'btn btn-secondary btn-small';
-                    priceBtn.textContent = '💰 Price';
-                    priceBtn.addEventListener('click', () => priceTickerManager.showDetails());
-                    btnRow.appendChild(priceBtn);
-
-                    const searchBtn = document.createElement('button');
-                    searchBtn.id = 'searchBtn';
-                    searchBtn.className = 'btn btn-secondary btn-small';
-                    searchBtn.textContent = '🔍 Search';
-                    searchBtn.addEventListener('click', () => {
-                        document.getElementById('transactionSearchModal').classList.add('active');
-                    });
-                    btnRow.appendChild(searchBtn);
-
-                    const exportBtn = document.createElement('button');
-                    exportBtn.id = 'exportBtn';
-                    exportBtn.className = 'btn btn-secondary btn-small';
-                    exportBtn.textContent = '📥 Export';
-                    exportBtn.addEventListener('click', () => {
-                        document.getElementById('exportModal').classList.add('active');
-                    });
-                    btnRow.appendChild(exportBtn);
-                }
-            }
-        };
-
-        // Load wallet and set up balance refresh
-        loadWallet();
-        setInterval(updateBalance, 10000); // Refresh every 10 seconds
-
-        // Periodically update price (every 5 minutes)
-        setInterval(() => priceTickerManager.fetchPrice(), 5 * 60 * 1000);
-
-        // Load cached blockchain status if available
-        const cachedStatus = localStorage.getItem('moonbite_blockchain_status');
-        if (cachedStatus) {
-            try {
-                const cached = JSON.parse(cachedStatus);
-                blockchainStatus = {
-                    is_synced: cached.is_synced,
-                    current_height: cached.current_height,
-                    sync_percentage: cached.sync_percentage,
-                    last_block_time: cached.last_block_time,
-                    blockchain_healthy: cached.blockchain_healthy,
-                };
-                blockchainMonitor.updateUI();
-            } catch (e) {
-                console.log('[Wallet] Could not load cached blockchain status');
-            }
-        }
-
-        // Set up auto-lock timer based on preferences
-        let autoLockTimer = null;
-        const AUTO_LOCK_TIMEOUT = settingsManager.get('auto_lock_mins') * 60 * 1000;
-
-        if (AUTO_LOCK_TIMEOUT > 0) {
-            const resetAutoLock = () => {
-                clearTimeout(autoLockTimer);
-                autoLockTimer = setTimeout(() => {
-                    if (isWalletUnlocked) {
-                        isWalletUnlocked = false;
-                        walletPassword = null;
-                        showScreen('unlock');
-                        showAlert('🔒 Wallet auto-locked due to inactivity', 'warning');
-                    }
-                }, AUTO_LOCK_TIMEOUT);
-            };
-
-            // Reset auto-lock timer on user activity
-            document.addEventListener('click', resetAutoLock);
-            document.addEventListener('keypress', resetAutoLock);
-            document.addEventListener('touchstart', resetAutoLock);
-
-            resetAutoLock(); // Start the timer
-        }
-
-        // ====== Biometric Authentication ======
-
-        const biometricAuth = new BiometricAuth('/api/auth/biometric');
-
-        async function initializeBiometric() {
-            if (!biometricAuth.isSupported) {
-                console.log('[Biometric] Browser does not support WebAuthn');
-                return;
-            }
-
-            // Check if biometric is available for this session
-            const status = await biometricAuth.isAvailable();
-            if (status.device_support) {
-                document.getElementById('biometricSettingsSection').style.display = 'block';
-                if (status.user_enabled) {
-                    document.getElementById('biometricUnlockOption').style.display = 'block';
-                    document.getElementById('setupBiometricSettingBtn').style.display = 'none';
-                    document.getElementById('disableBiometricBtn').style.display = 'block';
-                    document.getElementById('biometricStatusDiv').style.display = 'block';
-                    if (status.device_name) {
-                        document.getElementById('biometricDeviceNameSpan').textContent = status.device_name;
-                    }
-                } else {
-                    document.getElementById('setupBiometricSettingBtn').style.display = 'block';
-                    document.getElementById('disableBiometricBtn').style.display = 'none';
-                }
-            }
-
-            // Show biometric setup option on password setup screen
-            if (biometricAuth.isSupported) {
-                document.getElementById('biometricSetupOption').style.display = 'block';
-            }
-        }
-
-        // Setup biometric on password confirmation
-        document.getElementById('setupBiometricBtn').addEventListener('click', async () => {
-            if (!isWalletUnlocked) {
-                showAlert('❌ Please set your password first', 'danger');
-                return;
-            }
-            showBiometricModal();
-        });
-
-        // Setup biometric from settings
-        document.getElementById('setupBiometricSettingBtn').addEventListener('click', () => {
-            showBiometricModal();
-        });
-
-        // Unlock with biometric
-        document.getElementById('unlockWithBiometricBtn').addEventListener('click', async () => {
-            try {
-                document.getElementById('unlockWithBiometricBtn').disabled = true;
-                document.getElementById('unlockWithBiometricBtn').textContent = '🔄 Authenticating...';
-
-                const result = await biometricAuth.authenticate();
-                if (result.status === 'success') {
-                    isWalletUnlocked = true;
-                    showScreen('dashboard');
-                    showAlert('✅ Wallet unlocked with biometric', 'success');
-                    updateBalance();
-                } else {
-                    showAlert('❌ Biometric verification failed', 'danger');
-                }
-            } catch (error) {
-                console.error('[Biometric] Authentication error:', error);
-                if (error.message.includes('not recognised') || error.message.includes('cancelled')) {
-                    showAlert('❌ Fingerprint/face not recognized. Try again or use password.', 'danger');
-                } else if (error.message.includes('timeout')) {
-                    showAlert('⏱️ Biometric verification timed out. Please try again.', 'warning');
-                } else {
-                    showAlert(`❌ ${error.message}`, 'danger');
-                }
-            } finally {
-                document.getElementById('unlockWithBiometricBtn').disabled = false;
-                document.getElementById('unlockWithBiometricBtn').textContent = '👆 Unlock with Biometric';
-            }
-        });
-
-        // Disable biometric
-        document.getElementById('disableBiometricBtn').addEventListener('click', async () => {
-            if (!confirm('Disable biometric authentication?')) {
-                return;
-            }
-
-            try {
-                await biometricAuth.disable();
-                document.getElementById('biometricUnlockOption').style.display = 'none';
-                document.getElementById('biometricStatusDiv').style.display = 'none';
-                document.getElementById('setupBiometricSettingBtn').style.display = 'block';
-                document.getElementById('disableBiometricBtn').style.display = 'none';
-                showAlert('✅ Biometric authentication disabled', 'success');
-            } catch (error) {
-                console.error('[Biometric] Error disabling:', error);
-                showAlert(`❌ ${error.message}`, 'danger');
-            }
-        });
-
-        function showBiometricModal() {
-            if (!biometricAuth.isSupported) {
-                showAlert('Your device does not support biometric authentication', 'danger');
-                return;
-            }
-
-            document.getElementById('biometricModal').classList.add('active');
-            document.getElementById('biometricSetupStep').style.display = 'block';
-            document.getElementById('biometricProgressStep').style.display = 'none';
-            document.getElementById('biometricSuccessStep').style.display = 'none';
-            document.getElementById('biometricErrorStep').style.display = 'none';
-        }
-
-        document.getElementById('startBiometricRegistrationBtn').addEventListener('click', async () => {
-            const deviceName = document.getElementById('biometricDeviceName').value.trim() || 'My Device';
-
-            try {
-                document.getElementById('biometricSetupStep').style.display = 'none';
-                document.getElementById('biometricProgressStep').style.display = 'block';
-
-                const userId = `user_${Math.random().toString(36).substr(2, 9)}`;
-                const result = await biometricAuth.register(userId, deviceName);
-
-                document.getElementById('biometricProgressStep').style.display = 'none';
-                document.getElementById('biometricSuccessStep').style.display = 'block';
-
-                // Update UI to reflect enabled biometric
-                document.getElementById('biometricUnlockOption').style.display = 'block';
-                document.getElementById('biometricStatusDiv').style.display = 'block';
-                document.getElementById('biometricDeviceNameSpan').textContent = deviceName;
-            } catch (error) {
-                console.error('[Biometric] Registration error:', error);
-                document.getElementById('biometricProgressStep').style.display = 'none';
-                document.getElementById('biometricErrorStep').style.display = 'block';
-                document.getElementById('biometricErrorMessage').textContent = error.message || 'Registration failed. Please try again.';
-            }
-        });
-
-        document.getElementById('cancelBiometricBtn').addEventListener('click', () => {
-            document.getElementById('biometricModal').classList.remove('active');
-        });
-
-        document.getElementById('closeBiometricModalBtn').addEventListener('click', () => {
-            document.getElementById('biometricModal').classList.remove('active');
-            document.getElementById('biometricDeviceName').value = '';
-        });
-
-        document.getElementById('closeBiometricErrorBtn').addEventListener('click', () => {
-            document.getElementById('biometricErrorStep').style.display = 'none';
-            document.getElementById('biometricSetupStep').style.display = 'block';
-        });
-
-        document.getElementById('retryBiometricBtn').addEventListener('click', () => {
-            document.getElementById('biometricErrorStep').style.display = 'none';
-            document.getElementById('biometricSetupStep').style.display = 'block';
-        });
-
-        // Initialize biometric on page load
-        initializeBiometric();
+        // Smooth animations on load
+        setTimeout(() => {
+            document.querySelectorAll('.transaction-item').forEach((item, i) => {
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                    item.style.transition = 'all 0.4s ease';
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateY(0)';
+                }, i * 100);
+            });
+        }, 300);
+
+        console.log('🌙 MoonBite Premium Wallet loaded - Synced and ready');
     </script>
 </body>
 </html>
