@@ -1,0 +1,55 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to server
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          SERVER_HOST: 67.205.154.64
+          SERVER_USER: root
+          PROJECT_PATH: /opt/moonbite-dashboard
+        run: |
+          # Create SSH directory
+          mkdir -p ~/.ssh
+
+          # Add server to known hosts (prevent authenticity prompt)
+          ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts 2>/dev/null
+
+          # Save the private key
+          echo "$DEPLOY_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          # SSH and execute deployment commands
+          ssh -i ~/.ssh/deploy_key $SERVER_USER@$SERVER_HOST << 'EOF'
+          set -e
+
+          echo "📍 Navigating to project..."
+          cd ${{ env.PROJECT_PATH }}
+
+          echo "📥 Pulling latest code from GitHub..."
+          git fetch origin
+          git reset --hard origin/main
+
+          echo "🔄 Restarting Flask service..."
+          sudo systemctl restart moonbite-dashboard
+
+          echo "✅ Checking service status..."
+          sudo systemctl status moonbite-dashboard
+
+          echo "🚀 Deployment complete!"
+          EOF
+
+      - name: Deployment successful
+        run: |
+          echo "✅ Successfully deployed to https://moonbite.org"
