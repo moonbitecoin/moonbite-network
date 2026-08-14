@@ -245,22 +245,6 @@
             transform: translateX(-100%) !important;
         }
 
-        /* PIN Setup Screen - Sticky overlay on top of all screens */
-        #pinSetupScreen {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            z-index: 999 !important;
-            display: flex !important;
-            opacity: 1 !important;
-            transform: translateX(0) !important;
-            visibility: visible !important;
-            pointer-events: auto !important;
-            background: var(--bg-primary);
-        }
-
         /* Bottom navigation */
         .bottom-nav {
             position: fixed;
@@ -2044,11 +2028,6 @@
 
         // Screen navigation
         function showScreen(screenId) {
-            // PIN setup screen is always sticky - do not hide it
-            if (screenId === 'pinSetupScreen') {
-                return;
-            }
-
             // Update confirmation screen with actual user input
             if (screenId === 'confirmSendScreen') {
                 const recipient = document.getElementById('sendRecipient')?.value || '-';
@@ -2060,8 +2039,7 @@
             const currentScreenEl = document.getElementById(currentScreen);
             const newScreenEl = document.getElementById(screenId);
 
-            // Don't remove active from PIN setup screen - keep it sticky
-            if (currentScreenEl && currentScreen !== 'pinSetupScreen') {
+            if (currentScreenEl) {
                 currentScreenEl.classList.remove('active');
             }
             if (newScreenEl) {
