@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#1a4d7a">
+    <meta name="description" content="MoonBite Wallet - Secure cryptocurrency wallet for MBITE tokens">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MoonBite">
+    <meta name="application-name" content="MoonBite Wallet">
+    <link rel="manifest" href="/wallet-manifest.json">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%231a4d7a' width='180' height='180'/><circle cx='90' cy='90' r='60' fill='%23ff6b35' opacity='0.3'/><path d='M90 40 Q110 60 110 90 Q110 120 90 140 Q70 120 70 90 Q70 60 90 40' fill='%23ffd700'/></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231a4d7a' width='100' height='100' rx='20'/><circle cx='50' cy='50' r='40' fill='%23ff6b35' opacity='0.3'/><path d='M50 20 Q65 35 65 50 Q65 65 50 80 Q35 65 35 50 Q35 35 50 20' fill='%23ffd700'/></svg>">
+    <title>MoonBite Wallet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --moon-blue: #1a4d7a;
+            --fire-orange: #ff6b35;
+            --gold: #ffd700;
+            --dark-bg: #0f1419;
+            --card-bg: #1a2332;
+            --border-color: #2a3d5a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --success: #4ade80;
+            --danger: #ff4444;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(180deg, var(--dark-bg) 0%, #1a2a3a 100%);
+            color: var(--text-primary);
+            overflow: hidden;
+            position: fixed;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            max-width: 428px;
+            margin: 0 auto;
+            background: var(--dark-bg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Top bar */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px var(--spacing-md);
+            background: rgba(26, 77, 122, 0.1);
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--gold);
+            font-size: 24px;
+            cursor: pointer;
+            padding: var(--spacing-xs);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn.hidden {
+            visibility: hidden;
+        }
+
+        .top-bar-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .top-bar-right {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--fire-orange);
+            font-size: 20px;
+            cursor: pointer;
+            padding: var(--spacing-xs);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Main content area */
+        .screens-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            padding-bottom: 80px;
+        }
+
+        .screen.active {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+            z-index: 10;
+        }
+
+        .screen.prev {
+            transform: translateX(-100%);
+        }
+
+        /* Bottom navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 428px;
+            margin: 0 auto;
+            background: rgba(26, 77, 122, 0.15);
+            border-top: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-around;
+            padding: var(--spacing-sm) 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px var(--spacing-sm);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 12px;
+            transition: color 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-item.active {
+            color: var(--gold);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        /* Screens styling */
+        .screen-header {
+            padding: var(--spacing-lg) var(--spacing-md);
+            text-align: center;
+            background: linear-gradient(135deg, rgba(26, 77, 122, 0.2), rgba(255, 107, 53, 0.1));
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .screen-header h1 {
+            font-size: 28px;
+            color: var(--gold);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .screen-header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .screen-content {
+            flex: 1;
+            padding: var(--spacing-lg) var(--spacing-md);
+            overflow-y: auto;
+        }
+
+        /* Cards */
+        .card {
+            background: linear-gradient(135deg, rgba(26, 77, 122, 0.15), rgba(255, 107, 53, 0.05));
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-sm);
+            font-weight: 500;
+        }
+
+        .card-value {
+            font-size: 24px;
+            color: var(--gold);
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px var(--spacing-md);
+            background: rgba(26, 77, 122, 0.1);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--fire-orange);
+            background: rgba(26, 77, 122, 0.15);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px var(--spacing-md);
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--fire-orange), #ff8c42);
+            color: white;
+            width: 100%;
+            margin-top: var(--spacing-md);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: rgba(26, 77, 122, 0.2);
+            color: var(--gold);
+            border: 1px solid var(--fire-orange);
+            width: 100%;
+            margin-top: var(--spacing-sm);
+        }
+
+        .btn-small {
+            padding: 8px var(--spacing-md);
+            font-size: 12px;
+            width: auto;
+        }
+
+        /* Wallet address display */
+        .address-display {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--gold);
+            border-radius: 8px;
+            padding: var(--spacing-md);
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            color: var(--gold);
+            word-break: break-all;
+            margin: var(--spacing-md) 0;
+        }
+
+        /* QR Code */
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.2), rgba(255, 215, 0, 0.2));
+            border: 2px solid var(--fire-orange);
+            border-radius: 12px;
+            margin: var(--spacing-lg) auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 48px;
+        }
+
+        /* Toggles */
+        .toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-md) 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .toggle-switch {
+            width: 50px;
+            height: 28px;
+            background: rgba(26, 77, 122, 0.3);
+            border: 2px solid var(--border-color);
+            border-radius: 14px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: linear-gradient(135deg, var(--fire-orange), #ff8c42);
+            border-color: var(--fire-orange);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 12px;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            left: 22px;
+        }
+
+        /* Seed phrase grid */
+        .seed-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+            margin: var(--spacing-md) 0;
+        }
+
+        .seed-item {
+            background: rgba(26, 77, 122, 0.1);
+            border: 1px solid var(--fire-orange);
+            border-radius: 8px;
+            padding: var(--spacing-md);
+            text-align: center;
+        }
+
+        .seed-number {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .seed-word {
+            font-size: 16px;
+            color: var(--gold);
+            font-weight: 600;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        /* Install prompt */
+        .install-prompt {
+            background: linear-gradient(135deg, var(--fire-orange), #ff8c42);
+            padding: var(--spacing-md);
+            border-radius: 12px;
+            margin-bottom: var(--spacing-md);
+            color: white;
+            text-align: center;
+            display: none;
+        }
+
+        .install-prompt.show {
+            display: block;
+        }
+
+        .install-prompt-title {
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+            font-size: 14px;
+        }
+
+        .install-prompt-text {
+            font-size: 12px;
+            margin-bottom: var(--spacing-md);
+            opacity: 0.9;
+        }
+
+        .install-prompt-buttons {
+            display: flex;
+            gap: var(--spacing-sm);
+            justify-content: center;
+        }
+
+        .install-prompt-btn {
+            padding: 8px var(--spacing-md);
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .install-prompt-btn:active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Wallet list */
+        .wallet-item {
+            background: linear-gradient(135deg, rgba(26, 77, 122, 0.15), rgba(255, 107, 53, 0.05));
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .wallet-item:active {
+            transform: scale(0.98);
+            border-color: var(--fire-orange);
+        }
+
+        .wallet-name {
+            font-size: 16px;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .wallet-balance {
+            font-size: 20px;
+            color: var(--gold);
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .wallet-usd {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Contact list */
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md) 0;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .contact-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--fire-orange), var(--gold));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark-bg);
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .contact-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .contact-name {
+            font-size: 16px;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .contact-address {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-family: 'Monaco', 'Menlo', monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Success state */
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: conic-gradient(from 0deg, var(--fire-orange), var(--gold));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: var(--spacing-xl) auto;
+            font-size: 40px;
+        }
+
+        /* Scroll behavior */
+        .screen-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .screen-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .screen-content::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .app-container {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .top-bar {
+                padding: 8px var(--spacing-md);
+            }
+
+            .screen-header {
+                padding: var(--spacing-md);
+            }
+
+            .screen-header h1 {
+                font-size: 20px;
+            }
+
+            .screen-content {
+                padding: var(--spacing-md);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <button class="back-btn" id="backBtn" title="Go back">←</button>
+                <span class="top-bar-title" id="screenTitle">Dashboard</span>
+            </div>
+            <div class="top-bar-right">
+                <button class="icon-btn" id="notificationBtn" title="Notifications">🔔</button>
+                <button class="icon-btn" id="settingsBtn" title="Settings">⚙️</button>
+            </div>
+        </div>
+
+        <!-- Screens Container -->
+        <div class="screens-container">
+            <!-- Dashboard Screen -->
+            <div class="screen active" id="dashboardScreen">
+                <div class="screen-header">
+                    <h1>🌙 MoonBite</h1>
+                    <p>Your Crypto Wallet</p>
+                </div>
+                <div class="screen-content">
+                    <div class="install-prompt" id="installPrompt">
+                        <div class="install-prompt-title">📱 Install MoonBite App</div>
+                        <div class="install-prompt-text">Get faster access and offline support</div>
+                        <div class="install-prompt-buttons">
+                            <button class="install-prompt-btn" id="installBtn">Install</button>
+                            <button class="install-prompt-btn" id="dismissBtn">Later</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Total Balance</div>
+                        <div class="card-value">17.6912 MBITE</div>
+                        <div class="card-subtitle">≈ $442.28 USD</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Primary Wallet</div>
+                        <div class="card-value">MoonBite Wallet 1</div>
+                        <div class="card-subtitle">5.1234 MBITE</div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="showScreen('walletsScreen')">💼 My Wallets</button>
+                    <button class="btn btn-secondary" onclick="showScreen('sendScreen')">📤 Send</button>
+                    <button class="btn btn-secondary" onclick="showScreen('receiveScreen')">📥 Receive</button>
+                </div>
+            </div>
+
+            <!-- Wallets Screen -->
+            <div class="screen" id="walletsScreen">
+                <div class="screen-header">
+                    <h1>My Wallets</h1>
+                    <p>Manage your wallets</p>
+                </div>
+                <div class="screen-content">
+                    <div class="wallet-item">
+                        <div class="wallet-name">MoonBite Wallet 1</div>
+                        <div class="wallet-balance">5.1234 MBITE</div>
+                        <div class="wallet-usd">≈ $128.08 USD</div>
+                    </div>
+
+                    <div class="wallet-item">
+                        <div class="wallet-name">MoonBite Wallet 2</div>
+                        <div class="wallet-balance">2.5678 MBITE</div>
+                        <div class="wallet-usd">≈ $64.20 USD</div>
+                    </div>
+
+                    <div class="wallet-item">
+                        <div class="wallet-name">Trading Wallet</div>
+                        <div class="wallet-balance">10.0000 MBITE</div>
+                        <div class="wallet-usd">≈ $250.00 USD</div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="showScreen('createWalletScreen')">➕ Create New Wallet</button>
+                </div>
+            </div>
+
+            <!-- Send Screen -->
+            <div class="screen" id="sendScreen">
+                <div class="screen-header">
+                    <h1>Send MBITE</h1>
+                    <p>Transfer to another wallet</p>
+                </div>
+                <div class="screen-content">
+                    <div class="form-group">
+                        <label class="form-label">Recipient Address</label>
+                        <input type="text" class="form-input" placeholder="Enter MBITE address" value="MJX9vNr8Yjt5Zq4Kp2Lm8Wn5Hs7Dg3Fx">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Amount (MBITE)</label>
+                        <input type="number" class="form-input" placeholder="0.00" value="1.5">
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Network Fee Priority</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
+                            <button class="btn btn-small" style="background: linear-gradient(135deg, var(--fire-orange), #ff8c42); color: white;">⚡ FAST</button>
+                            <button class="btn btn-small" style="background: rgba(26, 77, 122, 0.2); color: var(--gold);">⏱️ STANDARD</button>
+                            <button class="btn btn-small" style="background: rgba(26, 77, 122, 0.2); color: var(--gold);">🐢 SLOW</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Network Fee</div>
+                        <div class="card-value">0.0001 MBITE</div>
+                        <div class="card-title" style="margin-top: var(--spacing-md);">Total Amount</div>
+                        <div class="card-value">1.5001 MBITE</div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="showScreen('confirmSendScreen')">✓ Send Now</button>
+                </div>
+            </div>
+
+            <!-- Receive Screen -->
+            <div class="screen" id="receiveScreen">
+                <div class="screen-header">
+                    <h1>Receive MBITE</h1>
+                    <p>Share your wallet address</p>
+                </div>
+                <div class="screen-content">
+                    <div class="qr-placeholder">📱</div>
+
+                    <div class="form-group">
+                        <label class="form-label">Your Wallet Address</label>
+                        <div class="address-display">MJX9vNr8Yjt5Zq4Kp2Lm8Wn5Hs7Dg3Fx</div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="copyAddress()">📋 Copy Address</button>
+                    <button class="btn btn-secondary">🔗 Copy Link</button>
+                </div>
+            </div>
+
+            <!-- Security Screen -->
+            <div class="screen" id="securityScreen">
+                <div class="screen-header">
+                    <h1>Security</h1>
+                    <p>Protect your wallet</p>
+                </div>
+                <div class="screen-content">
+                    <div class="form-group">
+                        <label class="form-label">Biometric Authentication</label>
+                        <div class="toggle">
+                            <span>Face ID / Fingerprint</span>
+                            <div class="toggle-switch"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Auto-Lock Timeout</label>
+                        <div class="toggle">
+                            <span>Lock after 5 minutes</span>
+                            <div class="toggle-switch"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Recovery Options</div>
+                        <button class="btn btn-secondary" onclick="showScreen('seedPhraseScreen')">🔑 View Recovery Phrase</button>
+                        <button class="btn btn-secondary" onclick="showScreen('createPasswordScreen')" style="margin-top: var(--spacing-sm);">🔐 Change Password</button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Hardware Wallet</div>
+                        <button class="btn btn-secondary">📟 Connect Ledger</button>
+                        <button class="btn btn-secondary" style="margin-top: var(--spacing-sm);">📟 Connect Trezor</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contacts Screen -->
+            <div class="screen" id="contactsScreen">
+                <div class="screen-header">
+                    <h1>Contacts</h1>
+                    <p>Frequently used addresses</p>
+                </div>
+                <div class="screen-content">
+                    <div class="form-group">
+                        <input type="text" class="form-input" placeholder="🔍 Search contacts...">
+                    </div>
+
+                    <div class="contact-item">
+                        <div class="contact-avatar">JW</div>
+                        <div class="contact-info">
+                            <div class="contact-name">Jenny Wilson</div>
+                            <div class="contact-address">MJX9vNr8Yjt5Zq4Kp2Lm8Wn5Hs7Dg3Fx</div>
+                        </div>
+                    </div>
+
+                    <div class="contact-item">
+                        <div class="contact-avatar" style="background: linear-gradient(135deg, var(--gold), #ffb300);">ET</div>
+                        <div class="contact-info">
+                            <div class="contact-name">Edgar Torrey</div>
+                            <div class="contact-address">M2hX7kL9Qp5Jm3Zw8Yd1Fs4Xn6Rc2Vt</div>
+                        </div>
+                    </div>
+
+                    <div class="contact-item">
+                        <div class="contact-avatar" style="background: linear-gradient(135deg, #ff8c42, var(--fire-orange));">EB</div>
+                        <div class="contact-info">
+                            <div class="contact-name">Evelina Burke</div>
+                            <div class="contact-address">MJX9vNr8Yjt5Zq4Kp2Lm8Wn5Hs7Dg3Fx</div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="showScreen('addContactScreen')">➕ Add Contact</button>
+                </div>
+            </div>
+
+            <!-- Create Password Screen -->
+            <div class="screen" id="createPasswordScreen">
+                <div class="screen-header">
+                    <h1>Create Password</h1>
+                    <p>Secure your wallet</p>
+                </div>
+                <div class="screen-content">
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" placeholder="Enter password">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password</label>
+                        <input type="password" class="form-input" placeholder="Confirm password">
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Password Strength</div>
+                        <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
+                            <div style="flex: 1; height: 8px; background: var(--success); border-radius: 4px;"></div>
+                            <div style="flex: 1; height: 8px; background: var(--success); border-radius: 4px;"></div>
+                            <div style="flex: 1; height: 8px; background: var(--success); border-radius: 4px;"></div>
+                            <div style="flex: 1; height: 8px; background: var(--success); border-radius: 4px;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Password Requirements</div>
+                        <div style="margin-top: var(--spacing-md);">
+                            <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm); color: var(--success);">
+                                <span>✓</span>
+                                <span>At least 8 characters</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm); color: var(--success);">
+                                <span>✓</span>
+                                <span>Mix of uppercase and lowercase</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm); color: var(--success);">
+                                <span>✓</span>
+                                <span>At least one number</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: var(--spacing-sm); color: var(--success);">
+                                <span>✓</span>
+                                <span>At least one special character</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="toggle">
+                        <span>Enable Face ID</span>
+                        <div class="toggle-switch"></div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="showScreen('seedPhraseScreen')">Create Password</button>
+                </div>
+            </div>
+
+            <!-- Seed Phrase Screen -->
+            <div class="screen" id="seedPhraseScreen">
+                <div class="screen-header">
+                    <h1>Recovery Phrase</h1>
+                    <p>Keep this safe and secret</p>
+                </div>
+                <div class="screen-content">
+                    <div class="card" style="background: linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(255, 215, 0, 0.1)); border-color: var(--fire-orange);">
+                        <div style="display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md);">
+                            <span style="color: var(--danger); font-size: 20px;">⚠️</span>
+                            <div style="color: var(--danger);">This is the only way to recover your wallet. Write it down and store it safely.</div>
+                        </div>
+                    </div>
+
+                    <div class="seed-grid">
+                        <div class="seed-item">
+                            <div class="seed-number">1</div>
+                            <div class="seed-word">abandon</div>
+                        </div>
+                        <div class="seed-item">
+                            <div class="seed-number">2</div>
+                            <div class="seed-word">ability</div>
+                        </div>
+                        <div class="seed-item">
+                            <div class="seed-number">3</div>
+                            <div class="seed-word">about</div>
+                        </div>
+                        <div class="seed-item">
+                            <div class="seed-number">4</div>
+                            <div class="seed-word">above</div>
+                        </div>
+                        <div class="seed-item">
+                            <div class="seed-number">5</div>
+                            <div class="seed-word">absent</div>
+                        </div>
+                        <div class="seed-item">
+                            <div class="seed-number">6</div>
+                            <div class="seed-word">absorb</div>
+                        </div>
+                        <div class="seed-item">
+                            <div class="seed-number">7</div>
+                            <div class="seed-word">abstract</div>
+                        </div>
+                        <div class="seed-item">
+                            <div class="seed-number">8</div>
+                            <div class="seed-word">abuse</div>
+                        </div>
+                        <div class="seed-item">
+                            <div class="seed-number">9</div>
+                            <div class="seed-word">access</div>
+                        </div>
+                        <div class="seed-item">
+                            <div class="seed-number">10</div>
+                            <div class="seed-word">accident</div>
+                        </div>
+                        <div class="seed-item">
+                            <div class="seed-number">11</div>
+                            <div class="seed-word">account</div>
+                        </div>
+                        <div class="seed-item">
+                            <div class="seed-number">12</div>
+                            <div class="seed-word">accuse</div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="copySeed()">📋 Copy Seed Phrase</button>
+                    <button class="btn btn-secondary" onclick="showScreen('successScreen')">✓ I Saved It</button>
+                </div>
+            </div>
+
+            <!-- Success Screen -->
+            <div class="screen" id="successScreen">
+                <div class="screen-header">
+                    <h1>Success!</h1>
+                    <p>Wallet ready to use</p>
+                </div>
+                <div class="screen-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: var(--spacing-lg);">
+                    <div class="success-icon">✓</div>
+                    <h2 style="color: var(--gold);">Wallet Created!</h2>
+                    <p style="color: var(--text-secondary);">Your MoonBite wallet is ready to use. You can now send, receive, and manage your MBITE coins.</p>
+                    <div class="card">
+                        <span style="color: var(--success);">✓ Wallet successfully created and secured</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="showScreen('dashboardScreen')">🏠 Go to Dashboard</button>
+                </div>
+            </div>
+
+            <!-- Create Wallet Screen -->
+            <div class="screen" id="createWalletScreen">
+                <div class="screen-header">
+                    <h1>Create Wallet</h1>
+                    <p>Add a new wallet</p>
+                </div>
+                <div class="screen-content">
+                    <div class="form-group">
+                        <label class="form-label">Wallet Name</label>
+                        <input type="text" class="form-input" placeholder="e.g., My Trading Wallet">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Wallet Type</label>
+                        <select class="form-input">
+                            <option>Standard (P2PKH)</option>
+                            <option>Segwit (P2WPKH)</option>
+                            <option>Multi-Sig</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="showScreen('seedPhraseScreen')">Create Wallet</button>
+                </div>
+            </div>
+
+            <!-- Add Contact Screen -->
+            <div class="screen" id="addContactScreen">
+                <div class="screen-header">
+                    <h1>Add Contact</h1>
+                    <p>Save a frequently used address</p>
+                </div>
+                <div class="screen-content">
+                    <div class="form-group">
+                        <label class="form-label">Contact Name</label>
+                        <input type="text" class="form-input" placeholder="e.g., John">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Wallet Address</label>
+                        <input type="text" class="form-input" placeholder="Enter MBITE address">
+                    </div>
+
+                    <button class="btn btn-primary">Save Contact</button>
+                </div>
+            </div>
+
+            <!-- Confirm Send Screen -->
+            <div class="screen" id="confirmSendScreen">
+                <div class="screen-header">
+                    <h1>Confirm Send</h1>
+                    <p>Review transaction details</p>
+                </div>
+                <div class="screen-content">
+                    <div class="card">
+                        <div class="card-title">Recipient</div>
+                        <div style="font-family: 'Monaco', 'Menlo', monospace; font-size: 12px; color: var(--gold); word-break: break-all;">MJX9vNr8Yjt5Zq4Kp2Lm8Wn5Hs7Dg3Fx</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Amount</div>
+                        <div class="card-value">1.5 MBITE</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Network Fee</div>
+                        <div class="card-value">0.0001 MBITE</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Total</div>
+                        <div class="card-value">1.5001 MBITE</div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="showScreen('successScreen')">✓ Confirm & Send</button>
+                    <button class="btn btn-secondary" onclick="showScreen('sendScreen')">← Edit Transaction</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <button class="nav-item active" onclick="showScreen('dashboardScreen'); setActiveNav(this)">
+                <div class="nav-icon">🏠</div>
+                <div>Home</div>
+            </button>
+            <button class="nav-item" onclick="showScreen('walletsScreen'); setActiveNav(this)">
+                <div class="nav-icon">💼</div>
+                <div>Wallets</div>
+            </button>
+            <button class="nav-item" onclick="showScreen('contactsScreen'); setActiveNav(this)">
+                <div class="nav-icon">📇</div>
+                <div>Contacts</div>
+            </button>
+            <button class="nav-item" onclick="showScreen('securityScreen'); setActiveNav(this)">
+                <div class="nav-icon">🔒</div>
+                <div>Security</div>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/wallet-sw.js').catch(() => {});
+        }
+
+        let deferredPrompt;
+        let currentScreen = 'dashboardScreen';
+
+        // PWA Install prompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installPrompt').classList.add('show');
+        });
+
+        document.getElementById('installBtn')?.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt = null;
+                document.getElementById('installPrompt').classList.remove('show');
+            }
+        });
+
+        document.getElementById('dismissBtn')?.addEventListener('click', () => {
+            document.getElementById('installPrompt').classList.remove('show');
+        });
+
+        // Screen navigation
+        function showScreen(screenId) {
+            const currentScreenEl = document.getElementById(currentScreen);
+            const newScreenEl = document.getElementById(screenId);
+
+            if (currentScreenEl) {
+                currentScreenEl.classList.remove('active');
+            }
+            if (newScreenEl) {
+                newScreenEl.classList.add('active');
+                currentScreen = screenId;
+                updateTopBar(screenId);
+            }
+        }
+
+        function updateTopBar(screenId) {
+            const titles = {
+                'dashboardScreen': '🌙 MoonBite',
+                'walletsScreen': '💼 My Wallets',
+                'sendScreen': '📤 Send MBITE',
+                'receiveScreen': '📥 Receive MBITE',
+                'securityScreen': '🔒 Security',
+                'contactsScreen': '📇 Contacts',
+                'createPasswordScreen': '🔐 Create Password',
+                'seedPhraseScreen': '🔑 Recovery Phrase',
+                'successScreen': '✓ Success',
+                'createWalletScreen': '➕ Create Wallet',
+                'addContactScreen': '➕ Add Contact',
+                'confirmSendScreen': '✓ Confirm Send'
+            };
+            document.getElementById('screenTitle').textContent = titles[screenId] || 'MoonBite';
+            updateBackButton(screenId);
+        }
+
+        function updateBackButton(screenId) {
+            const backBtn = document.getElementById('backBtn');
+            const homeScreens = ['dashboardScreen', 'walletsScreen', 'contactsScreen', 'securityScreen'];
+            if (homeScreens.includes(screenId)) {
+                backBtn.classList.add('hidden');
+            } else {
+                backBtn.classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('backBtn')?.addEventListener('click', () => {
+            const previousScreens = {
+                'createWalletScreen': 'walletsScreen',
+                'addContactScreen': 'contactsScreen',
+                'createPasswordScreen': 'securityScreen',
+                'seedPhraseScreen': 'createPasswordScreen',
+                'confirmSendScreen': 'sendScreen',
+                'successScreen': 'dashboardScreen'
+            };
+            showScreen(previousScreens[currentScreen] || 'dashboardScreen');
+        });
+
+        function setActiveNav(el) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function copyAddress() {
+            navigator.clipboard.writeText('MJX9vNr8Yjt5Zq4Kp2Lm8Wn5Hs7Dg3Fx');
+            alert('Address copied to clipboard!');
+        }
+
+        function copySeed() {
+            navigator.clipboard.writeText('abandon ability about above absent absorb abstract abuse access accident account accuse');
+            alert('Seed phrase copied to clipboard!');
+        }
+
+        // Toggle switches
+        document.querySelectorAll('.toggle-switch').forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+            });
+        });
+
+        // Settings button
+        document.getElementById('settingsBtn')?.addEventListener('click', () => {
+            showScreen('securityScreen');
+            setActiveNav(document.querySelectorAll('.nav-item')[3]);
+        });
+
+        // Notifications button
+        document.getElementById('notificationBtn')?.addEventListener('click', () => {
+            alert('No new notifications');
+        });
+    </script>
+</body>
+</html>

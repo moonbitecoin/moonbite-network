@@ -817,15 +817,28 @@ def wallet_complete_page():
     """Serve the complete MoonBite wallet with all screens from wireframes."""
     return render_template("wallet-complete-moonbite.html")
 
+@app.route("/wallet-app")
+def wallet_pwa_app():
+    """Serve the production-grade PWA wallet app with individual screens and native app experience."""
+    return render_template("wallet-pwa-app.html")
+
 @app.route("/wallet-manifest.json")
 def wallet_manifest():
     """Serve PWA manifest."""
-    return send_file("templates/wallet-manifest.json", mimetype="application/manifest+json")
+    import os
+    manifest_path = os.path.join(os.path.dirname(__file__), "wallet-manifest.json")
+    if os.path.exists(manifest_path):
+        return send_file(manifest_path, mimetype="application/manifest+json")
+    return jsonify({"error": "Manifest not found"}), 404
 
 @app.route("/wallet-sw.js")
 def wallet_service_worker():
     """Serve the service worker for offline support."""
-    return send_file("static/wallet-sw.js", mimetype="application/javascript")
+    import os
+    sw_path = os.path.join(os.path.dirname(__file__), "wallet-sw.js")
+    if os.path.exists(sw_path):
+        return send_file(sw_path, mimetype="application/javascript")
+    return jsonify({"error": "Service worker not found"}), 404
 
 
 @app.route("/mining")
