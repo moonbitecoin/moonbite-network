@@ -979,6 +979,7 @@
             50% { transform: scale(1.1); }
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -1638,10 +1639,7 @@
                 <div class="screen-content" style="display: flex; flex-direction: column; align-items: center;">
                     <div class="card" style="width: 100%; margin-bottom: var(--spacing-lg);">
                         <div style="background: linear-gradient(135deg, rgba(26, 77, 122, 0.3), rgba(255, 107, 53, 0.1)); border-radius: 12px; padding: var(--spacing-lg); display: flex; align-items: center; justify-content: center; min-height: 200px;">
-                            <div style="text-align: center;">
-                                <div style="font-size: 100px; margin-bottom: var(--spacing-md);">📱</div>
-                                <p style="color: var(--text-secondary); font-size: 13px;">QR Code Display</p>
-                            </div>
+                            <div id="qrCodeContainer" style="text-align: center; width: 180px; height: 180px; display: flex; align-items: center; justify-content: center;"></div>
                         </div>
                     </div>
 
@@ -2070,6 +2068,11 @@
                 newScreenEl.classList.add('active');
                 currentScreen = screenId;
                 updateTopBar(screenId);
+
+                // Generate QR code for receive screen
+                if (screenId === 'receiveScreen') {
+                    setTimeout(generateQRCode, 100);
+                }
             }
         }
 
@@ -2130,6 +2133,29 @@
         function copySeed() {
             navigator.clipboard.writeText('abandon ability about above absent absorb abstract abuse access accident account accuse');
             alert('Seed phrase copied to clipboard!');
+        }
+
+        function generateQRCode() {
+            const container = document.getElementById('qrCodeContainer');
+            if (!container) return;
+
+            // Clear previous QR code
+            container.innerHTML = '';
+
+            // Get wallet address
+            const address = document.getElementById('receiveAddress')?.textContent || 'moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k';
+
+            // Generate QR code
+            if (typeof QRCode !== 'undefined') {
+                new QRCode(container, {
+                    text: address,
+                    width: 160,
+                    height: 160,
+                    colorDark: '#FFFFFF',
+                    colorLight: '#1A1F3A',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
         }
 
         // Toggle switches
