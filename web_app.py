@@ -807,6 +807,11 @@ def wallet_full_page():
     """Serve the comprehensive Phase 1-4 wallet with all advanced features."""
     return render_template("wallet-full.html")
 
+@app.route("/wallet-moonbite")
+def wallet_moonbite_page():
+    """Serve the MoonBite-branded wallet with moon logo colors and all wireframe screens."""
+    return render_template("wallet-moonbite.html")
+
 @app.route("/wallet-manifest.json")
 def wallet_manifest():
     """Serve PWA manifest."""

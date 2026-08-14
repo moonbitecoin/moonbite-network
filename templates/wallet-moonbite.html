@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MoonBite Wallet - Mine. Hold. Verify.</title>
+  <style>
+    :root {
+      --moon-deep: #0a1628;
+      --moon-blue: #1a4d7a;
+      --moon-light: #3b7dd9;
+      --fire-orange: #ff6b35;
+      --fire-bright: #ff8c42;
+      --gold-glow: #ffd700;
+      --gold-light: #ffed4e;
+      --text-light: #f0f4f8;
+      --text-muted: #b0c4de;
+      --border-color: rgba(58, 125, 217, 0.2);
+      --success: #4ade80;
+      --warning: #facc15;
+      --error: #ef4444;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: linear-gradient(135deg, var(--moon-deep) 0%, #1a2f4a 50%, #0f1f34 100%);
+      color: var(--text-light);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Background effects */
+    .bg-glow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-moon {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(58, 125, 217, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      top: -100px;
+      right: -100px;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .glow-fire {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(255, 107, 53, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      bottom: -50px;
+      left: -50px;
+      animation: float 10s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(20px); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      background: rgba(10, 22, 40, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 60px rgba(58, 125, 217, 0.2), inset 0 0 60px rgba(58, 125, 217, 0.05);
+    }
+
+    /* Header */
+    .header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(90deg, rgba(26, 77, 122, 0.5) 0%, rgba(255, 107, 53, 0.1) 100%);
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--moon-light) 0%, var(--fire-orange) 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--gold-glow);
+      box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+    }
+
+    .header-title {
+      flex: 1;
+    }
+
+    .header-title h1 {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--gold-glow) 0%, var(--fire-orange) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
+    }
+
+    .header-title p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 2px 0 0 0;
+    }
+
+    .header-btn {
+      width: 40px;
+      height: 40px;
+      background: rgba(58, 125, 217, 0.2);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      color: var(--text-light);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      font-size: 20px;
+    }
+
+    .header-btn:hover {
+      background: rgba(58, 125, 217, 0.3);
+      border-color: var(--moon-light);
+    }
+
+    /* Main content */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0;
+    }
+
+    .screen {
+      display: none;
+      width: 100%;
+      height: 100%;
+      padding: 24px 20px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .screen.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Welcome Screen */
+    .welcome-content {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 32px;
+      height: 100%;
+    }
+
+    .welcome-logo {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, var(--moon-light) 0%, var(--fire-orange) 100%);
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+      box-shadow: 0 0 40px rgba(255, 107, 53, 0.4), 0 0 80px rgba(58, 125, 217, 0.2);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .welcome-text h2 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      background: linear-gradient(90deg, var(--gold-glow) 0%, var(--fire-orange) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .welcome-text p {
+      color: var(--text-muted);
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .features {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: left;
+      margin-bottom: 24px;
+    }
+
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(58, 125, 217, 0.1);
+      border-radius: 10px;
+      border-left: 3px solid var(--fire-orange);
+    }
+
+    .feature-icon {
+      font-size: 20px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 107, 53, 0.2);
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .feature-text {
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .feature-text strong {
+      color: var(--gold-glow);
+    }
+
+    /* Fingerprint Screen */
+    .fingerprint-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      height: 100%;
+      text-align: center;
+    }
+
+    .fingerprint-icon {
+      width: 140px;
+      height: 140px;
+      background: linear-gradient(135deg, rgba(58, 125, 217, 0.3) 0%, rgba(255, 107, 53, 0.2) 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 70px;
+      margin: 20px 0;
+      animation: fingerprint-scan 2s ease-in-out infinite;
+    }
+
+    @keyframes fingerprint-scan {
+      0%, 100% { box-shadow: 0 0 30px rgba(58, 125, 217, 0.3); }
+      50% { box-shadow: 0 0 60px rgba(255, 107, 53, 0.4); }
+    }
+
+    .fingerprint-text h2 {
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .fingerprint-text p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* Setup Screen */
+    .setup-content {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      height: 100%;
+    }
+
+    .setup-header {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .setup-header h2 {
+      font-size: 24px;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, var(--gold-glow) 0%, var(--fire-orange) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .setup-header p {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .setup-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .option-card {
+      padding: 16px;
+      background: linear-gradient(135deg, rgba(58, 125, 217, 0.15) 0%, rgba(255, 107, 53, 0.08) 100%);
+      border: 2px solid var(--border-color);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .option-card:hover {
+      background: linear-gradient(135deg, rgba(58, 125, 217, 0.25) 0%, rgba(255, 107, 53, 0.15) 100%);
+      border-color: var(--moon-light);
+      transform: translateY(-2px);
+    }
+
+    .option-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--moon-light) 0%, var(--fire-orange) 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+      box-shadow: 0 0 15px rgba(255, 107, 53, 0.2);
+    }
+
+    .option-text h3 {
+      font-size: 15px;
+      margin-bottom: 2px;
+      color: var(--gold-glow);
+    }
+
+    .option-text p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Form Inputs */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-label .required {
+      color: var(--fire-orange);
+    }
+
+    .form-input {
+      padding: 12px 14px;
+      background: rgba(58, 125, 217, 0.08);
+      border: 1.5px solid var(--border-color);
+      border-radius: 10px;
+      color: var(--text-light);
+      font-size: 14px;
+      transition: var(--transition);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .form-input:focus {
+      outline: none;
+      background: rgba(58, 125, 217, 0.12);
+      border-color: var(--moon-light);
+      box-shadow: 0 0 15px rgba(58, 125, 217, 0.2);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .password-strength {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+    }
+
+    .strength-bar {
+      flex: 1;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .strength-bar.weak { background: var(--error); }
+    .strength-bar.medium { background: var(--warning); }
+    .strength-bar.strong { background: var(--success); }
+    .strength-bar.filled {
+      width: 100%;
+      height: 100%;
+    }
+
+    .strength-text {
+      font-size: 11px;
+      margin-top: 6px;
+      color: var(--text-muted);
+    }
+
+    /* Seed Phrase Display */
+    .seed-container {
+      background: linear-gradient(135deg, rgba(26, 77, 122, 0.3) 0%, rgba(255, 107, 53, 0.1) 100%);
+      border: 1.5px dashed var(--border-color);
+      border-radius: 14px;
+      padding: 16px;
+      margin: 12px 0;
+    }
+
+    .seed-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .seed-word {
+      background: rgba(10, 22, 40, 0.8);
+      border: 1px solid rgba(255, 107, 53, 0.2);
+      border-radius: 8px;
+      padding: 8px 12px;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--gold-glow);
+    }
+
+    .seed-word .number {
+      color: var(--text-muted);
+      font-size: 10px;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    /* Dashboard */
+    .dashboard-content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: 100%;
+    }
+
+    .balance-card {
+      background: linear-gradient(135deg, var(--moon-light) 0%, var(--fire-orange) 100%);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      color: white;
+      box-shadow: 0 10px 40px rgba(255, 107, 53, 0.3);
+    }
+
+    .balance-label {
+      font-size: 12px;
+      opacity: 0.9;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .balance-amount {
+      font-size: 36px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 4px;
+    }
+
+    .balance-usd {
+      font-size: 13px;
+      opacity: 0.85;
+    }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    .action-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 12px;
+      background: rgba(58, 125, 217, 0.1);
+      border: 1.5px solid var(--border-color);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+      color: var(--text-light);
+    }
+
+    .action-btn:hover {
+      background: rgba(58, 125, 217, 0.2);
+      border-color: var(--moon-light);
+      transform: translateY(-2px);
+    }
+
+    .action-icon {
+      font-size: 24px;
+    }
+
+    .action-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    .transactions {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .transactions-header {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .transaction {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(58, 125, 217, 0.08);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      border-left: 3px solid transparent;
+    }
+
+    .transaction.sent {
+      border-left-color: var(--fire-orange);
+    }
+
+    .transaction.received {
+      border-left-color: var(--success);
+    }
+
+    .tx-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .transaction.sent .tx-icon {
+      background: rgba(255, 107, 53, 0.2);
+    }
+
+    .transaction.received .tx-icon {
+      background: rgba(74, 222, 128, 0.2);
+    }
+
+    .tx-info {
+      flex: 1;
+    }
+
+    .tx-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    .tx-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .tx-amount {
+      text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .tx-amount-val {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gold-glow);
+    }
+
+    .tx-amount-usd {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      min-height: 48px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(90deg, var(--moon-light) 0%, var(--fire-orange) 100%);
+      color: white;
+      box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 30px rgba(255, 107, 53, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(58, 125, 217, 0.15);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-light);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(58, 125, 217, 0.25);
+      border-color: var(--moon-light);
+    }
+
+    .btn-text {
+      background: transparent;
+      color: var(--moon-light);
+      padding: 10px;
+    }
+
+    .btn-text:hover {
+      color: var(--fire-orange);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Footer Actions */
+    .footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 12px;
+      background: linear-gradient(180deg, transparent 0%, rgba(10, 22, 40, 0.8) 100%);
+    }
+
+    .footer-btn {
+      flex: 1;
+    }
+
+    /* Settings Screen */
+    .settings-content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: 100%;
+    }
+
+    .settings-section {
+      background: rgba(58, 125, 217, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid var(--border-color);
+    }
+
+    .settings-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gold-glow);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .settings-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .settings-item:last-child {
+      border-bottom: none;
+    }
+
+    .settings-label {
+      font-size: 14px;
+      color: var(--text-light);
+    }
+
+    .settings-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .toggle {
+      width: 48px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      position: relative;
+      cursor: pointer;
+      transition: var(--transition);
+      border: 1px solid var(--border-color);
+    }
+
+    .toggle.active {
+      background: linear-gradient(90deg, var(--moon-light) 0%, var(--fire-orange) 100%);
+      border-color: transparent;
+    }
+
+    .toggle-circle {
+      width: 24px;
+      height: 24px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: var(--transition);
+    }
+
+    .toggle.active .toggle-circle {
+      left: 22px;
+    }
+
+    /* Alert Messages */
+    .alert {
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .alert-success {
+      background: rgba(74, 222, 128, 0.1);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      color: var(--success);
+    }
+
+    .alert-error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--error);
+    }
+
+    .alert-warning {
+      background: rgba(250, 204, 21, 0.1);
+      border: 1px solid rgba(250, 204, 21, 0.3);
+      color: var(--warning);
+    }
+
+    /* Responsive */
+    @media (max-width: 500px) {
+      .container {
+        border-radius: 0;
+      }
+
+      .welcome-logo {
+        width: 100px;
+        height: 100px;
+        font-size: 50px;
+      }
+
+      .welcome-text h2 {
+        font-size: 24px;
+      }
+
+      .balance-amount {
+        font-size: 28px;
+      }
+
+      .seed-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Scrollbar */
+    .content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .content::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .content::-webkit-scrollbar-thumb {
+      background: rgba(58, 125, 217, 0.3);
+      border-radius: 3px;
+    }
+
+    .content::-webkit-scrollbar-thumb:hover {
+      background: rgba(58, 125, 217, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow">
+    <div class="glow-moon"></div>
+    <div class="glow-fire"></div>
+  </div>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">🌙</div>
+      <div class="header-title">
+        <h1>MoonBite</h1>
+        <p>Wallet</p>
+      </div>
+      <button class="header-btn" onclick="toggleSettings()" title="Settings">⚙️</button>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- Welcome Screen -->
+      <div class="screen welcome-screen active">
+        <div class="welcome-content">
+          <div class="welcome-logo">🌙</div>
+          <div class="welcome-text">
+            <h2>Mine the Moon</h2>
+            <p>Your self-custody wallet for MBITE. No exchanges. No gatekeepers. Just you and the blockchain.</p>
+          </div>
+          <div class="features">
+            <div class="feature">
+              <div class="feature-icon">🔐</div>
+              <div class="feature-text"><strong>Self-Custody</strong> - Your keys, your coins</div>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">⚡</div>
+              <div class="feature-text"><strong>Fast</strong> - Instant transactions</div>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">✓</div>
+              <div class="feature-text"><strong>Verified</strong> - Open source & audited</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fingerprint Screen -->
+      <div class="screen fingerprint-screen">
+        <div class="fingerprint-content">
+          <div class="fingerprint-icon">👆</div>
+          <div class="fingerprint-text">
+            <h2>Biometric Security</h2>
+            <p>Enable fingerprint or face recognition for faster, safer access.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Setup Screen -->
+      <div class="screen setup-screen">
+        <div class="setup-content">
+          <div class="setup-header">
+            <h2>Let's Get Started</h2>
+            <p>Choose how you want to set up your wallet</p>
+          </div>
+          <div class="setup-options">
+            <div class="option-card" onclick="goToScreen('create-wallet')">
+              <div class="option-icon">✨</div>
+              <div class="option-text">
+                <h3>Create New</h3>
+                <p>Generate a new seed phrase</p>
+              </div>
+            </div>
+            <div class="option-card" onclick="goToScreen('import-seed')">
+              <div class="option-icon">📝</div>
+              <div class="option-text">
+                <h3>Import Wallet</h3>
+                <p>Restore with 12-word seed</p>
+              </div>
+            </div>
+            <div class="option-card" onclick="goToScreen('hardware')">
+              <div class="option-icon">🔗</div>
+              <div class="option-text">
+                <h3>Hardware Wallet</h3>
+                <p>Use Ledger or Trezor</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Create Wallet Screen -->
+      <div class="screen create-wallet-screen">
+        <div style="display: flex; flex-direction: column; gap: 20px; height: 100%;">
+          <div>
+            <h2 style="font-size: 24px; margin-bottom: 8px; background: linear-gradient(90deg, #ffd700 0%, #ff6b35 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Create New Wallet</h2>
+            <p style="color: var(--text-muted); font-size: 13px;">Your 12-word seed phrase is your wallet's master key. Save it securely.</p>
+          </div>
+
+          <div class="seed-container">
+            <div style="color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">Your Recovery Seed</div>
+            <div class="seed-grid" id="seedGrid">
+              <!-- Generated by JS -->
+            </div>
+          </div>
+
+          <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid rgba(255, 107, 53, 0.3); border-radius: 10px; padding: 12px;">
+            <div style="font-size: 12px; color: var(--fire-orange); margin-bottom: 6px;">⚠️ Important</div>
+            <ul style="font-size: 12px; color: var(--text-muted); line-height: 1.6; margin: 0; padding-left: 20px;">
+              <li>Never share this seed with anyone</li>
+              <li>Write it down and store it safely</li>
+              <li>We cannot recover it if lost</li>
+            </ul>
+          </div>
+
+          <button class="btn btn-secondary" onclick="copySeed()">📋 Copy Seed</button>
+        </div>
+      </div>
+
+      <!-- Import Seed Screen -->
+      <div class="screen import-seed-screen">
+        <div style="display: flex; flex-direction: column; gap: 20px; height: 100%;">
+          <div>
+            <h2 style="font-size: 24px; margin-bottom: 8px; background: linear-gradient(90deg, #ffd700 0%, #ff6b35 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Import Wallet</h2>
+            <p style="color: var(--text-muted); font-size: 13px;">Enter your 12-word recovery seed</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Recovery Seed <span class="required">*</span></label>
+            <textarea class="form-input" id="seedInput" placeholder="word1 word2 word3 ... word12" style="min-height: 100px; font-size: 12px; resize: vertical;"></textarea>
+            <div style="font-size: 11px; color: var(--text-muted);">Separate words with spaces</div>
+          </div>
+
+          <button class="btn btn-primary" onclick="goToScreen('password')">Continue →</button>
+        </div>
+      </div>
+
+      <!-- Password Screen -->
+      <div class="screen password-screen">
+        <div style="display: flex; flex-direction: column; gap: 20px; height: 100%;">
+          <div>
+            <h2 style="font-size: 24px; margin-bottom: 8px; background: linear-gradient(90deg, #ffd700 0%, #ff6b35 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Set Password</h2>
+            <p style="color: var(--text-muted); font-size: 13px;">Encrypt your wallet with a strong password</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Password <span class="required">*</span></label>
+            <input type="password" class="form-input" id="passwordInput" placeholder="••••••••••" onkeyup="updatePasswordStrength()">
+            <div class="password-strength">
+              <div class="strength-bar weak" id="strengthBar1"></div>
+              <div class="strength-bar weak" id="strengthBar2"></div>
+              <div class="strength-bar weak" id="strengthBar3"></div>
+              <div class="strength-bar weak" id="strengthBar4"></div>
+            </div>
+            <div class="strength-text" id="strengthText">Password strength: weak</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Confirm Password <span class="required">*</span></label>
+            <input type="password" class="form-input" id="confirmPasswordInput" placeholder="••••••••••">
+          </div>
+
+          <div style="background: rgba(58, 125, 217, 0.1); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+            <div style="font-size: 12px; color: var(--text-light); line-height: 1.6;">
+              ✓ 8+ characters<br>
+              ✓ Mix of upper & lowercase<br>
+              ✓ At least one number<br>
+              ✓ At least one special character
+            </div>
+          </div>
+
+          <button class="btn btn-primary" onclick="goToScreen('biometric')">Complete Setup →</button>
+        </div>
+      </div>
+
+      <!-- Biometric Setup -->
+      <div class="screen biometric-screen">
+        <div class="fingerprint-content">
+          <div class="fingerprint-icon">👆</div>
+          <div class="fingerprint-text">
+            <h2>Enable Biometric</h2>
+            <p>Add fingerprint or face ID for instant access</p>
+          </div>
+          <div style="width: 100%; display: flex; gap: 12px;">
+            <button class="btn btn-primary" style="flex: 1;" onclick="goToScreen('dashboard')">✓ Enable</button>
+            <button class="btn btn-secondary" style="flex: 1;" onclick="goToScreen('dashboard')">Skip</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard -->
+      <div class="screen dashboard-screen">
+        <div class="dashboard-content">
+          <div class="balance-card">
+            <div class="balance-label">Total Balance</div>
+            <div class="balance-amount" id="balanceAmount">0.00000</div>
+            <div class="balance-usd">≈ $0.00 USD</div>
+          </div>
+
+          <div class="quick-actions">
+            <div class="action-btn" onclick="goToScreen('send')">
+              <div class="action-icon">📤</div>
+              <div class="action-label">Send</div>
+            </div>
+            <div class="action-btn" onclick="goToScreen('receive')">
+              <div class="action-icon">📥</div>
+              <div class="action-label">Receive</div>
+            </div>
+            <div class="action-btn" onclick="goToScreen('swap')">
+              <div class="action-icon">🔄</div>
+              <div class="action-label">Swap</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="transactions-header">Recent Transactions</div>
+            <div class="transactions" id="transactionsList">
+              <div class="transaction sent">
+                <div class="tx-icon">📤</div>
+                <div class="tx-info">
+                  <div class="tx-label">Sent MBITE</div>
+                  <div class="tx-time">Today, 2:34 PM</div>
+                </div>
+                <div class="tx-amount">
+                  <div class="tx-amount-val">-0.5 MBITE</div>
+                  <div class="tx-amount-usd">-$12.50</div>
+                </div>
+              </div>
+              <div class="transaction received">
+                <div class="tx-icon">📥</div>
+                <div class="tx-info">
+                  <div class="tx-label">Received MBITE</div>
+                  <div class="tx-time">Yesterday, 11:12 AM</div>
+                </div>
+                <div class="tx-amount">
+                  <div class="tx-amount-val">+1.2 MBITE</div>
+                  <div class="tx-amount-usd">+$30.00</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Send Screen -->
+      <div class="screen send-screen">
+        <div style="display: flex; flex-direction: column; gap: 16px; height: 100%;">
+          <div>
+            <h2 style="font-size: 24px; margin-bottom: 8px;">Send MBITE</h2>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Recipient Address <span class="required">*</span></label>
+            <input type="text" class="form-input" id="recipientAddress" placeholder="moon1..." pattern="^moon1[a-z0-9]{39}$">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Amount <span class="required">*</span></label>
+            <div style="display: flex; gap: 8px;">
+              <input type="number" class="form-input" id="sendAmount" placeholder="0.00" style="flex: 1;">
+              <button class="btn btn-secondary" style="white-space: nowrap;">Max</button>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 6px;">
+              <span>Available: <strong>5.123 MBITE</strong></span>
+              <span>≈ $128.08</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Fee Priority</label>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary" style="flex: 1; font-size: 12px;">⚡ Fast</button>
+              <button class="btn btn-secondary" style="flex: 1; font-size: 12px;">Standard</button>
+              <button class="btn btn-secondary" style="flex: 1; font-size: 12px;">🐌 Slow</button>
+            </div>
+          </div>
+
+          <div style="background: rgba(58, 125, 217, 0.1); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; font-size: 12px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="color: var(--text-muted);">Network Fee:</span>
+              <span>0.0001 MBITE</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);">Total:</span>
+              <span style="color: var(--gold-glow); font-weight: 600;">0.5101 MBITE</span>
+            </div>
+          </div>
+
+          <button class="btn btn-primary">Send Now</button>
+        </div>
+      </div>
+
+      <!-- Receive Screen -->
+      <div class="screen receive-screen">
+        <div style="display: flex; flex-direction: column; gap: 20px; height: 100%; justify-content: center; align-items: center; text-align: center;">
+          <div>
+            <h2 style="font-size: 24px; margin-bottom: 8px;">Receive MBITE</h2>
+            <p style="color: var(--text-muted); font-size: 13px;">Share your address with anyone who wants to send you MBITE</p>
+          </div>
+
+          <div style="background: white; padding: 20px; border-radius: 14px;">
+            <div id="qrCode" style="width: 200px; height: 200px;"></div>
+          </div>
+
+          <div class="form-input" style="text-align: center; font-size: 11px; cursor: pointer; user-select: all;">
+            moon1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t5
+          </div>
+
+          <button class="btn btn-primary" style="width: 100%;">📋 Copy Address</button>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div class="screen settings-screen">
+        <div class="settings-content">
+          <div style="font-size: 24px; margin-bottom: 16px; background: linear-gradient(90deg, #ffd700 0%, #ff6b35 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Settings</div>
+
+          <div class="settings-section">
+            <div class="settings-title">Security</div>
+            <div class="settings-item">
+              <div>
+                <div class="settings-label">Biometric Auth</div>
+                <div class="settings-desc">Enable fingerprint & face ID</div>
+              </div>
+              <div class="toggle active" onclick="this.classList.toggle('active')">
+                <div class="toggle-circle"></div>
+              </div>
+            </div>
+            <div class="settings-item">
+              <div>
+                <div class="settings-label">Auto-Lock</div>
+                <div class="settings-desc">Lock after 5 minutes</div>
+              </div>
+              <div class="toggle active" onclick="this.classList.toggle('active')">
+                <div class="toggle-circle"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-title">Network</div>
+            <div class="settings-item">
+              <div>
+                <div class="settings-label">Network</div>
+                <div class="settings-desc">MoonBite Mainnet</div>
+              </div>
+            </div>
+            <div class="settings-item">
+              <div>
+                <div class="settings-label">Node</div>
+                <div class="settings-desc">moonbite.org:9333</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-title">Backup & Recovery</div>
+            <div class="settings-item">
+              <div>
+                <div class="settings-label">Export Seed</div>
+                <div class="settings-desc">Save your recovery phrase</div>
+              </div>
+            </div>
+            <div class="settings-item">
+              <div>
+                <div class="settings-label">View Private Key</div>
+                <div class="settings-desc">For advanced users only</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-secondary" style="width: 100%; margin-top: auto;">Sign Out</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <button class="btn btn-secondary footer-btn" onclick="goToScreen('dashboard')">Home</button>
+      <button class="btn btn-secondary footer-btn" onclick="goToScreen('send')">Send</button>
+      <button class="btn btn-secondary footer-btn" onclick="goToScreen('receive')">Receive</button>
+    </div>
+  </div>
+
+  <script>
+    // Wallet State
+    let walletState = {
+      isSetup: false,
+      balance: '5.12341234',
+      balanceUSD: 128.08,
+      address: 'moon1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t5',
+      seedPhrase: []
+    };
+
+    // Navigation
+    function goToScreen(screenName) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelector(`.${screenName}-screen`).classList.add('active');
+    }
+
+    function toggleSettings() {
+      goToScreen('settings');
+    }
+
+    // Generate Seed Phrase (12-word)
+    function generateSeedPhrase() {
+      const words = [
+        'abandon', 'ability', 'about', 'above', 'absent', 'absorb', 'abstract', 'abuse', 'access', 'accident',
+        'account', 'accuse', 'achieve', 'acid', 'acoustic', 'acquire', 'across', 'act', 'action', 'actor'
+      ];
+
+      let seed = [];
+      for (let i = 0; i < 12; i++) {
+        seed.push(words[Math.floor(Math.random() * words.length)]);
+      }
+      walletState.seedPhrase = seed;
+      displaySeed();
+    }
+
+    function displaySeed() {
+      const grid = document.getElementById('seedGrid');
+      grid.innerHTML = walletState.seedPhrase.map((word, i) => `
+        <div class="seed-word">
+          <span class="number">${i + 1}</span>
+          ${word}
+        </div>
+      `).join('');
+    }
+
+    function copySeed() {
+      const seed = walletState.seedPhrase.join(' ');
+      navigator.clipboard.writeText(seed).then(() => {
+        alert('Seed phrase copied!');
+      });
+    }
+
+    // Password Strength
+    function updatePasswordStrength() {
+      const password = document.getElementById('passwordInput').value;
+      let strength = 0;
+      const bars = document.querySelectorAll('.strength-bar');
+
+      if (password.length >= 8) strength++;
+      if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+      if (/\d/.test(password)) strength++;
+      if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+      const strengthTexts = ['Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
+      const strengthClasses = ['weak', 'weak', 'medium', 'strong', 'strong'];
+
+      document.getElementById('strengthText').textContent = `Password strength: ${strengthTexts[strength]}`;
+
+      bars.forEach((bar, i) => {
+        bar.classList.remove('weak', 'medium', 'strong', 'filled');
+        if (i < strength) {
+          bar.classList.add(strengthClasses[strength], 'filled');
+        }
+      });
+    }
+
+    // Initialize on Load
+    window.addEventListener('load', () => {
+      generateSeedPhrase();
+      document.getElementById('balanceAmount').textContent = walletState.balance;
+    });
+
+    // Listen to screen changes
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.option-card')) {
+        const target = e.target.closest('.option-card');
+        if (target.onclick) {
+          target.onclick();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
