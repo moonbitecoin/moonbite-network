@@ -453,6 +453,7 @@ def merchant_received_lookup(address: str) -> int:
 
 def mining_worker(job_id: str, blocks_to_mine: int, miner_address: str) -> None:
     """Background worker thread for mining blocks (concurrent-safe)."""
+    print(f"[MINING] Job {job_id}: Starting mining {blocks_to_mine} blocks for {miner_address}", flush=True)
     node = get_node()
 
     # Job-specific state
@@ -465,7 +466,8 @@ def mining_worker(job_id: str, blocks_to_mine: int, miner_address: str) -> None:
         "hashes_tried": 0,
         "hashrate": 0.0,
         "started_at": time.time(),
-        "mining_address": miner_address,  # For receipts/sharing
+        "mining_address": miner_address,
+        "last_error": None,
     }
 
     with app.mining_lock:
@@ -474,14 +476,20 @@ def mining_worker(job_id: str, blocks_to_mine: int, miner_address: str) -> None:
     for i in range(blocks_to_mine):
         with app.mining_lock:
             if not app.mining_state["active_jobs"].get(job_id, {}).get("is_mining", False):
+                print(f"[MINING] Job {job_id}: Mining cancelled", flush=True)
                 break
 
         try:
+            print(f"[MINING] Job {job_id}: Mining block {i+1}/{blocks_to_mine}", flush=True)
+
             # Lock blockchain access - mine_block() calls chain.add_block() which needs serialization
             with app.blockchain_lock:
                 block = node.mine_block(miner_address)
                 if block is not None:
+                    print(f"[MINING] Job {job_id}: Block mined! Hash: {block.hash}, Nonce: {block.header.nonce}, Txs: {len(block.transactions)}", flush=True)
                     _persist_block(block)
+                else:
+                    print(f"[MINING] Job {job_id}: mine_block() returned None - mining failed or block rejected", flush=True)
 
             if block is not None:
                 # Update job state (outside blockchain lock to avoid holding lock too long)
@@ -490,19 +498,33 @@ def mining_worker(job_id: str, blocks_to_mine: int, miner_address: str) -> None:
                 job_state["hashrate"] = job_state["hashes_tried"] / elapsed
                 job_state["blocks_mined"] = i + 1
                 job_state["current_block_height"] = node.chain.height
+                job_state["last_error"] = None
 
                 with app.mining_lock:
                     app.mining_state["total_blocks_mined"] += 1
                     app.mining_state["active_jobs"][job_id] = job_state
+
+                print(f"[MINING] Job {job_id}: Progress {i+1}/{blocks_to_mine} blocks mined, Hashrate: {job_state['hashrate']:.2f} H/s", flush=True)
             else:
+                job_state["last_error"] = "Mining failed or block rejected"
+                print(f"[MINING] Job {job_id}: Stopping mining - block was None", flush=True)
+                with app.mining_lock:
+                    app.mining_state["active_jobs"][job_id] = job_state
                 break
         except Exception as e:
-            print(f"Mining error (job {job_id}): {e}")
+            import traceback
+            error_msg = f"{str(e)}\n{traceback.format_exc()}"
+            print(f"[MINING] Job {job_id}: ERROR - {error_msg}", flush=True)
+            job_state["last_error"] = str(e)
+            with app.mining_lock:
+                app.mining_state["active_jobs"][job_id] = job_state
             break
 
     job_state["is_mining"] = False
     with app.mining_lock:
         app.mining_state["active_jobs"][job_id] = job_state
+
+    print(f"[MINING] Job {job_id}: Mining finished. Blocks mined: {job_state['blocks_mined']}", flush=True)
 
 
 # ============================================================================= #
