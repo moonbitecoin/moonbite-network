@@ -979,7 +979,7 @@
             50% { transform: scale(1.1); }
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -2145,15 +2145,19 @@
             // Get wallet address
             const address = document.getElementById('receiveAddress')?.textContent || 'moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k';
 
-            // Generate QR code
+            // Generate QR code using newer qrcode library
             if (typeof QRCode !== 'undefined') {
-                new QRCode(container, {
-                    text: address,
+                QRCode.toCanvas(container, address, {
+                    errorCorrectionLevel: 'H',
+                    type: 'image/png',
                     width: 160,
-                    height: 160,
-                    colorDark: '#FFFFFF',
-                    colorLight: '#1A1F3A',
-                    correctLevel: QRCode.CorrectLevel.H
+                    margin: 2,
+                    color: {
+                        dark: '#FFFFFF',
+                        light: '#1A1F3A'
+                    }
+                }, function (error) {
+                    if (error) console.error('QR Code generation error:', error);
                 });
             }
         }
