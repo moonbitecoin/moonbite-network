@@ -1,3 +1,4 @@
+<!-- Cache Buster: 2026-08-14T22:00:00Z -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -649,7 +650,7 @@
             </div>
         </div>
 
-        <!-- Screens Container -->
+        <!-- Screens Container - Onboarding Enabled -->
         <div class="screens-container">
             <!-- Fingerprint Authentication Screen -->
             <div class="screen active" id="fingerprintScreen">
@@ -778,45 +779,74 @@
                 </div>
             </div>
 
-            <!-- Password Setup Screen -->
+            <!-- Secure Your Wallet Screen -->
+            <div class="screen" id="secureWalletScreen">
+                <div class="screen-header">
+                    <h1>🔐 Secure Your Wallet</h1>
+                    <p>Protect your funds with security setup</p>
+                </div>
+                <div class="screen-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-lg);">
+                    <div style="width: 180px; height: 180px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 100px; box-shadow: 0 10px 40px rgba(34, 197, 94, 0.3);">🔐</div>
+                    <div style="text-align: center;">
+                        <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-sm);">Secure Your Wallet</h3>
+                        <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.6; margin-bottom: var(--spacing-lg);">Don't risk losing your funds. Protect your wallet by saving your seed phrase in a place you trust.</p>
+                        <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 12px; padding: var(--spacing-md); margin-bottom: var(--spacing-md);">
+                            <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.6;">It's the only way to recover your wallet if you get locked out of the app or get a new device.</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="showScreen('seedPhraseScreen')" style="width: 100%; max-width: 300px;">Start</button>
+                    <button class="btn btn-secondary" onclick="showScreen('passwordScreen')" style="width: 100%; max-width: 300px;">Remind me later</button>
+                </div>
+            </div>
+
+            <!-- Password Setup Screen - Enhanced -->
             <div class="screen" id="passwordScreen">
                 <div class="screen-header">
                     <h1>🔒 Create Password</h1>
-                    <p>Secure your wallet</p>
+                    <p>This password will unlock your Oneta wallet only on this device.</p>
                 </div>
                 <div class="screen-content">
                     <div class="form-group">
-                        <label class="form-label">Password</label>
-                        <input type="password" class="form-input" placeholder="Enter strong password" id="passwordInput">
+                        <label class="form-label">New Password</label>
+                        <div style="position: relative;">
+                            <input type="password" class="form-input" placeholder="Password" id="passwordInput" onchange="updatePasswordStrength()">
+                            <button style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;" onclick="togglePasswordVisibility('passwordInput')">👁️</button>
+                        </div>
                         <div style="color: var(--text-secondary); font-size: 12px; margin-top: var(--spacing-sm);">Must be at least 8 characters</div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Confirm Password</label>
-                        <input type="password" class="form-input" placeholder="Confirm password" id="confirmPasswordInput">
+                        <label class="form-label">Confirm New Password</label>
+                        <div style="position: relative;">
+                            <input type="password" class="form-input" placeholder="Password" id="confirmPasswordInput">
+                            <button style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;" onclick="togglePasswordVisibility('confirmPasswordInput')">👁️</button>
+                        </div>
                     </div>
 
                     <div class="card">
                         <div class="card-title">Password Strength</div>
                         <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
-                            <div style="flex: 1; height: 8px; background: var(--success); border-radius: 4px;"></div>
-                            <div style="flex: 1; height: 8px; background: var(--success); border-radius: 4px;"></div>
-                            <div style="flex: 1; height: 8px; background: var(--success); border-radius: 4px;"></div>
-                            <div style="flex: 1; height: 8px; background: var(--success); border-radius: 4px;"></div>
+                            <div id="strengthBar1" style="flex: 1; height: 8px; background: var(--success); border-radius: 4px;"></div>
+                            <div id="strengthBar2" style="flex: 1; height: 8px; background: rgba(74, 222, 128, 0.3); border-radius: 4px;"></div>
+                            <div id="strengthBar3" style="flex: 1; height: 8px; background: rgba(74, 222, 128, 0.3); border-radius: 4px;"></div>
+                            <div id="strengthBar4" style="flex: 1; height: 8px; background: rgba(74, 222, 128, 0.3); border-radius: 4px;"></div>
                         </div>
                     </div>
 
                     <div class="card">
-                        <div class="card-title">Requirements</div>
+                        <div class="card-title">Password Requirements</div>
                         <div style="margin-top: var(--spacing-md);">
                             <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm); color: var(--success);">
                                 <span>✓</span> At least 8 characters
                             </div>
                             <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm); color: var(--success);">
-                                <span>✓</span> Mix of uppercase and lowercase
+                                <span>✓</span> Contains uppercase letter
+                            </div>
+                            <div style="display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm); color: var(--success);">
+                                <span>✓</span> Contains number
                             </div>
                             <div style="display: flex; align-items: center; gap: var(--spacing-sm); color: var(--success);">
-                                <span>✓</span> Include numbers or symbols
+                                <span>✓</span> Contains special character
                             </div>
                         </div>
                     </div>
@@ -824,11 +854,134 @@
                     <div class="form-group" style="margin-top: var(--spacing-lg);">
                         <label style="display: flex; align-items: center; gap: var(--spacing-sm); color: var(--text-secondary); font-size: 14px; cursor: pointer;">
                             <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;">
-                            Sign in with Face ID?
+                            <span>Sign in with Face ID?</span>
                         </label>
                     </div>
 
-                    <button class="btn btn-primary" onclick="completeOnboarding()" style="width: 100%;">Complete Setup →</button>
+                    <div class="form-group" style="margin-top: var(--spacing-md);">
+                        <label style="display: flex; align-items: center; gap: var(--spacing-sm); color: var(--text-secondary); font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;" required>
+                            <span>Sign in with Biometrics?</span>
+                        </label>
+                    </div>
+
+                    <div class="card" style="background: rgba(74, 222, 128, 0.05); border-color: rgba(74, 222, 128, 0.2); margin-top: var(--spacing-lg);">
+                        <label style="display: flex; align-items: flex-start; gap: var(--spacing-md); cursor: pointer;">
+                            <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer; margin-top: 2px;" required>
+                            <div style="font-size: 13px; color: var(--text-secondary);">I understand that Oneta cannot recover this password for me. <span style="color: var(--success);">Learn more</span></div>
+                        </label>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="showScreen('secureWalletScreen')" style="width: 100%; margin-top: var(--spacing-lg);">Create Password</button>
+                </div>
+            </div>
+
+            <!-- Write Seed Phrase Screen -->
+            <div class="screen" id="writeSeedScreen">
+                <div class="screen-header">
+                    <h1>✍️ Write Down Seed Phrase</h1>
+                    <p>Write these 12 words in the same order in a safe place. You will need these words to restore your wallet.</p>
+                </div>
+                <div class="screen-content">
+                    <div class="card" style="background: rgba(74, 222, 128, 0.1); border-color: rgba(74, 222, 128, 0.3);">
+                        <div style="display: flex; align-items: flex-start; gap: var(--spacing-md);">
+                            <span style="font-size: 20px;">✍️</span>
+                            <div>
+                                <div style="color: var(--success); font-weight: 600; margin-bottom: var(--spacing-sm);">Tip to never lose your seed phrase</div>
+                                <div style="color: var(--text-secondary); font-size: 12px;">Write down all 12 words and keep them in a safe place. You can also store a backup in a secure location.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-top: var(--spacing-lg);">
+                        <div class="card-title">12-Word Seed Phrase</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-top: var(--spacing-md);">
+                            <div style="padding: var(--spacing-sm); background: rgba(26, 77, 122, 0.2); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 8px;"><span style="color: var(--text-secondary); font-size: 12px;">1.</span> mineral</div>
+                            <div style="padding: var(--spacing-sm); background: rgba(26, 77, 122, 0.2); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 8px;"><span style="color: var(--text-secondary); font-size: 12px;">2.</span> swift</div>
+                            <div style="padding: var(--spacing-sm); background: rgba(26, 77, 122, 0.2); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 8px;"><span style="color: var(--text-secondary); font-size: 12px;">3.</span> option</div>
+                            <div style="padding: var(--spacing-sm); background: rgba(26, 77, 122, 0.2); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 8px;"><span style="color: var(--text-secondary); font-size: 12px;">4.</span> stale</div>
+                            <div style="padding: var(--spacing-sm); background: rgba(26, 77, 122, 0.2); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 8px;"><span style="color: var(--text-secondary); font-size: 12px;">5.</span> harbor</div>
+                            <div style="padding: var(--spacing-sm); background: rgba(26, 77, 122, 0.2); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 8px;"><span style="color: var(--text-secondary); font-size: 12px;">6.</span> pearl</div>
+                            <div style="padding: var(--spacing-sm); background: rgba(26, 77, 122, 0.2); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 8px;"><span style="color: var(--text-secondary); font-size: 12px;">7.</span> space</div>
+                            <div style="padding: var(--spacing-sm); background: rgba(26, 77, 122, 0.2); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 8px;"><span style="color: var(--text-secondary); font-size: 12px;">8.</span> bench</div>
+                            <div style="padding: var(--spacing-sm); background: rgba(26, 77, 122, 0.2); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 8px;"><span style="color: var(--text-secondary); font-size: 12px;">9.</span> payment</div>
+                            <div style="padding: var(--spacing-sm); background: rgba(26, 77, 122, 0.2); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 8px;"><span style="color: var(--text-secondary); font-size: 12px;">10.</span> bomb</div>
+                            <div style="padding: var(--spacing-sm); background: rgba(26, 77, 122, 0.2); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 8px;"><span style="color: var(--text-secondary); font-size: 12px;">11.</span> hail</div>
+                            <div style="padding: var(--spacing-sm); background: rgba(26, 77, 122, 0.2); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 8px;"><span style="color: var(--text-secondary); font-size: 12px;">12.</span> motes</div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="showScreen('confirmSeedScreen')" style="width: 100%; margin-top: var(--spacing-lg);">Next</button>
+                </div>
+            </div>
+
+            <!-- Confirm Seed Phrase Screen -->
+            <div class="screen" id="confirmSeedScreen">
+                <div class="screen-header">
+                    <h1>✅ Confirm Seed Phrase</h1>
+                    <p>Select the correct words to verify you've saved your seed phrase.</p>
+                </div>
+                <div class="screen-content">
+                    <div style="background: rgba(26, 77, 122, 0.2); border: 1px solid rgba(26, 77, 122, 0.4); border-radius: 12px; padding: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                        <div style="font-size: 14px; color: var(--text-secondary);">Confirm word: <span style="color: var(--gold); font-weight: 600;">6.</span></div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md); margin-bottom: var(--spacing-lg);">
+                        <button style="padding: var(--spacing-md); background: rgba(26, 77, 122, 0.3); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); cursor: pointer; font-size: 14px;">mineral</button>
+                        <button style="padding: var(--spacing-md); background: rgba(26, 77, 122, 0.3); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); cursor: pointer; font-size: 14px;">space</button>
+                        <button style="padding: var(--spacing-md); background: rgba(26, 77, 122, 0.3); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); cursor: pointer; font-size: 14px;">pearl</button>
+                        <button style="padding: var(--spacing-md); background: rgba(26, 77, 122, 0.3); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); cursor: pointer; font-size: 14px;">bench</button>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="showScreen('seedInfoScreen')" style="width: 100%;">Next</button>
+                </div>
+            </div>
+
+            <!-- Seed Phrase Info Screen -->
+            <div class="screen" id="seedInfoScreen">
+                <div class="screen-header">
+                    <h1>📚 What is a Seed Phrase?</h1>
+                    <p>Understanding your wallet recovery key</p>
+                </div>
+                <div class="screen-content">
+                    <div class="card">
+                        <div style="color: var(--text-primary); font-weight: 600; margin-bottom: var(--spacing-md);">Definition</div>
+                        <div style="color: var(--text-secondary); font-size: 13px; line-height: 1.6;">A seed phrase is a set of twelve words that contains all the information about your wallet, including your funds. It is a secret code used to access your assets.</div>
+                    </div>
+
+                    <div class="card">
+                        <div style="color: var(--text-primary); font-weight: 600; margin-bottom: var(--spacing-md);">Security</div>
+                        <div style="color: var(--text-secondary); font-size: 13px; line-height: 1.6;">You must keep your seed phrase secret and safe. If someone gets your seed phrase, they will gain control over your accounts.</div>
+                    </div>
+
+                    <div class="card">
+                        <div style="color: var(--text-primary); font-weight: 600; margin-bottom: var(--spacing-md);">Recovery</div>
+                        <div style="color: var(--text-secondary); font-size: 13px; line-height: 1.6;">Save it in a place where you can access it. If you lose it, not even Oneta can help you recover it. It is the only way to access your wallet if you get locked out of the app or get a new device.</div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="showScreen('skipSecurityScreen')" style="width: 100%; margin-top: var(--spacing-lg);">OK, I Got It</button>
+                </div>
+            </div>
+
+            <!-- Skip Account Security Screen -->
+            <div class="screen" id="skipSecurityScreen">
+                <div class="screen-header">
+                    <h1>⚠️ Skip Account Security?</h1>
+                    <p>Confirm wallet setup</p>
+                </div>
+                <div class="screen-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-lg);">
+                    <div style="width: 180px; height: 180px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 100px; box-shadow: 0 10px 40px rgba(34, 197, 94, 0.3);">✅</div>
+                    <div style="text-align: center;">
+                        <h3 style="color: var(--text-primary); margin-bottom: var(--spacing-sm);">Successful</h3>
+                        <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.6; margin-bottom: var(--spacing-lg);">Your wallet has been created. Make sure to save your seed phrase to keep your wallet accessible and protected.</p>
+                    </div>
+                    <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 12px; padding: var(--spacing-md); width: 100%;">
+                        <label style="display: flex; align-items: flex-start; gap: var(--spacing-md); cursor: pointer;">
+                            <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer; margin-top: 2px;">
+                            <div style="font-size: 13px; color: var(--text-secondary);">I understand that if I lose my seed phrase I will not be able to access my wallet.</div>
+                        </label>
+                    </div>
+                    <button class="btn btn-primary" onclick="completeOnboarding()" style="width: 100%; max-width: 300px;">✅ Complete Setup</button>
                 </div>
             </div>
 
@@ -895,59 +1048,205 @@
                 </div>
             </div>
 
-            <!-- Send Screen -->
+            <!-- QR Code Scanner Screen -->
+            <div class="screen" id="qrScannerScreen">
+                <div class="screen-header">
+                    <h1>🔍 Scan QR Code</h1>
+                    <p>Point your camera at the QR Code</p>
+                </div>
+                <div class="screen-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-lg);">
+                    <div style="width: 220px; height: 220px; background: linear-gradient(135deg, rgba(26, 77, 122, 0.3), rgba(255, 107, 53, 0.2)); border: 3px dashed var(--fire-orange); border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 60px; margin-bottom: var(--spacing-md);">📷</div>
+                            <p style="color: var(--text-secondary); font-size: 13px;">Position QR code in frame</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: var(--spacing-lg); width: 100%; justify-content: center;">
+                        <button style="width: 50px; height: 50px; border-radius: 50%; background: var(--fire-orange); border: none; color: white; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;">●</button>
+                    </div>
+                    <button class="btn btn-secondary" onclick="showScreen('sendScreen')" style="width: 100%;">← Cancel</button>
+                </div>
+            </div>
+
+            <!-- Send Screen - Enhanced -->
             <div class="screen" id="sendScreen">
                 <div class="screen-header">
-                    <h1>Send MBITE</h1>
-                    <p>Transfer to another wallet</p>
+                    <h1>📤 Send MBITE</h1>
+                    <p>Transfer cryptocurrency to another wallet</p>
                 </div>
                 <div class="screen-content">
                     <div class="form-group">
                         <label class="form-label">Recipient Address</label>
-                        <input type="text" class="form-input" placeholder="Enter MBITE address" value="MJX9vNr8Yjt5Zq4Kp2Lm8Wn5Hs7Dg3Fx">
+                        <div style="display: flex; gap: var(--spacing-sm);">
+                            <input type="text" class="form-input" placeholder="Enter MBITE address or scan QR" id="sendRecipient" style="flex: 1;" value="moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k">
+                            <button style="background: var(--fire-orange); color: white; border: none; padding: 0 var(--spacing-md); border-radius: 8px; cursor: pointer; font-size: 18px;" onclick="showScreen('qrScannerScreen')">📷</button>
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Amount (MBITE)</label>
-                        <input type="number" class="form-input" placeholder="0.00" value="1.5">
+                        <input type="number" class="form-input" placeholder="0.00" id="sendAmount" value="1.5" style="font-size: 18px;">
                     </div>
 
                     <div class="card">
                         <div class="card-title">Network Fee Priority</div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
-                            <button class="btn btn-small" style="background: linear-gradient(135deg, var(--fire-orange), #ff8c42); color: white;">⚡ FAST</button>
-                            <button class="btn btn-small" style="background: rgba(26, 77, 122, 0.2); color: var(--gold);">⏱️ STANDARD</button>
-                            <button class="btn btn-small" style="background: rgba(26, 77, 122, 0.2); color: var(--gold);">🐢 SLOW</button>
+                            <button class="btn btn-small" onclick="setFeeSpeed(this, 'FAST')" style="background: linear-gradient(135deg, var(--fire-orange), #ff8c42); color: white;">⚡ FAST</button>
+                            <button class="btn btn-small" onclick="setFeeSpeed(this, 'STANDARD')" style="background: rgba(26, 77, 122, 0.2); color: var(--gold);">⏱️ STANDARD</button>
+                            <button class="btn btn-small" onclick="setFeeSpeed(this, 'SLOW')" style="background: rgba(26, 77, 122, 0.2); color: var(--gold);">🐢 SLOW</button>
                         </div>
                     </div>
 
                     <div class="card">
-                        <div class="card-title">Network Fee</div>
-                        <div class="card-value">0.0001 MBITE</div>
-                        <div class="card-title" style="margin-top: var(--spacing-md);">Total Amount</div>
-                        <div class="card-value">1.5001 MBITE</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div class="card-title">Network Fee</div>
+                                <div class="card-value" id="networkFeeDisplay">0.0001 MBITE</div>
+                            </div>
+                            <button style="background: var(--fire-orange); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;" onclick="showScreen('networkFeeScreen')">Edit</button>
+                        </div>
+                        <div style="border-top: 1px solid var(--border-color); margin-top: var(--spacing-md); padding-top: var(--spacing-md);">
+                            <div class="card-title">Total Amount</div>
+                            <div class="card-value" id="totalAmountDisplay">1.5001 MBITE</div>
+                        </div>
                     </div>
 
-                    <button class="btn btn-primary" onclick="showScreen('confirmSendScreen')">✓ Send Now</button>
+                    <button class="btn btn-primary" onclick="showScreen('confirmSendScreen')">✓ Review & Send</button>
+                    <button class="btn btn-secondary" onclick="showScreen('dashboardScreen')">← Back</button>
                 </div>
             </div>
 
-            <!-- Receive Screen -->
-            <div class="screen" id="receiveScreen">
+            <!-- Network Fee Editor Screen -->
+            <div class="screen" id="networkFeeScreen">
                 <div class="screen-header">
-                    <h1>Receive MBITE</h1>
-                    <p>Share your wallet address</p>
+                    <h1>⚙️ Edit Network Fee</h1>
+                    <p>Adjust the transaction fee</p>
                 </div>
                 <div class="screen-content">
-                    <div class="qr-placeholder">📱</div>
-
-                    <div class="form-group">
-                        <label class="form-label">Your Wallet Address</label>
-                        <div class="address-display">MJX9vNr8Yjt5Zq4Kp2Lm8Wn5Hs7Dg3Fx</div>
+                    <div class="card">
+                        <div class="card-title">Current Speed</div>
+                        <div class="card-value" id="feeSpeedDisplay">Standard</div>
                     </div>
 
-                    <button class="btn btn-primary" onclick="copyAddress()">📋 Copy Address</button>
-                    <button class="btn btn-secondary">🔗 Copy Link</button>
+                    <div class="form-group">
+                        <label class="form-label">Custom Fee (MBITE)</label>
+                        <input type="number" class="form-input" placeholder="0.0001" id="customFeeInput" value="0.0001" step="0.00001">
+                        <div style="color: var(--text-secondary); font-size: 12px; margin-top: var(--spacing-sm);">Estimated time: ~10 minutes</div>
+                    </div>
+
+                    <div class="card" style="background: rgba(74, 222, 128, 0.05); border-color: rgba(74, 222, 128, 0.2);">
+                        <div class="card-title">Fee Recommendations</div>
+                        <div style="margin-top: var(--spacing-md); display: flex; flex-direction: column; gap: var(--spacing-sm);">
+                            <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                                <span style="color: var(--text-secondary);">⚡ Fast (2-5 min)</span>
+                                <span style="color: var(--gold); cursor: pointer;" onclick="document.getElementById('customFeeInput').value = '0.0005'">0.0005</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                                <span style="color: var(--text-secondary);">⏱️ Standard (10-15 min)</span>
+                                <span style="color: var(--gold); cursor: pointer;" onclick="document.getElementById('customFeeInput').value = '0.0001'">0.0001</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                                <span style="color: var(--text-secondary);">🐢 Slow (30+ min)</span>
+                                <span style="color: var(--gold); cursor: pointer;" onclick="document.getElementById('customFeeInput').value = '0.00005'">0.00005</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="showScreen('sendScreen')">✓ Confirm Fee</button>
+                </div>
+            </div>
+
+            <!-- Transaction Confirmation Screen -->
+            <div class="screen" id="confirmSendScreen">
+                <div class="screen-header">
+                    <h1>✓ Confirm Transaction</h1>
+                    <p>Review transaction details</p>
+                </div>
+                <div class="screen-content">
+                    <div class="card">
+                        <div class="card-title">Recipient</div>
+                        <div class="card-value" style="font-size: 14px; word-break: break-all;">moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k</div>
+                    </div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-md);">
+                            <div>
+                                <div class="card-title">Amount</div>
+                                <div class="card-value" style="font-size: 20px;">1.5 MBITE</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div class="card-title">≈ USD</div>
+                                <div class="card-value" style="font-size: 20px; color: var(--success);">$37.50</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
+                            <div class="card-title">Network Fee</div>
+                            <div class="card-value" style="font-size: 14px;">0.0001 MBITE</div>
+                        </div>
+                        <div style="border-top: 1px solid var(--border-color); padding-top: var(--spacing-md); margin-top: var(--spacing-md); display: flex; justify-content: space-between;">
+                            <div class="card-title">Total</div>
+                            <div class="card-value" style="font-size: 18px;">1.5001 MBITE</div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="showScreen('transactionSuccessScreen')" style="background: #22c55e;">✓ Confirm & Send</button>
+                    <button class="btn btn-secondary" onclick="showScreen('sendScreen')">← Edit Transaction</button>
+                </div>
+            </div>
+
+            <!-- Transaction Success Screen -->
+            <div class="screen" id="transactionSuccessScreen">
+                <div class="screen-header">
+                    <h1>✅ Sent Successfully</h1>
+                    <p>Transaction confirmed</p>
+                </div>
+                <div class="screen-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-lg);">
+                    <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 60px; animation: pulse 1s ease-out;">✓</div>
+                    <div style="text-align: center;">
+                        <h3 style="color: var(--gold); margin-bottom: var(--spacing-sm);">1.5 MBITE Sent</h3>
+                        <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: var(--spacing-lg);">Your transaction has been broadcast to the network</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Transaction Hash</div>
+                        <div style="color: var(--gold); font-family: monospace; font-size: 12px; word-break: break-all; margin-top: var(--spacing-sm);">0x1a2b3c4d5e6f7g8h9i0j...</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="showScreen('dashboardScreen')" style="background: #22c55e;">🏠 Back to Dashboard</button>
+                    <button class="btn btn-secondary" onclick="showScreen('sendScreen')">📤 Send More</button>
+                </div>
+            </div>
+
+            <!-- Receive Screen - Enhanced -->
+            <div class="screen" id="receiveScreen">
+                <div class="screen-header">
+                    <h1>📥 Receive MBITE</h1>
+                    <p>Share your wallet address to receive funds</p>
+                </div>
+                <div class="screen-content" style="display: flex; flex-direction: column; align-items: center;">
+                    <div class="card" style="width: 100%; margin-bottom: var(--spacing-lg);">
+                        <div style="background: linear-gradient(135deg, rgba(26, 77, 122, 0.3), rgba(255, 107, 53, 0.1)); border-radius: 12px; padding: var(--spacing-lg); display: flex; align-items: center; justify-content: center; min-height: 200px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 100px; margin-bottom: var(--spacing-md);">📱</div>
+                                <p style="color: var(--text-secondary); font-size: 13px;">QR Code Display</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="width: 100%;">
+                        <label class="form-label">Your Wallet Address</label>
+                        <div class="address-display" id="receiveAddress">moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k</div>
+                    </div>
+
+                    <div class="form-group" style="width: 100%;">
+                        <label class="form-label">Wallet Label</label>
+                        <div style="background: rgba(26, 77, 122, 0.1); border: 1px solid var(--border-color); border-radius: 8px; padding: var(--spacing-md); color: var(--gold); font-size: 14px;">Primary Wallet</div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="copyAddress()" style="width: 100%;">📋 Copy Address</button>
+                    <button class="btn btn-secondary" style="width: 100%;">🔗 Share Wallet</button>
+                    <button class="btn btn-secondary" onclick="showScreen('dashboardScreen')" style="width: 100%;">← Back</button>
                 </div>
             </div>
 
@@ -1003,7 +1302,7 @@
                         <div class="contact-avatar">JW</div>
                         <div class="contact-info">
                             <div class="contact-name">Jenny Wilson</div>
-                            <div class="contact-address">MJX9vNr8Yjt5Zq4Kp2Lm8Wn5Hs7Dg3Fx</div>
+                            <div class="contact-address">moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k</div>
                         </div>
                     </div>
 
@@ -1019,7 +1318,7 @@
                         <div class="contact-avatar" style="background: linear-gradient(135deg, #ff8c42, var(--fire-orange));">EB</div>
                         <div class="contact-info">
                             <div class="contact-name">Evelina Burke</div>
-                            <div class="contact-address">MJX9vNr8Yjt5Zq4Kp2Lm8Wn5Hs7Dg3Fx</div>
+                            <div class="contact-address">moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k</div>
                         </div>
                     </div>
 
@@ -1227,7 +1526,7 @@
                 <div class="screen-content">
                     <div class="card">
                         <div class="card-title">Recipient</div>
-                        <div style="font-family: 'Monaco', 'Menlo', monospace; font-size: 12px; color: var(--gold); word-break: break-all;">MJX9vNr8Yjt5Zq4Kp2Lm8Wn5Hs7Dg3Fx</div>
+                        <div style="font-family: 'Monaco', 'Menlo', monospace; font-size: 12px; color: var(--gold); word-break: break-all;">moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k</div>
                     </div>
 
                     <div class="card">
@@ -1362,7 +1661,7 @@
         }
 
         function copyAddress() {
-            navigator.clipboard.writeText('MJX9vNr8Yjt5Zq4Kp2Lm8Wn5Hs7Dg3Fx');
+            navigator.clipboard.writeText('moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k');
             alert('Address copied to clipboard!');
         }
 
@@ -1402,6 +1701,66 @@
             navigator.clipboard.writeText(seedWords).then(() => {
                 alert('✓ Seed phrase copied to clipboard!');
             });
+        }
+
+        // Password visibility toggle
+        function togglePasswordVisibility(fieldId) {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.type = field.type === 'password' ? 'text' : 'password';
+            }
+        }
+
+        // Transaction Fee Speed Handler
+        function setFeeSpeed(button, speed) {
+            const buttons = button.parentElement.querySelectorAll('.btn');
+            buttons.forEach(btn => {
+                btn.style.background = 'rgba(26, 77, 122, 0.2)';
+                btn.style.color = 'var(--gold)';
+            });
+            button.style.background = 'linear-gradient(135deg, var(--fire-orange), #ff8c42)';
+            button.style.color = 'white';
+
+            const fees = { 'FAST': '0.0005', 'STANDARD': '0.0001', 'SLOW': '0.00005' };
+            document.getElementById('networkFeeDisplay').textContent = fees[speed] + ' MBITE';
+            document.getElementById('feeSpeedDisplay').textContent = speed;
+
+            const amount = parseFloat(document.getElementById('sendAmount').value) || 1.5;
+            const fee = parseFloat(fees[speed]);
+            document.getElementById('totalAmountDisplay').textContent = (amount + fee).toFixed(4) + ' MBITE';
+        }
+
+        // Copy Address Function
+        function copyAddress() {
+            const address = document.getElementById('receiveAddress')?.textContent || 'moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k';
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(address).then(() => {
+                    alert('✓ Address copied to clipboard!');
+                }).catch(() => {
+                    alert('Address: ' + address);
+                });
+            } else {
+                alert('Address: ' + address);
+            }
+        }
+
+        // Password strength indicator
+        function updatePasswordStrength() {
+            const password = document.getElementById('passwordInput')?.value || '';
+            let strength = 0;
+
+            if (password.length >= 8) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[!@#$%^&*]/.test(password)) strength++;
+
+            // Update strength bars
+            for (let i = 1; i <= 4; i++) {
+                const bar = document.getElementById(`strengthBar${i}`);
+                if (bar) {
+                    bar.style.background = i <= strength ? 'var(--success)' : 'rgba(74, 222, 128, 0.3)';
+                }
+            }
         }
 
         function completeOnboarding() {
