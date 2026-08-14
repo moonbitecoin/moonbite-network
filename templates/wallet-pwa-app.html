@@ -2080,7 +2080,10 @@
                 'addContactScreen': '➕ Add Contact',
                 'confirmSendScreen': '✓ Confirm Send'
             };
-            document.getElementById('screenTitle').textContent = titles[screenId] || 'MoonBite';
+            const screenTitle = document.getElementById('screenTitle');
+            if (screenTitle) {
+                screenTitle.textContent = titles[screenId] || 'MoonBite';
+            }
             updateBackButton(screenId);
         }
 
