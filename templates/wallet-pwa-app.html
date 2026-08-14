@@ -1995,7 +1995,7 @@
         let currentScreen = 'pinSetupScreen';
 
         // Initialize - show PIN screen on first load, or dashboard if onboarding complete
-        window.addEventListener('load', () => {
+        function initializeScreens() {
             // Remove active from all screens first
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
@@ -2020,7 +2020,15 @@
             }
 
             initTheme();
-        });
+        }
+
+        // Call initialization immediately and also on load as fallback
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeScreens);
+        } else {
+            initializeScreens();
+        }
+        window.addEventListener('load', initializeScreens);
 
         // PWA Install prompt
         window.addEventListener('beforeinstallprompt', (e) => {
