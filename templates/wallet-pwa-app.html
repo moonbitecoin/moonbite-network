@@ -23,16 +23,34 @@
         }
 
         :root {
-            --moon-blue: #1a4d7a;
-            --fire-orange: #ff6b35;
-            --gold: #ffd700;
-            --dark-bg: #0f1419;
-            --card-bg: #1a2332;
-            --border-color: #2a3d5a;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0b0;
-            --success: #4ade80;
-            --danger: #ff4444;
+            /* Bitcoin Wallet Inspired Color Scheme */
+            --primary: #0066FF;
+            --primary-dark: #0052CC;
+            --secondary: #FF9500;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+
+            /* Dark Mode (Default) */
+            --bg-primary: #0A0E27;
+            --bg-secondary: #1A1F3A;
+            --bg-tertiary: #252B48;
+            --text-primary: #FFFFFF;
+            --text-secondary: #9CA3AF;
+            --text-tertiary: #6B7280;
+            --border-color: #374151;
+            --card-bg: #111827;
+
+            /* Light Mode */
+            --bg-primary-light: #FFFFFF;
+            --bg-secondary-light: #F9FAFB;
+            --bg-tertiary-light: #F3F4F6;
+            --text-primary-light: #111827;
+            --text-secondary-light: #6B7280;
+            --text-tertiary-light: #9CA3AF;
+            --border-color-light: #E5E7EB;
+            --card-bg-light: #F9FAFB;
+
             --spacing-xs: 4px;
             --spacing-sm: 8px;
             --spacing-md: 16px;
@@ -40,19 +58,58 @@
             --spacing-xl: 32px;
         }
 
+        /* Light Theme */
+        html[data-theme="light"] {
+            --bg-primary: var(--bg-primary-light);
+            --bg-secondary: var(--bg-secondary-light);
+            --bg-tertiary: var(--bg-tertiary-light);
+            --text-primary: var(--text-primary-light);
+            --text-secondary: var(--text-secondary-light);
+            --text-tertiary: var(--text-tertiary-light);
+            --border-color: var(--border-color-light);
+            --card-bg: var(--card-bg-light);
+        }
+
         html, body {
             width: 100%;
             height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            background: linear-gradient(180deg, var(--dark-bg) 0%, #1a2a3a 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', system-ui, sans-serif;
+            background: var(--bg-primary);
             color: var(--text-primary);
             overflow: hidden;
             position: fixed;
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
         body {
             display: flex;
             flex-direction: column;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0, 102, 255, 0.3);
+            z-index: 90;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 24px rgba(0, 102, 255, 0.4);
         }
 
         .app-container {
@@ -280,19 +337,18 @@
             color: var(--text-tertiary);
         }
 
-        /* Visa/Mastercard Inspired Premium Card Styles */
+        /* Bitcoin Wallet Inspired Premium Card */
         .premium-balance-card {
-            background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 50%, #1a4d7a 100%);
-            border-radius: 20px;
-            padding: 32px 24px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 24px;
+            padding: 36px 28px;
             margin-bottom: var(--spacing-lg);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
-                        0 0 40px rgba(255, 107, 53, 0.1),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 214, 0, 0.2);
-            min-height: 220px;
+            box-shadow: 0 20px 60px rgba(0, 102, 255, 0.15),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 240px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -301,61 +357,70 @@
         .premium-balance-card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at top right, rgba(255, 214, 0, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at bottom left, rgba(255, 107, 53, 0.05) 0%, transparent 50%);
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
             pointer-events: none;
         }
 
         .premium-balance-card::after {
             content: '';
             position: absolute;
-            top: 12px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            background: radial-gradient(circle at top left, rgba(255, 214, 0, 0.3), rgba(255, 107, 53, 0.2));
+            bottom: -100px;
+            left: -100px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
             border-radius: 50%;
-            filter: blur(20px);
-            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        html[data-theme="light"] .premium-balance-card {
+            background: linear-gradient(135deg, #0066FF 0%, #0052CC 100%);
         }
 
         .balance-label {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
             text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 600;
-            margin-bottom: 8px;
+            letter-spacing: 1px;
+            font-weight: 500;
+            margin-bottom: 12px;
             position: relative;
             z-index: 2;
         }
 
         .balance-amount {
-            font-size: 42px;
-            font-weight: 300;
-            color: #ffd700;
-            letter-spacing: -1px;
+            font-size: 48px;
+            font-weight: 700;
+            color: #FFFFFF;
+            letter-spacing: -0.5px;
             position: relative;
             z-index: 2;
-            font-family: 'Monaco', 'Courier New', monospace;
+            font-family: system-ui, -apple-system, sans-serif;
         }
 
         .balance-unit {
-            font-size: 18px;
-            font-weight: 400;
+            font-size: 20px;
+            font-weight: 600;
             margin-left: 8px;
         }
 
         .balance-usd {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-top: 8px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 10px;
             position: relative;
             z-index: 2;
+        }
+
+        html[data-theme="light"] .balance-label,
+        html[data-theme="light"] .balance-amount,
+        html[data-theme="light"] .balance-usd {
+            color: white;
         }
 
         .card-chip {
@@ -1879,6 +1944,9 @@
             </div>
         </div>
 
+        <!-- Theme Toggle Button -->
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle Theme">☀️</button>
+
         <!-- Bottom Navigation -->
         <div class="bottom-nav">
             <button class="nav-item active" onclick="showScreen('dashboardScreen'); setActiveNav(this)">
@@ -2191,6 +2259,29 @@
         }
 
         // Check if onboarding was already completed
+        // ============================================================
+        // Theme Toggle System
+        // ============================================================
+        function initTheme() {
+            const savedTheme = localStorage.getItem('moonbite_theme') || 'dark';
+            setTheme(savedTheme);
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('moonbite_theme', theme);
+            const themeToggleBtn = document.getElementById('themeToggle');
+            if (themeToggleBtn) {
+                themeToggleBtn.textContent = theme === 'light' ? '🌙' : '☀️';
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            setTheme(newTheme);
+        }
+
         function checkOnboardingStatus() {
             const onboardingComplete = localStorage.getItem('moonbite_onboarding_complete');
 
@@ -2208,10 +2299,12 @@
 
         // Initialize onboarding check on page load
         window.addEventListener('load', () => {
+            initTheme();
             setTimeout(checkOnboardingStatus, 100);
         });
 
         // Also check immediately
+        initTheme();
         checkOnboardingStatus();
     </script>
 </body>
