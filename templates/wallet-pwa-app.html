@@ -1994,10 +1994,15 @@
         let deferredPrompt;
         let currentScreen = 'pinSetupScreen';
 
-        // Initialize first screen on page load
+        // Initialize first screen on page load - remove active from ALL screens first
         document.addEventListener('DOMContentLoaded', () => {
+            // Remove active class from all screens
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            // Show only PIN setup screen
             const initialScreen = document.getElementById('pinSetupScreen');
-            if (initialScreen && !initialScreen.classList.contains('active')) {
+            if (initialScreen) {
                 initialScreen.classList.add('active');
             }
         });
