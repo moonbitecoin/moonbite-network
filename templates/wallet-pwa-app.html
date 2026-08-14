@@ -1078,7 +1078,7 @@
                     <div class="form-group">
                         <label class="form-label">Recipient Address</label>
                         <div style="display: flex; gap: var(--spacing-sm);">
-                            <input type="text" class="form-input" placeholder="Enter MBITE address or scan QR" id="sendRecipient" style="flex: 1;" value="moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k">
+                            <input type="text" class="form-input" placeholder="Enter MBITE address or scan QR" id="sendRecipient" style="flex: 1;">
                             <button style="background: var(--fire-orange); color: white; border: none; padding: 0 var(--spacing-md); border-radius: 8px; cursor: pointer; font-size: 18px;" onclick="showScreen('qrScannerScreen')">📷</button>
                         </div>
                     </div>
@@ -1165,7 +1165,7 @@
                 <div class="screen-content">
                     <div class="card">
                         <div class="card-title">Recipient</div>
-                        <div class="card-value" style="font-size: 14px; word-break: break-all;">moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k</div>
+                        <div class="card-value" id="confirmRecipient" style="font-size: 14px; word-break: break-all;">-</div>
                     </div>
 
                     <div class="card">
@@ -1601,6 +1601,14 @@
 
         // Screen navigation
         function showScreen(screenId) {
+            // Update confirmation screen with actual user input
+            if (screenId === 'confirmSendScreen') {
+                const recipient = document.getElementById('sendRecipient')?.value || '-';
+                const amount = document.getElementById('sendAmount')?.value || '0';
+                document.getElementById('confirmRecipient').textContent = recipient;
+                document.querySelector('[id="totalAmountDisplay"]')?.parentElement?.querySelector('.card-value')?.textContent?.replace(/\d+\.?\d*/, amount) || null;
+            }
+
             const currentScreenEl = document.getElementById(currentScreen);
             const newScreenEl = document.getElementById(screenId);
 
