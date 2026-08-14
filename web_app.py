@@ -64,6 +64,10 @@ _chain_store: Optional["BlockStore"] = None
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
+# Disable template caching to ensure updates are served immediately
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.jinja_env.auto_reload = True
+
 # Signs the session cookie that scopes per-visitor wallet state. Set SECRET_KEY
 # in production so sessions survive restarts; a random key is a safe default.
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
