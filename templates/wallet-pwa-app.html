@@ -1996,8 +1996,13 @@
 
         // Initialize - show PIN screen only once on first load
         window.addEventListener('load', () => {
+            // Remove active from all screens first
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            // Show only PIN setup screen
             const pinScreen = document.getElementById('pinSetupScreen');
-            if (pinScreen && !pinScreen.classList.contains('active')) {
+            if (pinScreen) {
                 pinScreen.classList.add('active');
             }
         });
