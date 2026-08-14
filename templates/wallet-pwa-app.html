@@ -1009,7 +1009,7 @@
         <!-- Screens Container - Onboarding Enabled -->
         <div class="screens-container">
             <!-- 6-Digit PIN Setup Screen -->
-            <div class="screen active" id="pinSetupScreen">
+            <div class="screen" id="pinSetupScreen">
                 <div class="screen-header">
                     <h1>🔐 Create PIN</h1>
                     <p>Set up a 6-digit PIN to secure your wallet</p>
@@ -1992,7 +1992,15 @@
         }
 
         let deferredPrompt;
-        let currentScreen = 'dashboardScreen';
+        let currentScreen = 'pinSetupScreen';
+
+        // Initialize first screen on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialScreen = document.getElementById('pinSetupScreen');
+            if (initialScreen && !initialScreen.classList.contains('active')) {
+                initialScreen.classList.add('active');
+            }
+        });
 
         // PWA Install prompt
         window.addEventListener('beforeinstallprompt', (e) => {
