@@ -812,6 +812,11 @@ def wallet_moonbite_page():
     """Serve the MoonBite-branded wallet with moon logo colors and all wireframe screens."""
     return render_template("wallet-moonbite.html")
 
+@app.route("/wallet-complete")
+def wallet_complete_page():
+    """Serve the complete MoonBite wallet with all screens from wireframes."""
+    return render_template("wallet-complete-moonbite.html")
+
 @app.route("/wallet-manifest.json")
 def wallet_manifest():
     """Serve PWA manifest."""
