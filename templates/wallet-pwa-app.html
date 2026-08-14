@@ -1073,6 +1073,30 @@
                 </div>
             </div>
 
+            <!-- PIN Verification Screen (For Returning Users) -->
+            <div class="screen" id="pinVerifyScreen">
+                <div class="screen-header">
+                    <h1>🔐 Enter PIN</h1>
+                    <p>Unlock your MoonBite wallet</p>
+                </div>
+                <div class="screen-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-lg);">
+                    <div style="font-size: 60px; margin-bottom: var(--spacing-lg);">🔒</div>
+                    <div style="text-align: center;">
+                        <label class="form-label" style="margin-bottom: var(--spacing-md);">6-Digit PIN</label>
+                        <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: var(--spacing-lg);">
+                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin0">
+                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin1">
+                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin2">
+                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin3">
+                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin4">
+                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin5">
+                        </div>
+                    </div>
+                    <div id="pinVerifyError" style="color: #ef4444; font-size: 13px; display: none; text-align: center;">Incorrect PIN. Please try again.</div>
+                    <button class="btn btn-primary" onclick="verifyPINAndLogin()" style="width: 100%; max-width: 300px;">Unlock Wallet →</button>
+                </div>
+            </div>
+
             <!-- Wallet Setup Screen -->
             <div class="screen" id="walletSetupScreen">
                 <div class="screen-header">
@@ -2017,7 +2041,7 @@
         let deferredPrompt;
         let currentScreen = 'pinSetupScreen';
 
-        // Initialize - show PIN screen on first load, or dashboard if onboarding complete
+        // Initialize - show PIN entry for returning users, or PIN setup for new users
         function initializeScreens() {
             // Remove active from all screens first
             document.querySelectorAll('.screen').forEach(screen => {
@@ -2028,14 +2052,14 @@
             const onboardingComplete = localStorage.getItem('moonbite_onboarding_complete');
 
             if (onboardingComplete) {
-                // Show dashboard if onboarding complete
-                const dashboardScreen = document.getElementById('dashboardScreen');
-                if (dashboardScreen) {
-                    dashboardScreen.classList.add('active');
-                    currentScreen = 'dashboardScreen';
+                // Returning user - show PIN entry/verification screen
+                const pinVerifyScreen = document.getElementById('pinVerifyScreen');
+                if (pinVerifyScreen) {
+                    pinVerifyScreen.classList.add('active');
+                    currentScreen = 'pinVerifyScreen';
                 }
             } else {
-                // Show PIN setup screen for first time users
+                // First time user - show PIN setup screen
                 const pinScreen = document.getElementById('pinSetupScreen');
                 if (pinScreen) {
                     pinScreen.classList.add('active');
@@ -2369,6 +2393,50 @@
             // Show success message
             alert('✓ Wallet setup complete! Welcome to MoonBite.');
         }
+
+        // PIN verification for returning users
+        function verifyPINAndLogin() {
+            const pinInputs = document.querySelectorAll('#pinVerifyScreen .pin-input');
+            const enteredPIN = Array.from(pinInputs).map(input => input.value).join('');
+
+            if (enteredPIN.length !== 6 || !/^\d+$/.test(enteredPIN)) {
+                alert('Please enter a valid 6-digit PIN');
+                return;
+            }
+
+            // Get stored PIN from localStorage
+            const storedPIN = localStorage.getItem('moonbite_pin');
+
+            if (enteredPIN === storedPIN) {
+                // PIN is correct - show dashboard
+                document.getElementById('pinVerifyError').style.display = 'none';
+                showScreen('dashboardScreen');
+                setActiveNav(document.querySelectorAll('.nav-item')[0]);
+            } else {
+                // PIN is incorrect - show error
+                document.getElementById('pinVerifyError').style.display = 'block';
+                // Clear the inputs
+                pinInputs.forEach(input => input.value = '');
+                pinInputs[0].focus();
+            }
+        }
+
+        // Auto-focus next pin input
+        document.addEventListener('DOMContentLoaded', () => {
+            const pinInputs = document.querySelectorAll('#pinVerifyScreen .pin-input, #pinSetupScreen .pin-input');
+            pinInputs.forEach((input, index) => {
+                input.addEventListener('input', (e) => {
+                    if (e.target.value && index < pinInputs.length - 1) {
+                        pinInputs[index + 1].focus();
+                    }
+                });
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                        pinInputs[index - 1].focus();
+                    }
+                });
+            });
+        });
 
         // Check if onboarding was already completed
         // ============================================================
