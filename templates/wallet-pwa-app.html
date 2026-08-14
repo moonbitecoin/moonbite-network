@@ -1994,17 +1994,32 @@
         let deferredPrompt;
         let currentScreen = 'pinSetupScreen';
 
-        // Initialize - show PIN screen only once on first load
+        // Initialize - show PIN screen on first load, or dashboard if onboarding complete
         window.addEventListener('load', () => {
             // Remove active from all screens first
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
             });
-            // Show only PIN setup screen
-            const pinScreen = document.getElementById('pinSetupScreen');
-            if (pinScreen) {
-                pinScreen.classList.add('active');
+
+            // Check if onboarding is complete
+            const onboardingComplete = localStorage.getItem('moonbite_onboarding_complete');
+
+            if (onboardingComplete) {
+                // Show dashboard if onboarding complete
+                const dashboardScreen = document.getElementById('dashboardScreen');
+                if (dashboardScreen) {
+                    dashboardScreen.classList.add('active');
+                    currentScreen = 'dashboardScreen';
+                }
+            } else {
+                // Show PIN setup screen for first time users
+                const pinScreen = document.getElementById('pinSetupScreen');
+                if (pinScreen) {
+                    pinScreen.classList.add('active');
+                }
             }
+
+            initTheme();
         });
 
         // PWA Install prompt
@@ -2329,9 +2344,10 @@
         }
 
         // Initialize onboarding check on page load
-        window.addEventListener('load', () => {
-            initTheme();
-            setTimeout(checkOnboardingStatus, 100);
+        // Note: onboarding check is now handled in main load event above
+        // window.addEventListener('load', () => {
+        //     initTheme();
+        //     setTimeout(checkOnboardingStatus, 100);
         });
 
         // Also check immediately
