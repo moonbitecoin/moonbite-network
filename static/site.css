@@ -76,7 +76,7 @@
             background-clip: text;
     -webkit-text-fill-color: transparent;
 }
-.mb-brand img { width: 26px; height: 26px; }
+.mb-brand img { width: 112px; height: 112px; }
 
 .mb-nav-links {
     display: flex;
