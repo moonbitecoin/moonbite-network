@@ -2036,12 +2036,13 @@
                 document.querySelector('[id="totalAmountDisplay"]')?.parentElement?.querySelector('.card-value')?.textContent?.replace(/\d+\.?\d*/, amount) || null;
             }
 
-            const currentScreenEl = document.getElementById(currentScreen);
-            const newScreenEl = document.getElementById(screenId);
+            // Remove active from ALL screens first
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
 
-            if (currentScreenEl) {
-                currentScreenEl.classList.remove('active');
-            }
+            // Show only the new screen
+            const newScreenEl = document.getElementById(screenId);
             if (newScreenEl) {
                 newScreenEl.classList.add('active');
                 currentScreen = screenId;
