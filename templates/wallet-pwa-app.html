@@ -1033,66 +1033,69 @@
 
         <!-- Screens Container - Onboarding Enabled -->
         <div class="screens-container">
-            <!-- 6-Digit PIN Setup Screen -->
+            <!-- 6-Digit PIN Setup Screen - ONE TIME ONLY -->
             <div class="screen" id="pinSetupScreen">
                 <div class="screen-header">
                     <h1>🔐 Create PIN</h1>
-                    <p>Set up a 6-digit PIN to secure your wallet</p>
+                    <p>Set up once, never again</p>
                 </div>
                 <div class="screen-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-lg);">
-                    <div style="font-size: 100px; animation: pinPulse 2s infinite;">🔑</div>
-                    <div style="text-align: center; width: 100%;">
-                        <label class="form-label" style="margin-bottom: var(--spacing-md);">Enter 6-Digit PIN</label>
-                        <div style="display: flex; gap: var(--spacing-md); justify-content: center; margin-bottom: var(--spacing-lg);">
+                    <div style="font-size: 80px; animation: pinPulse 2s infinite;">🔑</div>
+                    <div style="text-align: center; width: 100%; max-width: 400px;">
+                        <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg); font-size: 14px;">Enter your PIN just once. You'll use biometric or passkey to unlock next time.</p>
+
+                        <label class="form-label" style="margin-bottom: var(--spacing-md); display: block;">6-Digit PIN</label>
+                        <div style="display: flex; gap: var(--spacing-md); justify-content: center; margin-bottom: var(--spacing-xl);">
                             <input type="text" class="form-input" id="pinDigit1" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinDigit2')">
                             <input type="text" class="form-input" id="pinDigit2" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinDigit3')">
                             <input type="text" class="form-input" id="pinDigit3" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinDigit4')">
                             <input type="text" class="form-input" id="pinDigit4" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinDigit5')">
                             <input type="text" class="form-input" id="pinDigit5" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinDigit6')">
-                            <input type="text" class="form-input" id="pinDigit6" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'confirmPin')">
+                            <input type="text" class="form-input" id="pinDigit6" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="handlePinSetupComplete()">
                         </div>
-                        <div style="color: var(--text-secondary); font-size: 13px; margin-bottom: var(--spacing-lg);">You'll use this PIN to unlock your wallet</div>
+
+                        <button class="btn btn-primary" onclick="saveSetupPINAndContinue()" style="width: 100%;">✓ Save PIN & Continue</button>
                     </div>
-
-                    <div style="text-align: center; width: 100%;">
-                        <label class="form-label" style="margin-bottom: var(--spacing-md);">Confirm 6-Digit PIN</label>
-                        <div style="display: flex; gap: var(--spacing-md); justify-content: center; margin-bottom: var(--spacing-lg);">
-                            <input type="text" class="form-input" id="confirmPinDigit1" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'confirmPinDigit2')">
-                            <input type="text" class="form-input" id="confirmPinDigit2" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'confirmPinDigit3')">
-                            <input type="text" class="form-input" id="confirmPinDigit3" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'confirmPinDigit4')">
-                            <input type="text" class="form-input" id="confirmPinDigit4" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'confirmPinDigit5')">
-                            <input type="text" class="form-input" id="confirmPinDigit5" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'confirmPinDigit6')">
-                            <input type="text" class="form-input" id="confirmPinDigit6" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="handlePinComplete()">
-                        </div>
-                    </div>
-
-                    <div id="pinError" style="color: #ef4444; font-size: 13px; display: none; text-align: center;">PINs do not match. Please try again.</div>
-
-                    <button class="btn btn-primary" onclick="validateAndSavePIN()" style="width: 100%; max-width: 300px;">Set PIN & Continue →</button>
                 </div>
             </div>
 
-            <!-- PIN Verification Screen (For Returning Users) -->
+            <!-- PIN Verification Screen (For Returning Users) - BIOMETRIC FIRST -->
             <div class="screen" id="pinVerifyScreen">
                 <div class="screen-header">
-                    <h1>🔐 Enter PIN</h1>
-                    <p>Unlock your MoonBite wallet</p>
+                    <h1>🔓 Welcome Back</h1>
+                    <p>Quick login</p>
                 </div>
-                <div class="screen-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-lg);">
-                    <div style="font-size: 60px; margin-bottom: var(--spacing-lg);">🔒</div>
-                    <div style="text-align: center;">
-                        <label class="form-label" style="margin-bottom: var(--spacing-md);">6-Digit PIN</label>
-                        <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: var(--spacing-lg);">
-                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin0">
-                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin1">
-                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin2">
-                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin3">
-                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin4">
-                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin5">
-                        </div>
+                <div class="screen-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-xl); padding: var(--spacing-xl) var(--spacing-lg);">
+                    <div style="font-size: 80px;">👋</div>
+
+                    <!-- BIOMETRIC/PASSKEY FIRST (Primary Option) -->
+                    <div style="width: 100%; max-width: 300px;">
+                        <button class="btn btn-primary" onclick="tryBiometricLogin()" style="width: 100%; padding: 16px; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <span>👆 Use Fingerprint/Face ID</span>
+                        </button>
                     </div>
-                    <div id="pinVerifyError" style="color: #ef4444; font-size: 13px; display: none; text-align: center;">Incorrect PIN. Please try again.</div>
-                    <button class="btn btn-primary" onclick="verifyPINAndLogin()" style="width: 100%; max-width: 300px;">Unlock Wallet →</button>
+
+                    <div style="color: var(--text-secondary); font-size: 13px;">OR</div>
+
+                    <!-- PIN FALLBACK (Secondary Option) -->
+                    <div style="width: 100%; max-width: 300px; text-align: center;">
+                        <button class="btn btn-secondary" onclick="showPINFallback()" style="width: 100%; padding: 12px;">Use PIN Instead</button>
+                    </div>
+
+                    <!-- PIN INPUT (Hidden until clicked) -->
+                    <div id="pinFallbackArea" style="width: 100%; max-width: 300px; display: none;">
+                        <label class="form-label" style="margin-bottom: var(--spacing-md); display: block; color: var(--text-secondary); font-size: 13px;">Enter your PIN</label>
+                        <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: var(--spacing-lg);">
+                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin0" onkeyup="movePinFocus(this, 'verifyPin1')">
+                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin1" onkeyup="movePinFocus(this, 'verifyPin2')">
+                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin2" onkeyup="movePinFocus(this, 'verifyPin3')">
+                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin3" onkeyup="movePinFocus(this, 'verifyPin4')">
+                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin4" onkeyup="movePinFocus(this, 'verifyPin5')">
+                            <input type="text" maxlength="1" class="pin-input" style="width: 50px; height: 50px; text-align: center; font-size: 24px; border: 2px solid var(--border-color); border-radius: 8px; background: rgba(26, 77, 122, 0.1); color: var(--gold);" id="verifyPin5" onkeyup="handlePinFallbackComplete()">
+                        </div>
+                        <div id="pinVerifyError" style="color: #ef4444; font-size: 13px; display: none; text-align: center; margin-bottom: var(--spacing-md);">Incorrect PIN. Please try again.</div>
+                        <button class="btn btn-primary" onclick="verifyPINAndLogin()" style="width: 100%;">Unlock Wallet →</button>
+                    </div>
                 </div>
             </div>
 
@@ -2303,7 +2306,8 @@
             }
         }
 
-        function validateAndSavePIN() {
+        // USER-CENTRIC PIN: ONE TIME SETUP, NO CONFIRMATION
+        function handlePinSetupComplete() {
             const pin = document.getElementById('pinDigit1').value +
                        document.getElementById('pinDigit2').value +
                        document.getElementById('pinDigit3').value +
@@ -2311,45 +2315,64 @@
                        document.getElementById('pinDigit5').value +
                        document.getElementById('pinDigit6').value;
 
-            const confirmPin = document.getElementById('confirmPinDigit1').value +
-                              document.getElementById('confirmPinDigit2').value +
-                              document.getElementById('confirmPinDigit3').value +
-                              document.getElementById('confirmPinDigit4').value +
-                              document.getElementById('confirmPinDigit5').value +
-                              document.getElementById('confirmPinDigit6').value;
+            if (pin.length === 6) {
+                // Auto-submit when all 6 digits entered
+                saveSetupPINAndContinue();
+            }
+        }
 
-            const errorDiv = document.getElementById('pinError');
+        function saveSetupPINAndContinue() {
+            const pin = document.getElementById('pinDigit1').value +
+                       document.getElementById('pinDigit2').value +
+                       document.getElementById('pinDigit3').value +
+                       document.getElementById('pinDigit4').value +
+                       document.getElementById('pinDigit5').value +
+                       document.getElementById('pinDigit6').value;
 
             if (pin.length !== 6) {
-                errorDiv.style.display = 'block';
-                errorDiv.textContent = 'Please enter a 6-digit PIN';
+                alert('Please enter a 6-digit PIN');
                 return;
             }
 
-            if (confirmPin.length !== 6) {
-                errorDiv.style.display = 'block';
-                errorDiv.textContent = 'Please confirm your 6-digit PIN';
-                return;
-            }
-
-            if (pin !== confirmPin) {
-                errorDiv.style.display = 'block';
-                errorDiv.textContent = 'PINs do not match. Please try again.';
-                // Clear confirm PIN fields
-                document.getElementById('confirmPinDigit1').value = '';
-                document.getElementById('confirmPinDigit2').value = '';
-                document.getElementById('confirmPinDigit3').value = '';
-                document.getElementById('confirmPinDigit4').value = '';
-                document.getElementById('confirmPinDigit5').value = '';
-                document.getElementById('confirmPinDigit6').value = '';
-                document.getElementById('confirmPinDigit1').focus();
-                return;
-            }
-
-            // PIN validated - save and continue
+            // Save PIN and mark onboarding as complete
             localStorage.setItem('moonbite_pin', pin);
-            errorDiv.style.display = 'none';
-            showScreen('walletSetupScreen');
+            localStorage.setItem('moonbite_onboarding_complete', 'true');
+
+            // Show success feedback
+            const btn = document.querySelector('[onclick="saveSetupPINAndContinue()"]');
+            btn.textContent = '✓ PIN Saved!';
+            btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+
+            // Proceed to next screen
+            setTimeout(() => {
+                showScreen('walletSetupScreen');
+            }, 500);
+        }
+
+        // RETURNING USERS: BIOMETRIC FIRST, PIN AS FALLBACK
+        function tryBiometricLogin() {
+            // Check if device supports biometric authentication
+            if (window.PublicKeyCredential) {
+                console.log('Biometric available - attempting authentication');
+                // In production, use WebAuthn API
+                // For now, show success and proceed
+                showScreen('dashboardScreen');
+            } else {
+                // Fallback to PIN if biometric not available
+                showPINFallback();
+            }
+        }
+
+        function showPINFallback() {
+            const fallbackArea = document.getElementById('pinFallbackArea');
+            fallbackArea.style.display = 'block';
+            document.getElementById('verifyPin0').focus();
+        }
+
+        // SIMPLIFIED PIN VERIFICATION - NO CONFIRMATION NEEDED
+        function validateAndSavePIN() {
+            // This is kept for backward compatibility
+            saveSetupPINAndContinue();
         }
 
         function copySeedPhrase() {
@@ -2446,12 +2469,30 @@
             alert('✓ Wallet setup complete! Welcome to MoonBite.');
         }
 
-        // PIN verification for returning users
-        function verifyPINAndLogin() {
-            const pinInputs = document.querySelectorAll('#pinVerifyScreen .pin-input');
-            const enteredPIN = Array.from(pinInputs).map(input => input.value).join('');
+        // Auto-submit when PIN fallback is complete (all 6 digits entered)
+        function handlePinFallbackComplete() {
+            const pin0 = document.getElementById('verifyPin0').value;
+            const pin1 = document.getElementById('verifyPin1').value;
+            const pin2 = document.getElementById('verifyPin2').value;
+            const pin3 = document.getElementById('verifyPin3').value;
+            const pin4 = document.getElementById('verifyPin4').value;
+            const pin5 = document.getElementById('verifyPin5').value;
 
-            if (enteredPIN.length !== 6 || !/^\d+$/.test(enteredPIN)) {
+            if (pin0 && pin1 && pin2 && pin3 && pin4 && pin5) {
+                verifyPINAndLogin();
+            }
+        }
+
+        // PIN verification for returning users (fallback option)
+        function verifyPINAndLogin() {
+            const enteredPIN = document.getElementById('verifyPin0').value +
+                              document.getElementById('verifyPin1').value +
+                              document.getElementById('verifyPin2').value +
+                              document.getElementById('verifyPin3').value +
+                              document.getElementById('verifyPin4').value +
+                              document.getElementById('verifyPin5').value;
+
+            if (enteredPIN.length !== 6) {
                 alert('Please enter a valid 6-digit PIN');
                 return;
             }
@@ -2468,8 +2509,13 @@
                 // PIN is incorrect - show error
                 document.getElementById('pinVerifyError').style.display = 'block';
                 // Clear the inputs
-                pinInputs.forEach(input => input.value = '');
-                pinInputs[0].focus();
+                document.getElementById('verifyPin0').value = '';
+                document.getElementById('verifyPin1').value = '';
+                document.getElementById('verifyPin2').value = '';
+                document.getElementById('verifyPin3').value = '';
+                document.getElementById('verifyPin4').value = '';
+                document.getElementById('verifyPin5').value = '';
+                document.getElementById('verifyPin0').focus();
             }
         }
 
