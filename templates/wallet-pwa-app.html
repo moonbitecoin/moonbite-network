@@ -14,6 +14,7 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%231a4d7a' width='180' height='180'/><circle cx='90' cy='90' r='60' fill='%23ff6b35' opacity='0.3'/><path d='M90 40 Q110 60 110 90 Q110 120 90 140 Q70 120 70 90 Q70 60 90 40' fill='%23ffd700'/></svg>">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231a4d7a' width='100' height='100' rx='20'/><circle cx='50' cy='50' r='40' fill='%23ff6b35' opacity='0.3'/><path d='M50 20 Q65 35 65 50 Q65 65 50 80 Q35 65 35 50 Q35 35 50 20' fill='%23ffd700'/></svg>">
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/tabler-icons.min.css">
     <title>MoonBite Wallet</title>
     <style>
         * {
@@ -1059,24 +1060,48 @@
             <div class="screen" id="pinSetupScreen">
                 <div class="screen-header">
                     <h1>🔐 Create PIN</h1>
-                    <p>Set up once, never again</p>
+                    <p>Secure your wallet</p>
                 </div>
-                <div class="screen-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-lg);">
-                    <div style="font-size: 80px; animation: pinPulse 2s infinite;">🔑</div>
+                <div class="screen-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-lg); overflow-y: auto;">
                     <div style="text-align: center; width: 100%; max-width: 400px;">
-                        <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg); font-size: 14px;">Enter your PIN just once. You'll use biometric or passkey to unlock next time.</p>
+                        <!-- STEP 1: ENTER PIN -->
+                        <div id="pinCreateStep" style="display: block;">
+                            <div style="font-size: 60px; margin-bottom: var(--spacing-lg);">🔑</div>
+                            <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg); font-size: 14px;">Enter a 6-digit PIN to secure your wallet</p>
 
-                        <label class="form-label" style="margin-bottom: var(--spacing-md); display: block;">6-Digit PIN</label>
-                        <div style="display: flex; gap: var(--spacing-md); justify-content: center; margin-bottom: var(--spacing-xl);">
-                            <input type="text" class="form-input" id="pinDigit1" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinDigit2')">
-                            <input type="text" class="form-input" id="pinDigit2" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinDigit3')">
-                            <input type="text" class="form-input" id="pinDigit3" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinDigit4')">
-                            <input type="text" class="form-input" id="pinDigit4" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinDigit5')">
-                            <input type="text" class="form-input" id="pinDigit5" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinDigit6')">
-                            <input type="text" class="form-input" id="pinDigit6" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="handlePinSetupComplete()">
+                            <label class="form-label" style="margin-bottom: var(--spacing-md); display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Create PIN</label>
+                            <div style="display: flex; gap: var(--spacing-md); justify-content: center; margin-bottom: var(--spacing-xl);">
+                                <input type="text" class="form-input" id="pinDigit1" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinDigit2')">
+                                <input type="text" class="form-input" id="pinDigit2" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinDigit3')">
+                                <input type="text" class="form-input" id="pinDigit3" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinDigit4')">
+                                <input type="text" class="form-input" id="pinDigit4" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinDigit5')">
+                                <input type="text" class="form-input" id="pinDigit5" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinDigit6')">
+                                <input type="text" class="form-input" id="pinDigit6" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="handlePinNext()">
+                            </div>
+
+                            <button class="btn btn-primary" onclick="proceedToConfirmPin()" style="width: 100%;">Next → Confirm PIN</button>
                         </div>
 
-                        <button class="btn btn-primary" onclick="saveSetupPINAndContinue()" style="width: 100%;">✓ Save PIN & Continue</button>
+                        <!-- STEP 2: CONFIRM PIN -->
+                        <div id="pinConfirmStep" style="display: none;">
+                            <div style="font-size: 60px; margin-bottom: var(--spacing-lg);">✓</div>
+                            <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg); font-size: 14px;">Confirm your PIN to ensure it's correct</p>
+
+                            <label class="form-label" style="margin-bottom: var(--spacing-md); display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Confirm PIN</label>
+                            <div style="display: flex; gap: var(--spacing-md); justify-content: center; margin-bottom: var(--spacing-xl);">
+                                <input type="text" class="form-input" id="pinConfirm1" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinConfirm2')">
+                                <input type="text" class="form-input" id="pinConfirm2" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinConfirm3')">
+                                <input type="text" class="form-input" id="pinConfirm3" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinConfirm4')">
+                                <input type="text" class="form-input" id="pinConfirm4" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinConfirm5')">
+                                <input type="text" class="form-input" id="pinConfirm5" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="movePinFocus(this, 'pinConfirm6')">
+                                <input type="text" class="form-input" id="pinConfirm6" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 24px; font-weight: bold;" placeholder="•" onkeyup="handlePinConfirmComplete()">
+                            </div>
+
+                            <div id="pinMismatchError" style="color: #E74C3C; font-size: 12px; margin-bottom: var(--spacing-md); display: none;">PINs do not match. Please try again.</div>
+
+                            <button class="btn btn-primary" onclick="saveSetupPINAndContinue()" style="width: 100%;">✓ Save PIN & Continue</button>
+                            <button class="btn btn-secondary" onclick="backToCreatePin()" style="width: 100%; margin-top: var(--spacing-md);">← Back</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2037,20 +2062,20 @@
 
         <!-- Bottom Navigation -->
         <div class="bottom-nav">
-            <button class="nav-item active" onclick="showScreen('dashboardScreen'); setActiveNav(this)">
-                <div class="nav-icon">🏠</div>
+            <button class="nav-item active" onclick="showScreen('dashboardScreen'); setActiveNav(this)" title="Home">
+                <div class="nav-icon"><i class="ti ti-home" style="font-size: 24px;"></i></div>
                 <div>Home</div>
             </button>
-            <button class="nav-item" onclick="showScreen('walletsScreen'); setActiveNav(this)">
-                <div class="nav-icon">💼</div>
+            <button class="nav-item" onclick="showScreen('walletsScreen'); setActiveNav(this)" title="Wallets">
+                <div class="nav-icon"><i class="ti ti-wallet-2" style="font-size: 24px;"></i></div>
                 <div>Wallets</div>
             </button>
-            <button class="nav-item" onclick="showScreen('contactsScreen'); setActiveNav(this)">
-                <div class="nav-icon">📇</div>
+            <button class="nav-item" onclick="showScreen('contactsScreen'); setActiveNav(this)" title="Contacts">
+                <div class="nav-icon"><i class="ti ti-address-book" style="font-size: 24px;"></i></div>
                 <div>Contacts</div>
             </button>
-            <button class="nav-item" onclick="showScreen('securityScreen'); setActiveNav(this)">
-                <div class="nav-icon">🔒</div>
+            <button class="nav-item" onclick="showScreen('securityScreen'); setActiveNav(this)" title="Security">
+                <div class="nav-icon"><i class="ti ti-shield-lock" style="font-size: 24px;"></i></div>
                 <div>Security</div>
             </button>
         </div>
@@ -2343,7 +2368,7 @@
             }
         }
 
-        function saveSetupPINAndContinue() {
+        function proceedToConfirmPin() {
             const pin = document.getElementById('pinDigit1').value +
                        document.getElementById('pinDigit2').value +
                        document.getElementById('pinDigit3').value +
@@ -2356,14 +2381,81 @@
                 return;
             }
 
+            // Store the first PIN temporarily
+            window.tempPin = pin;
+
+            // Hide create step, show confirm step
+            document.getElementById('pinCreateStep').style.display = 'none';
+            document.getElementById('pinConfirmStep').style.display = 'block';
+
+            // Focus on first confirm digit
+            setTimeout(() => {
+                document.getElementById('pinConfirm1').focus();
+            }, 100);
+        }
+
+        function backToCreatePin() {
+            // Clear confirm inputs
+            for (let i = 1; i <= 6; i++) {
+                document.getElementById('pinConfirm' + i).value = '';
+            }
+            // Show create step, hide confirm step
+            document.getElementById('pinCreateStep').style.display = 'block';
+            document.getElementById('pinConfirmStep').style.display = 'none';
+            document.getElementById('pinMismatchError').style.display = 'none';
+
+            // Focus on first digit
+            setTimeout(() => {
+                document.getElementById('pinDigit1').focus();
+            }, 100);
+        }
+
+        function handlePinNext() {
+            const pin6 = document.getElementById('pinDigit6');
+            if (pin6.value) {
+                proceedToConfirmPin();
+            }
+        }
+
+        function handlePinConfirmComplete() {
+            const confirmPin = document.getElementById('pinConfirm1').value +
+                             document.getElementById('pinConfirm2').value +
+                             document.getElementById('pinConfirm3').value +
+                             document.getElementById('pinConfirm4').value +
+                             document.getElementById('pinConfirm5').value +
+                             document.getElementById('pinConfirm6').value;
+
+            if (confirmPin.length === 6) {
+                if (confirmPin === window.tempPin) {
+                    // PINs match - save
+                    saveSetupPINAndContinue();
+                } else {
+                    // PINs don't match - show error
+                    document.getElementById('pinMismatchError').style.display = 'block';
+                    // Clear confirm inputs
+                    for (let i = 1; i <= 6; i++) {
+                        document.getElementById('pinConfirm' + i).value = '';
+                    }
+                    setTimeout(() => {
+                        document.getElementById('pinConfirm1').focus();
+                    }, 100);
+                }
+            }
+        }
+
+        function saveSetupPINAndContinue() {
+            const pin = window.tempPin;
+
             // Save PIN and mark onboarding as complete
             localStorage.setItem('moonbite_pin', pin);
             localStorage.setItem('moonbite_onboarding_complete', 'true');
 
             // Show success feedback
             const btn = document.querySelector('[onclick="saveSetupPINAndContinue()"]');
-            btn.textContent = '✓ PIN Saved!';
-            btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+            if (btn) {
+                btn.textContent = '✓ PIN Saved!';
+                btn.style.background = 'linear-gradient(135deg, #2ECC71, #27AE60)';
+            }
 
             // Proceed to next screen
             setTimeout(() => {
