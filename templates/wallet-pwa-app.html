@@ -2119,8 +2119,119 @@
         let deferredPrompt;
         let currentScreen = 'pinSetupScreen';
 
+        // ============================================
+        // GLOBAL WALLET CACHE SYSTEM
+        // ============================================
+        const WalletCache = {
+            // Default wallet data
+            defaultWallet: {
+                address: 'moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k',
+                balance: 10.0000,
+                currency: 'MBITE',
+                walletName: 'Primary Wallet',
+                blockchainHeight: 0,
+                status: 'Active',
+                usdValue: 250.00
+            },
+
+            // Initialize wallet cache
+            init: function() {
+                const cached = localStorage.getItem('moonbite_wallet_cache');
+                if (!cached) {
+                    localStorage.setItem('moonbite_wallet_cache', JSON.stringify(this.defaultWallet));
+                }
+            },
+
+            // Get cached wallet data
+            get: function() {
+                const cached = localStorage.getItem('moonbite_wallet_cache');
+                return cached ? JSON.parse(cached) : this.defaultWallet;
+            },
+
+            // Update cache
+            update: function(data) {
+                const current = this.get();
+                const updated = { ...current, ...data };
+                localStorage.setItem('moonbite_wallet_cache', JSON.stringify(updated));
+                this.syncAllScreens();
+                return updated;
+            },
+
+            // Sync wallet data to all screens
+            syncAllScreens: function() {
+                const wallet = this.get();
+
+                // Update Balance Card (Dashboard)
+                const balanceAmount = document.querySelector('.balance-amount');
+                if (balanceAmount) {
+                    balanceAmount.textContent = wallet.balance.toFixed(4);
+                }
+
+                // Update USD value
+                const balanceUsd = document.querySelector('.balance-usd');
+                if (balanceUsd) {
+                    balanceUsd.textContent = '≈ $' + wallet.usdValue.toFixed(2) + ' USD';
+                }
+
+                // Update Receive Screen Address
+                const receiveAddress = document.getElementById('receiveAddress');
+                if (receiveAddress) {
+                    receiveAddress.textContent = wallet.address;
+                }
+
+                // Update Blockchain Height
+                const blockchainHeightEl = document.getElementById('blockchainHeight');
+                if (blockchainHeightEl) {
+                    blockchainHeightEl.textContent = wallet.blockchainHeight;
+                }
+
+                // Update Wallet Balance Display
+                const walletBalanceEl = document.getElementById('walletBalance');
+                if (walletBalanceEl) {
+                    walletBalanceEl.textContent = wallet.balance.toFixed(4) + ' MBITE';
+                }
+
+                // Update all wallet items on Wallets Screen
+                const walletItems = document.querySelectorAll('.wallet-item');
+                walletItems.forEach((item, index) => {
+                    const balanceEl = item.querySelector('.wallet-balance');
+                    if (balanceEl && index === 0) { // Primary wallet
+                        balanceEl.textContent = wallet.balance.toFixed(4) + ' MBITE';
+                        const usdEl = item.querySelector('.wallet-usd');
+                        if (usdEl) {
+                            usdEl.textContent = '≈ $' + wallet.usdValue.toFixed(2) + ' USD';
+                        }
+                    }
+                });
+
+                // Update wallet name display
+                const walletNameDisplay = document.querySelector('.wallet-name-display');
+                if (walletNameDisplay) {
+                    walletNameDisplay.textContent = wallet.walletName;
+                }
+
+                // Update wallet amount
+                const walletAmount = document.querySelector('.wallet-amount');
+                if (walletAmount) {
+                    walletAmount.textContent = wallet.balance.toFixed(4) + ' MBITE';
+                }
+
+                // Update premium wallet card
+                const premiumWalletCard = document.querySelector('.premium-wallet-card');
+                if (premiumWalletCard) {
+                    const nameEl = premiumWalletCard.querySelector('.wallet-name-display');
+                    if (nameEl) nameEl.textContent = wallet.walletName;
+                    const amountEl = premiumWalletCard.querySelector('.wallet-amount');
+                    if (amountEl) amountEl.textContent = wallet.balance.toFixed(4) + ' MBITE';
+                }
+            }
+        };
+
         // Initialize - show PIN entry for returning users, or PIN setup for new users
         function initializeScreens() {
+            // Initialize wallet cache first
+            WalletCache.init();
+
             // Remove active from all screens first
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
@@ -2145,6 +2256,11 @@
             }
 
             initTheme();
+
+            // Sync wallet data to all screens
+            setTimeout(() => {
+                WalletCache.syncAllScreens();
+            }, 100);
         }
 
         // Call initialization immediately and also on load as fallback
@@ -2176,6 +2292,9 @@
 
         // Screen navigation
         function showScreen(screenId) {
+            // Sync wallet cache before changing screens
+            WalletCache.syncAllScreens();
+
             // Update confirmation screen with actual user input
             if (screenId === 'confirmSendScreen') {
                 const recipient = document.getElementById('sendRecipient')?.value || '-';
