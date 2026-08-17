@@ -2120,46 +2120,109 @@
         let currentScreen = 'pinSetupScreen';
 
         // ============================================
-        // GLOBAL WALLET CACHE SYSTEM
+        // CUSTODIAL WALLET SYSTEM - INDIVIDUAL WALLETS
         // ============================================
-        const WalletCache = {
-            // Default wallet data
-            defaultWallet: {
-                address: 'moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k',
-                balance: 10.0000,
-                currency: 'MBITE',
-                walletName: 'Primary Wallet',
-                blockchainHeight: 0,
-                status: 'Active',
-                usdValue: 250.00
-            },
+        const CustodialWallet = {
+            // Generate unique wallet for each user
+            generateWallet: function(userId) {
+                const userWalletKey = 'moonbite_wallet_' + userId;
+                let userWallet = localStorage.getItem(userWalletKey);
 
-            // Initialize wallet cache
-            init: function() {
-                const cached = localStorage.getItem('moonbite_wallet_cache');
-                if (!cached) {
-                    localStorage.setItem('moonbite_wallet_cache', JSON.stringify(this.defaultWallet));
+                if (!userWallet) {
+                    // Generate new wallet
+                    const walletData = {
+                        userId: userId,
+                        address: this.generateAddress(userId),
+                        privateKey: this.generatePrivateKey(userId),
+                        seedPhrase: this.generateSeedPhrase(userId),
+                        balance: 10.0000,
+                        currency: 'MBITE',
+                        walletName: 'Primary Wallet',
+                        blockchainHeight: 0,
+                        status: 'Active',
+                        usdValue: 250.00,
+                        createdAt: new Date().toISOString(),
+                        transactions: []
+                    };
+                    localStorage.setItem(userWalletKey, JSON.stringify(walletData));
+                    return walletData;
                 }
+
+                return JSON.parse(userWallet);
             },
 
-            // Get cached wallet data
-            get: function() {
-                const cached = localStorage.getItem('moonbite_wallet_cache');
-                return cached ? JSON.parse(cached) : this.defaultWallet;
+            // Generate unique address using user ID
+            generateAddress: function(userId) {
+                const hash = this.simpleHash('moon' + userId);
+                const bech32Address = 'moon1' + hash.substring(0, 42);
+                return bech32Address;
             },
 
-            // Update cache
-            update: function(data) {
-                const current = this.get();
-                const updated = { ...current, ...data };
-                localStorage.setItem('moonbite_wallet_cache', JSON.stringify(updated));
+            // Generate private key using user ID
+            generatePrivateKey: function(userId) {
+                const hash = this.simpleHash('key' + userId);
+                return '0x' + hash.substring(0, 64);
+            },
+
+            // Generate seed phrase using user ID
+            generateSeedPhrase: function(userId) {
+                const words = [
+                    'abandon', 'ability', 'about', 'above', 'absent', 'absorb',
+                    'abstract', 'abuse', 'access', 'accident', 'account', 'accuse',
+                    'achieve', 'acid', 'acoustic', 'acquire', 'across', 'act',
+                    'action', 'actor', 'actual', 'acumen', 'acute', 'adage'
+                ];
+
+                const seed = [];
+                let hash = this.simpleHash(userId);
+                for (let i = 0; i < 12; i++) {
+                    const index = parseInt(hash.substring(i * 5, i * 5 + 5), 16) % words.length;
+                    seed.push(words[index]);
+                }
+                return seed.join(' ');
+            },
+
+            // Simple hash function for generating unique values
+            simpleHash: function(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    const char = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash;
+                }
+                return Math.abs(hash).toString(16).padStart(64, '0');
+            },
+
+            // Get user's wallet
+            getWallet: function() {
+                const userId = this.getUserId();
+                return this.generateWallet(userId);
+            },
+
+            // Get or create user ID
+            getUserId: function() {
+                let userId = localStorage.getItem('moonbite_user_id');
+                if (!userId) {
+                    userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('moonbite_user_id', userId);
+                }
+                return userId;
+            },
+
+            // Update wallet
+            updateWallet: function(updates) {
+                const userId = this.getUserId();
+                const userWalletKey = 'moonbite_wallet_' + userId;
+                const wallet = this.getWallet();
+                const updated = { ...wallet, ...updates };
+                localStorage.setItem(userWalletKey, JSON.stringify(updated));
                 this.syncAllScreens();
                 return updated;
             },
 
             // Sync wallet data to all screens
             syncAllScreens: function() {
-                const wallet = this.get();
+                const wallet = this.getWallet();
 
                 // Update Balance Card (Dashboard)
                 const balanceAmount = document.querySelector('.balance-amount');
@@ -2229,8 +2292,8 @@
 
         // Initialize - show PIN entry for returning users, or PIN setup for new users
         function initializeScreens() {
-            // Initialize wallet cache first
-            WalletCache.init();
+            // Initialize user's custodial wallet
+            const userWallet = CustodialWallet.getWallet();
 
             // Remove active from all screens first
             document.querySelectorAll('.screen').forEach(screen => {
@@ -2257,9 +2320,9 @@
 
             initTheme();
 
-            // Sync wallet data to all screens
+            // Sync user's wallet data to all screens
             setTimeout(() => {
-                WalletCache.syncAllScreens();
+                CustodialWallet.syncAllScreens();
             }, 100);
         }
 
@@ -2292,8 +2355,8 @@
 
         // Screen navigation
         function showScreen(screenId) {
-            // Sync wallet cache before changing screens
-            WalletCache.syncAllScreens();
+            // Sync user's wallet data before changing screens
+            CustodialWallet.syncAllScreens();
 
             // Update confirmation screen with actual user input
             if (screenId === 'confirmSendScreen') {
