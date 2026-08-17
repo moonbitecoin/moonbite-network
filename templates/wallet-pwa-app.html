@@ -1728,32 +1728,61 @@
                 </div>
             </div>
 
-            <!-- Receive Screen - Enhanced -->
+            <!-- Receive Screen - PRODUCTION GOD LEVEL -->
             <div class="screen" id="receiveScreen">
                 <div class="screen-header">
                     <h1>📥 Receive MBITE</h1>
-                    <p>Share your wallet address to receive funds</p>
+                    <p>Mining-Ready Wallet Address</p>
                 </div>
-                <div class="screen-content" style="display: flex; flex-direction: column; align-items: center;">
-                    <div class="card" style="width: 100%; margin-bottom: var(--spacing-lg);">
-                        <div style="background: linear-gradient(135deg, rgba(26, 77, 122, 0.3), rgba(255, 107, 53, 0.1)); border-radius: 12px; padding: var(--spacing-lg); display: flex; align-items: center; justify-content: center; min-height: 200px;">
-                            <div id="qrCodeContainer" style="text-align: center; width: 180px; height: 180px; display: flex; align-items: center; justify-content: center;"></div>
+                <div class="screen-content" style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+
+                    <!-- BLOCKCHAIN STATUS -->
+                    <div style="background: linear-gradient(135deg, rgba(26, 31, 58, 0.6) 0%, rgba(21, 26, 47, 0.4) 100%); border: 1px solid rgba(255, 215, 0, 0.12); border-radius: 12px; padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div>
+                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #888; margin-bottom: 4px;">Blockchain Height</div>
+                            <div style="font-size: 20px; font-weight: 700; color: var(--gold);" id="blockchainHeight">0</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #888; margin-bottom: 4px;">Wallet Balance</div>
+                            <div style="font-size: 20px; font-weight: 700; color: var(--emerald);" id="walletBalance">10.0000 MBITE</div>
                         </div>
                     </div>
 
-                    <div class="form-group" style="width: 100%;">
-                        <label class="form-label">Your Wallet Address</label>
-                        <div class="address-display" id="receiveAddress">moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k</div>
+                    <!-- PREMIUM QR CODE DISPLAY -->
+                    <div style="background: linear-gradient(135deg, rgba(26, 31, 58, 0.7) 0%, rgba(21, 26, 47, 0.5) 100%); border: 1px solid rgba(255, 215, 0, 0.15); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #888; margin-bottom: 8px;">Scan for Mining</div>
+                        <div id="qrCodeContainer" style="text-align: center; width: 160px; height: 160px; display: flex; align-items: center; justify-content: center; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);"></div>
+                        <div style="font-size: 11px; color: #888; text-align: center; margin-top: 8px;">Share this QR code with miners to receive MBITE</div>
                     </div>
 
-                    <div class="form-group" style="width: 100%;">
-                        <label class="form-label">Wallet Label</label>
-                        <div style="background: rgba(26, 77, 122, 0.1); border: 1px solid var(--border-color); border-radius: 8px; padding: var(--spacing-md); color: var(--gold); font-size: 14px;">Primary Wallet</div>
+                    <!-- WALLET ADDRESS - PREMIUM DISPLAY -->
+                    <div>
+                        <label class="form-label" style="margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-size: 11px;">Your Mining Address</label>
+                        <div style="background: rgba(26, 31, 58, 0.5); border: 1px solid rgba(255, 215, 0, 0.12); border-radius: 12px; padding: 14px; display: flex; align-items: center; gap: 10px;">
+                            <div id="receiveAddress" style="flex: 1; font-family: 'Courier New', monospace; font-size: 12px; color: var(--gold); word-break: break-all; font-weight: 600;">moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k</div>
+                            <button onclick="copyAddress()" style="background: linear-gradient(135deg, var(--fire-orange), #ff8c42); border: none; color: white; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s ease; white-space: nowrap;">📋 Copy</button>
+                        </div>
+                        <div id="copyFeedback" style="font-size: 11px; color: #2ECC71; margin-top: 6px; text-align: center; display: none;">✓ Copied to clipboard!</div>
                     </div>
 
-                    <button class="btn btn-primary" onclick="copyAddress()" style="width: 100%;">📋 Copy Address</button>
-                    <button class="btn btn-secondary" style="width: 100%;">🔗 Share Wallet</button>
-                    <button class="btn btn-secondary" onclick="showScreen('dashboardScreen')" style="width: 100%;">← Back</button>
+                    <!-- WALLET INFO -->
+                    <div style="background: rgba(26, 31, 58, 0.4); border: 1px solid rgba(255, 215, 0, 0.08); border-radius: 12px; padding: 14px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div>
+                                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #888; margin-bottom: 4px;">Wallet Name</div>
+                                <div style="font-size: 13px; font-weight: 600; color: #e0e0e0;">Primary Wallet</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #888; margin-bottom: 4px;">Status</div>
+                                <div style="font-size: 13px; font-weight: 600; color: var(--emerald);">🟢 Active</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ACTION BUTTONS -->
+                    <button class="btn btn-primary" onclick="copyAddress()" style="width: 100%; margin-top: 8px;">📋 Copy Full Address</button>
+                    <button class="btn btn-secondary" onclick="shareWalletAddress()" style="width: 100%;">🔗 Share Mining Address</button>
+                    <button class="btn btn-secondary" onclick="showScreen('dashboardScreen')" style="width: 100%;">← Back to Dashboard</button>
                 </div>
             </div>
 
@@ -2224,8 +2253,31 @@
         }
 
         function copyAddress() {
-            navigator.clipboard.writeText('moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k');
-            alert('Address copied to clipboard!');
+            const address = 'moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k';
+            navigator.clipboard.writeText(address);
+
+            // Show visual feedback
+            const feedback = document.getElementById('copyFeedback');
+            if (feedback) {
+                feedback.style.display = 'block';
+                setTimeout(() => {
+                    feedback.style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        function shareWalletAddress() {
+            const address = 'moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k';
+            if (navigator.share) {
+                navigator.share({
+                    title: '🌙 MoonBite Mining Address',
+                    text: 'Send your mining rewards to this address: ' + address,
+                    url: window.location.href
+                });
+            } else {
+                copyAddress();
+                alert('Share address: ' + address);
+            }
         }
 
         function copySeed() {
