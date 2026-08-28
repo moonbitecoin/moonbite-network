@@ -893,6 +893,12 @@ def leaderboard_page():
     return render_template("leaderboard.html")
 
 
+@app.route("/start")
+def start_page():
+    """Render the one-screen path from visitor to first mined block."""
+    return render_template("start.html")
+
+
 @app.route("/world-cup")
 def world_cup_page():
     """Render the Mining World Cup country scoreboard."""

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0B0D12">
+<title>Mine your first block — MoonBite</title>
+<meta name="description" content="No signup, no purchase, no wallet to install. Your address is ready. Press start and your computer begins competing for a block.">
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0B0D12; color:#F5F2EA; font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  overflow-x:hidden; -webkit-font-smoothing:antialiased; min-height:100vh; }
+::selection { background:#D9A441; color:#0B0D12; }
+#sky { position:fixed; inset:0; z-index:0; }
+.wrap { position:relative; z-index:1; max-width:660px; margin:0 auto; padding:0 20px 70px; }
+
+.brand-bar { position:relative; z-index:5; display:flex; align-items:center;
+  justify-content:space-between; padding:16px clamp(18px,4vw,40px); }
+.brand-lock { display:flex; align-items:center; gap:12px; text-decoration:none; }
+.brand-mark { width:28px; height:28px; }
+.brand-word { color:#F5F2EA; font-weight:700; font-size:.8rem; letter-spacing:.42em; }
+.brand-back { color:#8A8580; font-size:.72rem; letter-spacing:.2em; text-decoration:none; }
+
+.step { text-align:center; padding-top:5vh; }
+.kicker { letter-spacing:.32em; font-size:.68rem; color:#D9A441; text-transform:uppercase; font-weight:700; }
+h1 { font-size:clamp(1.9rem,5.6vw,3rem); font-weight:800; line-height:1.1; margin:14px 0 12px; }
+.sub { color:#8A8580; font-size:1rem; line-height:1.65; max-width:480px; margin:0 auto; }
+
+.panel { background:#1A1E27; border:1px solid rgba(217,164,65,.18); border-radius:16px;
+  padding:22px; margin-top:24px; text-align:left; }
+.plabel { font-size:.62rem; letter-spacing:.22em; color:#8A8580; text-transform:uppercase;
+  font-weight:700; margin-bottom:9px; }
+.addr { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.8rem; color:#F5F2EA;
+  word-break:break-all; line-height:1.6; }
+.addr-row { display:flex; gap:10px; align-items:flex-start; }
+.mini { background:transparent; border:1px solid rgba(217,164,65,.35); color:#D9A441;
+  border-radius:8px; padding:7px 12px; font-size:.72rem; font-weight:700; cursor:pointer;
+  white-space:nowrap; font-family:inherit; }
+
+.btn { border:none; border-radius:12px; padding:17px 32px; font-weight:800; cursor:pointer;
+  font-size:1rem; font-family:inherit; text-decoration:none; display:inline-block; }
+.btn-gold { background:#D9A441; color:#0B0D12; }
+.btn-gold:disabled { opacity:.45; cursor:default; }
+.btn-ghost { background:transparent; color:#F5F2EA; border:1px solid rgba(245,242,234,.25); }
+.actions { margin-top:26px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+
+/* live mining readout */
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:22px; }
+.cell { background:#1A1E27; border:1px solid rgba(217,164,65,.14); border-radius:14px; padding:16px; }
+.cell .v { font-size:clamp(1.2rem,3.6vw,1.7rem); font-weight:800; color:#D9A441;
+  font-variant-numeric:tabular-nums; line-height:1.2; }
+.cell .k { font-size:.6rem; letter-spacing:.2em; color:#8A8580; text-transform:uppercase; margin-top:5px; }
+.pulse { display:inline-block; width:8px; height:8px; border-radius:50%; background:#2E9E6B;
+  margin-right:8px; animation:blip 1.6s infinite; }
+@keyframes blip { 0%,100% { opacity:1; } 50% { opacity:.25; } }
+.whisper { color:#8A8580; font-size:.86rem; line-height:1.7; margin-top:22px; min-height:3.4em;
+  transition:opacity .5s; }
+.hidden { display:none; }
+.fine { font-size:.74rem; color:#8A8580; line-height:1.7; text-align:center; margin-top:28px; }
+.fine a { color:rgba(217,164,65,.75); }
+.toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(18px);
+  background:#2E9E6B; color:#04160E; font-weight:800; padding:12px 22px; border-radius:11px;
+  opacity:0; transition:all .3s; z-index:20; pointer-events:none; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* first-block ceremony (mirrors site.css so this page stays self-contained) */
+.mb-first-block-overlay { position:fixed; inset:0; z-index:999; display:flex; align-items:center;
+  justify-content:center; background:rgba(5,8,20,.92); }
+.mb-confetti { position:absolute; inset:0; pointer-events:none; }
+.mb-first-block-card { position:relative; max-width:420px; width:calc(100% - 40px); text-align:center;
+  padding:36px 28px; border-radius:20px; background:linear-gradient(180deg,#1A1E27,#0B0D12);
+  border:1px solid rgba(217,164,65,.4); box-shadow:0 0 60px rgba(217,164,65,.15);
+  animation:mbFbPop .5s cubic-bezier(.2,1.6,.4,1); }
+@keyframes mbFbPop { from { transform:scale(.7); opacity:0; } to { transform:scale(1); opacity:1; } }
+.mb-fb-kicker { letter-spacing:.25em; font-size:.75rem; color:#2E9E6B; font-weight:700; }
+.mb-fb-amount { font-size:3rem; font-weight:800; margin:10px 0 4px; color:#D9A441; }
+.mb-fb-line { color:rgba(245,242,234,.75); font-size:.95rem; margin-top:4px; }
+.mb-fb-addr { font-family:monospace; font-size:.85rem; opacity:.6; }
+.mb-fb-badges { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:16px 0 6px; }
+.mb-fb-badge { padding:6px 12px; border-radius:999px; font-size:.8rem; font-weight:700;
+  border:1px solid rgba(217,164,65,.5); background:rgba(217,164,65,.1); color:#D9A441; }
+.mb-fb-quote { font-style:italic; color:rgba(245,242,234,.6); font-size:.9rem; margin:12px 0 18px; }
+.mb-fb-actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+.mb-fb-btn { padding:12px 20px; border-radius:10px; cursor:pointer; font-weight:700;
+  border:1px solid rgba(217,164,65,.6); color:#0B0D12; background:#D9A441; font-family:inherit; }
+.mb-fb-btn.ghost { background:transparent; color:#F5F2EA; border-color:rgba(245,242,234,.3); }
+.mb-badge-toast { position:fixed; left:50%; bottom:40px; transform:translateX(-50%);
+  background:#D9A441; color:#0B0D12; font-weight:800; padding:12px 22px; border-radius:12px; z-index:1000; }
+@media (prefers-reduced-motion: reduce) { .mb-first-block-card { animation:none; } .pulse { animation:none; } }
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+
+<header class="brand-bar">
+  <a class="brand-lock" href="/">
+    <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="48" cy="54" r="38" fill="#F5F2EA"/>
+      <circle cx="69" cy="25.5" r="29.5" fill="#0B0D12"/>
+      <rect x="2" y="37.5" width="96" height="8" rx="4" fill="#D9A441"/>
+      <rect x="5" y="58.5" width="90" height="8" rx="4" fill="#D9A441"/>
+    </svg>
+    <span class="brand-word">MOONBITE</span>
+  </a>
+  <a class="brand-back" href="/mining">ADVANCED →</a>
+</header>
+
+<div class="wrap">
+
+  <!-- STATE 1 — ready -->
+  <section class="step" id="sReady">
+    <div class="kicker">STEP ONE OF ONE</div>
+    <h1>Mine your first block.</h1>
+    <p class="sub">No signup. No purchase. No wallet to install. An address has already been
+    generated for you — press start and your computer begins competing for a real block.</p>
+
+    <div class="panel">
+      <div class="plabel">Your mining address</div>
+      <div class="addr-row">
+        <div class="addr" id="addr">generating…</div>
+        <button class="mini" id="btnCopy">COPY</button>
+      </div>
+      <p class="sub" style="font-size:.82rem; margin-top:14px; text-align:left;">
+        Saved in this browser only. Rewards for blocks you find are paid here.
+        Keep it — it is the only claim to what you mine.</p>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-gold" id="btnStart" disabled>START MINING</button>
+    </div>
+    <p class="fine">RandomX is genuine proof-of-work. Most blocks take a few minutes —
+    that difficulty is the whole point.</p>
+  </section>
+
+  <!-- STATE 2 — mining -->
+  <section class="step hidden" id="sMining">
+    <div class="kicker"><span class="pulse"></span>YOUR COMPUTER IS MINING</div>
+    <h1>Hunting for a<br>valid block.</h1>
+
+    <div class="grid">
+      <div class="cell"><div class="v" id="mElapsed">0s</div><div class="k">Searching for</div></div>
+      <div class="cell"><div class="v" id="mReward">—</div><div class="k">This block pays</div></div>
+      <div class="cell"><div class="v" id="mDiff">—</div><div class="k">Difficulty</div></div>
+      <div class="cell"><div class="v" id="mHeight">—</div><div class="k">Chain height</div></div>
+    </div>
+
+    <p class="whisper" id="whisper">Every hash is an independent lottery ticket. There is no
+    progress bar for mining — only work done, and luck.</p>
+
+    <div class="actions">
+      <button class="btn btn-ghost" id="btnStop">Stop</button>
+    </div>
+    <p class="fine">Leave this open. The node keeps hashing whether or not you watch.</p>
+  </section>
+
+  <!-- STATE 3 — after the first block -->
+  <section class="step hidden" id="sDone">
+    <div class="kicker">YOU ARE A MINER NOW</div>
+    <h1>Block found.</h1>
+    <p class="sub">It is on the chain, it is yours, and nobody sold it to you.
+    Here is what to do next.</p>
+    <div class="actions">
+      <a class="btn btn-gold" href="/world-cup">CLAIM YOUR COUNTRY</a>
+      <a class="btn btn-ghost" href="/calculator">See your numbers</a>
+      <a class="btn btn-ghost" href="/mining">Keep mining</a>
+    </div>
+  </section>
+
+  <p class="fine" id="foot">
+    MBITE has no market value, is not an investment or a security, and mining income is never
+    guaranteed. <a href="/whitepaper">Read the proof</a> · <a href="/world-cup">Mining World Cup</a>
+  </p>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="/static/moonbite-badges.js"></script>
+<script>
+(function () {
+  'use strict';
+  var addr = null, timer = null, tick = null, started = 0, pollBusy = false;
+  var baseBlocks = 0;   /* this address's chain-verified block count at start */
+
+  function $(id) { return document.getElementById(id); }
+  function show(id) {
+    ['sReady', 'sMining', 'sDone'].forEach(function (s) {
+      $(s).classList.toggle('hidden', s !== id);
+    });
+  }
+  function toast(m) {
+    var t = $('toast'); t.textContent = m; t.classList.add('show');
+    setTimeout(function () { t.classList.remove('show'); }, 2400);
+  }
+  function fmt(n) { return (n || 0).toLocaleString('en-US'); }
+  function dur(s) {
+    s = Math.max(0, Math.round(s));
+    if (s < 60) return s + 's';
+    var m = Math.floor(s / 60);
+    if (m < 60) return m + 'm ' + (s % 60) + 's';
+    return Math.floor(m / 60) + 'h ' + (m % 60) + 'm';
+  }
+
+  /* ---------------------------------------------------------- starfield */
+  var sky = $('sky'), g = sky.getContext('2d'), W, H, stars = [];
+  var DPR = Math.min(window.devicePixelRatio || 1, 2);
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var mining = false;
+  function resize() {
+    W = innerWidth; H = innerHeight;
+    sky.width = W * DPR; sky.height = H * DPR;
+    sky.style.width = W + 'px'; sky.style.height = H + 'px';
+    g.setTransform(DPR, 0, 0, DPR, 0, 0);
+    stars = [];
+    for (var i = 0, n = Math.min(190, (W * H / 7500) | 0); i < n; i++) {
+      stars.push({ x: Math.random() * W, y: Math.random() * H,
+        r: Math.random() * 1.2 + .25, tw: Math.random() * 6.28 });
+    }
+  }
+  addEventListener('resize', resize); resize();
+  var t = 0;
+  (function loop() {
+    t += reduced ? 0 : (mining ? 0.045 : 0.01);   /* the sky quickens while mining */
+    g.fillStyle = '#0B0D12'; g.fillRect(0, 0, W, H);
+    for (var i = 0; i < stars.length; i++) {
+      var s = stars[i];
+      g.globalAlpha = .22 + .4 * Math.abs(Math.sin(t + s.tw));
+      g.fillStyle = mining ? '#D9A441' : '#F5F2EA';
+      g.beginPath(); g.arc(s.x, s.y, s.r, 0, 6.2832); g.fill();
+    }
+    g.globalAlpha = 1;
+    requestAnimationFrame(loop);
+  })();
+
+  /* ------------------------------------------------------ honest whispers */
+  var WHISPERS = [
+    'Every hash is an independent lottery ticket. There is no progress bar for mining — only work done, and luck.',
+    'Your CPU is filling memory with a randomly generated program and running it. That is what makes an ASIC pointless here.',
+    'Nobody can pay to skip this queue. The only way past it is electricity and time.',
+    'A block found now is worth 10 MBITE. After block 1,000,000 it is 5, forever.',
+    'The wait is not a bug. If this were fast, it would be worthless.'
+  ];
+  var wi = 0;
+  setInterval(function () {
+    if (!mining) return;
+    var el = $('whisper');
+    el.style.opacity = 0;
+    setTimeout(function () {
+      wi = (wi + 1) % WHISPERS.length;
+      el.textContent = WHISPERS[wi];
+      el.style.opacity = 1;
+    }, 500);
+  }, 9000);
+
+  /* ---------------------------------------------------------- address */
+  fetch('/api/wallet/new').then(function (r) { return r.json(); }).then(function (j) {
+    if (!j.address) throw new Error('no address');
+    addr = j.address;
+    $('addr').textContent = addr;
+    $('btnStart').disabled = false;
+    try {
+      localStorage.setItem('mb_start_address', addr);
+      var saved = JSON.parse(sessionStorage.getItem('addresses') || '[]');
+      saved.unshift({ address: addr });
+      sessionStorage.setItem('addresses', JSON.stringify(saved));
+    } catch (e) {}
+  }).catch(function () {
+    $('addr').textContent = 'Could not reach the node. Reload to try again.';
+  });
+
+  $('btnCopy').addEventListener('click', function () {
+    if (addr && navigator.clipboard) navigator.clipboard.writeText(addr);
+    toast('Address copied');
+  });
+
+  /* ------------------------------------------------------------- mining */
+  /* Blocks are attributed from the chain-derived leaderboard rather than the
+     server's aggregate counter: several people may be mining this node at
+     once, and the aggregate would credit their blocks to everyone. */
+  function myBlocks(data) {
+    var lb = data.leaderboard || [];
+    for (var i = 0; i < lb.length; i++) if (lb[i].address === addr) return lb[i].blocks || 0;
+    return 0;
+  }
+
+  function poll() {
+    if (pollBusy) return;
+    pollBusy = true;
+    fetch('/api/mining/status?include=leaderboard')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        pollBusy = false;
+        if (d.status === 'error') return;
+
+        /* Only values the node can actually vouch for right now. The miner
+           reports hashes_tried and hashrate only AFTER a block is found, so
+           rendering them mid-search would show a frozen 0 and read as broken. */
+        $('mElapsed').textContent = dur((Date.now() - started) / 1000);
+        $('mHeight').textContent = fmt(d.current_height);
+        $('mDiff').textContent = fmt(d.difficulty);
+        $('mReward').textContent = (d.next_block_reward_coins || 0) + ' MBITE';
+
+        /* Check for a found block BEFORE reacting to an idle status: a fast
+           node can finish before the first poll, and treating that as "stopped
+           without mining" would swallow the block and skip the ceremony. */
+        var mine = myBlocks(d);
+        if (mine > baseBlocks) {
+          if (window.MoonBiteBadges) {
+            try { MoonBiteBadges.recordBlocks(mine - baseBlocks, d.current_height, addr); }
+            catch (e) {}
+          }
+          stop(true);
+          return;
+        }
+        if (d.status !== 'mining') stop(false);
+      })
+      .catch(function () { pollBusy = false; });
+  }
+
+  function stop(found) {
+    mining = false;
+    if (timer) { clearInterval(timer); timer = null; }
+    if (tick) { clearInterval(tick); tick = null; }
+    fetch('/api/mining/stop').catch(function () {});
+    if (found) { show('sDone'); }
+    else {
+      show('sReady');
+      $('btnStart').disabled = false;
+      $('btnStart').textContent = 'START MINING';
+    }
+  }
+
+  $('btnStart').addEventListener('click', function () {
+    if (!addr) return;
+    var b = this; b.disabled = true; b.textContent = 'STARTING…';
+    fetch('/api/mining/start', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ blocks: 1, address: addr })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d.status !== 'mining') throw new Error(d.message || 'could not start');
+      /* A freshly generated address has provably mined nothing, so its
+         baseline is zero. Deriving it from the first poll instead would race
+         a fast node that already found the block. */
+      mining = true; started = Date.now(); baseBlocks = 0;
+      show('sMining');
+      poll();
+      timer = setInterval(poll, 2000);
+      /* Elapsed ticks every second so the screen has a visible pulse between
+         polls — this one number is measured here, not reported by the node. */
+      tick = setInterval(function () {
+        if (mining) $('mElapsed').textContent = dur((Date.now() - started) / 1000);
+      }, 1000);
+    }).catch(function (e) {
+      b.disabled = false; b.textContent = 'START MINING';
+      toast('Could not start mining. Try again.');
+    });
+  });
+
+  $('btnStop').addEventListener('click', function () { stop(false); });
+})();
+</script>
+</body>
+</html>
