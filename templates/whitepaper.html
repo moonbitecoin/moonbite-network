@@ -12,7 +12,7 @@
         <div class="mb-hero-inner">
             <span class="mb-badge"><span class="mb-dot"></span> Protocol Paper</span>
             <h1 class="mb-hero-title">No new magic. <span class="mb-gradient-text">Proven parts.</span></h1>
-            <p class="mb-hero-sub">MoonBite didn't invent a new consensus mechanism, and it won't pretend to. It stands on two things that already work — Bitcoin's double-spend solution and Litecoin's scrypt proof-of-work — and sets its own parameters on top. This page lays out those choices in plain terms.</p>
+            <p class="mb-hero-sub">MoonBite didn't invent a new consensus mechanism, and it won't pretend to. It stands on things that already work — Bitcoin's double-spend solution, Litecoin's battle-tested codebase, and Monero's CPU-friendly RandomX proof-of-work — and sets its own parameters on top. This page lays out those choices in plain terms.</p>
             <div class="mb-cta-row">
                 <a href="/developers" class="btn btn-primary mb-btn-xl">Source code &amp; docs</a>
                 <a href="/how-it-works" class="btn btn-secondary mb-btn-xl">How it works</a>
@@ -36,8 +36,8 @@
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">Ł</div>
-                <div class="mb-card-title">From Litecoin: scrypt proof-of-work</div>
-                <div class="mb-card-text">Litecoin (2011) brought in scrypt as an alternative to Bitcoin's SHA-256 for proof-of-work. Scrypt is memory-hard: completing a hash means holding a large array in RAM the whole way through. That raises the cost of building dedicated attack hardware and keeps the algorithm within reach of a broader range of consumer machines. MoonBite uses scrypt for exactly those reasons — a battle-tested algorithm with over a decade of real-world security at scale.</div>
+                <div class="mb-card-title">Proof-of-work: RandomX</div>
+                <div class="mb-card-text">MoonBite replaces Litecoin's scrypt with RandomX (ADR-001) — the proof-of-work that has secured Monero since 2019. RandomX generates random programs and executes them against a large in-memory dataset, so the optimal mining hardware is a general-purpose CPU. Building an ASIC for it means building a CPU — which defeats the point. That keeps mining within reach of ordinary consumer machines instead of specialized farms.</div>
             </div>
         </div>
     </div>
@@ -95,7 +95,7 @@
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">🔧</div>
                 <div class="mb-card-title">Consensus algorithm</div>
-                <div class="mb-card-text">Proof-of-work · scrypt hashing function</div>
+                <div class="mb-card-text">Proof-of-work · RandomX (CPU-optimized)</div>
             </div>
             <div class="mb-card mb-reveal">
                 <div class="mb-card-icon">⏱️</div>
@@ -156,12 +156,12 @@
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">🤝</div>
                 <h3>Why build on Litecoin's codebase?</h3>
-                <p>Litecoin is one of the oldest continuously running blockchain codebases in the world. Its consensus rules are battle-tested, its security model is well understood, and its scrypt PoW has taken sustained adversarial pressure for over a decade. Starting from a proven base means fewer chances for fresh implementation bugs. MoonBite layers its own parameters and address format on top instead of rewriting everything from scratch.</p>
+                <p>Litecoin is one of the oldest continuously running blockchain codebases in the world. Its consensus rules are battle-tested, and its security model is well understood after more than a decade of adversarial pressure. Starting from a proven base means fewer chances for fresh implementation bugs. MoonBite layers its own proof-of-work (RandomX), parameters, and address format on top instead of rewriting everything from scratch.</p>
             </div>
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">🛡️</div>
-                <h3>Why scrypt over SHA-256?</h3>
-                <p>SHA-256 mining is now almost entirely run by ASICs from a handful of companies. Scrypt's memory hardness makes that ASIC advantage less extreme and keeps CPU and GPU mining viable longer, giving a more spread-out early mining base before ASIC miners show up at scale.</p>
+                <h3>Why RandomX over SHA-256 or scrypt?</h3>
+                <p>SHA-256 mining is run almost entirely by ASICs from a handful of companies, and mature scrypt ASICs dominate Litecoin. RandomX goes further than either: it is designed so a general-purpose CPU is the best hardware, permanently. GPUs gain little and no viable ASIC exists — Monero has proven the design under real adversarial pressure since 2019. That keeps the mining base spread across ordinary people's computers instead of consolidating into farms.</p>
             </div>
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">📉</div>
