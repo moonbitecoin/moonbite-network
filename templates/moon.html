@@ -222,6 +222,21 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
   }
   window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
 
+  /* ctx.roundRect is Chrome 99+ / Safari 16.4+; without it the share card
+     throws on older iOS — the device most likely to be sharing. */
+  if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+      r = Math.min(r, w / 2, h / 2);
+      this.moveTo(x + r, y);
+      this.arcTo(x + w, y, x + w, y + h, r);
+      this.arcTo(x + w, y + h, x, y + h, r);
+      this.arcTo(x, y + h, x, y, r);
+      this.arcTo(x, y, x + w, y, r);
+      this.closePath();
+      return this;
+    };
+  }
+
   var minedFrac = 0;  /* fraction of cap mined — controls erosion */
   var t = 0;
   function roundRect(ctx, x, y, w, h, r) {

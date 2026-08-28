@@ -46,6 +46,7 @@ import merchants
 import price_feed
 import swap_verifier
 import wallet_history
+import worldcup
 from node import Node
 from store import BlockStore
 from transaction import generate_keypair, pubkey_hash
@@ -890,6 +891,41 @@ def mining_page():
 def leaderboard_page():
     """Render the mining leaderboard page."""
     return render_template("leaderboard.html")
+
+
+@app.route("/world-cup")
+def world_cup_page():
+    """Render the Mining World Cup country scoreboard."""
+    return render_template("worldcup.html")
+
+
+@app.route("/api/worldcup", methods=["GET"])
+@rate_limit(60, 60)
+def api_worldcup_standings():
+    """Country standings, plus this visitor's own entry when a token is given."""
+    data = worldcup.standings()
+    data["you"] = worldcup.lookup(request.args.get("token"))
+    data["status"] = "success"
+    return jsonify(data)
+
+
+@app.route("/api/worldcup/enlist", methods=["POST"])
+@rate_limit(10, 60)
+def api_worldcup_enlist():
+    """Declare a country for this miner and return their permanent ordinal."""
+    payload = request.get_json(silent=True) or {}
+    try:
+        me = worldcup.enlist(
+            token=payload.get("token"),
+            code=payload.get("code"),
+            blocks=payload.get("blocks", 0),
+        )
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+    data = worldcup.standings()
+    data["you"] = me
+    data["status"] = "success"
+    return jsonify(data)
 
 
 @app.route("/merchants")
