@@ -30,6 +30,7 @@ body { background:#0B0D12; color:#F5F2EA; font-family:'Segoe UI',system-ui,-appl
 /* Flight sections */
 .leg { position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column;
   align-items:center; justify-content:center; padding:12vh 24px; text-align:center; }
+.leg-hero { justify-content:flex-end; padding-bottom:14vh; min-height:112vh; }
 .line { opacity:0; transform:translateY(40px); transition:opacity 1.1s ease, transform 1.1s ease; }
 .line.on { opacity:1; transform:none; }
 
@@ -102,10 +103,10 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
 <header class="brand-bar">
   <a class="brand-lock" href="/">
     <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true">
-      <circle cx="46" cy="52" r="38" fill="#F5F2EA"/>
-      <circle cx="76" cy="26" r="26" fill="#0B0D12"/>
-      <rect x="4" y="50" width="92" height="9" rx="4.5" fill="#D9A441"/>
-      <rect x="12" y="65" width="72" height="9" rx="4.5" fill="#D9A441"/>
+      <circle cx="48" cy="54" r="38" fill="#F5F2EA"/>
+      <circle cx="69" cy="25.5" r="29.5" fill="#0B0D12"/>
+      <rect x="2" y="37.5" width="96" height="8" rx="4" fill="#D9A441"/>
+      <rect x="5" y="58.5" width="90" height="8" rx="4" fill="#D9A441"/>
     </svg>
     <span class="brand-word">MOONBITE</span>
   </a>
@@ -113,7 +114,7 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
 </header>
 
 <!-- LEG 1 — the moon -->
-<section class="leg">
+<section class="leg leg-hero">
   <div class="line kicker">MOONBITE · PROOF-OF-WORK · NO PREMINE · NO PRESALE</div>
   <h1 class="line">The last<br>unowned thing.</h1>
   <p class="line dim">Somewhere above you is a supply of exactly ~20,000,000 MBITE.
@@ -249,17 +250,20 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
     g.globalAlpha = 1;
 
     /* the moon: huge at top, recedes as you fly past it, returns at the end */
-    var mr, mx, my;
-    if (p < 0.45) {                      /* fly past */
-      mr = (0.34 - p * 0.55) * Math.min(W, H);
-      mx = W * (0.5 + p * 0.9); my = H * (0.32 - p * 0.5);
+    var mr, mx, my, mAlpha = 1;
+    if (p < 0.45) {                      /* fly past, fading before the text arrives */
+      mr = (0.27 - p * 0.45) * Math.min(W, H);
+      mx = W * (0.5 + p * 0.9); my = H * (0.24 - p * 0.45);
+      mAlpha = Math.max(0, 1 - p * 6);
     } else if (p > 0.8) {                /* return, dead ahead */
       var q = (p - 0.8) / 0.2;
       mr = (0.05 + q * 0.22) * Math.min(W, H);
       mx = W * 0.5; my = H * (1.15 - q * 0.7);
+      mAlpha = Math.min(1, q * 2.5);
     } else { mr = 0; }
 
-    if (mr > 4) {
+    if (mr > 4 && mAlpha > 0.01) {
+      g.globalAlpha = mAlpha;
       /* This IS the logo: bone moon, bite top-right, two moongold bars. */
       /* soft glow */
       var gr = g.createRadialGradient(mx, my, mr * 0.6, mx, my, mr * 2.0);
@@ -269,22 +273,20 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
       var bg = g.createRadialGradient(mx - mr * 0.35, my - mr * 0.35, mr * 0.1, mx, my, mr);
       bg.addColorStop(0, '#FFFFFF'); bg.addColorStop(0.6, '#F5F2EA'); bg.addColorStop(1, '#CFC9BB');
       g.fillStyle = bg; g.beginPath(); g.arc(mx, my, mr, 0, 6.2832); g.fill();
-      /* faint ash craters */
-      g.fillStyle = 'rgba(138,133,128,0.18)';
-      g.beginPath(); g.arc(mx - mr * 0.32, my + mr * 0.28, mr * 0.14, 0, 6.2832); g.fill();
-      g.beginPath(); g.arc(mx + mr * 0.05, my + mr * 0.5, mr * 0.09, 0, 6.2832); g.fill();
-      /* THE BITE — top-right, grows with real mined supply (min so brand reads) */
-      var bite = Math.max(0.34, 0.34 + minedFrac * 0.5);
+      /* THE BITE — crescent carve from the top-right, leaving a horn at the
+         top. Radius grows with real mined supply (min so the mark reads). */
+      var bite = mr * (0.78 + minedFrac * 0.12);
       g.fillStyle = '#0B0D12';
       g.beginPath();
-      g.arc(mx + mr * 0.72, my - mr * 0.58, mr * bite, 0, 6.2832);
+      g.arc(mx + mr * 0.55, my - mr * 0.75, bite, 0, 6.2832);
       g.fill();
-      /* two moongold bars, extending past the disc like the mark */
-      var bw = mr * 2.6, bh = Math.max(3, mr * 0.13), rr = bh / 2;
-      var by1 = my + mr * 0.02, by2 = my + mr * 0.30;
+      /* two long moongold bars, past the disc on both sides */
+      var bh = Math.max(3, mr * 0.11), rr2 = bh / 2;
+      var bw1 = mr * 3.1, bw2 = mr * 2.9;
       g.fillStyle = '#D9A441';
-      roundRect(g, mx - bw / 2, by1 - bh / 2, bw, bh, rr);
-      roundRect(g, mx - bw / 2 + mr * 0.10, by2 - bh / 2, bw - mr * 0.55, bh, rr);
+      roundRect(g, mx - bw1 / 2, my - mr * 0.33 - bh / 2, bw1, bh, rr2);
+      roundRect(g, mx - bw2 / 2, my + mr * 0.22 - bh / 2, bw2, bh, rr2);
+      g.globalAlpha = 1;
     }
     requestAnimationFrame(frame);
   }
@@ -362,10 +364,10 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
     }
     x.globalAlpha = 1;
     x.beginPath(); x.arc(540, 260, 130, 0, 6.2832); x.fillStyle = '#F5F2EA'; x.fill();
-    x.beginPath(); x.arc(635, 190, 92, 0, 6.2832); x.fillStyle = '#0B0D12'; x.fill();
+    x.beginPath(); x.arc(611, 162, 101, 0, 6.2832); x.fillStyle = '#0B0D12'; x.fill();
     x.fillStyle = '#D9A441';
-    x.beginPath(); x.roundRect(370, 262, 340, 17, 8); x.fill();
-    x.beginPath(); x.roundRect(395, 300, 270, 17, 8); x.fill();
+    x.beginPath(); x.roundRect(339, 210, 402, 15, 7.5); x.fill();
+    x.beginPath(); x.roundRect(352, 281, 376, 15, 7.5); x.fill();
     x.textAlign = 'center';
     x.fillStyle = 'rgba(255,255,255,0.7)'; x.font = '700 38px Arial';
     x.fillText('MY MOONBITE MORTALITY CLOCK', 540, 480);
