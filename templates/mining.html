@@ -129,6 +129,15 @@
         </div>
     </div>
 
+    <!-- Miner badges (earned locally, judged by first-block chain height) -->
+    <div class="card card-full">
+        <div class="card-header">🏅 Your Miner Badges</div>
+        <div class="card-body">
+            <div id="mbBadgeShelf" class="mb-badge-shelf"></div>
+            <div class="card-subtitle" style="margin-top:10px;">Earned by mining, never bought. Height tiers are locked to the chain height of your first block — being early can't be copied.</div>
+        </div>
+    </div>
+
     <!-- Mining Status Display -->
     <div class="cards-grid">
         <div class="card">
@@ -268,6 +277,14 @@
                 document.getElementById('chainHeightDisplay').textContent = currentHeight;
                 document.getElementById('sessionBlocksDisplay').textContent = blocksMined;
 
+                // Badges + first-block celebration (additive; never throws)
+                if (window.MoonBiteBadges) {
+                    try {
+                        MoonBiteBadges.recordBlocks(blocksMined, currentHeight,
+                            document.getElementById('addressInput').value.trim());
+                    } catch (e) { console.error('badge error:', e); }
+                }
+
                 // Update elapsed time
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
                 const minutes = Math.floor(elapsed / 60);
@@ -325,6 +342,15 @@
             document.getElementById('addressInput').value = savedAddresses[0].address;
         }
 
+        // Paint the badge shelf for the current address (greyed until earned)
+        if (window.MoonBiteBadges) {
+            MoonBiteBadges.renderShelf('mbBadgeShelf',
+                document.getElementById('addressInput').value.trim());
+            document.getElementById('addressInput').addEventListener('input', function () {
+                MoonBiteBadges.renderShelf('mbBadgeShelf', this.value.trim());
+            });
+        }
+
         // Poll blockchain info in background
         setInterval(() => {
             if (!isMining) {
@@ -343,5 +369,6 @@
     // Handle form submission
     document.getElementById('miningForm').addEventListener('submit', startMining);
 </script>
+<script src="{{ url_for('static', filename='moonbite-badges.js') }}"></script>
 <script defer src="{{ url_for('static', filename='mining-god.js') }}"></script>
 {% endblock %}
