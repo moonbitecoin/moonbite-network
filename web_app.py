@@ -554,6 +554,12 @@ def take_a_bite_page():
     return render_template("take_a_bite.html")
 
 
+@app.route("/calculator")
+def calculator_page():
+    """Render the Early Miner Calculator (shareable earnings-forecast page)."""
+    return render_template("calculator.html")
+
+
 @app.route("/logo-sting")
 def logo_sting_page():
     """Render the MoonBite logo animation (Boot -> Bite -> Lockup sting)."""

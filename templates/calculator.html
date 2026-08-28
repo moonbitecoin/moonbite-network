@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}Early Miner Calculator - MoonBite{% endblock %}
+{% block meta_description %}How much MBITE could your computer mine — and what does waiting cost you? Real emission math: 10 MBITE blocks, halving at block 1,000,000, RandomX CPU mining.{% endblock %}
+{% block nav_active %}mining{% endblock %}
+
+{% block head_extra %}
+<style>
+.calc-wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+.calc-panel { background: rgba(26,31,58,.55); border: 1px solid rgba(255,215,0,.15); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+.calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 720px) { .calc-grid { grid-template-columns: 1fr; } }
+.calc-label { display: block; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; opacity: .7; margin-bottom: 6px; }
+.calc-input, .calc-select { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,215,0,.25); background: rgba(10,14,39,.8); color: #fff; font-size: 1rem; }
+.calc-slider { width: 100%; accent-color: #FFD700; }
+.calc-slider-val { font-weight: 700; color: #FFD700; }
+.calc-result-hero { text-align: center; padding: 28px 16px; }
+.calc-big { font-size: clamp(2.2rem, 7vw, 3.6rem); font-weight: 800; background: linear-gradient(135deg, #FFD700, #FF6B35); -webkit-background-clip: text; background-clip: text; color: transparent; line-height: 1.1; }
+.calc-sub { opacity: .8; margin-top: 6px; }
+.calc-compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
+@media (max-width: 720px) { .calc-compare { grid-template-columns: 1fr; } }
+.calc-card { border-radius: 12px; padding: 16px; text-align: center; border: 1px solid rgba(255,215,0,.15); background: rgba(10,14,39,.6); }
+.calc-card.now { border-color: rgba(46,204,113,.6); box-shadow: 0 0 24px rgba(46,204,113,.12); }
+.calc-card .when { font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; opacity: .7; }
+.calc-card .amt { font-size: 1.5rem; font-weight: 800; margin: 6px 0 2px; }
+.calc-card.now .amt { color: #2ECC71; }
+.calc-card.late .amt { color: #FF6B35; }
+.calc-card .pen { font-size: .8rem; opacity: .75; }
+.calc-meter { margin-top: 22px; }
+.calc-meter-bar { height: 10px; border-radius: 6px; background: rgba(255,255,255,.08); overflow: hidden; }
+.calc-meter-fill { height: 100%; background: linear-gradient(90deg, #FFD700, #FF6B35); width: 0%; transition: width .6s ease; }
+.calc-meter-note { display: flex; justify-content: space-between; font-size: .78rem; opacity: .7; margin-top: 6px; }
+.calc-share-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 22px; }
+.calc-btn { padding: 12px 22px; border-radius: 10px; border: 1px solid rgba(255,215,0,.4); background: linear-gradient(135deg, rgba(255,215,0,.18), rgba(255,107,53,.14)); color: #fff; font-weight: 700; cursor: pointer; font-size: .95rem; }
+.calc-btn:hover { border-color: #FFD700; }
+.calc-fine { font-size: .78rem; opacity: .55; text-align: center; margin-top: 18px; line-height: 1.5; }
+.calc-toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); background: rgba(46,204,113,.95); color: #06130b; font-weight: 700; padding: 10px 18px; border-radius: 10px; opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 50; }
+.calc-toast.show { opacity: 1; }
+#shareCanvas { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+  <section class="hero">
+    <h2>⛏️ Early Miner Calculator</h2>
+    <p class="mb-hero-sub">Every week you wait, the same computer earns less. See exactly how much.</p>
+  </section>
+
+  <div class="calc-wrap">
+    <!-- Inputs -->
+    <div class="calc-panel">
+      <div class="calc-grid">
+        <div>
+          <label class="calc-label" for="hwSelect">Your hardware (RandomX)</label>
+          <select id="hwSelect" class="calc-select">
+            <option value="2500">Laptop CPU (4–8 cores) — ~2.5 KH/s</option>
+            <option value="12000" selected>Desktop CPU (Ryzen 9 class) — ~12 KH/s</option>
+            <option value="44000">Server CPU (64-core EPYC) — ~44 KH/s</option>
+            <option value="custom">Custom hashrate…</option>
+          </select>
+          <input type="number" id="hwCustom" class="calc-input" placeholder="Hashes per second (H/s)" style="display:none; margin-top:8px;" min="1">
+        </div>
+        <div>
+          <label class="calc-label" for="netSlider">Network size today: <span class="calc-slider-val" id="netLabel">100 CPUs</span></label>
+          <input type="range" id="netSlider" class="calc-slider" min="0" max="5" step="1" value="2">
+          <div class="calc-meter-note"><span>Just you</span><span>100,000 CPUs</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="calc-panel calc-result-hero">
+      <div class="calc-label">If you start mining today</div>
+      <div class="calc-big" id="mainResult">—</div>
+      <div class="calc-sub" id="mainSub">MBITE by the first halving</div>
+
+      <div class="calc-compare">
+        <div class="calc-card now">
+          <div class="when">Start today</div>
+          <div class="amt" id="cmpNow">—</div>
+          <div class="pen">your full head start</div>
+        </div>
+        <div class="calc-card late">
+          <div class="when">Start in 6 months</div>
+          <div class="amt" id="cmp6mo">—</div>
+          <div class="pen" id="pen6mo">—</div>
+        </div>
+        <div class="calc-card late">
+          <div class="when">Start in 1 year</div>
+          <div class="amt" id="cmp1yr">—</div>
+          <div class="pen" id="pen1yr">—</div>
+        </div>
+      </div>
+
+      <div class="calc-meter">
+        <div class="calc-meter-bar"><div class="calc-meter-fill" id="halvingFill"></div></div>
+        <div class="calc-meter-note">
+          <span id="halvingNote">Halving countdown</span>
+          <span>Block 1,000,000 → reward drops to 5 MBITE forever</span>
+        </div>
+      </div>
+
+      <div class="calc-share-row">
+        <button class="calc-btn" id="btnCopy">📋 Copy my result</button>
+        <button class="calc-btn" id="btnCard">🖼️ Download share card</button>
+        <a class="calc-btn" href="/mine" style="text-decoration:none;">⛏️ Start mining now</a>
+      </div>
+    </div>
+
+    <p class="calc-fine">
+      Math uses MoonBite's real consensus schedule: 10 MBITE per block, one block every 2.5 minutes
+      (5,760 MBITE emitted per day network-wide), subsidy halving at block 1,000,000. Assumes the
+      network grows linearly to the size you set on the slider; difficulty retargets automatically,
+      so your earnings are your share of a fixed daily pie. Estimates in MBITE only — MBITE has no
+      market value, is not an investment or a security, and mining income is never guaranteed.
+    </p>
+  </div>
+</div>
+
+<canvas id="shareCanvas" width="1080" height="1080"></canvas>
+<div class="calc-toast" id="calcToast">✓ Copied</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+(function () {
+  // --- Consensus constants (must match bigcoin-core) ---
+  var REWARD = 10;                 // MBITE per block, epoch 0
+  var BLOCK_SEC = 150;             // 2.5-minute target spacing
+  var BLOCKS_PER_DAY = 86400 / BLOCK_SEC;          // 576
+  var DAILY_EMISSION = BLOCKS_PER_DAY * REWARD;    // 5,760 MBITE
+  var HALVING_BLOCK = 1000000;
+  var CPU_HS = 12000;              // reference desktop CPU used for "N CPUs" slider
+
+  var NET_STEPS = [1, 10, 100, 1000, 10000, 100000]; // network size in reference CPUs
+
+  var hwSelect = document.getElementById('hwSelect');
+  var hwCustom = document.getElementById('hwCustom');
+  var netSlider = document.getElementById('netSlider');
+  var netLabel = document.getElementById('netLabel');
+
+  function myHashrate() {
+    if (hwSelect.value === 'custom') {
+      var v = parseFloat(hwCustom.value);
+      return (v > 0) ? v : 12000;
+    }
+    return parseFloat(hwSelect.value);
+  }
+
+  // Live chain height (best effort; falls back to 0 = pre-launch)
+  var chainHeight = 0;
+  fetch('/api/blockchain/info').then(function (r) { return r.json(); }).then(function (j) {
+    var h = j.height || (j.blocks !== undefined ? j.blocks : 0) || (j.info && j.info.height) || 0;
+    if (h > 0 && h < HALVING_BLOCK) { chainHeight = h; render(); }
+  }).catch(function () { /* pre-launch: height 0 */ });
+
+  function fmt(n) {
+    if (n >= 1000) return Math.round(n).toLocaleString('en-US');
+    if (n >= 10) return n.toFixed(1);
+    return n.toFixed(2);
+  }
+
+  // Integrate earnings from startDay to the halving, with the network growing
+  // linearly from todaySize to finalSize over GROWTH_DAYS.
+  function earned(startDay, endDay, myHs, todayCpus, finalCpus, growthDays) {
+    var total = 0;
+    for (var d = Math.floor(startDay); d < Math.floor(endDay); d++) {
+      var t = Math.min(1, d / growthDays);
+      var netCpus = todayCpus + (finalCpus - todayCpus) * t;
+      var netHs = Math.max(netCpus * CPU_HS, myHs); // network includes at least you
+      total += DAILY_EMISSION * (myHs / netHs);
+    }
+    return total;
+  }
+
+  function render() {
+    var idx = parseInt(netSlider.value, 10);
+    var todayCpus = NET_STEPS[idx];
+    netLabel.textContent = todayCpus.toLocaleString('en-US') + (todayCpus === 1 ? ' CPU (just you)' : ' CPUs');
+
+    var myHs = myHashrate();
+    // Assume network grows 10x from today's size over 2 years (capped at 100k CPUs).
+    var finalCpus = Math.min(todayCpus * 10, 100000);
+    var GROWTH_DAYS = 730;
+
+    var blocksLeft = HALVING_BLOCK - chainHeight;
+    var daysToHalving = blocksLeft / BLOCKS_PER_DAY;
+
+    var now = earned(0, daysToHalving, myHs, todayCpus, finalCpus, GROWTH_DAYS);
+    var in6mo = earned(182, daysToHalving, myHs, todayCpus, finalCpus, GROWTH_DAYS);
+    var in1yr = earned(365, daysToHalving, myHs, todayCpus, finalCpus, GROWTH_DAYS);
+
+    document.getElementById('mainResult').textContent = fmt(now) + ' MBITE';
+    document.getElementById('cmpNow').textContent = fmt(now);
+    document.getElementById('cmp6mo').textContent = fmt(in6mo);
+    document.getElementById('cmp1yr').textContent = fmt(in1yr);
+    document.getElementById('pen6mo').textContent = now > 0 ? ('−' + Math.round(100 - 100 * in6mo / now) + '% for waiting') : '—';
+    document.getElementById('pen1yr').textContent = now > 0 ? ('−' + Math.round(100 - 100 * in1yr / now) + '% for waiting') : '—';
+
+    var pct = Math.min(100, 100 * chainHeight / HALVING_BLOCK);
+    document.getElementById('halvingFill').style.width = (pct < 1 && chainHeight > 0 ? 1 : pct) + '%';
+    document.getElementById('halvingNote').textContent = chainHeight > 0
+      ? ('Block ' + chainHeight.toLocaleString('en-US') + ' of 1,000,000 (~' + Math.round(daysToHalving) + ' days left)')
+      : 'Pre-launch — full ~4.75-year epoch still ahead';
+
+    return { now: now, in1yr: in1yr, myHs: myHs, todayCpus: todayCpus };
+  }
+
+  function shareText() {
+    var s = render();
+    return 'My computer could mine ~' + fmt(s.now) + ' MBITE before the MoonBite halving — ' +
+      'starting a year later it only gets ~' + fmt(s.in1yr) + '. Being early is the whole game. ' +
+      'Check yours: https://moonbite.org/calculator';
+  }
+
+  document.getElementById('btnCopy').addEventListener('click', function () {
+    var done = function () {
+      var t = document.getElementById('calcToast');
+      t.classList.add('show');
+      setTimeout(function () { t.classList.remove('show'); }, 1800);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(shareText()).then(done, done);
+    } else { done(); }
+  });
+
+  document.getElementById('btnCard').addEventListener('click', function () {
+    var s = render();
+    var cv = document.getElementById('shareCanvas');
+    var g = cv.getContext('2d');
+    // Background
+    var grad = g.createLinearGradient(0, 0, 0, 1080);
+    grad.addColorStop(0, '#0A0E27'); grad.addColorStop(1, '#1A1F3A');
+    g.fillStyle = grad; g.fillRect(0, 0, 1080, 1080);
+    // Moon
+    g.beginPath(); g.arc(540, 300, 150, 0, Math.PI * 2);
+    g.fillStyle = 'rgba(255,215,0,0.12)'; g.fill();
+    g.beginPath(); g.arc(540, 300, 110, 0, Math.PI * 2);
+    g.fillStyle = '#FFD700'; g.fill();
+    g.beginPath(); g.arc(610, 260, 85, 0, Math.PI * 2);
+    g.fillStyle = '#0A0E27'; g.fill(); // the bite
+    // Text
+    g.textAlign = 'center'; g.fillStyle = '#FFFFFF';
+    g.font = '700 44px Arial'; g.fillText('EARLY MINER FORECAST', 540, 540);
+    g.fillStyle = '#FFD700'; g.font = '800 96px Arial';
+    g.fillText('~' + fmt(s.now) + ' MBITE', 540, 660);
+    g.fillStyle = 'rgba(255,255,255,0.85)'; g.font = '400 36px Arial';
+    g.fillText('if I start mining today  ·  only ~' + fmt(s.in1yr) + ' a year late', 540, 730);
+    g.fillStyle = '#FF6B35'; g.font = '700 40px Arial';
+    g.fillText('Being early is the whole game.', 540, 830);
+    g.fillStyle = 'rgba(255,255,255,0.6)'; g.font = '400 32px Arial';
+    g.fillText('moonbite.org/calculator', 540, 960);
+    g.fillStyle = 'rgba(255,255,255,0.35)'; g.font = '400 22px Arial';
+    g.fillText('Estimate in MBITE only. Not an investment. Nothing is guaranteed.', 540, 1010);
+    // Download
+    var a = document.createElement('a');
+    a.download = 'moonbite-early-miner.png';
+    a.href = cv.toDataURL('image/png');
+    a.click();
+  });
+
+  hwSelect.addEventListener('change', function () {
+    hwCustom.style.display = hwSelect.value === 'custom' ? 'block' : 'none';
+    render();
+  });
+  hwCustom.addEventListener('input', render);
+  netSlider.addEventListener('input', render);
+  render();
+})();
+</script>
+{% endblock %}
