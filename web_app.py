@@ -944,6 +944,12 @@ def leaderboard_page():
     return render_template("leaderboard.html")
 
 
+@app.route("/halving")
+def halving_page():
+    """Render the permanent halving countdown and emission staircase."""
+    return render_template("halving.html")
+
+
 @app.route("/start")
 def start_page():
     """Render the one-screen path from visitor to first mined block."""
