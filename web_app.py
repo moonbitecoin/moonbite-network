@@ -972,6 +972,12 @@ def _blocks_mined_by(address: str) -> int:
         return 0
 
 
+@app.route("/free")
+def free_page():
+    """Render the Un-Airdrop: there is nothing to claim, and that is the point."""
+    return render_template("free.html")
+
+
 @app.route("/wall")
 def wall_page():
     """Render the public, chain-verified wall of first blocks."""

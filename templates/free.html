@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0B0D12">
+<!-- Honest where it is indexed and shared: the title and description give the
+     joke away, so no link preview can mislead. The reveal is only a beat for
+     someone already on the page, and the page never asks for anything. -->
+<title>There Is No Airdrop — MoonBite</title>
+<meta name="description" content="No premine, no presale, no founder allocation, no free MBITE. Every coin that exists was mined. Here is why that is the point.">
+<link rel="icon" type="image/svg+xml" href="/static/moonbite-logo.svg">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0B0D12; color:#F5F2EA;
+  font-family:'Segoe UI',system-ui,-apple-system,'Helvetica Neue',sans-serif;
+  overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+::selection { background:#D9A441; color:#0B0D12; }
+a,button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
+#sky { position:fixed; inset:0; z-index:0; }
+.wrap { position:relative; z-index:1; max-width:520px; margin:0 auto; padding:0 18px 70px; }
+.num { font-variant-numeric:tabular-nums; }
+.kicker { letter-spacing:.3em; font-size:.62rem; color:#D9A441; text-transform:uppercase;
+  font-weight:800; }
+.hidden { display:none !important; }
+
+.stage { text-align:center; padding-top:6vh; }
+h1 { font-size:clamp(2.1rem,9vw,3.4rem); font-weight:800; line-height:1.02;
+  letter-spacing:-.025em; margin:13px 0 12px; }
+h1 .g { color:#D9A441; }
+h1 .r { color:#C8402F; }
+.lede { color:#8A8580; font-size:.97rem; line-height:1.62; max-width:420px; margin:0 auto; }
+
+.btn { border:none; border-radius:14px; padding:18px 30px; min-height:56px; font-weight:800;
+  font-size:1.02rem; cursor:pointer; text-decoration:none; display:inline-flex;
+  align-items:center; justify-content:center; gap:9px; transition:transform .15s ease; }
+.btn:active { transform:scale(.97); }
+.btn-gold { background:#D9A441; color:#0B0D12; box-shadow:0 14px 42px rgba(217,164,65,.32); }
+.btn-gold:disabled { opacity:.6; }
+.btn-ghost { background:transparent; color:#F5F2EA; border:1px solid rgba(245,242,234,.24); }
+.actions { display:flex; gap:11px; justify-content:center; flex-wrap:wrap; margin-top:26px; }
+
+/* ------------------------------------------------------------- SCANNER */
+.scan { background:#1A1E27; border:1px solid rgba(217,164,65,.22); border-radius:20px;
+  padding:20px 18px; margin-top:24px; text-align:left; min-height:236px; }
+.scan-t { font-size:.6rem; letter-spacing:.2em; color:#8A8580; text-transform:uppercase;
+  font-weight:800; display:flex; align-items:center; gap:8px; }
+.scan-t i { width:7px; height:7px; border-radius:50%; background:#2E9E6B;
+  animation:blip 1.2s infinite; }
+@keyframes blip { 0%,100%{opacity:1} 50%{opacity:.2} }
+.line { display:flex; align-items:center; gap:10px; padding:11px 0;
+  border-bottom:1px solid rgba(245,242,234,.06); font-size:.87rem;
+  opacity:0; transform:translateY(6px); transition:all .35s ease; }
+.line.on { opacity:1; transform:none; }
+.line .lt { flex:1; color:#8A8580; }
+.line .rt { font-weight:800; font-size:.8rem; letter-spacing:.04em; }
+.line .rt.none { color:#2E9E6B; }
+.line .rt.zero { color:#C8402F; }
+.total { display:flex; align-items:baseline; justify-content:space-between; padding-top:16px; }
+.total .k { font-size:.62rem; letter-spacing:.18em; color:#8A8580; text-transform:uppercase;
+  font-weight:800; }
+.total .v { font-size:clamp(2rem,9vw,2.8rem); font-weight:800; color:#C8402F; line-height:1; }
+
+/* -------------------------------------------------------------- REVEAL */
+.reveal { text-align:center; }
+.reveal .big { font-size:clamp(2.2rem,10vw,3.6rem); font-weight:800; line-height:1.03;
+  letter-spacing:-.03em; }
+.reveal .big .r { color:#C8402F; }
+.stamp { display:inline-block; margin-top:20px; border:3px solid #C8402F; color:#C8402F;
+  border-radius:12px; padding:11px 20px; font-size:clamp(1rem,4.4vw,1.3rem); font-weight:800;
+  letter-spacing:.16em; transform:rotate(-4deg); }
+
+.card { background:#1A1E27; border:1px solid rgba(245,242,234,.09); border-radius:20px;
+  padding:20px 18px; margin-top:18px; text-align:left; }
+.card-t { font-size:.6rem; letter-spacing:.2em; color:#D9A441; text-transform:uppercase;
+  font-weight:800; margin-bottom:13px; }
+.card p { color:#8A8580; font-size:.92rem; line-height:1.68; }
+.card p + p { margin-top:11px; }
+.card b { color:#F5F2EA; }
+.fl { display:flex; align-items:flex-start; gap:11px; padding:11px 0;
+  border-top:1px solid rgba(245,242,234,.07); }
+.fl:first-of-type { border-top:none; }
+.fl .ic { color:#2E9E6B; font-weight:800; }
+.fl .tx { flex:1; font-size:.9rem; color:#F5F2EA; }
+.fl .tx span { display:block; color:#8A8580; font-size:.79rem; margin-top:3px; }
+
+.zero-band { text-align:center; padding:26px 16px; margin-top:18px;
+  border-top:1px solid rgba(200,64,47,.25); border-bottom:1px solid rgba(200,64,47,.25); }
+.zero-band .v { font-size:clamp(2.6rem,13vw,4rem); font-weight:800; color:#C8402F; line-height:1; }
+.zero-band .k { font-size:.58rem; letter-spacing:.22em; color:#8A8580; text-transform:uppercase;
+  margin-top:9px; font-weight:800; }
+
+.fine { font-size:.73rem; color:#8A8580; line-height:1.72; text-align:center; margin-top:22px; }
+.toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(16px);
+  background:#2E9E6B; color:#04160E; font-weight:800; padding:12px 22px; border-radius:11px;
+  opacity:0; transition:all .3s; z-index:60; pointer-events:none; font-size:.88rem; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+#card { display:none; }
+@media (prefers-reduced-motion: reduce){ .line { transition:none; } .scan-t i { animation:none; } }
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+{% include 'partials/nav.html' %}
+
+<div class="wrap">
+
+  <!-- ========================================================== STEP 1 -->
+  <section class="stage" id="s1">
+    <div class="kicker">MBITE DISTRIBUTION</div>
+    <h1>Claim your<br>free <span class="g">MBITE</span>.</h1>
+    <p class="lede">Check what you are entitled to from the MoonBite premine,
+      presale and founder allocation. Takes a few seconds.</p>
+    <div class="actions">
+      <button class="btn btn-gold" id="btnClaim">CHECK MY ALLOCATION</button>
+    </div>
+    <p class="fine" style="margin-top:16px;">No wallet connection. No seed phrase.
+      Nothing to sign. We do not ask you for anything — ever.</p>
+  </section>
+
+  <!-- ========================================================== STEP 2 -->
+  <section class="stage hidden" id="s2">
+    <div class="kicker">CHECKING ELIGIBILITY</div>
+    <h1>Reading the<br>chain.</h1>
+    <div class="scan">
+      <div class="scan-t"><i></i><span id="scanT">QUERYING ALLOCATIONS</span></div>
+      <div id="lines"></div>
+      <div class="total hidden" id="totalRow">
+        <div class="k">Your allocation</div>
+        <div class="v num">0 MBITE</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================== STEP 3 -->
+  <section class="stage hidden" id="s3">
+    <div class="reveal">
+      <div class="kicker" style="color:#C8402F;">RESULT</div>
+      <div class="big">There is no airdrop.<br><span class="r">There never was.</span></div>
+      <div class="stamp">ALLOCATION: 0 MBITE</div>
+      <p class="lede" style="margin-top:22px;">Every check above was real, and every answer was
+        zero. That is not a disappointment — it is the entire design.</p>
+    </div>
+
+    <div class="zero-band">
+      <div class="v num">0</div>
+      <div class="k">MBITE ever given away, to anyone</div>
+    </div>
+
+    <div class="card">
+      <div class="card-t">WHY YOU SHOULD WANT THIS</div>
+      <p>An airdrop means somebody was holding coins they did not mine, and chose to hand
+        some to you. To give it away, <b>they had to own it first</b> — and whatever they kept,
+        they can sell into you later.</p>
+      <p>MoonBite has nothing to hand out because <b>nobody was ever given anything</b>.
+        There is no premine to dump, no unlock cliff, no team wallet waiting to vest.
+        Every MBITE that exists was found by a computer doing work.</p>
+      <p>The free coins you were looking for are the reason most coins go to zero.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-t">WHAT IS ACTUALLY FREE</div>
+      <div class="fl"><div class="ic">✓</div><div class="tx">The miner
+        <span>No purchase, no licence, no signup. It runs on the CPU you already own.</span></div></div>
+      <div class="fl"><div class="ic">✓</div><div class="tx">The wallet
+        <span>Self-custodial. Your keys never leave your device.</span></div></div>
+      <div class="fl"><div class="ic">✓</div><div class="tx">Every line of consensus code
+        <span>Open source. The emission schedule is checkable, not promised.</span></div></div>
+      <div class="fl"><div class="ic">✓</div><div class="tx">Your shot at the next block
+        <span>Identical to everyone else's. That is the only equality worth having here.</span></div></div>
+    </div>
+
+    <div class="actions">
+      <a class="btn btn-gold" href="/start">⛏&nbsp; Go earn some instead</a>
+      <button class="btn btn-ghost" id="btnShare">Share this</button>
+    </div>
+
+    <p class="fine">
+      MBITE has no market value, is not an investment or a security, and mining income is never
+      guaranteed. Anyone offering you free MBITE is lying to you —
+      <a href="/scams" style="color:rgba(217,164,65,.75);">including about us</a>.
+    </p>
+  </section>
+</div>
+
+{% include 'partials/footer.html' %}
+<canvas id="card" width="1080" height="1080"></canvas>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+  function $(id){ return document.getElementById(id); }
+  function toast(m){ var t=$('toast'); t.textContent=m; t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); },2400); }
+  function copyText(s){
+    try { if(navigator.clipboard && navigator.clipboard.writeText)
+      return navigator.clipboard.writeText(s).catch(function(){}); } catch(e){}
+    return null;
+  }
+  if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
+      r=Math.min(r,w/2,h/2); this.moveTo(x+r,y); this.arcTo(x+w,y,x+w,y+h,r);
+      this.arcTo(x+w,y+h,x,y+h,r); this.arcTo(x,y+h,x,y,r); this.arcTo(x,y,x+w,y,r);
+      this.closePath(); return this; };
+  }
+  var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* --------------------------------------------------------------- sky */
+  var sky=$('sky'), sg=sky.getContext('2d'), W,H,stars=[];
+  var DPR=Math.min(window.devicePixelRatio||1,2);
+  function resize(){
+    W=innerWidth; H=innerHeight;
+    sky.width=W*DPR; sky.height=H*DPR; sky.style.width=W+'px'; sky.style.height=H+'px';
+    sg.setTransform(DPR,0,0,DPR,0,0); stars=[];
+    for(var i=0,n=Math.min(130,(W*H/11000)|0);i<n;i++)
+      stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.1+.25,tw:Math.random()*6.28});
+  }
+  addEventListener('resize',resize); resize();
+  var t=0;
+  (function loop(){
+    t+=reduced?0:.008;
+    sg.fillStyle='#0B0D12'; sg.fillRect(0,0,W,H);
+    for(var i=0;i<stars.length;i++){ var s=stars[i];
+      sg.globalAlpha=.14+.3*Math.abs(Math.sin(t+s.tw)); sg.fillStyle='#F5F2EA';
+      sg.beginPath(); sg.arc(s.x,s.y,s.r,0,6.2832); sg.fill(); }
+    sg.globalAlpha=1; requestAnimationFrame(loop);
+  })();
+
+  /* Every one of these is a true statement about this chain. The gag only
+     works because none of it is invented. */
+  var CHECKS = [
+    ['Premine allocation',      'NONE',  'none'],
+    ['Founder wallet',          'NONE',  'none'],
+    ['Presale investors',       'NONE',  'none'],
+    ['Team &amp; advisor unlocks',  'NONE',  'none'],
+    ['Venture allocation',      'NONE',  'none'],
+    ['Marketing treasury',      'NONE',  'none'],
+    ['Your eligible balance',   '0 MBITE', 'zero']
+  ];
+
+  $('btnClaim').addEventListener('click', function(){
+    this.disabled = true;
+    $('s1').classList.add('hidden');
+    $('s2').classList.remove('hidden');
+    var box=$('lines');
+    box.innerHTML = CHECKS.map(function(c){
+      return '<div class="line"><span class="lt">'+c[0]+'</span>'+
+             '<span class="rt '+c[2]+'">'+c[1]+'</span></div>';
+    }).join('');
+    var els=box.querySelectorAll('.line');
+    var step = reduced ? 40 : 320;
+    els.forEach(function(el,i){
+      setTimeout(function(){
+        el.classList.add('on');
+        if(i===els.length-1){
+          $('scanT').textContent='SCAN COMPLETE';
+          $('totalRow').classList.remove('hidden');
+          setTimeout(function(){
+            $('s2').classList.add('hidden');
+            $('s3').classList.remove('hidden');
+            window.scrollTo({top:0, behavior: reduced?'auto':'smooth'});
+          }, reduced?200:1100);
+        }
+      }, 260 + i*step);
+    });
+  });
+
+  /* ------------------------------------------------------------ share */
+  function shareText(){
+    return 'I went to claim the MoonBite airdrop. Premine: none. Founder wallet: none. '+
+      'Presale: none. My allocation: 0 MBITE. There is nothing to give away because nobody '+
+      'was ever given anything — that is the point. moonbite.org/free';
+  }
+  $('btnShare').addEventListener('click', function(){
+    if(navigator.share){ navigator.share({text:shareText()}).catch(function(){}); }
+    else { copyText(shareText()); toast('Copied'); }
+    var cv=$('card'), x=cv.getContext('2d');
+    var bg=x.createLinearGradient(0,0,0,1080);
+    bg.addColorStop(0,'#0B0D12'); bg.addColorStop(1,'#1A1E27');
+    x.fillStyle=bg; x.fillRect(0,0,1080,1080);
+    for(var i=0;i<80;i++){ x.globalAlpha=.12+Math.random()*.45; x.fillStyle='#F5F2EA';
+      x.beginPath(); x.arc(Math.random()*1080,Math.random()*1080,Math.random()*1.8+.4,0,6.2832); x.fill(); }
+    x.globalAlpha=1; x.textAlign='center';
+    x.beginPath(); x.arc(540,152,66,0,6.2832); x.fillStyle='#F5F2EA'; x.fill();
+    x.beginPath(); x.arc(576,101,52,0,6.2832); x.fillStyle='#0B0D12'; x.fill();
+    x.fillStyle='#D9A441';
+    x.beginPath(); x.roundRect(440,130,200,8,4); x.fill();
+    x.beginPath(); x.roundRect(446,165,188,8,4); x.fill();
+    x.fillStyle='#8A8580'; x.font='700 27px Arial';
+    x.fillText('I CHECKED THE MOONBITE AIRDROP', 540, 262);
+    /* the ledger of nothing */
+    var rows=[['Premine','NONE'],['Founder wallet','NONE'],['Presale','NONE'],
+              ['Team unlocks','NONE'],['VC allocation','NONE']];
+    x.font='400 30px Arial';
+    rows.forEach(function(r,i){
+      var y=340+i*48;
+      x.textAlign='left';  x.fillStyle='#8A8580'; x.fillText(r[0], 210, y);
+      x.textAlign='right'; x.fillStyle='#2E9E6B'; x.font='800 30px Arial';
+      x.fillText(r[1], 870, y); x.font='400 30px Arial';
+    });
+    x.textAlign='center';
+    x.strokeStyle='rgba(245,242,234,.14)'; x.lineWidth=1;
+    x.beginPath(); x.moveTo(210,600); x.lineTo(870,600); x.stroke();
+    x.fillStyle='#C8402F'; x.font='800 104px Arial';
+    x.fillText('0 MBITE', 540, 700);
+    x.fillStyle='#F5F2EA'; x.font='400 34px Arial';
+    x.fillText('my entire allocation', 540, 752);
+    x.fillStyle='#F5F2EA'; x.font='italic 33px Arial';
+    x.fillText('Nothing to give away, because nobody', 540, 838);
+    x.fillText('was ever given anything.', 540, 882);
+    x.fillStyle='#D9A441'; x.font='700 30px Arial';
+    x.fillText('moonbite.org/free', 540, 952);
+    x.fillStyle='rgba(245,242,234,.32)'; x.font='400 19px Arial';
+    x.fillText('MBITE has no market value and is not an investment.', 540, 1008);
+    var a=document.createElement('a');
+    a.download='moonbite-no-airdrop.png'; a.href=cv.toDataURL('image/png'); a.click();
+  });
+})();
+</script>
+</body>
+</html>
