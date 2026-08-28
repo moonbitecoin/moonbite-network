@@ -1,0 +1,51 @@
+{# Shared nav for the viral page set. Jinja-included (not base.html) so the
+   pages stay standalone-fast. Styles are inline + scoped .mbnav- so nothing
+   leaks into page CSS. Reserve Palette only. #}
+<style>
+.mbnav { position:sticky; top:0; z-index:50; display:flex; align-items:center; gap:18px;
+  justify-content:space-between; padding:14px clamp(16px,4vw,40px);
+  background:linear-gradient(180deg, rgba(11,13,18,.96), rgba(11,13,18,.82));
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+.mbnav-lock { display:flex; align-items:center; gap:11px; text-decoration:none; flex-shrink:0; }
+.mbnav-mark { width:27px; height:27px; display:block; }
+.mbnav-word { color:#F5F2EA; font-weight:700; font-size:.78rem; letter-spacing:.4em; }
+.mbnav-links { display:flex; gap:clamp(12px,2.4vw,26px); align-items:center; }
+.mbnav-links a { color:#8A8580; text-decoration:none; font-size:.78rem; font-weight:700;
+  letter-spacing:.12em; text-transform:uppercase; transition:color .2s; }
+.mbnav-links a:hover, .mbnav-links a.on { color:#F5F2EA; }
+.mbnav-cta { color:#0B0D12 !important; background:#D9A441; padding:9px 18px; border-radius:8px;
+  letter-spacing:.2em !important; }
+.mbnav-cta:hover { color:#0B0D12 !important; }
+.mbnav-burger { display:none; background:none; border:0; cursor:pointer; padding:6px; }
+.mbnav-burger span { display:block; width:22px; height:2px; background:#F5F2EA; margin:5px 0; border-radius:1px; }
+@media (max-width: 760px) {
+  .mbnav-links { position:fixed; inset:56px 0 auto 0; flex-direction:column; padding:18px 0 26px;
+    background:rgba(11,13,18,.98); display:none; }
+  .mbnav-links.open { display:flex; }
+  .mbnav-links a { font-size:.95rem; padding:8px 0; }
+  .mbnav-burger { display:block; }
+  .mbnav-cta { margin-top:6px; }
+}
+</style>
+<nav class="mbnav">
+  <a class="mbnav-lock" href="/" aria-label="MoonBite home">
+    <svg class="mbnav-mark" viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="48" cy="54" r="38" fill="#F5F2EA"/>
+      <circle cx="69" cy="25.5" r="29.5" fill="#0B0D12"/>
+      <rect x="2" y="37.5" width="96" height="8" rx="4" fill="#D9A441"/>
+      <rect x="5" y="58.5" width="90" height="8" rx="4" fill="#D9A441"/>
+    </svg>
+    <span class="mbnav-word">MOONBITE</span>
+  </a>
+  <button class="mbnav-burger" aria-label="Menu"
+    onclick="document.getElementById('mbnavLinks').classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="mbnav-links" id="mbnavLinks">
+    <a href="/world-cup" {% if nav_on == 'worldcup' %}class="on"{% endif %}>World Cup</a>
+    <a href="/wall" {% if nav_on == 'wall' %}class="on"{% endif %}>The Wall</a>
+    <a href="/halving" {% if nav_on == 'halving' %}class="on"{% endif %}>Halving</a>
+    <a href="/calculator" {% if nav_on == 'calculator' %}class="on"{% endif %}>Calculator</a>
+    <a class="mbnav-cta" href="/start">MINE</a>
+  </div>
+</nav>

@@ -17,16 +17,6 @@ body { background:#0B0D12; color:#F5F2EA; font-family:'Segoe UI',system-ui,-appl
 /* Fixed space canvas — everything flies over it */
 #space { position:fixed; inset:0; z-index:0; }
 
-/* Brand bar */
-.brand-bar { position:fixed; top:0; left:0; right:0; z-index:5; display:flex;
-  align-items:center; justify-content:space-between; padding:18px clamp(18px,4vw,40px);
-  background:linear-gradient(180deg, rgba(11,13,18,.85), rgba(11,13,18,0)); }
-.brand-lock { display:flex; align-items:center; gap:12px; text-decoration:none; }
-.brand-mark { width:30px; height:30px; }
-.brand-word { color:#F5F2EA; font-weight:700; font-size:.85rem; letter-spacing:.45em; }
-.brand-cta { color:#0B0D12; background:#D9A441; font-weight:800; font-size:.75rem;
-  letter-spacing:.25em; text-decoration:none; padding:9px 18px; border-radius:8px; }
-
 /* Flight sections */
 .leg { position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column;
   align-items:center; justify-content:center; padding:12vh 24px; text-align:center; }
@@ -100,24 +90,13 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
 <body>
 <canvas id="space"></canvas>
 
-<header class="brand-bar">
-  <a class="brand-lock" href="/">
-    <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true">
-      <circle cx="48" cy="54" r="38" fill="#F5F2EA"/>
-      <circle cx="69" cy="25.5" r="29.5" fill="#0B0D12"/>
-      <rect x="2" y="37.5" width="96" height="8" rx="4" fill="#D9A441"/>
-      <rect x="5" y="58.5" width="90" height="8" rx="4" fill="#D9A441"/>
-    </svg>
-    <span class="brand-word">MOONBITE</span>
-  </a>
-  <a class="brand-cta" href="/start">MINE</a>
-</header>
+{% include 'partials/nav.html' %}
 
 <!-- LEG 1 — the moon -->
 <section class="leg leg-hero">
   <div class="line kicker">MOONBITE · PROOF-OF-WORK · NO PREMINE · NO PRESALE</div>
   <h1 class="line">The last<br>unowned thing.</h1>
-  <p class="line dim">Somewhere above you is a supply of exactly ~20,000,000 MBITE.
+  <p class="line dim">Somewhere above you is a supply of exactly {{ consensus.max_supply_label }} MBITE.
   Nobody printed it. Nobody holds it back. Nobody can sell it to you — because nobody owns it first.</p>
   <div class="cue">SCROLL ↓</div>
 </section>
@@ -137,7 +116,7 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
 <!-- LEG 3 — the living chain -->
 <section class="leg">
   <div class="line kicker">A REAL CHAIN, BREATHING RIGHT NOW</div>
-  <h2 class="line">Every 2.5 minutes,<br><span class="gold">10 MBITE</span> are born.</h2>
+  <h2 class="line">Every {{ consensus.block_time_min }} minutes,<br><span class="gold">{{ consensus.initial_subsidy_coins }} MBITE</span> are born.</h2>
   <div class="stats line">
     <div class="stat"><div class="v" id="stHeight">—</div><div class="k">Block height</div></div>
     <div class="stat"><div class="v" id="stMined">—</div><div class="k">MBITE mined</div></div>
@@ -150,7 +129,7 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
 <!-- LEG 4 — mortality engine -->
 <section class="leg">
   <div class="line kicker">THE CLOCK YOU'RE ACTUALLY ON</div>
-  <h2 class="line">The final MBITE block will be mined<br>around the year <span class="gold">2168</span>.</h2>
+  <h2 class="line">The final MBITE block will be mined<br>around the year <span class="gold">{{ consensus.final_block_year }}</span>.</h2>
   <p class="line dim" style="margin-top:18px;">What year were you born?</p>
   <div class="mort-box line">
     <input class="mort-input" id="birthYear" type="number" min="1920" max="2026" placeholder="1998" inputmode="numeric">
@@ -178,11 +157,7 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
   </div>
 </section>
 
-<footer class="foot">
-  MBITE has no market value, is not an investment or a security, and carries no promise of future value.<br>
-  No premine · no presale · no paid influencers · every consensus rule is <a href="/developers">open source</a>.<br>
-  <a href="/home-classic">classic site</a> · <a href="/dashboard">live dashboard</a>
-</footer>
+{% include 'partials/footer.html' %}
 
 <canvas id="shareCanvas" width="1080" height="1080"></canvas>
 
@@ -190,10 +165,10 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
 (function () {
   'use strict';
   /* ------------------------------------------------ consensus constants */
-  var REWARD = 10, BLOCK_SEC = 150, HALVING = 1000000;
+  var REWARD = {{ consensus.initial_subsidy_coins }}, BLOCK_SEC = {{ consensus.block_time_sec }}, HALVING = {{ consensus.halving_interval }};
   var BLOCKS_PER_DAY = 86400 / BLOCK_SEC;
   var YEARS_PER_HALVING = HALVING * BLOCK_SEC / 31557600;  /* ~4.756 */
-  var LAUNCH_YEAR = 2026, LAST_BLOCK_YEAR = 2168, LIFE_EXPECTANCY = 80;
+  var LAUNCH_YEAR = {{ consensus.launch_year }}, LAST_BLOCK_YEAR = {{ consensus.final_block_year }}, LIFE_EXPECTANCY = 80;
 
   /* ------------------------------------------------ space flight canvas */
   var cv = document.getElementById('space'), g = cv.getContext('2d');
@@ -326,7 +301,7 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
     document.getElementById('stHeight').textContent = num(h);
     document.getElementById('stMined').textContent = num(Math.min(h, HALVING) * REWARD);
     document.getElementById('stLeft').textContent = num(Math.max(0, HALVING - h) / BLOCKS_PER_DAY);
-    minedFrac = Math.min(1, (h * REWARD) / 20000000);
+    minedFrac = Math.min(1, (h * REWARD) / {{ consensus.max_supply_coins }});
   }
   setStats(0);
   fetch('/api/blockchain/info').then(function (r) { return r.json(); }).then(function (j) {
@@ -360,7 +335,7 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
 
   function shareText() {
     if (!mortData) return '';
-    return 'I will live to see ' + mortData.halvings + ' MoonBite halvings. The final block arrives ~2168 — after me. What you mine now outlives you. moonbite.org';
+    return 'I will live to see ' + mortData.halvings + ' MoonBite halvings. The final block arrives ~' + LAST_BLOCK_YEAR + ' — after me. What you mine now outlives you. moonbite.org';
   }
   document.getElementById('btnCopyMort').addEventListener('click', function () {
     if (navigator.clipboard && mortData) navigator.clipboard.writeText(shareText());
@@ -391,7 +366,7 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
     x.fillStyle = '#FFFFFF'; x.font = '400 40px Arial';
     x.fillText('is all I get to see.', 540, 690);
     x.fillStyle = '#B8863B'; x.font = '700 42px Arial';
-    x.fillText('The final block arrives ~2168. After me.', 540, 790);
+    x.fillText('The final block arrives ~' + LAST_BLOCK_YEAR + '. After me.', 540, 790);
     x.fillStyle = 'rgba(255,255,255,0.85)'; x.font = 'italic 36px Arial';
     x.fillText('What you mine now outlives you.', 540, 870);
     x.fillStyle = 'rgba(255,255,255,0.5)'; x.font = '400 30px Arial';

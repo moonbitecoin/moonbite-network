@@ -20,8 +20,8 @@ from __future__ import annotations
 import math
 from block import Block
 
-# Bitcoin consensus parameters (identical to BTC mainnet)
-TARGET_BLOCK_TIME = 600  # seconds (10 minutes, same as Bitcoin)
+# Consensus timing comes from params.py — the single source of truth.
+from params import TARGET_BLOCK_TIME
 RETARGET_INTERVAL = 2016  # blocks (every 2016 blocks = ~2 weeks at 10 min/block)
 EXPECTED_TIMESPAN = TARGET_BLOCK_TIME * RETARGET_INTERVAL  # 20,160 minutes = 1,209,600 seconds
 

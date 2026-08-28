@@ -537,6 +537,57 @@ def mining_worker(job_id: str, blocks_to_mine: int, miner_address: str) -> None:
 # ============================================================================= #
 
 
+def _consensus_dict() -> dict:
+    """One truthful snapshot of the coin's monetary rules + live reward.
+
+    Injected into every template and served at /api/consensus so no page
+    ever copy-pastes a consensus number again.
+    """
+    from block import block_subsidy
+    from params import (CENTS_PER_COIN, HALVING_INTERVAL, INITIAL_SUBSIDY,
+                        MAX_SUPPLY, TARGET_BLOCK_TIME)
+    try:
+        height = get_node().chain.height
+    except Exception:
+        height = 0
+    halving_years = HALVING_INTERVAL * TARGET_BLOCK_TIME / 31_557_600
+    # Year the subsidy decays to zero (33 halvings for a 50-coin start).
+    eras = 0
+    s = INITIAL_SUBSIDY
+    while s > 0:
+        s >>= 1
+        eras += 1
+    return {
+        "initial_subsidy_coins": INITIAL_SUBSIDY // CENTS_PER_COIN,
+        "current_reward_coins": block_subsidy(height + 1) / CENTS_PER_COIN,
+        "halving_interval": HALVING_INTERVAL,
+        "next_halving_height": ((height // HALVING_INTERVAL) + 1) * HALVING_INTERVAL,
+        "block_time_sec": TARGET_BLOCK_TIME,
+        "block_time_min": TARGET_BLOCK_TIME // 60,
+        "blocks_per_day": 86_400 // TARGET_BLOCK_TIME,
+        "daily_emission_coins": (86_400 // TARGET_BLOCK_TIME) * (INITIAL_SUBSIDY // CENTS_PER_COIN),
+        "max_supply_coins": MAX_SUPPLY / CENTS_PER_COIN,
+        "max_supply_label": "~33,000,000",
+        "halving_years": round(halving_years, 2),
+        "launch_year": 2026,
+        "final_block_year": 2026 + round(eras * halving_years),
+        "height": height,
+    }
+
+
+@app.context_processor
+def inject_consensus():
+    return {"consensus": _consensus_dict()}
+
+
+@app.route("/api/consensus", methods=["GET"])
+def api_consensus():
+    """The coin's monetary rules as JSON — the frontend's single source."""
+    data = _consensus_dict()
+    data["status"] = "success"
+    return jsonify(data)
+
+
 @app.route("/")
 def home_page():
     """Render the god-mode cinematic homepage (The Last Unowned Thing)."""
@@ -3417,8 +3468,12 @@ def api_mining_share(job_id):
         if blocks_mined == 0:
             return jsonify({"status": "error", "message": "No blocks mined yet"}), 400
 
-        # Calculate estimated MBITE earned (50 MBITE per block)
-        mbite_earned = blocks_mined * 50
+        # MBITE earned at the CURRENT subsidy — never a hardcoded figure,
+        # so the share text stays truthful across halvings.
+        from block import block_subsidy
+        from params import CENTS_PER_COIN
+        subsidy_coins = block_subsidy(get_node().chain.height) / CENTS_PER_COIN
+        mbite_earned = blocks_mined * subsidy_coins
 
         # Generate share text for different platforms
         s = 's' if blocks_mined > 1 else ''
@@ -4131,20 +4186,9 @@ def get_mining_stats():
 
 @app.route("/api/mining/alerts", methods=["GET"])
 def get_mining_alerts():
-    """Get mining alerts and notifications"""
-    return jsonify({
-        "alerts": [
-            {
-                "id": "high-temp",
-                "severity": "warning",
-                "message": "GPU temperature above 80°C",
-                "timestamp": time.time()
-            }
-        ],
-        "blockAlerts": True,
-        "tempAlerts": True,
-        "difficultyAlerts": False
-    })
+    """Mining alerts. No fabricated data: the server has no sensor access,
+    so the honest answer is an empty list."""
+    return jsonify({"alerts": []})
 
 # script/style allow 'unsafe-inline'. Everything else is locked to 'self', no
 # framing, no plugins. Tightening to nonces is future work (see AUDIT_REPORT.md).

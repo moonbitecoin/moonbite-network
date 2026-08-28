@@ -10,9 +10,25 @@ from __future__ import annotations
 
 # --- monetary policy ------------------------------------------------------- #
 CENTS_PER_COIN = 100_000_000          # smallest unit; 1 coin = 100,000,000 cents
-INITIAL_SUBSIDY = 50 * CENTS_PER_COIN  # block reward at height 0
-HALVING_INTERVAL = 210_000            # halve the subsidy every N blocks
-MAX_SUPPLY = 21_000_000 * CENTS_PER_COIN  # ~20,999,999.97690000 MBITE (50 initial, halve every 210k blocks)
+INITIAL_SUBSIDY = 50 * CENTS_PER_COIN  # block reward at height 0 — generous start, then only down
+HALVING_INTERVAL = 330_000            # halve the subsidy every N blocks (~6.27 yr at 10-min blocks)
+
+
+def _total_emission() -> int:
+    """Sum the whole halving schedule, in cents.
+
+    Deriving the cap instead of asserting it keeps the two from ever
+    disagreeing: change the subsidy or the interval and the ceiling follows.
+    """
+    total = 0
+    subsidy = INITIAL_SUBSIDY
+    while subsidy > 0:                # integer halving terminates on its own
+        total += subsidy * HALVING_INTERVAL
+        subsidy >>= 1
+    return total
+
+
+MAX_SUPPLY = _total_emission()        # 32,999,999.96 MBITE — just under 33M
 MAX_MONEY = MAX_SUPPLY                 # no single value may exceed the cap
 
 # --- proof-of-work / timing ------------------------------------------------ #
