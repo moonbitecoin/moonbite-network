@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0B0D12">
+<title>The Wall — MoonBite</title>
+<meta name="description" content="Every miner who found a block, in the order they found it. Chain-verified, numbered, permanent.">
+<link rel="icon" type="image/svg+xml" href="/static/moonbite-logo.svg">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0B0D12; color:#F5F2EA;
+  font-family:'Segoe UI',system-ui,-apple-system,'Helvetica Neue',sans-serif;
+  overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+::selection { background:#D9A441; color:#0B0D12; }
+a,button,input,select { -webkit-tap-highlight-color:transparent; font-family:inherit; }
+#sky { position:fixed; inset:0; z-index:0; }
+.wrap { position:relative; z-index:1; max-width:560px; margin:0 auto; padding:0 18px 70px; }
+.num { font-variant-numeric:tabular-nums; }
+.kicker { letter-spacing:.3em; font-size:.62rem; color:#D9A441; text-transform:uppercase;
+  font-weight:800; }
+
+.head { text-align:center; padding-top:5vh; }
+h1 { font-size:clamp(2.1rem,9vw,3.3rem); font-weight:800; line-height:1.02;
+  letter-spacing:-.025em; margin:13px 0 11px; }
+h1 .g { color:#D9A441; }
+.lede { color:#8A8580; font-size:.96rem; line-height:1.62; max-width:430px; margin:0 auto; }
+.verified { display:inline-flex; align-items:center; gap:7px; margin-top:16px;
+  background:rgba(46,158,107,.12); border:1px solid rgba(46,158,107,.4); border-radius:999px;
+  padding:7px 15px; font-size:.68rem; font-weight:800; color:#2E9E6B; letter-spacing:.08em; }
+
+.count { margin-top:22px; }
+.count .v { font-size:clamp(2.6rem,13vw,4rem); font-weight:800; color:#D9A441; line-height:1;
+  letter-spacing:-.03em; }
+.count .k { font-size:.58rem; letter-spacing:.24em; color:#8A8580; text-transform:uppercase;
+  margin-top:8px; font-weight:800; }
+
+/* ------------------------------------------------------------- CLAIM */
+.claim { background:linear-gradient(150deg,rgba(217,164,65,.14),rgba(26,30,39,.7));
+  border:1px solid rgba(217,164,65,.4); border-radius:22px; padding:22px 18px; margin-top:22px;
+  display:none; box-shadow:0 22px 66px rgba(0,0,0,.5); }
+.claim.on { display:block; }
+.claim-t { font-size:.6rem; letter-spacing:.2em; color:#D9A441; text-transform:uppercase;
+  font-weight:800; }
+.claim-h { font-size:1.15rem; font-weight:800; margin-top:8px; }
+.claim-m { color:#8A8580; font-size:.84rem; margin-top:6px; line-height:1.55; }
+.frow { display:flex; gap:9px; margin-top:15px; flex-wrap:wrap; }
+input[type=text], select { background:#0B0D12; color:#F5F2EA; font-size:.95rem;
+  border:1px solid rgba(217,164,65,.3); border-radius:12px; padding:13px 12px; min-height:48px; }
+input[type=text] { flex:2; min-width:150px; }
+select { flex:1; min-width:110px; }
+input:focus, select:focus { outline:none; border-color:#D9A441; }
+.btn { border:none; border-radius:12px; padding:14px 22px; min-height:48px; font-weight:800;
+  font-size:.9rem; cursor:pointer; text-decoration:none; display:inline-flex;
+  align-items:center; justify-content:center; gap:8px; letter-spacing:.05em; }
+.btn-gold { background:#D9A441; color:#0B0D12; }
+.btn-gold:disabled { opacity:.5; }
+.btn-ghost { background:transparent; color:#F5F2EA; border:1px solid rgba(245,242,234,.24); }
+.claim .btn-gold { width:100%; margin-top:11px; }
+.err { color:#C8402F; font-size:.82rem; margin-top:10px; font-weight:700; display:none; }
+.err.on { display:block; }
+
+/* -------------------------------------------------------------- CERTS */
+.grid { display:grid; grid-template-columns:1fr; gap:11px; margin-top:22px; }
+@media (min-width:620px){ .grid { grid-template-columns:1fr 1fr; } }
+.cert { position:relative; background:linear-gradient(160deg,#1A1E27,#12151C);
+  border:1px solid rgba(217,164,65,.22); border-radius:18px; padding:17px 16px;
+  overflow:hidden; }
+.cert.mine { border-color:rgba(217,164,65,.65); box-shadow:0 0 34px rgba(217,164,65,.14); }
+.cert .no { position:absolute; top:12px; right:14px; font-size:.72rem; font-weight:800;
+  color:#D9A441; letter-spacing:.06em; }
+.cert .hd { display:flex; align-items:center; gap:10px; }
+.cert .fl { font-size:1.3rem; line-height:1; }
+.cert .who { font-size:1.02rem; font-weight:800; color:#F5F2EA; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; max-width:70%; }
+.cert .amt { font-size:1.45rem; font-weight:800; color:#D9A441; margin-top:11px; line-height:1; }
+.cert .meta { color:#8A8580; font-size:.75rem; margin-top:7px; letter-spacing:.03em; }
+.cert .ribbon { position:absolute; left:0; top:0; bottom:0; width:3px; background:#D9A441;
+  opacity:.5; }
+.cert.first .ribbon { opacity:1; }
+.cert.first::after { content:'FIRST EVER'; position:absolute; bottom:14px; right:14px;
+  font-size:.52rem; letter-spacing:.18em; font-weight:800; color:#0B0D12;
+  background:#D9A441; padding:3px 7px; border-radius:4px; }
+
+.empty { text-align:center; color:#8A8580; padding:34px 14px; line-height:1.8; font-size:.92rem;
+  border:1px dashed rgba(217,164,65,.28); border-radius:20px; margin-top:22px; }
+.empty b { color:#D9A441; }
+
+.actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:24px; }
+.fine { font-size:.73rem; color:#8A8580; line-height:1.72; text-align:center; margin-top:22px; }
+.toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(16px);
+  background:#2E9E6B; color:#04160E; font-weight:800; padding:12px 22px; border-radius:11px;
+  opacity:0; transition:all .3s; z-index:60; pointer-events:none; font-size:.88rem; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.no-flags .fl { color:#D9A441; font-size:.8rem; font-weight:800; }
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+{% include 'partials/nav.html' %}
+
+<div class="wrap">
+  <section class="head">
+    <div class="kicker">THE WALL</div>
+    <h1>Everyone who<br>found a <span class="g">block</span>.</h1>
+    <p class="lede">In the order they found it. Your number is issued once and never
+      reissued — it cannot be bought, only taken earlier than someone else.</p>
+    <div class="verified">✓ EVERY ENTRY VERIFIED AGAINST THE CHAIN</div>
+    <div class="count">
+      <div class="v num" id="total">0</div>
+      <div class="k" id="totalK">certificates issued, of forever</div>
+    </div>
+  </section>
+
+  <!-- claim -->
+  <section class="claim" id="claim">
+    <div class="claim-t">YOU MINED A BLOCK</div>
+    <div class="claim-h" id="claimH">Put it on the Wall.</div>
+    <div class="claim-m" id="claimM">—</div>
+    <div class="frow">
+      <input type="text" id="handle" maxlength="24" placeholder="Your name or handle"
+             aria-label="Handle">
+      <select id="country" aria-label="Country"></select>
+    </div>
+    <button class="btn btn-gold" id="btnClaim">CLAIM MY CERTIFICATE</button>
+    <div class="err" id="err"></div>
+  </section>
+
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty">
+    No certificate has been issued yet.<br>
+    <b>#1 is still available.</b><br>
+    Mine a block and it is yours, permanently.
+  </div>
+
+  <div class="actions">
+    <a class="btn btn-gold" href="/start">⛏&nbsp; Mine a block</a>
+    <a class="btn btn-ghost" href="/world-cup">World Cup</a>
+  </div>
+
+  <p class="fine">
+    Entries are accepted only for addresses the chain has actually paid a coinbase — a claim
+    that never happened is refused by the server. One certificate per address.
+    Handles are chosen by miners.<br>
+    MBITE has no market value and is not an investment.
+  </p>
+</div>
+
+{% include 'partials/footer.html' %}
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+  var REWARD = {{ consensus.current_reward_coins }};
+  function $(id){ return document.getElementById(id); }
+  function fmt(n){ return (n||0).toLocaleString('en-US'); }
+  function coin(n){ return n.toLocaleString('en-US',{maximumFractionDigits:8}); }
+  function toast(m){ var t=$('toast'); t.textContent=m; t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); },2600); }
+  /* Handles are user-supplied and rendered client-side, so every value that
+     reaches innerHTML is escaped here. */
+  function esc(s){
+    return String(s==null?'':s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function flag(code){
+    if(!code || code.length!==2) return '🏳️';
+    return code.toUpperCase().replace(/./g, function(ch){
+      return String.fromCodePoint(0x1F1E6 + ch.charCodeAt(0) - 65); });
+  }
+  (function(){
+    try { var c=document.createElement('canvas').getContext('2d'); c.font='40px serif';
+      if(!(c.measureText('🇨🇳').width < c.measureText('🇨').width*1.6))
+        document.body.classList.add('no-flags');
+    } catch(e){}
+  })();
+
+  var CODES = ('AF Afghanistan|AR Argentina|AU Australia|AT Austria|BD Bangladesh|BE Belgium|'+
+    'BR Brazil|CA Canada|CL Chile|CN China|CO Colombia|CZ Czechia|DK Denmark|EG Egypt|'+
+    'ET Ethiopia|FI Finland|FR France|DE Germany|GH Ghana|GR Greece|HK Hong Kong|HU Hungary|'+
+    'IN India|ID Indonesia|IR Iran|IQ Iraq|IE Ireland|IL Israel|IT Italy|JP Japan|JO Jordan|'+
+    'KZ Kazakhstan|KE Kenya|KW Kuwait|MY Malaysia|MX Mexico|MA Morocco|NP Nepal|NL Netherlands|'+
+    'NZ New Zealand|NG Nigeria|NO Norway|OM Oman|PK Pakistan|PS Palestine|PE Peru|PH Philippines|'+
+    'PL Poland|PT Portugal|QA Qatar|RO Romania|RU Russia|SA Saudi Arabia|RS Serbia|SG Singapore|'+
+    'ZA South Africa|KR South Korea|ES Spain|LK Sri Lanka|SE Sweden|CH Switzerland|TW Taiwan|'+
+    'TZ Tanzania|TH Thailand|TR Turkey|UG Uganda|UA Ukraine|AE United Arab Emirates|'+
+    'GB United Kingdom|US United States|UZ Uzbekistan|VN Vietnam|YE Yemen|ZW Zimbabwe').split('|');
+  var NAME={};
+  var sel=$('country');
+  var o0=document.createElement('option'); o0.value=''; o0.textContent='No country';
+  sel.appendChild(o0);
+  CODES.forEach(function(s){
+    var c=s.slice(0,2); NAME[c]=s.slice(3);
+    var o=document.createElement('option'); o.value=c; o.textContent=flag(c)+'  '+NAME[c];
+    sel.appendChild(o);
+  });
+  (function(){
+    var L=navigator.languages||[navigator.language||''];
+    for(var i=0;i<L.length;i++){ var m=/[-_]([A-Za-z]{2})$/.exec(L[i]||'');
+      if(m && NAME[m[1].toUpperCase()]){ sel.value=m[1].toUpperCase(); return; } }
+  })();
+
+  /* ------------------------------------------------------------- sky */
+  var sky=$('sky'), sg=sky.getContext('2d'), W,H,stars=[];
+  var DPR=Math.min(window.devicePixelRatio||1,2);
+  var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function resize(){
+    W=innerWidth; H=innerHeight;
+    sky.width=W*DPR; sky.height=H*DPR; sky.style.width=W+'px'; sky.style.height=H+'px';
+    sg.setTransform(DPR,0,0,DPR,0,0); stars=[];
+    for(var i=0,n=Math.min(130,(W*H/11000)|0);i<n;i++)
+      stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.1+.25,tw:Math.random()*6.28});
+  }
+  addEventListener('resize',resize); resize();
+  var t=0;
+  (function loop(){
+    t+=reduced?0:.008;
+    sg.fillStyle='#0B0D12'; sg.fillRect(0,0,W,H);
+    for(var i=0;i<stars.length;i++){ var s=stars[i];
+      sg.globalAlpha=.14+.3*Math.abs(Math.sin(t+s.tw)); sg.fillStyle='#F5F2EA';
+      sg.beginPath(); sg.arc(s.x,s.y,s.r,0,6.2832); sg.fill(); }
+    sg.globalAlpha=1; requestAnimationFrame(loop);
+  })();
+
+  /* ------------------------------------------------------------ state */
+  var myAddr=null, myCert=null;
+  try {
+    var lb=JSON.parse(localStorage.getItem('mb_last_block')||'null');
+    if(lb && lb.address) myAddr=lb.address;
+    if(!myAddr) myAddr=localStorage.getItem('mb_start_address');
+  } catch(e){}
+
+  function short(a){ return a && a.length>18 ? a.slice(0,10)+'…'+a.slice(-6) : (a||''); }
+  function when(ts){
+    var d=new Date((ts||0)*1000);
+    return d.toUTCString().slice(5,16);
+  }
+
+  function render(d){
+    $('total').textContent = fmt(d.total);
+    $('totalK').textContent = (d.total===1 ? 'certificate issued, of forever'
+                                          : 'certificates issued, of forever');
+    var list = d.certificates||[];
+    var mineId = myCert ? myCert.id : (d.you ? d.you.id : null);
+    $('grid').innerHTML = list.map(function(c){
+      var isMine = mineId && c.id===mineId;
+      return '<div class="cert'+(isMine?' mine':'')+(c.id===1?' first':'')+'">'+
+        '<div class="ribbon"></div>'+
+        '<div class="no">#'+c.id+'</div>'+
+        '<div class="hd"><span class="fl">'+(c.country?flag(c.country):'🏳️')+'</span>'+
+        '<span class="who">'+esc(c.handle)+'</span></div>'+
+        '<div class="amt">+'+coin(c.reward)+' MBITE</div>'+
+        '<div class="meta">Block #'+fmt(c.height)+' · '+esc(when(c.created_at))+'</div>'+
+        '</div>';
+    }).join('');
+    $('empty').style.display = list.length ? 'none' : '';
+
+    /* the claim panel only makes sense for an address with no certificate yet */
+    var already = !!(d.you || myCert);
+    if (myAddr && !already){
+      $('claimM').textContent = 'Address '+short(myAddr)+
+        ' will be issued certificate #'+ (d.total+1) + '. That number is permanent.';
+      $('claim').classList.add('on');
+    } else if (already){
+      var mine = myCert || d.you;
+      $('claim').classList.add('on');
+      $('claimH').textContent = 'You are certificate #'+mine.id+'.';
+      $('claimM').textContent = 'Issued to '+short(myAddr)+'. It cannot be reissued.';
+      $('handle').style.display='none'; $('country').style.display='none';
+      $('btnClaim').style.display='none';
+    }
+  }
+
+  function load(){
+    var q = '/api/wall?limit=60' + (myAddr ? '&address='+encodeURIComponent(myAddr) : '');
+    fetch(q).then(function(r){return r.json();}).then(function(d){
+      if(d.you) myCert=d.you;
+      render(d);
+    }).catch(function(){ render({total:0,certificates:[]}); });
+  }
+  load();
+
+  $('btnClaim').addEventListener('click', function(){
+    if(!myAddr) return;
+    var b=this; b.disabled=true; b.textContent='…'; $('err').classList.remove('on');
+    var lb={}; try { lb=JSON.parse(localStorage.getItem('mb_last_block')||'{}'); } catch(e){}
+    fetch('/api/wall',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ address:myAddr, handle:$('handle').value,
+        country:$('country').value, height:lb.height||0, reward:REWARD })})
+      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); })
+      .then(function(res){
+        if(!res.ok || res.j.status!=='success') throw new Error(res.j.message||'Could not claim');
+        myCert=res.j.you; render(res.j);
+        toast(res.j.you.new ? 'Certificate #'+res.j.you.id+' is yours'
+                            : 'You already hold #'+res.j.you.id);
+      })
+      .catch(function(e){
+        b.disabled=false; b.textContent='CLAIM MY CERTIFICATE';
+        $('err').textContent = e.message || 'Could not claim';
+        $('err').classList.add('on');
+      });
+  });
+})();
+</script>
+</body>
+</html>

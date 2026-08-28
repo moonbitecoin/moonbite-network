@@ -45,6 +45,7 @@ import forum
 import merchants
 import price_feed
 import swap_verifier
+import wall
 import wallet_history
 import worldcup
 from node import Node
@@ -942,6 +943,71 @@ def mining_page():
 def leaderboard_page():
     """Render the mining leaderboard page."""
     return render_template("leaderboard.html")
+
+
+def _blocks_mined_by(address: str) -> int:
+    """Count coinbase payouts to `address` on the active chain.
+
+    This is what makes the Wall a record rather than a guestbook: a claim is
+    only accepted if the chain itself already paid that address.
+    """
+    try:
+        node = get_node()
+        chain = node.chain
+        count = 0
+        for block_hash in chain.active_chain():
+            block = chain.blocks[block_hash]
+            if not block.transactions or not block.transactions[0].is_coinbase():
+                continue
+            outputs = block.transactions[0].outputs
+            if not outputs:
+                continue
+            try:
+                if address_from_pubkey_hash(outputs[0].pubkey_hash) == address:
+                    count += 1
+            except Exception:
+                continue
+        return count
+    except Exception:
+        return 0
+
+
+@app.route("/wall")
+def wall_page():
+    """Render the public, chain-verified wall of first blocks."""
+    return render_template("wall.html")
+
+
+@app.route("/api/wall", methods=["GET"])
+@rate_limit(60, 60)
+def api_wall_list():
+    """Newest certificates, plus this visitor's own entry when an address is given."""
+    data = wall.recent(request.args.get("limit", 60), request.args.get("offset", 0))
+    data["you"] = wall.lookup(request.args.get("address"))
+    data["status"] = "success"
+    return jsonify(data)
+
+
+@app.route("/api/wall", methods=["POST"])
+@rate_limit(6, 60)
+def api_wall_add():
+    """Place one certificate, refusing any address the chain has not paid."""
+    p = request.get_json(silent=True) or {}
+    try:
+        cert = wall.add(
+            address=p.get("address"),
+            handle=p.get("handle"),
+            country=p.get("country"),
+            height=p.get("height", 0),
+            reward=p.get("reward", 0),
+            verify_blocks=_blocks_mined_by,
+        )
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+    data = wall.recent(60, 0)
+    data["you"] = cert
+    data["status"] = "success"
+    return jsonify(data)
 
 
 @app.route("/halving")

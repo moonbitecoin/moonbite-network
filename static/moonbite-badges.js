@@ -89,6 +89,13 @@
     saveProfile(address, p);
 
     if (hadNoBlocks) {
+      /* Hand the block to /wall so it can offer a claim form there, rather
+         than prompting for a handle mid-ceremony. */
+      try {
+        localStorage.setItem('mb_last_block', JSON.stringify({
+          address: address, height: p.firstHeight, date: p.firstDate
+        }));
+      } catch (e) {}
       celebrateFirstBlock(p, address, fresh);
     } else {
       fresh.forEach(function (b, i) {
@@ -148,6 +155,7 @@
         '<div class="mb-fb-quote">Proof-of-work, not proof-of-purchase. You earned this.</div>' +
         '<div class="mb-fb-actions">' +
           '<button class="mb-fb-btn" id="mbFbCert">🖼️ Save certificate</button>' +
+          '<a class="mb-fb-btn" href="/wall?claim=1" style="text-decoration:none;">🏛 Put it on the Wall</a>' +
           '<button class="mb-fb-btn ghost" id="mbFbClose">Keep mining →</button>' +
         '</div>' +
       '</div>';
