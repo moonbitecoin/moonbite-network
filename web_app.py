@@ -538,7 +538,13 @@ def mining_worker(job_id: str, blocks_to_mine: int, miner_address: str) -> None:
 
 @app.route("/")
 def home_page():
-    """Render the marketing homepage (Zeldman-style elegant minimalism)."""
+    """Render the god-mode cinematic homepage (The Last Unowned Thing)."""
+    return render_template("moon.html")
+
+
+@app.route("/home-zeldman")
+def home_zeldman_page():
+    """Previous marketing homepage (Zeldman-style elegant minimalism)."""
     return render_template("home.html")
 
 

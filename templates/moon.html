@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#04060f">
+<title>MoonBite — The Last Unowned Thing</title>
+<meta name="description" content="Land is owned. Music is licensed. Your face is scraped. There is one thing left nobody can sell you. You mine it, or it isn't yours.">
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { background:#04060f; color:#EAF0FF; font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+::selection { background:#FFD700; color:#04060f; }
+
+/* Fixed space canvas — everything flies over it */
+#space { position:fixed; inset:0; z-index:0; }
+
+/* Flight sections */
+.leg { position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; padding:12vh 24px; text-align:center; }
+.line { opacity:0; transform:translateY(40px); transition:opacity 1.1s ease, transform 1.1s ease; }
+.line.on { opacity:1; transform:none; }
+
+.kicker { letter-spacing:.35em; font-size:clamp(.65rem,1.6vw,.8rem); color:#FFD700;
+  text-transform:uppercase; font-weight:700; }
+h1 { font-size:clamp(2.4rem,8vw,5.5rem); font-weight:800; line-height:1.05; margin:18px 0;
+  background:linear-gradient(160deg,#FFFFFF 30%,#8FA3D0); -webkit-background-clip:text;
+  background-clip:text; color:transparent; }
+h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
+.gold { background:linear-gradient(135deg,#FFD700,#FF6B35); -webkit-background-clip:text;
+  background-clip:text; color:transparent; }
+.dim { color:rgba(234,240,255,.55); font-size:clamp(1rem,2.4vw,1.25rem); max-width:640px;
+  line-height:1.7; margin:0 auto; }
+
+/* Manifesto */
+.owned { font-size:clamp(1.5rem,4.5vw,3rem); font-weight:800; line-height:1.5; }
+.owned .s { display:block; }
+.owned .strike { color:rgba(234,240,255,.35); text-decoration:line-through;
+  text-decoration-color:rgba(255,107,53,.8); text-decoration-thickness:3px; }
+
+/* Live stats band */
+.stats { display:flex; gap:clamp(20px,6vw,70px); flex-wrap:wrap; justify-content:center; margin-top:34px; }
+.stat .v { font-size:clamp(1.6rem,4.5vw,2.8rem); font-weight:800; color:#FFD700; font-variant-numeric:tabular-nums; }
+.stat .k { font-size:.72rem; letter-spacing:.25em; color:rgba(234,240,255,.5); text-transform:uppercase; margin-top:4px; }
+
+/* Mortality engine */
+.mort-box { margin-top:30px; }
+.mort-input { background:rgba(10,16,38,.85); border:1px solid rgba(255,215,0,.35); color:#fff;
+  font-size:clamp(1.4rem,4vw,2rem); font-weight:700; text-align:center; width:min(280px,80vw);
+  padding:16px 20px; border-radius:16px; outline:none; }
+.mort-input:focus { border-color:#FFD700; box-shadow:0 0 40px rgba(255,215,0,.18); }
+.mort-result { margin-top:36px; display:none; }
+.mort-result.show { display:block; animation:pop .6s cubic-bezier(.2,1.5,.4,1); }
+@keyframes pop { from { transform:scale(.85); opacity:0; } to { transform:scale(1); opacity:1; } }
+.mort-big { font-size:clamp(2rem,7vw,4.2rem); font-weight:800; line-height:1.15; }
+.mort-sub { margin-top:16px; }
+.share-row { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:30px; }
+
+/* Buttons */
+.btn { display:inline-block; padding:16px 34px; border-radius:14px; font-weight:800;
+  font-size:clamp(.95rem,2.4vw,1.1rem); text-decoration:none; cursor:pointer; border:none;
+  transition:transform .2s ease, box-shadow .2s ease; }
+.btn:hover { transform:translateY(-2px); }
+.btn-gold { background:linear-gradient(135deg,#FFD700,#FF6B35); color:#1A1005;
+  box-shadow:0 10px 40px rgba(255,140,0,.35); }
+.btn-ghost { background:transparent; color:#fff; border:1px solid rgba(255,255,255,.3); }
+
+/* Final CTA */
+.final-ctas { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-top:38px; }
+.foot { position:relative; z-index:1; text-align:center; padding:40px 20px 60px;
+  font-size:.75rem; color:rgba(234,240,255,.35); line-height:1.8; }
+.foot a { color:rgba(255,215,0,.6); text-decoration:none; }
+
+/* Scroll cue */
+.cue { position:absolute; bottom:5vh; left:50%; transform:translateX(-50%);
+  color:rgba(255,255,255,.4); font-size:.75rem; letter-spacing:.3em; animation:cue 2.2s infinite; }
+@keyframes cue { 0%,100% { transform:translateX(-50%) translateY(0); opacity:.4; }
+  50% { transform:translateX(-50%) translateY(8px); opacity:.9; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .line { transition:opacity .4s; transform:none; }
+  .cue { animation:none; }
+}
+#shareCanvas { display:none; }
+</style>
+</head>
+<body>
+<canvas id="space"></canvas>
+
+<!-- LEG 1 — the moon -->
+<section class="leg">
+  <div class="line kicker">MOONBITE · PROOF-OF-WORK · NO PREMINE · NO PRESALE</div>
+  <h1 class="line">The last<br>unowned thing.</h1>
+  <p class="line dim">Somewhere above you is a supply of exactly ~20,000,000 MBITE.
+  Nobody printed it. Nobody holds it back. Nobody can sell it to you — because nobody owns it first.</p>
+  <div class="cue">SCROLL ↓</div>
+</section>
+
+<!-- LEG 2 — the manifesto -->
+<section class="leg">
+  <div class="owned">
+    <span class="s line"><span class="strike">Land</span> — owned.</span>
+    <span class="s line"><span class="strike">Music</span> — licensed.</span>
+    <span class="s line"><span class="strike">Your face</span> — scraped.</span>
+    <span class="s line"><span class="strike">Your data</span> — sold.</span>
+    <span class="s line" style="margin-top:26px;">One thing is left.</span>
+    <span class="s line gold">You mine it, or it isn't yours.</span>
+  </div>
+</section>
+
+<!-- LEG 3 — the living chain -->
+<section class="leg">
+  <div class="line kicker">A REAL CHAIN, BREATHING RIGHT NOW</div>
+  <h2 class="line">Every 2.5 minutes,<br><span class="gold">10 MBITE</span> are born.</h2>
+  <div class="stats line">
+    <div class="stat"><div class="v" id="stHeight">—</div><div class="k">Block height</div></div>
+    <div class="stat"><div class="v" id="stMined">—</div><div class="k">MBITE mined</div></div>
+    <div class="stat"><div class="v" id="stLeft">—</div><div class="k">Days to halving</div></div>
+  </div>
+  <p class="line dim" style="margin-top:30px;">CPU-mined with RandomX — the ASIC-resistant algorithm behind Monero.
+  The computer you already own is competitive hardware. No farm gets an edge over your laptop.</p>
+</section>
+
+<!-- LEG 4 — mortality engine -->
+<section class="leg">
+  <div class="line kicker">THE CLOCK YOU'RE ACTUALLY ON</div>
+  <h2 class="line">The final MBITE block will be mined<br>around the year <span class="gold">2168</span>.</h2>
+  <p class="line dim" style="margin-top:18px;">What year were you born?</p>
+  <div class="mort-box line">
+    <input class="mort-input" id="birthYear" type="number" min="1920" max="2026" placeholder="1998" inputmode="numeric">
+  </div>
+  <div class="mort-result" id="mortResult">
+    <div class="mort-big">You will live to see<br><span class="gold" id="mortHalvings">—</span></div>
+    <div class="dim mort-sub" id="mortLine">—</div>
+    <div class="share-row">
+      <button class="btn btn-gold" id="btnShareCard">🖼️ Save my card</button>
+      <button class="btn btn-ghost" id="btnCopyMort">📋 Copy</button>
+    </div>
+  </div>
+</section>
+
+<!-- LEG 5 — the call -->
+<section class="leg">
+  <h2 class="line">Being early isn't a slogan here.<br><span class="gold">It's arithmetic.</span></h2>
+  <p class="line dim" style="margin-top:20px;">Half of every MBITE that will ever exist is mined in the
+  first epoch. Miners who arrive one year later earn roughly half as much with the same machine —
+  forever. There is no presale to buy your way past this. There is only earlier.</p>
+  <div class="final-ctas line">
+    <a class="btn btn-gold" href="/mining">⛏️ Start mining</a>
+    <a class="btn btn-ghost" href="/calculator">Run your numbers</a>
+    <a class="btn btn-ghost" href="/whitepaper">Read the proof</a>
+  </div>
+</section>
+
+<footer class="foot">
+  MBITE has no market value, is not an investment or a security, and carries no promise of future value.<br>
+  No premine · no presale · no paid influencers · every consensus rule is <a href="/developers">open source</a>.<br>
+  <a href="/home-classic">classic site</a> · <a href="/dashboard">live dashboard</a>
+</footer>
+
+<canvas id="shareCanvas" width="1080" height="1080"></canvas>
+
+<script>
+(function () {
+  'use strict';
+  /* ------------------------------------------------ consensus constants */
+  var REWARD = 10, BLOCK_SEC = 150, HALVING = 1000000;
+  var BLOCKS_PER_DAY = 86400 / BLOCK_SEC;
+  var YEARS_PER_HALVING = HALVING * BLOCK_SEC / 31557600;  /* ~4.756 */
+  var LAUNCH_YEAR = 2026, LAST_BLOCK_YEAR = 2168, LIFE_EXPECTANCY = 80;
+
+  /* ------------------------------------------------ space flight canvas */
+  var cv = document.getElementById('space'), g = cv.getContext('2d');
+  var W, H, stars = [], DPR = Math.min(window.devicePixelRatio || 1, 2);
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function resize() {
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W * DPR; cv.height = H * DPR;
+    cv.style.width = W + 'px'; cv.style.height = H + 'px';
+    g.setTransform(DPR, 0, 0, DPR, 0, 0);
+    stars = [];
+    var n = Math.min(320, Math.floor(W * H / 4200));
+    for (var i = 0; i < n; i++) {
+      stars.push({ x: Math.random() * W, y: Math.random() * H,
+        z: 0.25 + Math.random() * 0.75, r: Math.random() * 1.4 + 0.3,
+        tw: Math.random() * Math.PI * 2 });
+    }
+  }
+  window.addEventListener('resize', resize); resize();
+
+  var scrollY = 0, docH = 1;
+  function onScroll() {
+    scrollY = window.pageYOffset;
+    docH = Math.max(1, document.body.scrollHeight - H);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+  var minedFrac = 0;  /* fraction of cap mined — controls erosion */
+  var t = 0;
+  function frame() {
+    t += reduced ? 0 : 0.016;
+    var p = scrollY / docH;                       /* flight progress 0..1 */
+    g.fillStyle = '#04060f'; g.fillRect(0, 0, W, H);
+
+    /* stars streak downward as you fly */
+    for (var i = 0; i < stars.length; i++) {
+      var s = stars[i];
+      var y = (s.y + p * H * 2.2 * s.z) % H;
+      var a = 0.35 + 0.4 * Math.abs(Math.sin(t * 0.8 + s.tw));
+      g.globalAlpha = a * s.z;
+      g.fillStyle = '#CFE0FF';
+      g.beginPath(); g.arc(s.x, y, s.r, 0, 6.2832); g.fill();
+    }
+    g.globalAlpha = 1;
+
+    /* the moon: huge at top, recedes as you fly past it, returns at the end */
+    var mr, mx, my;
+    if (p < 0.45) {                      /* fly past */
+      mr = (0.34 - p * 0.55) * Math.min(W, H);
+      mx = W * (0.5 + p * 0.9); my = H * (0.32 - p * 0.5);
+    } else if (p > 0.8) {                /* return, dead ahead */
+      var q = (p - 0.8) / 0.2;
+      mr = (0.05 + q * 0.22) * Math.min(W, H);
+      mx = W * 0.5; my = H * (1.15 - q * 0.7);
+    } else { mr = 0; }
+
+    if (mr > 4) {
+      /* glow */
+      var gr = g.createRadialGradient(mx, my, mr * 0.6, mx, my, mr * 2.1);
+      gr.addColorStop(0, 'rgba(255,215,0,0.18)'); gr.addColorStop(1, 'rgba(255,215,0,0)');
+      g.fillStyle = gr; g.beginPath(); g.arc(mx, my, mr * 2.1, 0, 6.2832); g.fill();
+      /* body */
+      var bg = g.createRadialGradient(mx - mr * 0.35, my - mr * 0.35, mr * 0.1, mx, my, mr);
+      bg.addColorStop(0, '#FFE87A'); bg.addColorStop(0.65, '#FFD700'); bg.addColorStop(1, '#B8860B');
+      g.fillStyle = bg; g.beginPath(); g.arc(mx, my, mr, 0, 6.2832); g.fill();
+      /* craters */
+      g.fillStyle = 'rgba(120,86,0,0.25)';
+      g.beginPath(); g.arc(mx - mr * 0.3, my + mr * 0.2, mr * 0.16, 0, 6.2832); g.fill();
+      g.beginPath(); g.arc(mx + mr * 0.15, my - mr * 0.35, mr * 0.10, 0, 6.2832); g.fill();
+      g.beginPath(); g.arc(mx + mr * 0.35, my + 0.35 * mr, mr * 0.08, 0, 6.2832); g.fill();
+      /* THE BITE — grows with real mined supply (min visible bite so brand reads) */
+      var bite = Math.max(0.18, minedFrac) * 0.95;
+      g.fillStyle = '#04060f';
+      g.beginPath();
+      g.arc(mx + mr * 0.75, my - mr * 0.55, mr * bite, 0, 6.2832);
+      g.fill();
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  /* ------------------------------------------------ reveal on scroll */
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      if (e.isIntersecting) {
+        var lines = e.target.querySelectorAll('.line');
+        lines.forEach(function (el, i) {
+          setTimeout(function () { el.classList.add('on'); }, i * 260);
+        });
+      }
+    });
+  }, { threshold: 0.35 });
+  document.querySelectorAll('.leg').forEach(function (s) { io.observe(s); });
+
+  /* ------------------------------------------------ live chain stats */
+  function num(n) { return Math.round(n).toLocaleString('en-US'); }
+  function setStats(h) {
+    document.getElementById('stHeight').textContent = num(h);
+    document.getElementById('stMined').textContent = num(Math.min(h, HALVING) * REWARD);
+    document.getElementById('stLeft').textContent = num(Math.max(0, HALVING - h) / BLOCKS_PER_DAY);
+    minedFrac = Math.min(1, (h * REWARD) / 20000000);
+  }
+  setStats(0);
+  fetch('/api/blockchain/info').then(function (r) { return r.json(); }).then(function (j) {
+    var h = j.height || j.blocks || (j.info && j.info.height) || 0;
+    if (h > 0) setStats(h);
+  }).catch(function () {});
+
+  /* ------------------------------------------------ mortality engine */
+  var mortData = null;
+  document.getElementById('birthYear').addEventListener('input', function () {
+    var y = parseInt(this.value, 10);
+    if (!(y >= 1920 && y <= 2026)) return;
+    var deathYear = y + LIFE_EXPECTANCY;
+    var halvings = Math.max(0, Math.floor((deathYear - LAUNCH_YEAR) / YEARS_PER_HALVING));
+    var seesLast = deathYear >= LAST_BLOCK_YEAR;
+    var el = document.getElementById('mortResult');
+    document.getElementById('mortHalvings').textContent =
+      halvings + (halvings === 1 ? ' halving' : ' halvings');
+    var line;
+    if (seesLast) {
+      line = 'You might actually witness the final block. Almost no one alive today will.';
+    } else {
+      var gens = Math.max(1, Math.ceil((LAST_BLOCK_YEAR - deathYear) / 28));
+      line = 'The last block lands around ' + LAST_BLOCK_YEAR + ' — roughly ' + gens +
+        ' generation' + (gens > 1 ? 's' : '') + ' after you. What you mine now outlives you.';
+    }
+    document.getElementById('mortLine').textContent = line;
+    el.classList.add('show');
+    mortData = { year: y, halvings: halvings, line: line };
+  });
+
+  function shareText() {
+    if (!mortData) return '';
+    return 'I will live to see ' + mortData.halvings + ' MoonBite halvings. The final block arrives ~2168 — after me. What you mine now outlives you. moonbite.org';
+  }
+  document.getElementById('btnCopyMort').addEventListener('click', function () {
+    if (navigator.clipboard && mortData) navigator.clipboard.writeText(shareText());
+    this.textContent = '✓ Copied'; var b = this;
+    setTimeout(function () { b.textContent = '📋 Copy'; }, 1800);
+  });
+  document.getElementById('btnShareCard').addEventListener('click', function () {
+    if (!mortData) return;
+    var c = document.getElementById('shareCanvas'), x = c.getContext('2d');
+    var gr = x.createLinearGradient(0, 0, 0, 1080);
+    gr.addColorStop(0, '#04060f'); gr.addColorStop(1, '#101736');
+    x.fillStyle = gr; x.fillRect(0, 0, 1080, 1080);
+    for (var i = 0; i < 90; i++) {
+      x.globalAlpha = 0.2 + Math.random() * 0.6; x.fillStyle = '#CFE0FF';
+      x.beginPath(); x.arc(Math.random() * 1080, Math.random() * 1080, Math.random() * 2 + 0.5, 0, 6.2832); x.fill();
+    }
+    x.globalAlpha = 1;
+    x.beginPath(); x.arc(540, 260, 130, 0, 6.2832); x.fillStyle = '#FFD700'; x.fill();
+    x.beginPath(); x.arc(630, 205, 95, 0, 6.2832); x.fillStyle = '#04060f'; x.fill();
+    x.textAlign = 'center';
+    x.fillStyle = 'rgba(255,255,255,0.7)'; x.font = '700 38px Arial';
+    x.fillText('MY MOONBITE MORTALITY CLOCK', 540, 480);
+    x.fillStyle = '#FFD700'; x.font = '800 120px Arial';
+    x.fillText(mortData.halvings + ' HALVINGS', 540, 620);
+    x.fillStyle = '#FFFFFF'; x.font = '400 40px Arial';
+    x.fillText('is all I get to see.', 540, 690);
+    x.fillStyle = '#FF6B35'; x.font = '700 42px Arial';
+    x.fillText('The final block arrives ~2168. After me.', 540, 790);
+    x.fillStyle = 'rgba(255,255,255,0.85)'; x.font = 'italic 36px Arial';
+    x.fillText('What you mine now outlives you.', 540, 870);
+    x.fillStyle = 'rgba(255,255,255,0.5)'; x.font = '400 30px Arial';
+    x.fillText('moonbite.org', 540, 960);
+    x.fillStyle = 'rgba(255,255,255,0.3)'; x.font = '400 20px Arial';
+    x.fillText('MBITE has no market value and is not an investment.', 540, 1010);
+    var a = document.createElement('a');
+    a.download = 'moonbite-mortality.png';
+    a.href = c.toDataURL('image/png'); a.click();
+  });
+})();
+</script>
+</body>
+</html>
