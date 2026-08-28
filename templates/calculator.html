@@ -8,34 +8,34 @@
 {% block head_extra %}
 <style>
 .calc-wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
-.calc-panel { background: rgba(26,31,58,.55); border: 1px solid rgba(255,215,0,.15); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+.calc-panel { background: rgba(26,30,39,.55); border: 1px solid rgba(217,164,65,.15); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
 .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 720px) { .calc-grid { grid-template-columns: 1fr; } }
 .calc-label { display: block; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; opacity: .7; margin-bottom: 6px; }
-.calc-input, .calc-select { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,215,0,.25); background: rgba(10,14,39,.8); color: #fff; font-size: 1rem; }
-.calc-slider { width: 100%; accent-color: #FFD700; }
-.calc-slider-val { font-weight: 700; color: #FFD700; }
+.calc-input, .calc-select { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(217,164,65,.25); background: rgba(26,30,39,.8); color: #fff; font-size: 1rem; }
+.calc-slider { width: 100%; accent-color: #D9A441; }
+.calc-slider-val { font-weight: 700; color: #D9A441; }
 .calc-result-hero { text-align: center; padding: 28px 16px; }
-.calc-big { font-size: clamp(2.2rem, 7vw, 3.6rem); font-weight: 800; background: linear-gradient(135deg, #FFD700, #FF6B35); -webkit-background-clip: text; background-clip: text; color: transparent; line-height: 1.1; }
+.calc-big { font-size: clamp(2.2rem, 7vw, 3.6rem); font-weight: 800; background: linear-gradient(135deg, #D9A441, #B8863B); -webkit-background-clip: text; background-clip: text; color: transparent; line-height: 1.1; }
 .calc-sub { opacity: .8; margin-top: 6px; }
 .calc-compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
 @media (max-width: 720px) { .calc-compare { grid-template-columns: 1fr; } }
-.calc-card { border-radius: 12px; padding: 16px; text-align: center; border: 1px solid rgba(255,215,0,.15); background: rgba(10,14,39,.6); }
-.calc-card.now { border-color: rgba(46,204,113,.6); box-shadow: 0 0 24px rgba(46,204,113,.12); }
+.calc-card { border-radius: 12px; padding: 16px; text-align: center; border: 1px solid rgba(217,164,65,.15); background: rgba(26,30,39,.6); }
+.calc-card.now { border-color: rgba(46,158,107,.6); box-shadow: 0 0 24px rgba(46,158,107,.12); }
 .calc-card .when { font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; opacity: .7; }
 .calc-card .amt { font-size: 1.5rem; font-weight: 800; margin: 6px 0 2px; }
-.calc-card.now .amt { color: #2ECC71; }
-.calc-card.late .amt { color: #FF6B35; }
+.calc-card.now .amt { color: #2E9E6B; }
+.calc-card.late .amt { color: #B8863B; }
 .calc-card .pen { font-size: .8rem; opacity: .75; }
 .calc-meter { margin-top: 22px; }
 .calc-meter-bar { height: 10px; border-radius: 6px; background: rgba(255,255,255,.08); overflow: hidden; }
-.calc-meter-fill { height: 100%; background: linear-gradient(90deg, #FFD700, #FF6B35); width: 0%; transition: width .6s ease; }
+.calc-meter-fill { height: 100%; background: linear-gradient(90deg, #D9A441, #B8863B); width: 0%; transition: width .6s ease; }
 .calc-meter-note { display: flex; justify-content: space-between; font-size: .78rem; opacity: .7; margin-top: 6px; }
 .calc-share-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 22px; }
-.calc-btn { padding: 12px 22px; border-radius: 10px; border: 1px solid rgba(255,215,0,.4); background: linear-gradient(135deg, rgba(255,215,0,.18), rgba(255,107,53,.14)); color: #fff; font-weight: 700; cursor: pointer; font-size: .95rem; }
-.calc-btn:hover { border-color: #FFD700; }
+.calc-btn { padding: 12px 22px; border-radius: 10px; border: 1px solid rgba(217,164,65,.4); background: linear-gradient(135deg, rgba(217,164,65,.18), rgba(184,134,59,.14)); color: #fff; font-weight: 700; cursor: pointer; font-size: .95rem; }
+.calc-btn:hover { border-color: #D9A441; }
 .calc-fine { font-size: .78rem; opacity: .55; text-align: center; margin-top: 18px; line-height: 1.5; }
-.calc-toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); background: rgba(46,204,113,.95); color: #06130b; font-weight: 700; padding: 10px 18px; border-radius: 10px; opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 50; }
+.calc-toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); background: rgba(46,158,107,.95); color: #06130b; font-weight: 700; padding: 10px 18px; border-radius: 10px; opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 50; }
 .calc-toast.show { opacity: 1; }
 #shareCanvas { display: none; }
 </style>
@@ -232,23 +232,23 @@
     var g = cv.getContext('2d');
     // Background
     var grad = g.createLinearGradient(0, 0, 0, 1080);
-    grad.addColorStop(0, '#0A0E27'); grad.addColorStop(1, '#1A1F3A');
+    grad.addColorStop(0, '#0B0D12'); grad.addColorStop(1, '#1A1E27');
     g.fillStyle = grad; g.fillRect(0, 0, 1080, 1080);
     // Moon
     g.beginPath(); g.arc(540, 300, 150, 0, Math.PI * 2);
-    g.fillStyle = 'rgba(255,215,0,0.12)'; g.fill();
+    g.fillStyle = 'rgba(217,164,65,0.12)'; g.fill();
     g.beginPath(); g.arc(540, 300, 110, 0, Math.PI * 2);
-    g.fillStyle = '#FFD700'; g.fill();
+    g.fillStyle = '#D9A441'; g.fill();
     g.beginPath(); g.arc(610, 260, 85, 0, Math.PI * 2);
-    g.fillStyle = '#0A0E27'; g.fill(); // the bite
+    g.fillStyle = '#0B0D12'; g.fill(); // the bite
     // Text
     g.textAlign = 'center'; g.fillStyle = '#FFFFFF';
     g.font = '700 44px Arial'; g.fillText('EARLY MINER FORECAST', 540, 540);
-    g.fillStyle = '#FFD700'; g.font = '800 96px Arial';
+    g.fillStyle = '#D9A441'; g.font = '800 96px Arial';
     g.fillText('~' + fmt(s.now) + ' MBITE', 540, 660);
     g.fillStyle = 'rgba(255,255,255,0.85)'; g.font = '400 36px Arial';
     g.fillText('if I start mining today  ·  only ~' + fmt(s.in1yr) + ' a year late', 540, 730);
-    g.fillStyle = '#FF6B35'; g.font = '700 40px Arial';
+    g.fillStyle = '#B8863B'; g.font = '700 40px Arial';
     g.fillText('Being early is the whole game.', 540, 830);
     g.fillStyle = 'rgba(255,255,255,0.6)'; g.font = '400 32px Arial';
     g.fillText('moonbite.org/calculator', 540, 960);

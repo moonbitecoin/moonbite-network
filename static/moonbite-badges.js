@@ -153,7 +153,7 @@
   function confetti(canvas) {
     canvas.width = window.innerWidth; canvas.height = window.innerHeight;
     var g = canvas.getContext('2d');
-    var colors = ['#FFD700', '#FF6B35', '#2ECC71', '#FFFFFF'];
+    var colors = ['#D9A441', '#B8863B', '#2E9E6B', '#FFFFFF'];
     var bits = [];
     for (var i = 0; i < 160; i++) {
       bits.push({ x: Math.random() * canvas.width, y: -20 - Math.random() * canvas.height * 0.5,
@@ -179,24 +179,24 @@
     cv.width = 1080; cv.height = 1080;
     var g = cv.getContext('2d');
     var grad = g.createLinearGradient(0, 0, 0, 1080);
-    grad.addColorStop(0, '#0A0E27'); grad.addColorStop(1, '#1A1F3A');
+    grad.addColorStop(0, '#0B0D12'); grad.addColorStop(1, '#1A1E27');
     g.fillStyle = grad; g.fillRect(0, 0, 1080, 1080);
-    g.strokeStyle = 'rgba(255,215,0,0.5)'; g.lineWidth = 6;
+    g.strokeStyle = 'rgba(217,164,65,0.5)'; g.lineWidth = 6;
     g.strokeRect(40, 40, 1000, 1000);
     // Bitten moon
-    g.beginPath(); g.arc(540, 280, 130, 0, Math.PI * 2); g.fillStyle = '#FFD700'; g.fill();
-    g.beginPath(); g.arc(625, 235, 95, 0, Math.PI * 2); g.fillStyle = '#0A0E27'; g.fill();
+    g.beginPath(); g.arc(540, 280, 130, 0, Math.PI * 2); g.fillStyle = '#D9A441'; g.fill();
+    g.beginPath(); g.arc(625, 235, 95, 0, Math.PI * 2); g.fillStyle = '#0B0D12'; g.fill();
     g.textAlign = 'center';
     g.fillStyle = 'rgba(255,255,255,0.75)'; g.font = '700 40px Arial';
     g.fillText('CERTIFICATE OF FIRST BLOCK', 540, 500);
-    g.fillStyle = '#FFD700'; g.font = '800 110px Arial';
+    g.fillStyle = '#D9A441'; g.font = '800 110px Arial';
     g.fillText('+10 MBITE', 540, 620);
     g.fillStyle = '#FFFFFF'; g.font = '400 38px Arial';
     g.fillText('Block #' + p.firstHeight.toLocaleString('en-US') + '  ·  ' +
       new Date(p.firstDate).toUTCString().slice(5, 16), 540, 690);
     g.fillStyle = 'rgba(255,255,255,0.65)'; g.font = '400 30px Arial';
     g.fillText(shortAddr, 540, 740);
-    g.fillStyle = '#FF6B35'; g.font = '700 34px Arial';
+    g.fillStyle = '#B8863B'; g.font = '700 34px Arial';
     g.fillText(freshBadges.map(function (b) { return b.icon + ' ' + b.name; }).join('   '), 540, 820);
     g.fillStyle = 'rgba(255,255,255,0.8)'; g.font = 'italic 32px Arial';
     g.fillText('Proof-of-work, not proof-of-purchase.', 540, 890);
