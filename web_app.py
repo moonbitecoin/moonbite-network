@@ -888,30 +888,25 @@ def why_page():
 
 @app.route("/wallet")
 def wallet_page():
-    """Render the mobile PWA wallet page with bulletproof security (AES-256-GCM + PBKDF2)."""
-    print("[WALLET_ROUTE] Loading /wallet endpoint - AES-256-GCM bulletproof wallet", flush=True)
-    # Use render_template which is safe since wallet-pwa.html has no Jinja2 syntax
-    return render_template("wallet-pwa.html")
+    """The MoonBite wallet.
 
-@app.route("/wallet-full")
-def wallet_full_page():
-    """Serve the comprehensive Phase 1-4 wallet with all advanced features."""
-    return render_template("wallet-full.html")
-
-@app.route("/wallet-moonbite")
-def wallet_moonbite_page():
-    """Serve the MoonBite-branded wallet with moon logo colors and all wireframe screens."""
-    return render_template("wallet-moonbite.html")
-
-@app.route("/wallet-complete")
-def wallet_complete_page():
-    """Serve the complete MoonBite wallet with all screens from wireframes."""
-    return render_template("wallet-complete-moonbite.html")
-
-@app.route("/wallet-app")
-def wallet_pwa_app():
-    """Serve the production-grade PWA wallet app with individual screens and native app experience."""
+    One wallet, not five. This serves the production PWA (28 screens,
+    AES-256-GCM + PBKDF2, biometric unlock, per-user custodial addresses) —
+    by a wide margin the most complete of the variants that used to compete
+    for this URL. The others now redirect here so there is a single surface
+    holding keys, and a single place to audit.
+    """
     return render_template("wallet-pwa-app.html")
+
+
+# Superseded wallet builds. Kept as permanent redirects rather than deleted
+# routes so existing links, bookmarks and installed PWA shortcuts survive.
+@app.route("/wallet-app")
+@app.route("/wallet-full")
+@app.route("/wallet-moonbite")
+@app.route("/wallet-complete")
+def wallet_legacy_redirect():
+    return redirect(url_for("wallet_page"), code=301)
 
 @app.route("/wallet-manifest.json")
 def wallet_manifest():

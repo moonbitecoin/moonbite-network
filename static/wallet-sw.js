@@ -1,4 +1,7 @@
-const CACHE_VERSION = 'moonbite-wallet-v1';
+/* Bump on every wallet release: activate() deletes caches whose name does not
+   match, so changing this string is what flushes stale assets from installed
+   PWAs. */
+const CACHE_VERSION = 'moonbite-wallet-v2';
 const CACHE_URLS = [
   '/wallet',
   '/static/wallet-pwa.html',
@@ -65,6 +68,32 @@ self.addEventListener('fetch', event => {
             );
           });
         })
+    );
+    return;
+  }
+
+  // Navigations and HTML: NETWORK FIRST.
+  //
+  // Cache-first here meant an installed wallet kept serving the first HTML it
+  // ever cached, so no deploy - including a security fix - could ever reach
+  // an existing user. Always try the network for the document and fall back to
+  // cache only when genuinely offline, which keeps the PWA usable on a plane
+  // without freezing its code forever.
+  const wantsHTML = request.mode === 'navigate' ||
+    (request.headers.get('accept') || '').includes('text/html');
+  if (wantsHTML) {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_VERSION).then(cache => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request).then(
+          cached => cached || caches.match('/wallet')
+        ))
     );
     return;
   }
