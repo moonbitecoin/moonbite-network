@@ -15,6 +15,16 @@
 
   var STORE_KEY = 'mb_miner_profiles';
 
+  /* The block reward is consensus, not a constant to hardcode here: it halves
+     on schedule, so the ceremony asks the server and degrades to a neutral
+     label if the call fails. */
+  var REWARD_LABEL = 'MBITE';
+  try {
+    fetch('/api/consensus').then(function (r) { return r.json(); }).then(function (c) {
+      if (c && c.current_reward_coins) REWARD_LABEL = '+' + c.current_reward_coins + ' MBITE';
+    }).catch(function () {});
+  } catch (e) {}
+
   /* Badges are earned by verifiable local events only. Height tiers are
    * judged by the chain height when the miner's FIRST block landed —
    * being early is the one thing latecomers cannot copy. */
@@ -128,7 +138,7 @@
       '<canvas class="mb-confetti"></canvas>' +
       '<div class="mb-first-block-card">' +
         '<div class="mb-fb-kicker">FIRST BLOCK FOUND</div>' +
-        '<div class="mb-fb-amount">+10 MBITE</div>' +
+        '<div class="mb-fb-amount">' + REWARD_LABEL + '</div>' +
         '<div class="mb-fb-line">Block #' + p.firstHeight.toLocaleString('en-US') +
           ' · ' + dateStr + '</div>' +
         '<div class="mb-fb-line mb-fb-addr">' + short + '</div>' +
@@ -190,7 +200,7 @@
     g.fillStyle = 'rgba(255,255,255,0.75)'; g.font = '700 40px Arial';
     g.fillText('CERTIFICATE OF FIRST BLOCK', 540, 500);
     g.fillStyle = '#D9A441'; g.font = '800 110px Arial';
-    g.fillText('+10 MBITE', 540, 620);
+    g.fillText(REWARD_LABEL, 540, 620);
     g.fillStyle = '#FFFFFF'; g.font = '400 38px Arial';
     g.fillText('Block #' + p.firstHeight.toLocaleString('en-US') + '  ·  ' +
       new Date(p.firstDate).toUTCString().slice(5, 16), 540, 690);
