@@ -17,6 +17,16 @@ body { background:#0B0D12; color:#F5F2EA; font-family:'Segoe UI',system-ui,-appl
 /* Fixed space canvas — everything flies over it */
 #space { position:fixed; inset:0; z-index:0; }
 
+/* Brand bar */
+.brand-bar { position:fixed; top:0; left:0; right:0; z-index:5; display:flex;
+  align-items:center; justify-content:space-between; padding:18px clamp(18px,4vw,40px);
+  background:linear-gradient(180deg, rgba(11,13,18,.85), rgba(11,13,18,0)); }
+.brand-lock { display:flex; align-items:center; gap:12px; text-decoration:none; }
+.brand-mark { width:30px; height:30px; }
+.brand-word { color:#F5F2EA; font-weight:700; font-size:.85rem; letter-spacing:.45em; }
+.brand-cta { color:#0B0D12; background:#D9A441; font-weight:800; font-size:.75rem;
+  letter-spacing:.25em; text-decoration:none; padding:9px 18px; border-radius:8px; }
+
 /* Flight sections */
 .leg { position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column;
   align-items:center; justify-content:center; padding:12vh 24px; text-align:center; }
@@ -88,6 +98,19 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
 </head>
 <body>
 <canvas id="space"></canvas>
+
+<header class="brand-bar">
+  <a class="brand-lock" href="/">
+    <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="46" cy="52" r="38" fill="#F5F2EA"/>
+      <circle cx="76" cy="26" r="26" fill="#0B0D12"/>
+      <rect x="4" y="50" width="92" height="9" rx="4.5" fill="#D9A441"/>
+      <rect x="12" y="65" width="72" height="9" rx="4.5" fill="#D9A441"/>
+    </svg>
+    <span class="brand-word">MOONBITE</span>
+  </a>
+  <a class="brand-cta" href="/mining">MINE</a>
+</header>
 
 <!-- LEG 1 — the moon -->
 <section class="leg">
@@ -200,6 +223,15 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
 
   var minedFrac = 0;  /* fraction of cap mined — controls erosion */
   var t = 0;
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath(); ctx.fill();
+  }
   function frame() {
     t += reduced ? 0 : 0.016;
     var p = scrollY / docH;                       /* flight progress 0..1 */
@@ -228,25 +260,31 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
     } else { mr = 0; }
 
     if (mr > 4) {
-      /* glow */
-      var gr = g.createRadialGradient(mx, my, mr * 0.6, mx, my, mr * 2.1);
-      gr.addColorStop(0, 'rgba(217,164,65,0.18)'); gr.addColorStop(1, 'rgba(217,164,65,0)');
-      g.fillStyle = gr; g.beginPath(); g.arc(mx, my, mr * 2.1, 0, 6.2832); g.fill();
-      /* body */
+      /* This IS the logo: bone moon, bite top-right, two moongold bars. */
+      /* soft glow */
+      var gr = g.createRadialGradient(mx, my, mr * 0.6, mx, my, mr * 2.0);
+      gr.addColorStop(0, 'rgba(245,242,234,0.10)'); gr.addColorStop(1, 'rgba(245,242,234,0)');
+      g.fillStyle = gr; g.beginPath(); g.arc(mx, my, mr * 2.0, 0, 6.2832); g.fill();
+      /* bone body */
       var bg = g.createRadialGradient(mx - mr * 0.35, my - mr * 0.35, mr * 0.1, mx, my, mr);
-      bg.addColorStop(0, '#E8C878'); bg.addColorStop(0.65, '#D9A441'); bg.addColorStop(1, '#8F6B24');
+      bg.addColorStop(0, '#FFFFFF'); bg.addColorStop(0.6, '#F5F2EA'); bg.addColorStop(1, '#CFC9BB');
       g.fillStyle = bg; g.beginPath(); g.arc(mx, my, mr, 0, 6.2832); g.fill();
-      /* craters */
-      g.fillStyle = 'rgba(120,86,0,0.25)';
-      g.beginPath(); g.arc(mx - mr * 0.3, my + mr * 0.2, mr * 0.16, 0, 6.2832); g.fill();
-      g.beginPath(); g.arc(mx + mr * 0.15, my - mr * 0.35, mr * 0.10, 0, 6.2832); g.fill();
-      g.beginPath(); g.arc(mx + mr * 0.35, my + 0.35 * mr, mr * 0.08, 0, 6.2832); g.fill();
-      /* THE BITE — grows with real mined supply (min visible bite so brand reads) */
-      var bite = Math.max(0.18, minedFrac) * 0.95;
+      /* faint ash craters */
+      g.fillStyle = 'rgba(138,133,128,0.18)';
+      g.beginPath(); g.arc(mx - mr * 0.32, my + mr * 0.28, mr * 0.14, 0, 6.2832); g.fill();
+      g.beginPath(); g.arc(mx + mr * 0.05, my + mr * 0.5, mr * 0.09, 0, 6.2832); g.fill();
+      /* THE BITE — top-right, grows with real mined supply (min so brand reads) */
+      var bite = Math.max(0.34, 0.34 + minedFrac * 0.5);
       g.fillStyle = '#0B0D12';
       g.beginPath();
-      g.arc(mx + mr * 0.75, my - mr * 0.55, mr * bite, 0, 6.2832);
+      g.arc(mx + mr * 0.72, my - mr * 0.58, mr * bite, 0, 6.2832);
       g.fill();
+      /* two moongold bars, extending past the disc like the mark */
+      var bw = mr * 2.6, bh = Math.max(3, mr * 0.13), rr = bh / 2;
+      var by1 = my + mr * 0.02, by2 = my + mr * 0.30;
+      g.fillStyle = '#D9A441';
+      roundRect(g, mx - bw / 2, by1 - bh / 2, bw, bh, rr);
+      roundRect(g, mx - bw / 2 + mr * 0.10, by2 - bh / 2, bw - mr * 0.55, bh, rr);
     }
     requestAnimationFrame(frame);
   }
@@ -323,8 +361,11 @@ h2 { font-size:clamp(1.6rem,5vw,3.2rem); font-weight:800; line-height:1.15; }
       x.beginPath(); x.arc(Math.random() * 1080, Math.random() * 1080, Math.random() * 2 + 0.5, 0, 6.2832); x.fill();
     }
     x.globalAlpha = 1;
-    x.beginPath(); x.arc(540, 260, 130, 0, 6.2832); x.fillStyle = '#D9A441'; x.fill();
-    x.beginPath(); x.arc(630, 205, 95, 0, 6.2832); x.fillStyle = '#0B0D12'; x.fill();
+    x.beginPath(); x.arc(540, 260, 130, 0, 6.2832); x.fillStyle = '#F5F2EA'; x.fill();
+    x.beginPath(); x.arc(635, 190, 92, 0, 6.2832); x.fillStyle = '#0B0D12'; x.fill();
+    x.fillStyle = '#D9A441';
+    x.beginPath(); x.roundRect(370, 262, 340, 17, 8); x.fill();
+    x.beginPath(); x.roundRect(395, 300, 270, 17, 8); x.fill();
     x.textAlign = 'center';
     x.fillStyle = 'rgba(255,255,255,0.7)'; x.font = '700 38px Arial';
     x.fillText('MY MOONBITE MORTALITY CLOCK', 540, 480);
