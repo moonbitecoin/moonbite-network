@@ -4,173 +4,202 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0B0D12">
-<title>Mining World Cup — MoonBite</title>
-<meta name="description" content="Every block has a country. Claim yours, take your permanent miner number, and put your flag on the board.">
-<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<title>The Mining World Cup — MoonBite</title>
+<meta name="description" content="Every block has a country. Claim your nation's permanent miner number and put your flag on the board.">
+<link rel="icon" type="image/svg+xml" href="/static/moonbite-logo.svg">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior:smooth; }
-body { background:#0B0D12; color:#F5F2EA; font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+body { background:#0B0D12; color:#F5F2EA;
+  font-family:'Segoe UI',system-ui,-apple-system,'Helvetica Neue',sans-serif;
   overflow-x:hidden; -webkit-font-smoothing:antialiased; }
 ::selection { background:#D9A441; color:#0B0D12; }
-#sky { position:fixed; inset:0; z-index:0; }
-.wrap { position:relative; z-index:1; max-width:900px; margin:0 auto; padding:0 20px 80px; }
+a,button,select { -webkit-tap-highlight-color:transparent; font-family:inherit; }
+.wrap { position:relative; z-index:1; max-width:560px; margin:0 auto; padding:0 18px 70px; }
+.num { font-variant-numeric:tabular-nums; }
+.kicker { letter-spacing:.3em; font-size:.62rem; color:#D9A441; text-transform:uppercase;
+  font-weight:800; }
 
-/* Brand bar */
-.brand-bar { position:sticky; top:0; z-index:5; display:flex; align-items:center;
-  justify-content:space-between; padding:16px clamp(18px,4vw,40px);
-  background:linear-gradient(180deg, rgba(11,13,18,.95), rgba(11,13,18,.75)); backdrop-filter:blur(8px); }
-.brand-lock { display:flex; align-items:center; gap:12px; text-decoration:none; }
-.brand-mark { width:28px; height:28px; }
-.brand-word { color:#F5F2EA; font-weight:700; font-size:.8rem; letter-spacing:.42em; }
-.brand-cta { color:#0B0D12; background:#D9A441; font-weight:800; font-size:.72rem;
-  letter-spacing:.22em; text-decoration:none; padding:9px 18px; border-radius:8px; }
+/* ------------------------------------------------------------- STADIUM */
+.stage { position:relative; text-align:center; padding-top:2vh; }
+.globe-wrap { position:relative; width:min(88vw,420px); aspect-ratio:1; margin:0 auto; }
+#globe { width:100%; height:100%; display:block; }
+.globe-badge { position:absolute; left:50%; bottom:2%; transform:translateX(-50%);
+  background:rgba(11,13,18,.86); border:1px solid rgba(217,164,65,.32); border-radius:999px;
+  padding:7px 15px; font-size:.62rem; letter-spacing:.2em; font-weight:800; color:#D9A441;
+  white-space:nowrap; backdrop-filter:blur(6px); }
+h1 { font-size:clamp(2.1rem,9vw,3.4rem); font-weight:800; line-height:1.02;
+  letter-spacing:-.025em; margin:14px 0 10px; }
+h1 .g { color:#D9A441; }
+.lede { color:#8A8580; font-size:.97rem; line-height:1.62; max-width:430px; margin:0 auto; }
 
-/* Hero */
-.hero { text-align:center; padding:9vh 0 5vh; }
-.kicker { letter-spacing:.34em; font-size:.7rem; color:#D9A441; text-transform:uppercase; font-weight:700; }
-h1 { font-size:clamp(2.1rem,6.5vw,4rem); font-weight:800; line-height:1.05; margin:16px 0 14px; }
-.sub { color:#8A8580; font-size:clamp(1rem,2.3vw,1.15rem); line-height:1.65; max-width:560px; margin:0 auto; }
-.totals { display:flex; gap:clamp(18px,5vw,50px); justify-content:center; flex-wrap:wrap; margin-top:30px; }
-.tot .v { font-size:clamp(1.4rem,4vw,2.2rem); font-weight:800; color:#D9A441; font-variant-numeric:tabular-nums; }
-.tot .k { font-size:.65rem; letter-spacing:.22em; color:#8A8580; text-transform:uppercase; margin-top:3px; }
+.totals { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin-top:22px; }
+.tot { background:#1A1E27; border:1px solid rgba(245,242,234,.08); border-radius:15px;
+  padding:14px 6px; }
+.tot .v { font-size:clamp(1.25rem,5.6vw,1.7rem); font-weight:800; color:#D9A441; line-height:1; }
+.tot .k { font-size:.52rem; letter-spacing:.15em; color:#8A8580; text-transform:uppercase;
+  margin-top:6px; font-weight:700; }
 
-/* Panels */
-.panel { background:#1A1E27; border:1px solid rgba(217,164,65,.18); border-radius:18px;
-  padding:clamp(20px,4vw,30px); margin-top:22px; }
-.panel-title { font-size:.7rem; letter-spacing:.24em; color:#8A8580; text-transform:uppercase;
-  font-weight:700; margin-bottom:16px; }
+/* --------------------------------------------------------------- PODIUM */
+.podium { display:flex; align-items:flex-end; justify-content:center; gap:10px; margin-top:26px;
+  min-height:150px; }
+.pod { flex:1; max-width:110px; display:flex; flex-direction:column; align-items:center; }
+.pod .fl { font-size:1.9rem; line-height:1; margin-bottom:6px; }
+.pod .nm { font-size:.66rem; color:#F5F2EA; font-weight:800; letter-spacing:.06em;
+  text-align:center; margin-bottom:7px; min-height:2.1em; line-height:1.15; }
+.pod .bar { width:100%; border-radius:11px 11px 0 0; display:flex; flex-direction:column;
+  align-items:center; justify-content:flex-start; padding-top:9px; height:0;
+  transition:height .9s cubic-bezier(.2,1,.3,1); }
+.pod .bar .r { font-size:1.15rem; font-weight:800; color:#0B0D12; }
+.pod .bar .m { font-size:.55rem; font-weight:800; color:rgba(11,13,18,.65); letter-spacing:.1em; }
+.pod.p1 .bar { background:linear-gradient(180deg,#E8C878,#D9A441); }
+.pod.p2 .bar { background:linear-gradient(180deg,#A9A29B,#8A8580); }
+.pod.p3 .bar { background:linear-gradient(180deg,#A9763B,#8F6B24); }
+.podium.empty { display:none; }
 
-/* Your country */
-.you-row { display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
-.flag-xl { font-size:clamp(46px,11vw,68px); line-height:1; }
-.you-meta { flex:1; min-width:200px; }
-.you-name { font-size:clamp(1.2rem,3.4vw,1.7rem); font-weight:800; }
-.you-num { color:#D9A441; font-weight:800; font-size:clamp(1rem,2.6vw,1.2rem); margin-top:4px; }
-.you-hint { color:#8A8580; font-size:.9rem; margin-top:6px; line-height:1.5; }
-.pick-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
-select, .btn { font-size:.95rem; border-radius:10px; padding:13px 18px; font-family:inherit; }
-select { background:#0B0D12; color:#F5F2EA; border:1px solid rgba(217,164,65,.3); flex:1; min-width:190px; }
+/* ------------------------------------------------------------ YOUR CARD */
+.card { background:#1A1E27; border:1px solid rgba(217,164,65,.22); border-radius:20px;
+  padding:20px 18px; margin-top:24px; box-shadow:0 20px 60px rgba(0,0,0,.45); }
+.card-t { font-size:.6rem; letter-spacing:.22em; color:#8A8580; text-transform:uppercase;
+  font-weight:800; margin-bottom:14px; }
+.you { display:flex; align-items:center; gap:15px; }
+.you .fl { font-size:clamp(40px,10vw,56px); line-height:1; }
+.you .m { flex:1; text-align:left; min-width:0; }
+.you .nm { font-size:clamp(1.1rem,4.4vw,1.45rem); font-weight:800; }
+.you .no { color:#D9A441; font-weight:800; font-size:.94rem; margin-top:3px; }
+.you .hint { color:#8A8580; font-size:.8rem; margin-top:6px; line-height:1.5; }
+.pick-row { display:flex; gap:9px; margin-top:16px; flex-wrap:wrap; }
+select { flex:1; min-width:170px; background:#0B0D12; color:#F5F2EA; font-size:.95rem;
+  border:1px solid rgba(217,164,65,.3); border-radius:12px; padding:14px 12px; min-height:50px; }
 select:focus { outline:none; border-color:#D9A441; }
-.btn { border:none; font-weight:800; cursor:pointer; text-decoration:none; display:inline-block; }
+.btn { border:none; border-radius:12px; padding:14px 22px; min-height:50px; font-weight:800;
+  font-size:.9rem; cursor:pointer; text-decoration:none; display:inline-flex;
+  align-items:center; justify-content:center; letter-spacing:.06em; }
 .btn-gold { background:#D9A441; color:#0B0D12; }
-.btn-gold:disabled { opacity:.5; cursor:default; }
-.btn-ghost { background:transparent; color:#F5F2EA; border:1px solid rgba(245,242,234,.25); }
+.btn-gold:disabled { opacity:.5; }
+.btn-ghost { background:transparent; color:#F5F2EA; border:1px solid rgba(245,242,234,.24); }
 
-/* Rivalry */
-.rival { display:none; }
+/* ----------------------------------------------------------- THE RIVAL */
+.rival { display:none; background:linear-gradient(135deg,rgba(200,64,47,.13),rgba(217,164,65,.06));
+  border:1px solid rgba(200,64,47,.3); border-radius:20px; padding:20px 18px; margin-top:16px; }
 .rival.on { display:block; }
-.rival-line { font-size:clamp(1rem,2.8vw,1.25rem); font-weight:700; line-height:1.5; }
-.rival-bar { height:8px; border-radius:5px; background:rgba(245,242,234,.08); overflow:hidden; margin-top:14px; }
-.rival-fill { height:100%; background:#D9A441; width:0; transition:width .8s ease; }
-.rival-ends { display:flex; justify-content:space-between; font-size:.78rem; color:#8A8580; margin-top:7px; }
+.rival .line { font-size:clamp(1rem,4.2vw,1.2rem); font-weight:700; line-height:1.5; }
+.rival .line b { color:#D9A441; }
+.rbar { height:9px; border-radius:5px; background:rgba(245,242,234,.08); overflow:hidden;
+  margin-top:14px; }
+.rfill { height:100%; width:0; border-radius:5px; background:linear-gradient(90deg,#D9A441,#B8863B);
+  transition:width 1s cubic-bezier(.2,1,.3,1); }
+.rends { display:flex; justify-content:space-between; font-size:.74rem; color:#8A8580; margin-top:7px; }
 
-/* Standings */
-table { width:100%; border-collapse:collapse; }
-th { text-align:left; font-size:.62rem; letter-spacing:.18em; color:#8A8580; text-transform:uppercase;
-  padding:0 8px 12px; font-weight:700; }
+/* ------------------------------------------------------------ STANDINGS */
+table { width:100%; border-collapse:collapse; margin-top:6px; }
+th { text-align:left; font-size:.55rem; letter-spacing:.16em; color:#8A8580; text-transform:uppercase;
+  padding:0 6px 11px; font-weight:800; }
 th.n, td.n { text-align:right; font-variant-numeric:tabular-nums; }
-td { padding:13px 8px; border-top:1px solid rgba(245,242,234,.07); font-size:.95rem; }
+td { padding:13px 6px; border-top:1px solid rgba(245,242,234,.07); font-size:.92rem; }
 tr.me td { background:rgba(217,164,65,.09); }
 tr.me td:first-child { box-shadow:inset 3px 0 0 #D9A441; }
-.rk { color:#8A8580; font-variant-numeric:tabular-nums; width:40px; }
+.rk { color:#8A8580; width:34px; font-variant-numeric:tabular-nums; font-weight:700; }
 .rk.top { color:#D9A441; font-weight:800; }
-.cflag { font-size:1.25rem; margin-right:9px; }
-.ccode { display:inline-block; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.7rem;
-  color:#D9A441; border:1px solid rgba(217,164,65,.35); border-radius:5px; padding:1px 5px; margin-left:8px; }
-.empty { text-align:center; color:#8A8580; padding:34px 10px; line-height:1.7; }
-/* Windows renders flag emoji as two letter-boxes, which already show the
-   country code — so the code chip beside the name becomes redundant there. */
+.cflag { font-size:1.15rem; margin-right:8px; }
+.ccode { display:inline-block; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.65rem;
+  color:#D9A441; border:1px solid rgba(217,164,65,.35); border-radius:5px; padding:1px 5px;
+  margin-left:7px; }
 .no-flags .ccode { display:none; }
-.no-flags .cflag, .no-flags .flag-xl { color:#D9A441; }
+.no-flags .cflag, .no-flags .you .fl, .no-flags .pod .fl { color:#D9A441; }
+.empty { text-align:center; color:#8A8580; padding:30px 10px; line-height:1.75; font-size:.9rem; }
 
-.fine { font-size:.75rem; color:#8A8580; line-height:1.7; text-align:center; margin-top:26px; }
+.fine { font-size:.74rem; color:#8A8580; line-height:1.75; text-align:center; margin-top:24px; }
 .fine a { color:rgba(217,164,65,.75); }
-.toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(18px);
+.toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(16px);
   background:#2E9E6B; color:#04160E; font-weight:800; padding:12px 22px; border-radius:11px;
-  opacity:0; transition:all .3s ease; z-index:20; pointer-events:none; }
+  opacity:0; transition:all .3s; z-index:60; pointer-events:none; font-size:.88rem; }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 #card { display:none; }
-@media (prefers-reduced-motion: reduce) { .rival-fill { transition:none; } }
+@media (prefers-reduced-motion: reduce){ .pod .bar,.rfill { transition:none; } }
 </style>
 </head>
 <body>
-<canvas id="sky"></canvas>
-
-<header class="brand-bar">
-  <a class="brand-lock" href="/">
-    <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true">
-      <circle cx="48" cy="54" r="38" fill="#F5F2EA"/>
-      <circle cx="69" cy="25.5" r="29.5" fill="#0B0D12"/>
-      <rect x="2" y="37.5" width="96" height="8" rx="4" fill="#D9A441"/>
-      <rect x="5" y="58.5" width="90" height="8" rx="4" fill="#D9A441"/>
-    </svg>
-    <span class="brand-word">MOONBITE</span>
-  </a>
-  <a class="brand-cta" href="/start">MINE</a>
-</header>
+{% include 'partials/nav.html' %}
 
 <div class="wrap">
-  <section class="hero">
+
+  <!-- ========================================================== STADIUM -->
+  <section class="stage">
+    <div class="globe-wrap">
+      <canvas id="globe"></canvas>
+      <div class="globe-badge" id="globeBadge">● LIVE — NO NATION HAS CLAIMED A FLAG YET</div>
+    </div>
     <div class="kicker">THE MINING WORLD CUP</div>
-    <h1>Every block has<br>a country.</h1>
-    <p class="sub">No presale decides this table. No exchange, no fund, no founder.
-    Only how many people from your country showed up and turned their computer on.</p>
+    <h1>Every block has<br>a <span class="g">country</span>.</h1>
+    <p class="lede">No presale decides this table. No exchange, no fund, no founder —
+      only how many people from your country turned their computer on.</p>
+
     <div class="totals">
-      <div class="tot"><div class="v" id="tCountries">0</div><div class="k">Countries</div></div>
-      <div class="tot"><div class="v" id="tMiners">0</div><div class="k">Miners enlisted</div></div>
-      <div class="tot"><div class="v" id="tBlocks">0</div><div class="k">Blocks claimed</div></div>
+      <div class="tot"><div class="v num" id="tC">0</div><div class="k">Countries</div></div>
+      <div class="tot"><div class="v num" id="tM">0</div><div class="k">Miners</div></div>
+      <div class="tot"><div class="v num" id="tB">0</div><div class="k">Blocks</div></div>
     </div>
   </section>
 
-  <!-- YOUR COUNTRY -->
-  <section class="panel">
-    <div class="panel-title">Your country</div>
-    <div class="you-row">
-      <div class="flag-xl" id="youFlag">🏳️</div>
-      <div class="you-meta">
-        <div class="you-name" id="youName">Choose your country</div>
-        <div class="you-num" id="youNum"></div>
-        <div class="you-hint" id="youHint">Your number is permanent. The earlier you claim it, the lower it is — and it can never be bought, only taken first.</div>
+  <!-- =========================================================== PODIUM -->
+  <div class="podium empty" id="podium">
+    <div class="pod p2" id="pod2"><div class="fl"></div><div class="nm"></div>
+      <div class="bar"><div class="r"></div><div class="m">MINERS</div></div></div>
+    <div class="pod p1" id="pod1"><div class="fl"></div><div class="nm"></div>
+      <div class="bar"><div class="r"></div><div class="m">MINERS</div></div></div>
+    <div class="pod p3" id="pod3"><div class="fl"></div><div class="nm"></div>
+      <div class="bar"><div class="r"></div><div class="m">MINERS</div></div></div>
+  </div>
+
+  <!-- ======================================================== YOUR CARD -->
+  <section class="card">
+    <div class="card-t">YOUR COUNTRY</div>
+    <div class="you">
+      <div class="fl" id="youFlag">🏳️</div>
+      <div class="m">
+        <div class="nm" id="youName">Choose your country</div>
+        <div class="no" id="youNo"></div>
+        <div class="hint" id="youHint">Your number is permanent. The earlier you claim it,
+          the lower it is — and it can never be bought, only taken first.</div>
       </div>
     </div>
     <div class="pick-row">
       <select id="pick" aria-label="Country"></select>
-      <button class="btn btn-gold" id="btnEnlist">CLAIM MY NUMBER</button>
-      <button class="btn btn-ghost" id="btnCard" style="display:none;">🖼️ Share card</button>
+      <button class="btn btn-gold" id="btnClaim">CLAIM MY NUMBER</button>
+      <button class="btn btn-ghost" id="btnCard" style="display:none;">Share card</button>
     </div>
   </section>
 
-  <!-- RIVALRY -->
-  <section class="panel rival" id="rival">
-    <div class="panel-title">The gap</div>
-    <div class="rival-line" id="rivalLine">—</div>
-    <div class="rival-bar"><div class="rival-fill" id="rivalFill"></div></div>
-    <div class="rival-ends"><span id="rivalYou">—</span><span id="rivalThem">—</span></div>
+  <!-- =========================================================== RIVAL -->
+  <section class="rival" id="rival">
+    <div class="card-t" style="margin-bottom:10px;">THE GAP</div>
+    <div class="line" id="rLine">—</div>
+    <div class="rbar"><div class="rfill" id="rFill"></div></div>
+    <div class="rends"><span id="rYou">—</span><span id="rThem">—</span></div>
   </section>
 
-  <!-- STANDINGS -->
-  <section class="panel">
-    <div class="panel-title">Standings</div>
+  <!-- ======================================================== STANDINGS -->
+  <section class="card">
+    <div class="card-t">STANDINGS</div>
     <table>
-      <thead><tr>
-        <th style="width:40px;">#</th><th>Country</th>
-        <th class="n">Miners</th><th class="n">Blocks</th>
-      </tr></thead>
+      <thead><tr><th style="width:34px;">#</th><th>Country</th>
+        <th class="n">Miners</th><th class="n">Blocks</th></tr></thead>
       <tbody id="board"></tbody>
     </table>
-    <div class="empty" id="empty">The board is empty.<br>No one has claimed a country yet — the first flag on this table is still available.</div>
+    <div class="empty" id="empty">The board is empty.<br>
+      No one has claimed a country yet — the first flag on this table is still available.</div>
   </section>
 
   <p class="fine">
-    Countries are <strong>declared by miners themselves</strong>. A coinbase transaction carries no
-    country, so these figures are a community scoreboard — not a consensus metric, and not
-    Sybil-proof. We detect nothing: your country comes from your browser's language setting and
-    you can change it, and no IP address is stored.
-    <br>MBITE has no market value and is not an investment. <a href="/start">Start mining →</a>
+    Countries are <strong>declared by miners themselves</strong>. A coinbase transaction carries
+    no country, so these are community figures — not a consensus metric, and not Sybil-proof.
+    Your country comes from your browser's language setting and you can change it; no IP address
+    is read or stored.<br>
+    MBITE has no market value and is not an investment. <a href="/start">Start mining →</a>
   </p>
 </div>
 
+{% include 'partials/footer.html' %}
 <canvas id="card" width="1080" height="1080"></canvas>
 <div class="toast" id="toast"></div>
 
@@ -178,286 +207,360 @@ tr.me td:first-child { box-shadow:inset 3px 0 0 #D9A441; }
 (function () {
   'use strict';
 
-  /* ctx.roundRect is Chrome 99+ / Safari 16.4+. Without this, share-card
-     generation throws outright on older iOS — the exact device most likely
-     to be sharing. */
   if (!CanvasRenderingContext2D.prototype.roundRect) {
-    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
-      r = Math.min(r, w / 2, h / 2);
-      this.moveTo(x + r, y);
-      this.arcTo(x + w, y, x + w, y + h, r);
-      this.arcTo(x + w, y + h, x, y + h, r);
-      this.arcTo(x, y + h, x, y, r);
-      this.arcTo(x, y, x + w, y, r);
-      this.closePath();
-      return this;
-    };
+    CanvasRenderingContext2D.prototype.roundRect = function (x,y,w,h,r) {
+      r=Math.min(r,w/2,h/2); this.moveTo(x+r,y); this.arcTo(x+w,y,x+w,y+h,r);
+      this.arcTo(x+w,y+h,x,y+h,r); this.arcTo(x,y+h,x,y,r); this.arcTo(x,y,x+w,y,r);
+      this.closePath(); return this; };
   }
 
-  /* ------------------------------------------------------------ countries */
-  var C = ('AF Afghanistan|AL Albania|DZ Algeria|AR Argentina|AM Armenia|AU Australia|AT Austria|' +
-    'AZ Azerbaijan|BH Bahrain|BD Bangladesh|BY Belarus|BE Belgium|BO Bolivia|BA Bosnia and Herzegovina|' +
-    'BW Botswana|BR Brazil|BN Brunei|BG Bulgaria|BF Burkina Faso|KH Cambodia|CM Cameroon|CA Canada|' +
-    'CL Chile|CN China|CO Colombia|CR Costa Rica|HR Croatia|CU Cuba|CY Cyprus|CZ Czechia|' +
-    'CD DR Congo|DK Denmark|DO Dominican Republic|EC Ecuador|EG Egypt|SV El Salvador|EE Estonia|' +
-    'ET Ethiopia|FI Finland|FR France|GE Georgia|DE Germany|GH Ghana|GR Greece|GT Guatemala|' +
-    'HN Honduras|HK Hong Kong|HU Hungary|IS Iceland|IN India|ID Indonesia|IR Iran|IQ Iraq|IE Ireland|' +
-    'IL Israel|IT Italy|CI Ivory Coast|JM Jamaica|JP Japan|JO Jordan|KZ Kazakhstan|KE Kenya|' +
-    'KW Kuwait|KG Kyrgyzstan|LA Laos|LV Latvia|LB Lebanon|LY Libya|LT Lithuania|LU Luxembourg|' +
-    'MK North Macedonia|MG Madagascar|MY Malaysia|MV Maldives|ML Mali|MT Malta|MU Mauritius|' +
-    'MX Mexico|MD Moldova|MN Mongolia|ME Montenegro|MA Morocco|MZ Mozambique|MM Myanmar|NA Namibia|' +
-    'NP Nepal|NL Netherlands|NZ New Zealand|NI Nicaragua|NE Niger|NG Nigeria|KP North Korea|' +
-    'NO Norway|OM Oman|PK Pakistan|PS Palestine|PA Panama|PG Papua New Guinea|PY Paraguay|PE Peru|' +
-    'PH Philippines|PL Poland|PT Portugal|PR Puerto Rico|QA Qatar|RO Romania|RU Russia|RW Rwanda|' +
+  /* --------------------------------------------------------- countries */
+  var NAMES = ('AF Afghanistan|AL Albania|DZ Algeria|AR Argentina|AM Armenia|AU Australia|' +
+    'AT Austria|AZ Azerbaijan|BH Bahrain|BD Bangladesh|BY Belarus|BE Belgium|BO Bolivia|' +
+    'BA Bosnia and Herzegovina|BW Botswana|BR Brazil|BN Brunei|BG Bulgaria|BF Burkina Faso|' +
+    'KH Cambodia|CM Cameroon|CA Canada|CL Chile|CN China|CO Colombia|CR Costa Rica|HR Croatia|' +
+    'CU Cuba|CY Cyprus|CZ Czechia|CD DR Congo|DK Denmark|DO Dominican Republic|EC Ecuador|' +
+    'EG Egypt|SV El Salvador|EE Estonia|ET Ethiopia|FI Finland|FR France|GE Georgia|DE Germany|' +
+    'GH Ghana|GR Greece|GT Guatemala|HN Honduras|HK Hong Kong|HU Hungary|IS Iceland|IN India|' +
+    'ID Indonesia|IR Iran|IQ Iraq|IE Ireland|IL Israel|IT Italy|CI Ivory Coast|JM Jamaica|' +
+    'JP Japan|JO Jordan|KZ Kazakhstan|KE Kenya|KW Kuwait|KG Kyrgyzstan|LA Laos|LV Latvia|' +
+    'LB Lebanon|LY Libya|LT Lithuania|LU Luxembourg|MK North Macedonia|MG Madagascar|' +
+    'MY Malaysia|MV Maldives|ML Mali|MT Malta|MU Mauritius|MX Mexico|MD Moldova|MN Mongolia|' +
+    'ME Montenegro|MA Morocco|MZ Mozambique|MM Myanmar|NA Namibia|NP Nepal|NL Netherlands|' +
+    'NZ New Zealand|NI Nicaragua|NE Niger|NG Nigeria|KP North Korea|NO Norway|OM Oman|' +
+    'PK Pakistan|PS Palestine|PA Panama|PG Papua New Guinea|PY Paraguay|PE Peru|PH Philippines|' +
+    'PL Poland|PT Portugal|PR Puerto Rico|QA Qatar|RO Romania|RU Russia|RW Rwanda|' +
     'SA Saudi Arabia|SN Senegal|RS Serbia|SG Singapore|SK Slovakia|SI Slovenia|SO Somalia|' +
     'ZA South Africa|KR South Korea|ES Spain|LK Sri Lanka|SD Sudan|SE Sweden|CH Switzerland|' +
-    'SY Syria|TW Taiwan|TJ Tajikistan|TZ Tanzania|TH Thailand|TN Tunisia|TR Turkey|TM Turkmenistan|' +
-    'UG Uganda|UA Ukraine|AE United Arab Emirates|GB United Kingdom|US United States|UY Uruguay|' +
-    'UZ Uzbekistan|VE Venezuela|VN Vietnam|YE Yemen|ZM Zambia|ZW Zimbabwe').split('|');
+    'SY Syria|TW Taiwan|TJ Tajikistan|TZ Tanzania|TH Thailand|TN Tunisia|TR Turkey|' +
+    'TM Turkmenistan|UG Uganda|UA Ukraine|AE United Arab Emirates|GB United Kingdom|' +
+    'US United States|UY Uruguay|UZ Uzbekistan|VE Venezuela|VN Vietnam|YE Yemen|ZM Zambia|' +
+    'ZW Zimbabwe').split('|');
   var NAME = {};
-  C.forEach(function (s) { NAME[s.slice(0, 2)] = s.slice(3); });
+  NAMES.forEach(function (s) { NAME[s.slice(0,2)] = s.slice(3); });
 
-  function flag(code) {
-    return code.replace(/./g, function (ch) {
-      return String.fromCodePoint(0x1F1E6 + ch.charCodeAt(0) - 65);
-    });
-  }
+  /* centroid lat/lng, for the globe */
+  var GEO = {};
+  ('AF 33.9 67.7|AL 41.2 20.2|DZ 28.0 1.7|AR -38.4 -63.6|AM 40.1 45.0|AU -25.3 133.8|' +
+   'AT 47.5 14.6|AZ 40.1 47.6|BH 26.0 50.6|BD 23.7 90.4|BY 53.7 27.9|BE 50.5 4.5|' +
+   'BO -16.3 -63.6|BA 43.9 17.7|BW -22.3 24.7|BR -14.2 -51.9|BN 4.5 114.7|BG 42.7 25.5|' +
+   'BF 12.2 -1.6|KH 12.6 104.9|CM 7.4 12.4|CA 56.1 -106.3|CL -35.7 -71.5|CN 35.9 104.2|' +
+   'CO 4.6 -74.3|CR 9.7 -83.8|HR 45.1 15.2|CU 21.5 -77.8|CY 35.1 33.4|CZ 49.8 15.5|' +
+   'CD -4.0 21.8|DK 56.3 9.5|DO 18.7 -70.2|EC -1.8 -78.2|EG 26.8 30.8|SV 13.8 -88.9|' +
+   'EE 58.6 25.0|ET 9.1 40.5|FI 61.9 25.7|FR 46.2 2.2|GE 42.3 43.4|DE 51.2 10.5|GH 7.9 -1.0|' +
+   'GR 39.1 21.8|GT 15.8 -90.2|HN 15.2 -86.2|HK 22.3 114.2|HU 47.2 19.5|IS 65.0 -19.0|' +
+   'IN 20.6 79.0|ID -0.8 113.9|IR 32.4 53.7|IQ 33.2 43.7|IE 53.4 -8.2|IL 31.0 34.9|' +
+   'IT 41.9 12.6|CI 7.5 -5.5|JM 18.1 -77.3|JP 36.2 138.3|JO 30.6 36.2|KZ 48.0 66.9|' +
+   'KE 0.0 37.9|KW 29.3 47.5|KG 41.2 74.8|LA 19.9 102.5|LV 56.9 24.6|LB 33.9 35.9|' +
+   'LY 26.3 17.2|LT 55.2 23.9|LU 49.8 6.1|MK 41.6 21.7|MG -18.8 46.9|MY 4.2 102.0|' +
+   'MV 3.2 73.2|ML 17.6 -4.0|MT 35.9 14.4|MU -20.3 57.6|MX 23.6 -102.6|MD 47.4 28.4|' +
+   'MN 46.9 103.8|ME 42.7 19.4|MA 31.8 -7.1|MZ -18.7 35.5|MM 21.9 96.0|NA -23.0 18.5|' +
+   'NP 28.4 84.1|NL 52.1 5.3|NZ -40.9 174.9|NI 12.9 -85.2|NE 17.6 8.1|NG 9.1 8.7|' +
+   'KP 40.3 127.5|NO 60.5 8.5|OM 21.5 55.9|PK 30.4 69.3|PS 32.0 35.2|PA 8.5 -80.8|' +
+   'PG -6.3 144.0|PY -23.4 -58.4|PE -9.2 -75.0|PH 12.9 121.8|PL 51.9 19.1|PT 39.4 -8.2|' +
+   'PR 18.2 -66.6|QA 25.4 51.2|RO 45.9 25.0|RU 61.5 105.3|RW -1.9 29.9|SA 23.9 45.1|' +
+   'SN 14.5 -14.5|RS 44.0 21.0|SG 1.4 103.8|SK 48.7 19.7|SI 46.2 15.0|SO 5.2 46.2|' +
+   'ZA -30.6 22.9|KR 35.9 127.8|ES 40.5 -3.7|LK 7.9 80.8|SD 12.9 30.2|SE 60.1 18.6|' +
+   'CH 46.8 8.2|SY 34.8 39.0|TW 23.7 121.0|TJ 38.9 71.3|TZ -6.4 34.9|TH 15.9 101.0|' +
+   'TN 33.9 9.5|TR 39.0 35.2|TM 39.0 59.6|UG 1.4 32.3|UA 48.4 31.2|AE 23.4 53.8|' +
+   'GB 55.4 -3.4|US 37.1 -95.7|UY -32.5 -55.8|UZ 41.4 64.6|VE 6.4 -66.6|VN 14.1 108.3|' +
+   'YE 15.6 48.5|ZM -13.1 27.8|ZW -19.0 29.2').split('|').forEach(function (s) {
+    var p = s.split(' ');
+    GEO[p[0]] = { lat: parseFloat(p[1]), lng: parseFloat(p[2]) };
+  });
 
-  /* Does this platform draw flag emoji as a single glyph? Where it does not
-     (notably Windows) the pair renders as two letter-boxes that already spell
-     the country code, so the separate code chip is hidden as duplication. */
-  (function () {
-    try {
-      var c = document.createElement('canvas').getContext('2d');
-      c.font = '40px serif';
-      var pair = c.measureText('🇨🇳').width;   /* CN flag  */
-      var one = c.measureText('🇨').width;                /* lone "C" */
-      if (!(pair < one * 1.6)) document.body.classList.add('no-flags');
-    } catch (e) { /* leave flags on */ }
+  function flag(code){ return code.replace(/./g, function(ch){
+    return String.fromCodePoint(0x1F1E6 + ch.charCodeAt(0) - 65); }); }
+  function num(n){ return (n||0).toLocaleString('en-US'); }
+  function $(id){ return document.getElementById(id); }
+
+  /* Windows draws flag emoji as two letter-boxes that already spell the code,
+     so the separate code chip would be duplication there. */
+  (function(){
+    try { var c=document.createElement('canvas').getContext('2d'); c.font='40px serif';
+      if(!(c.measureText('🇨🇳').width < c.measureText('🇨').width*1.6))
+        document.body.classList.add('no-flags');
+    } catch(e){}
   })();
-  function num(n) { return (n || 0).toLocaleString('en-US'); }
 
-  /* --------------------------------------------------------------- token */
-  /* A random local id, not an identity: it exists only so re-visiting this
-     page does not inflate a country's count. Nothing about the device leaves. */
+  /* ------------------------------------------------------------- token */
   var token = localStorage.getItem('mb_wc_token');
-  if (!token) {
-    token = 'wc' + Math.random().toString(36).slice(2) + Date.now().toString(36);
-    localStorage.setItem('mb_wc_token', token);
+  if (!token){ token='wc'+Math.random().toString(36).slice(2)+Date.now().toString(36);
+    localStorage.setItem('mb_wc_token', token); }
+  function myBlocks(){
+    try { var a=JSON.parse(localStorage.getItem('mb_miner_profiles')||'{}');
+      return Object.keys(a).reduce(function(s,k){ return s+(a[k].totalBlocks||0); },0);
+    } catch(e){ return 0; }
   }
 
-  /* Blocks this browser has actually mined, from the badge system (opt-in). */
-  function myBlocks() {
-    try {
-      var all = JSON.parse(localStorage.getItem('mb_miner_profiles') || '{}');
-      return Object.keys(all).reduce(function (s, k) { return s + (all[k].totalBlocks || 0); }, 0);
-    } catch (e) { return 0; }
-  }
-
-  /* --------------------------------------------------------------- starfield */
-  var sky = document.getElementById('sky'), g = sky.getContext('2d');
-  var W, H, stars = [], DPR = Math.min(window.devicePixelRatio || 1, 2);
+  /* ============================================================= GLOBE */
+  var gc = $('globe'), g = gc.getContext('2d');
+  var DPR = Math.min(window.devicePixelRatio||1, 2);
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function resize() {
-    W = window.innerWidth; H = window.innerHeight;
-    sky.width = W * DPR; sky.height = H * DPR;
-    sky.style.width = W + 'px'; sky.style.height = H + 'px';
-    g.setTransform(DPR, 0, 0, DPR, 0, 0);
-    stars = [];
-    var n = Math.min(200, Math.floor(W * H / 7000));
-    for (var i = 0; i < n; i++) {
-      stars.push({ x: Math.random() * W, y: Math.random() * H,
-        r: Math.random() * 1.2 + 0.25, tw: Math.random() * 6.28 });
-    }
-  }
-  window.addEventListener('resize', resize); resize();
-  var t = 0;
-  (function draw() {
-    t += reduced ? 0 : 0.01;
-    g.fillStyle = '#0B0D12'; g.fillRect(0, 0, W, H);
-    for (var i = 0; i < stars.length; i++) {
-      var s = stars[i];
-      g.globalAlpha = 0.25 + 0.35 * Math.abs(Math.sin(t + s.tw));
-      g.fillStyle = '#F5F2EA';
-      g.beginPath(); g.arc(s.x, s.y, s.r, 0, 6.2832); g.fill();
-    }
-    g.globalAlpha = 1;
-    requestAnimationFrame(draw);
-  })();
+  var rot = 0, spin = 0.0022, targetRot = null, pulse = 0;
+  var lit = {};        /* code -> miners */
+  var maxMiners = 1;
+  var mineCode = null;
 
-  /* --------------------------------------------------------------- state */
-  var state = { countries: [], you: null };
-  var pick = document.getElementById('pick');
-  Object.keys(NAME).sort(function (a, b) { return NAME[a] < NAME[b] ? -1 : 1; })
-    .forEach(function (code) {
-      var o = document.createElement('option');
-      o.value = code; o.textContent = flag(code) + '  ' + NAME[code];
-      pick.appendChild(o);
+  function project(lat, lng, R, cx, cy){
+    var la = lat*Math.PI/180, lo = (lng*Math.PI/180) + rot;
+    var x = Math.cos(la)*Math.sin(lo);
+    var y = -Math.sin(la);
+    var z = Math.cos(la)*Math.cos(lo);
+    return { x: cx + x*R, y: cy + y*R, z: z };
+  }
+
+  function drawGlobe(){
+    var S = gc.clientWidth;
+    if (S>0 && gc.width !== S*DPR){ gc.width=S*DPR; gc.height=S*DPR; }
+    g.setTransform(DPR,0,0,DPR,0,0);
+    g.clearRect(0,0,S,S);
+    var cx=S/2, cy=S/2, R=S*0.40;
+
+    pulse += reduced?0:0.045;
+    if (targetRot !== null){
+      var d = targetRot - rot;
+      while (d >  Math.PI) d -= 6.2832;
+      while (d < -Math.PI) d += 6.2832;
+      if (Math.abs(d) < 0.004){ rot = targetRot; targetRot = null; }
+      else rot += d*0.06;
+    } else if (!reduced) { rot += spin; }
+
+    /* atmosphere */
+    var atm = g.createRadialGradient(cx,cy,R*0.85,cx,cy,R*1.35);
+    atm.addColorStop(0,'rgba(217,164,65,0.13)');
+    atm.addColorStop(1,'rgba(217,164,65,0)');
+    g.fillStyle=atm; g.beginPath(); g.arc(cx,cy,R*1.35,0,6.2832); g.fill();
+
+    /* sphere body */
+    var body = g.createRadialGradient(cx-R*0.35,cy-R*0.4,R*0.1,cx,cy,R);
+    body.addColorStop(0,'#161B26'); body.addColorStop(1,'#0C0F16');
+    g.fillStyle=body; g.beginPath(); g.arc(cx,cy,R,0,6.2832); g.fill();
+
+    /* graticule — latitude rings */
+    g.strokeStyle='rgba(245,242,234,0.075)'; g.lineWidth=1;
+    for (var la=-60; la<=60; la+=30){
+      g.beginPath();
+      var started=false;
+      for (var lo=-180; lo<=180; lo+=4){
+        var p=project(la,lo,R,cx,cy);
+        if (p.z>0){ if(!started){ g.moveTo(p.x,p.y); started=true; } else g.lineTo(p.x,p.y); }
+        else started=false;
+      }
+      g.stroke();
+    }
+    /* meridians */
+    for (var lo2=0; lo2<180; lo2+=30){
+      g.beginPath(); started=false;
+      for (var la2=-90; la2<=90; la2+=4){
+        var q=project(la2,lo2,R,cx,cy);
+        if (q.z>0){ if(!started){ g.moveTo(q.x,q.y); started=true; } else g.lineTo(q.x,q.y); }
+        else started=false;
+      }
+      g.stroke();
+    }
+    /* rim */
+    g.strokeStyle='rgba(217,164,65,0.34)'; g.lineWidth=1.4;
+    g.beginPath(); g.arc(cx,cy,R,0,6.2832); g.stroke();
+
+    /* enlisted nations */
+    Object.keys(lit).forEach(function(code){
+      var geo = GEO[code]; if(!geo) return;
+      var p = project(geo.lat, geo.lng, R, cx, cy);
+      if (p.z <= 0.02) return;                       /* far side */
+      var share = lit[code]/maxMiners;
+      var rad = 2.4 + share*5.5;
+      var a = 0.35 + 0.65*p.z;
+      var isMine = (code === mineCode);
+      if (isMine){
+        var ring = rad + 5 + 3.5*Math.sin(pulse);
+        g.strokeStyle='rgba(217,164,65,'+(0.75*a)+')'; g.lineWidth=1.6;
+        g.beginPath(); g.arc(p.x,p.y,ring,0,6.2832); g.stroke();
+      }
+      var glow = g.createRadialGradient(p.x,p.y,0,p.x,p.y,rad*3.6);
+      glow.addColorStop(0,'rgba(217,164,65,'+(0.42*a)+')');
+      glow.addColorStop(1,'rgba(217,164,65,0)');
+      g.fillStyle=glow; g.beginPath(); g.arc(p.x,p.y,rad*3.6,0,6.2832); g.fill();
+      g.fillStyle = isMine ? '#FFFFFF' : 'rgba(233,199,120,'+a+')';
+      g.beginPath(); g.arc(p.x,p.y,rad,0,6.2832); g.fill();
     });
 
-  /* Guess from browser language only — no IP lookup, no geolocation prompt. */
-  function guess() {
-    var langs = navigator.languages || [navigator.language || ''];
-    for (var i = 0; i < langs.length; i++) {
-      var m = /[-_]([A-Za-z]{2})$/.exec(langs[i] || '');
-      if (m && NAME[m[1].toUpperCase()]) return m[1].toUpperCase();
+    requestAnimationFrame(drawGlobe);
+  }
+  requestAnimationFrame(drawGlobe);
+
+  function faceCountry(code){
+    var geo = GEO[code]; if(!geo) return;
+    targetRot = -geo.lng*Math.PI/180;   /* bring that longitude to the front */
+  }
+
+  /* ------------------------------------------------------------- state */
+  var state = { countries: [], you: null, total_miners: 0, total_blocks: 0 };
+  var pick = $('pick');
+  Object.keys(NAME).sort(function(a,b){ return NAME[a]<NAME[b]?-1:1; }).forEach(function(c){
+    var o=document.createElement('option'); o.value=c;
+    o.textContent = flag(c)+'  '+NAME[c]; pick.appendChild(o);
+  });
+  /* Browser language only — no IP lookup, no geolocation prompt. */
+  (function(){
+    var L = navigator.languages || [navigator.language||''];
+    for (var i=0;i<L.length;i++){
+      var m=/[-_]([A-Za-z]{2})$/.exec(L[i]||'');
+      if (m && NAME[m[1].toUpperCase()]){ pick.value=m[1].toUpperCase(); return; }
     }
-    return 'US';
-  }
-  pick.value = guess();
+    pick.value='US';
+  })();
 
-  function toast(msg) {
-    var el = document.getElementById('toast');
-    el.textContent = msg; el.classList.add('show');
-    setTimeout(function () { el.classList.remove('show'); }, 2600);
-  }
+  function toast(m){ var t=$('toast'); t.textContent=m; t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); },2600); }
 
-  /* --------------------------------------------------------------- render */
-  function render() {
+  function render(){
     var list = state.countries;
-    document.getElementById('tCountries').textContent = num(list.length);
-    document.getElementById('tMiners').textContent = num(state.total_miners);
-    document.getElementById('tBlocks').textContent = num(state.total_blocks);
+    $('tC').textContent = num(list.length);
+    $('tM').textContent = num(state.total_miners);
+    $('tB').textContent = num(state.total_blocks);
+
+    /* globe data */
+    lit = {}; maxMiners = 1;
+    list.forEach(function(c){ lit[c.code]=c.miners; if(c.miners>maxMiners) maxMiners=c.miners; });
+    $('globeBadge').textContent = list.length
+      ? '● LIVE — ' + num(state.total_miners) + ' MINERS ACROSS ' + num(list.length) +
+        (list.length===1?' NATION':' NATIONS')
+      : '● LIVE — NO NATION HAS CLAIMED A FLAG YET';
 
     var mine = state.you ? state.you.code : null;
+    mineCode = mine;
     if (mine) pick.value = mine;
     var code = pick.value;
 
-    document.getElementById('youFlag').textContent = flag(code);
-    document.getElementById('youName').textContent = NAME[code] || code;
+    $('youFlag').textContent = flag(code);
+    $('youName').textContent = NAME[code] || code;
 
-    var row = null, rank = 0;
-    for (var i = 0; i < list.length; i++) {
-      if (list[i].code === (mine || code)) { row = list[i]; rank = list[i].rank; break; }
+    var row=null, rank=0;
+    for (var i=0;i<list.length;i++)
+      if (list[i].code === (mine||code)){ row=list[i]; rank=list[i].rank; break; }
+
+    if (state.you){
+      $('youNo').textContent = 'Miner #'+state.you.ordinal+' of '+(NAME[mine]||mine)+
+        (rank ? '  ·  ranked #'+rank+' worldwide' : '');
+      $('youHint').textContent = state.you.ordinal===1
+        ? 'You are the first miner your country ever had. That is not a rank — it is a fact about history.'
+        : 'Your number is fixed forever. Everyone who arrives after you gets a higher one.';
+      $('btnClaim').textContent='CLAIMED'; $('btnClaim').disabled=true;
+      pick.disabled=true; $('btnCard').style.display='';
     }
 
-    if (state.you) {
-      document.getElementById('youNum').textContent =
-        'Miner #' + state.you.ordinal + ' of ' + (NAME[mine] || mine) +
-        (rank ? '  ·  ranked #' + rank + ' worldwide' : '');
-      document.getElementById('youHint').textContent =
-        state.you.ordinal === 1
-          ? 'You are the first miner your country ever had. That is not a rank — it is a fact about history.'
-          : 'Your number is fixed forever. Everyone who arrives after you gets a higher one.';
-      document.getElementById('btnEnlist').textContent = 'CLAIMED';
-      document.getElementById('btnEnlist').disabled = true;
-      pick.disabled = true;
-      document.getElementById('btnCard').style.display = '';
-    }
+    /* podium */
+    var pod=$('podium');
+    if (list.length >= 1){
+      pod.classList.remove('empty');
+      [['pod1',0],['pod2',1],['pod3',2]].forEach(function(pair){
+        var el=$(pair[0]), c=list[pair[1]];
+        if(!c){ el.style.visibility='hidden'; return; }
+        el.style.visibility='';
+        el.querySelector('.fl').textContent=flag(c.code);
+        el.querySelector('.nm').textContent=NAME[c.code]||c.code;
+        el.querySelector('.r').textContent=num(c.miners);
+        var h = 40 + 74*(c.miners/list[0].miners);
+        setTimeout(function(){ el.querySelector('.bar').style.height=h+'px'; }, 60);
+      });
+    } else pod.classList.add('empty');
 
-    /* rivalry: the country directly above yours */
-    var rv = document.getElementById('rival');
-    if (row && rank > 1) {
-      var above = list[rank - 2];
-      var gap = above.miners - row.miners;
-      document.getElementById('rivalLine').innerHTML =
-        flag(row.code) + ' <strong>' + (NAME[row.code] || row.code) + '</strong> is <strong style="color:#D9A441;">' +
-        (gap === 0 ? 'level' : gap + ' miner' + (gap === 1 ? '' : 's')) + '</strong> ' +
-        (gap === 0 ? 'with' : 'behind') + ' ' + flag(above.code) + ' <strong>' +
-        (NAME[above.code] || above.code) + '</strong>.';
-      document.getElementById('rivalFill').style.width =
-        Math.max(4, 100 * row.miners / Math.max(1, above.miners)) + '%';
-      document.getElementById('rivalYou').textContent = flag(row.code) + ' ' + num(row.miners);
-      document.getElementById('rivalThem').textContent = num(above.miners) + ' ' + flag(above.code);
+    /* rivalry */
+    var rv=$('rival');
+    if (row && rank>1){
+      var above=list[rank-2], gap=above.miners-row.miners;
+      $('rLine').innerHTML = flag(row.code)+' <b>'+(NAME[row.code]||row.code)+'</b> is '+
+        (gap===0 ? '<b>level with</b> ' : '<b>'+gap+' miner'+(gap===1?'':'s')+'</b> behind ')+
+        flag(above.code)+' <b>'+(NAME[above.code]||above.code)+'</b>.';
+      $('rFill').style.width = Math.max(5, 100*row.miners/Math.max(1,above.miners))+'%';
+      $('rYou').textContent = flag(row.code)+' '+num(row.miners);
+      $('rThem').textContent = num(above.miners)+' '+flag(above.code);
       rv.classList.add('on');
-    } else if (row && rank === 1) {
-      document.getElementById('rivalLine').innerHTML =
-        flag(row.code) + ' <strong>' + (NAME[row.code] || row.code) +
-        '</strong> is <strong style="color:#D9A441;">first in the world</strong>. Someone is going to come for that.';
-      document.getElementById('rivalFill').style.width = '100%';
-      document.getElementById('rivalYou').textContent = flag(row.code) + ' ' + num(row.miners);
-      document.getElementById('rivalThem').textContent = 'LEADER';
+    } else if (row && rank===1){
+      $('rLine').innerHTML = flag(row.code)+' <b>'+(NAME[row.code]||row.code)+
+        '</b> is <b>first in the world</b>. Someone is going to come for that.';
+      $('rFill').style.width='100%';
+      $('rYou').textContent=flag(row.code)+' '+num(row.miners);
+      $('rThem').textContent='LEADER';
       rv.classList.add('on');
-    } else { rv.classList.remove('on'); }
+    } else rv.classList.remove('on');
 
     /* standings */
-    var tb = document.getElementById('board');
-    tb.innerHTML = list.map(function (c) {
-      var isMe = c.code === mine;
-      return '<tr class="' + (isMe ? 'me' : '') + '">' +
-        '<td class="rk ' + (c.rank <= 3 ? 'top' : '') + '">' + c.rank + '</td>' +
-        '<td><span class="cflag">' + flag(c.code) + '</span>' + (NAME[c.code] || c.code) +
-        '<span class="ccode">' + c.code + '</span></td>' +
-        '<td class="n">' + num(c.miners) + '</td>' +
-        '<td class="n">' + num(c.blocks) + '</td></tr>';
+    $('board').innerHTML = list.map(function(c){
+      return '<tr class="'+(c.code===mine?'me':'')+'">'+
+        '<td class="rk '+(c.rank<=3?'top':'')+'">'+c.rank+'</td>'+
+        '<td><span class="cflag">'+flag(c.code)+'</span>'+(NAME[c.code]||c.code)+
+        '<span class="ccode">'+c.code+'</span></td>'+
+        '<td class="n">'+num(c.miners)+'</td><td class="n">'+num(c.blocks)+'</td></tr>';
     }).join('');
-    document.getElementById('empty').style.display = list.length ? 'none' : '';
+    $('empty').style.display = list.length ? 'none' : '';
   }
 
-  function apply(data) {
-    state.countries = data.countries || [];
-    state.total_miners = data.total_miners || 0;
-    state.total_blocks = data.total_blocks || 0;
-    if (data.you) state.you = data.you;
+  function apply(d){
+    state.countries = d.countries||[];
+    state.total_miners = d.total_miners||0;
+    state.total_blocks = d.total_blocks||0;
+    if (d.you) state.you = d.you;
     render();
+    if (state.you) faceCountry(state.you.code);
   }
 
-  /* --------------------------------------------------------------- network */
-  fetch('/api/worldcup?token=' + encodeURIComponent(token))
-    .then(function (r) { return r.json(); }).then(apply).catch(render);
+  fetch('/api/worldcup?token='+encodeURIComponent(token))
+    .then(function(r){return r.json();}).then(apply).catch(render);
 
-  document.getElementById('btnEnlist').addEventListener('click', function () {
-    var btn = this; btn.disabled = true; btn.textContent = '…';
-    fetch('/api/worldcup/enlist', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: token, code: pick.value, blocks: myBlocks() })
-    }).then(function (r) { return r.json(); }).then(function (d) {
-      if (d.status !== 'success') throw new Error(d.message || 'failed');
-      apply(d);
-      toast(d.you.new ? 'You are miner #' + d.you.ordinal + ' of ' + (NAME[d.you.code] || d.you.code)
-                      : 'Already claimed — you are #' + d.you.ordinal);
-    }).catch(function () {
-      btn.disabled = false; btn.textContent = 'CLAIM MY NUMBER';
-      toast('Could not reach the scoreboard. Try again.');
-    });
+  $('btnClaim').addEventListener('click', function(){
+    var b=this; b.disabled=true; b.textContent='…';
+    fetch('/api/worldcup/enlist',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token:token, code:pick.value, blocks:myBlocks()})})
+      .then(function(r){return r.json();}).then(function(d){
+        if(d.status!=='success') throw new Error(d.message||'failed');
+        apply(d);
+        toast(d.you.new ? 'You are miner #'+d.you.ordinal+' of '+(NAME[d.you.code]||d.you.code)
+                        : 'Already claimed — you are #'+d.you.ordinal);
+      }).catch(function(){
+        b.disabled=false; b.textContent='CLAIM MY NUMBER';
+        toast('Could not reach the scoreboard. Try again.');
+      });
   });
+  pick.addEventListener('change', function(){ render(); faceCountry(pick.value); });
 
-  pick.addEventListener('change', render);
-
-  /* --------------------------------------------------------------- card */
-  document.getElementById('btnCard').addEventListener('click', function () {
-    if (!state.you) return;
-    var code = state.you.code, name = NAME[code] || code;
-    var rank = 0, miners = 0;
-    state.countries.forEach(function (c) { if (c.code === code) { rank = c.rank; miners = c.miners; } });
-
-    var cv = document.getElementById('card'), x = cv.getContext('2d');
-    var bg = x.createLinearGradient(0, 0, 0, 1080);
-    bg.addColorStop(0, '#0B0D12'); bg.addColorStop(1, '#1A1E27');
-    x.fillStyle = bg; x.fillRect(0, 0, 1080, 1080);
-    for (var i = 0; i < 90; i++) {
-      x.globalAlpha = 0.15 + Math.random() * 0.5; x.fillStyle = '#F5F2EA';
-      x.beginPath(); x.arc(Math.random() * 1080, Math.random() * 1080, Math.random() * 1.8 + 0.4, 0, 6.2832); x.fill();
-    }
-    x.globalAlpha = 1; x.textAlign = 'center';
-
-    /* logo mark */
-    x.beginPath(); x.arc(540, 168, 74, 0, 6.2832); x.fillStyle = '#F5F2EA'; x.fill();
-    x.beginPath(); x.arc(580, 112, 57, 0, 6.2832); x.fillStyle = '#0B0D12'; x.fill();
-    x.fillStyle = '#D9A441';
-    x.beginPath(); x.roundRect(426, 141, 228, 9, 4.5); x.fill();
-    x.beginPath(); x.roundRect(433, 181, 214, 9, 4.5); x.fill();
-
-    x.fillStyle = '#8A8580'; x.font = '700 30px Arial';
-    x.fillText('MOONBITE  ·  MINING WORLD CUP', 540, 300);
-    x.font = '120px Arial'; x.fillText(flag(code), 540, 440);
-    x.fillStyle = '#F5F2EA'; x.font = '800 62px Arial'; x.fillText(name.toUpperCase(), 540, 530);
-    x.fillStyle = '#D9A441'; x.font = '800 96px Arial';
-    x.fillText('MINER #' + state.you.ordinal, 540, 650);
-    x.fillStyle = '#F5F2EA'; x.font = '400 38px Arial';
-    x.fillText(name + ' is ranked #' + rank + ' in the world', 540, 720);
-    x.fillStyle = '#8A8580'; x.font = '400 34px Arial';
-    x.fillText(num(miners) + ' miner' + (miners === 1 ? '' : 's') + ' flying this flag', 540, 775);
-    x.fillStyle = '#F5F2EA'; x.font = 'italic 36px Arial';
-    x.fillText('No presale decides this table.', 540, 865);
-    x.fillStyle = '#D9A441'; x.font = '700 34px Arial';
-    x.fillText('moonbite.org/world-cup', 540, 940);
-    x.fillStyle = 'rgba(245,242,234,0.32)'; x.font = '400 20px Arial';
+  /* -------------------------------------------------------- share card */
+  $('btnCard').addEventListener('click', function(){
+    if(!state.you) return;
+    var code=state.you.code, name=NAME[code]||code, rank=0, miners=0;
+    state.countries.forEach(function(c){ if(c.code===code){ rank=c.rank; miners=c.miners; } });
+    var cv=$('card'), x=cv.getContext('2d');
+    var bg=x.createLinearGradient(0,0,0,1080);
+    bg.addColorStop(0,'#0B0D12'); bg.addColorStop(1,'#1A1E27');
+    x.fillStyle=bg; x.fillRect(0,0,1080,1080);
+    for(var i=0;i<90;i++){ x.globalAlpha=.12+Math.random()*.5; x.fillStyle='#F5F2EA';
+      x.beginPath(); x.arc(Math.random()*1080,Math.random()*1080,Math.random()*1.9+.4,0,6.2832); x.fill(); }
+    x.globalAlpha=1; x.textAlign='center';
+    x.beginPath(); x.arc(540,160,70,0,6.2832); x.fillStyle='#F5F2EA'; x.fill();
+    x.beginPath(); x.arc(578,107,54,0,6.2832); x.fillStyle='#0B0D12'; x.fill();
+    x.fillStyle='#D9A441';
+    x.beginPath(); x.roundRect(432,135,216,9,4.5); x.fill();
+    x.beginPath(); x.roundRect(439,173,202,9,4.5); x.fill();
+    x.fillStyle='#8A8580'; x.font='700 28px Arial';
+    x.fillText('MOONBITE · MINING WORLD CUP', 540, 285);
+    x.font='118px Arial'; x.fillText(flag(code), 540, 425);
+    x.fillStyle='#F5F2EA'; x.font='800 58px Arial'; x.fillText(name.toUpperCase(), 540, 512);
+    x.fillStyle='#D9A441'; x.font='800 94px Arial';
+    x.fillText('MINER #'+state.you.ordinal, 540, 630);
+    x.fillStyle='#F5F2EA'; x.font='400 36px Arial';
+    x.fillText(name+' is ranked #'+rank+' in the world', 540, 700);
+    x.fillStyle='#8A8580'; x.font='400 32px Arial';
+    x.fillText(num(miners)+' miner'+(miners===1?'':'s')+' flying this flag', 540, 752);
+    x.fillStyle='#F5F2EA'; x.font='italic 34px Arial';
+    x.fillText('No presale decides this table.', 540, 848);
+    x.fillStyle='#D9A441'; x.font='700 32px Arial';
+    x.fillText('moonbite.org/world-cup', 540, 930);
+    x.fillStyle='rgba(245,242,234,.32)'; x.font='400 19px Arial';
     x.fillText('Countries are self-declared by miners. MBITE is not an investment.', 540, 1000);
-
-    var a = document.createElement('a');
-    a.download = 'moonbite-world-cup-' + code + '.png';
-    a.href = cv.toDataURL('image/png'); a.click();
+    var a=document.createElement('a');
+    a.download='moonbite-world-cup-'+code+'.png';
+    a.href=cv.toDataURL('image/png'); a.click();
   });
 })();
 </script>
