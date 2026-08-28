@@ -251,6 +251,16 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
 
   function $(id){ return document.getElementById(id); }
   function fmt(n){ return Math.round(n).toLocaleString('en-US'); }
+  /* clipboard.writeText rejects on insecure contexts, denied permission and
+     some browsers; an uncaught rejection surfaces as a console error. */
+  function copyText(s){
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText)
+        return navigator.clipboard.writeText(s).catch(function(){});
+    } catch(e){}
+    return null;
+  }
+
   function show(id){ ['sReady','sMining','sDone'].forEach(function(s){
     $(s).classList.toggle('hidden', s !== id); }); }
   function toast(m){ var t=$('toast'); t.textContent=m; t.classList.add('show');
@@ -354,7 +364,7 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
   }).catch(function(){ $('addr').textContent='Could not reach the node — reload to retry.'; });
 
   $('btnCopy').addEventListener('click', function(){
-    if(addr && navigator.clipboard) navigator.clipboard.writeText(addr);
+    if(addr) copyText(addr);
     toast('Address copied');
   });
 

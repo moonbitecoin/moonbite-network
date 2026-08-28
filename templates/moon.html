@@ -321,6 +321,16 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
   };
   function $(id){ return document.getElementById(id); }
   function fmt(n){ return Math.round(n).toLocaleString('en-US'); }
+  /* clipboard.writeText rejects on insecure contexts, denied permission and
+     some browsers; an uncaught rejection surfaces as a console error. */
+  function copyText(s){
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText)
+        return navigator.clipboard.writeText(s).catch(function(){});
+    } catch(e){}
+    return null;
+  }
+
 
   if (!CanvasRenderingContext2D.prototype.roundRect) {
     CanvasRenderingContext2D.prototype.roundRect = function (x,y,w,h,r) {
@@ -515,13 +525,13 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
     a.href = $('mortCanvas').toDataURL('image/png'); a.click();
   });
   $('btnCopyMort').addEventListener('click', function(){
-    if (navigator.clipboard) navigator.clipboard.writeText(shareText());
+    copyText(shareText());
     this.textContent = '✓ Copied'; var b = this;
     setTimeout(function(){ b.textContent = 'Copy text'; }, 1800);
   });
   $('btnNative').addEventListener('click', function(){
     if (navigator.share) navigator.share({ text: shareText() }).catch(function(){});
-    else { if (navigator.clipboard) navigator.clipboard.writeText(shareText()); }
+    else { copyText(shareText()); }
   });
 
   /* ------------------------------------------------------ thumb dock */
