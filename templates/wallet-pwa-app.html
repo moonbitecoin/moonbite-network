@@ -355,22 +355,49 @@
 
         /* Luxury Premium Balance Card - God-Level Edition */
         .premium-balance-card {
-            background: linear-gradient(135deg, #D9A441 0%, #B8863B 25%, #B8863B 65%, #D9A441 100%);
-            border-radius: 20px;
-            padding: 32px 24px;
-            margin-bottom: var(--spacing-lg);
             position: relative;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 51, 166, 0.35),
-                        0 0 50px rgba(184, 134, 59, 0.2),
-                        inset 0 1px 25px rgba(255, 255, 255, 0.12);
-            border: 1.5px solid rgba(255, 255, 255, 0.18);
-            min-height: 260px;
+            border-radius: 24px;
+            padding: 22px;
+            margin-bottom: 18px;
+            min-height: 200px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            animation: cardViral 3.5s ease-in-out infinite;
+            overflow: hidden;
+            /* Slate is the surface for panels; Moongold is an accent, not a
+               background. A gold slab reads as a memecoin — the brand's own
+               rule is restraint. */
+            background: linear-gradient(168deg, #1F242F 0%, #1A1E27 55%, #151921 100%);
+            border: 1px solid rgba(217,164,65,.20);
+            box-shadow: 0 24px 60px rgba(0,0,0,.55);
         }
+        /* The only gold on the card besides the mark: one hairline along the top. */
+        .premium-balance-card::before {
+            content: '';
+            position: absolute; top: 0; left: 22px; right: 22px; height: 1px;
+            background: linear-gradient(90deg, rgba(217,164,65,0), #D9A441 42%, rgba(217,164,65,0));
+        }
+        .vault-top { display: flex; align-items: center; justify-content: space-between; }
+        .vault-brand { display: flex; align-items: center; gap: 9px; color: #F5F2EA;
+            font-weight: 800; font-size: .68rem; letter-spacing: .3em; }
+        .vault-net { font-size: .54rem; letter-spacing: .2em; font-weight: 800; color: #8A8580;
+            border: 1px solid rgba(138,133,128,.35); padding: 4px 9px; border-radius: 999px; }
+        .vault-mid { margin: 4px 0; }
+        .balance-label { font-size: .56rem; letter-spacing: .24em; text-transform: uppercase;
+            font-weight: 800; color: #8A8580; }
+        .balance-amount { font-size: clamp(2.5rem, 12.5vw, 3.5rem); font-weight: 800;
+            line-height: 1; letter-spacing: -.035em; margin-top: 10px; color: #F5F2EA;
+            font-variant-numeric: tabular-nums; display: flex; align-items: baseline; gap: 10px; }
+        .balance-unit { font-size: .28em; font-weight: 800; letter-spacing: .18em; color: #D9A441; }
+        .vault-sub { font-size: .74rem; font-weight: 700; color: #8A8580; margin-top: 9px;
+            letter-spacing: .04em; }
+        .vault-bottom { display: flex; justify-content: space-between; align-items: flex-end;
+            border-top: 1px solid rgba(245,242,234,.07); padding-top: 14px; }
+        .vault-k { font-size: .5rem; letter-spacing: .2em; text-transform: uppercase;
+            font-weight: 800; color: #8A8580; }
+        .vault-v { font-size: .84rem; font-weight: 800; letter-spacing: .08em; margin-top: 4px;
+            color: #F5F2EA; }
+        .dash-content { padding-top: 16px; }
 
         @keyframes cardViral {
             0%, 100% { box-shadow: 0 30px 100px rgba(0, 51, 166, 0.4), 0 0 80px rgba(184, 134, 59, 0.3), inset 0 1px 20px rgba(255, 255, 255, 0.15); }
@@ -414,32 +441,15 @@
         }
 
         html[data-theme="light"] .premium-balance-card {
-            background: linear-gradient(135deg, #D9A441 0%, #D9A441 25%, #B8863B 65%, #D9A441 100%);
+            background: linear-gradient(168deg, #FFFFFF 0%, #EFEBE1 100%);
+            border-color: rgba(217,164,65,.35);
         }
+        html[data-theme="light"] .balance-amount,
+        html[data-theme="light"] .vault-v,
+        html[data-theme="light"] .vault-brand { color: #0B0D12; }
 
-        .balance-label {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.65);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            position: relative;
-            z-index: 2;
-        }
 
-        .balance-amount {
-            font-size: 56px;
-            font-weight: 900;
-            color: #FFFFFF;
-            letter-spacing: -1.5px;
-            position: relative;
-            z-index: 2;
-            font-family: system-ui, -apple-system, sans-serif;
-            text-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 16px rgba(255, 255, 255, 0.15);
-            animation: balancePulse 3s ease-in-out infinite;
-            line-height: 1;
-        }
+        /* superseded by the vault card rule above */
 
         @keyframes balancePulse {
             0%, 100% { transform: scale(1) translateY(0); }
@@ -452,75 +462,13 @@
             margin-left: 8px;
         }
 
-        .balance-usd {
-            font-size: 15px;
-            color: rgba(255, 255, 255, 0.65);
-            margin-top: 12px;
-            position: relative;
-            z-index: 2;
-            font-weight: 500;
-        }
-
         html[data-theme="light"] .balance-label,
         html[data-theme="light"] .balance-amount,
-        html[data-theme="light"] .balance-usd {
-            color: white;
-        }
-
-        .card-chip {
-            width: 48px;
-            height: 38px;
-            background: linear-gradient(135deg, #D9A441, #B8863B);
-            border-radius: 6px;
-            margin-top: 16px;
-            position: relative;
-            z-index: 2;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .card-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-top: 20px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .card-logo {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            font-weight: bold;
-            color: #D9A441;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
 
         .card-logo-img {
             height: 24px;
             width: auto;
             filter: drop-shadow(0 2px 6px rgba(255, 214, 0, 0.3));
-        }
-
-        .card-holder {
-            text-align: right;
-        }
-
-        .card-holder-label {
-            font-size: 10px;
-            color: rgba(255, 255, 255, 0.5);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 4px;
-        }
-
-        .card-holder-name {
-            font-size: 14px;
-            color: #ffffff;
-            font-weight: 500;
-            letter-spacing: 1px;
         }
 
         .premium-wallet-card {
@@ -584,24 +532,23 @@
         }
 
         .action-btn {
+            flex: 1;
+            background: rgba(26,30,39,.9);
+            border: 1px solid rgba(217,164,65,.22);
+            border-radius: 16px;
+            padding: 15px 8px;
+            color: #F5F2EA;
+            font-weight: 700;
+            font-size: .68rem;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 18px 12px;
-            background: linear-gradient(135deg, rgba(255, 214, 0, 0.12) 0%, rgba(184, 134, 59, 0.08) 100%);
-            border: 1px solid rgba(255, 214, 0, 0.25);
-            border-radius: 16px;
-            color: var(--text-primary);
-            font-size: 11px;
-            font-weight: 600;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
+            gap: 7px;
+            min-height: 68px;
+            transition: border-color .2s ease, transform .15s ease;
         }
 
         .action-btn::before {
@@ -686,8 +633,9 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #B8863B 0%, #B8863B 100%);
-            color: white;
+            /* The one gold fill per screen — this is what 'sparingly' buys you. */
+            background: #D9A441;
+            color: #0B0D12;
             width: 100%;
             margin-top: var(--spacing-md);
             box-shadow: 0 12px 30px rgba(184, 134, 59, 0.25);
@@ -1465,11 +1413,7 @@
 
             <!-- Dashboard Screen -->
             <div class="screen" id="dashboardScreen">
-                <div class="screen-header">
-                    <h1>🌙 MoonBite</h1>
-                    <p>Your Crypto Wallet</p>
-                </div>
-                <div class="screen-content">
+                <div class="screen-content dash-content">
                     <div class="install-prompt" id="installPrompt">
                         <div class="install-prompt-title">📱 Install MoonBite App</div>
                         <div class="install-prompt-text">Get faster access and offline support</div>
@@ -1479,19 +1423,33 @@
                         </div>
                     </div>
 
-                    <!-- Visa/Mastercard Style Wallet Card -->
+                    <!-- The vault card -->
                     <div class="premium-balance-card">
-                        <div>
-                            <div class="balance-label">Your Balance</div>
-                            <div class="balance-amount">17.6912<span class="balance-unit">MBITE</span></div>
-                            <div class="balance-usd">≈ $442.28 USD</div>
+                        <div class="vault-top">
+                            <div class="vault-brand">
+                                <svg viewBox="0 0 100 100" width="22" height="22" aria-hidden="true">
+                                    <circle cx="48" cy="54" r="38" fill="#F5F2EA"/>
+                                    <circle cx="69" cy="25.5" r="29.5" fill="#1A1E27"/>
+                                    <rect x="2" y="37.5" width="96" height="8" rx="4" fill="#D9A441"/>
+                                    <rect x="5" y="58.5" width="90" height="8" rx="4" fill="#D9A441"/>
+                                </svg>
+                                <span>MOONBITE</span>
+                            </div>
+                            <div class="vault-net">MAINNET</div>
                         </div>
-                        <div class="card-chip"></div>
-                        <div class="card-footer">
-                            <div class="card-logo">🌙 MOONBITE</div>
-                            <div class="card-holder">
-                                <div class="card-holder-label">Card Holder</div>
-                                <div class="card-holder-name">WALLET 1</div>
+                        <div class="vault-mid">
+                            <div class="balance-label">Total balance</div>
+                            <div class="balance-amount">17.6912<span class="balance-unit">MBITE</span></div>
+                            <div class="vault-sub" id="vaultSub">Mined, not bought</div>
+                        </div>
+                        <div class="vault-bottom">
+                            <div class="vault-holder">
+                                <div class="vault-k">Wallet</div>
+                                <div class="vault-v">WALLET 1</div>
+                            </div>
+                            <div class="vault-holder" style="text-align:right;">
+                                <div class="vault-k">Block height</div>
+                                <div class="vault-v num" id="vaultHeight">0</div>
                             </div>
                         </div>
                     </div>
@@ -1506,21 +1464,21 @@
                     </div>
 
                     <div class="action-buttons">
-                        <button class="btn btn-primary action-btn" onclick="showScreen('walletsScreen')">
+                        <button class="action-btn" onclick="showScreen('walletsScreen')">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                                 <rect x="2" y="7" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
                                 <path d="M2 10h20" stroke="currentColor" stroke-width="2"/>
                             </svg>
                             <span>Wallets</span>
                         </button>
-                        <button class="btn btn-primary action-btn" onclick="showScreen('sendScreen')">
+                        <button class="action-btn" onclick="showScreen('sendScreen')">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M7 17L17 7"></path>
                                 <path d="M7 7h10v10"></path>
                             </svg>
                             <span>Send</span>
                         </button>
-                        <button class="btn btn-primary action-btn" onclick="showScreen('receiveScreen')">
+                        <button class="action-btn" onclick="showScreen('receiveScreen')">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M17 7L7 17"></path>
                                 <path d="M17 17H7V7"></path>
@@ -1541,19 +1499,16 @@
                     <div class="wallet-item">
                         <div class="wallet-name">MoonBite Wallet 1</div>
                         <div class="wallet-balance">5.1234 MBITE</div>
-                        <div class="wallet-usd">≈ $128.08 USD</div>
                     </div>
 
                     <div class="wallet-item">
                         <div class="wallet-name">MoonBite Wallet 2</div>
                         <div class="wallet-balance">2.5678 MBITE</div>
-                        <div class="wallet-usd">≈ $64.20 USD</div>
                     </div>
 
                     <div class="wallet-item">
                         <div class="wallet-name">Trading Wallet</div>
                         <div class="wallet-balance">10.0000 MBITE</div>
-                        <div class="wallet-usd">≈ $250.00 USD</div>
                     </div>
 
                     <button class="btn btn-primary" onclick="showScreen('createWalletScreen')">➕ Create New Wallet</button>
@@ -1687,7 +1642,7 @@
                                 <div class="card-value" style="font-size: 20px;">1.5 MBITE</div>
                             </div>
                             <div style="text-align: right;">
-                                <div class="card-title">≈ USD</div>
+
                                 <div class="card-value" style="font-size: 20px; color: var(--success);">$37.50</div>
                             </div>
                         </div>
@@ -1845,7 +1800,7 @@
                     </div>
 
                     <div class="contact-item">
-                        <div class="contact-avatar" style="background: linear-gradient(135deg, var(--gold), #D9A441);">ET</div>
+                        <div class="contact-avatar" style="background:#232833; color:#D9A441;">ET</div>
                         <div class="contact-info">
                             <div class="contact-name">Edgar Torrey</div>
                             <div class="contact-address">M2hX7kL9Qp5Jm3Zw8Yd1Fs4Xn6Rc2Vt</div>
@@ -2142,7 +2097,6 @@
                         walletName: 'Primary Wallet',
                         blockchainHeight: 0,
                         status: 'Active',
-                        usdValue: 250.00,
                         createdAt: new Date().toISOString(),
                         transactions: []
                     };
@@ -2229,13 +2183,11 @@
                 // Update Balance Card (Dashboard)
                 const balanceAmount = document.querySelector('.balance-amount');
                 if (balanceAmount) {
-                    balanceAmount.textContent = wallet.balance.toFixed(4);
-                }
-
-                // Update USD value
-                const balanceUsd = document.querySelector('.balance-usd');
-                if (balanceUsd) {
-                    balanceUsd.textContent = '≈ $' + wallet.usdValue.toFixed(2) + ' USD';
+                    // Write only the number node: assigning textContent here would
+                    // delete the nested .balance-unit span and lose the ticker.
+                    balanceAmount.firstChild
+                        ? balanceAmount.firstChild.nodeValue = wallet.balance.toFixed(4)
+                        : balanceAmount.prepend(wallet.balance.toFixed(4));
                 }
 
                 // Update Receive Screen Address
@@ -2264,7 +2216,6 @@
                         balanceEl.textContent = wallet.balance.toFixed(4) + ' MBITE';
                         const usdEl = item.querySelector('.wallet-usd');
                         if (usdEl) {
-                            usdEl.textContent = '≈ $' + wallet.usdValue.toFixed(2) + ' USD';
                         }
                     }
                 });
