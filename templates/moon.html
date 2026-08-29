@@ -38,7 +38,7 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
 .hero .sub b { color:#F5F2EA; font-weight:700; }
 
 /* live terminal card */
-.term { margin:18px auto 0; width:100%; max-width:440px; background:rgba(26,30,39,.82);
+.term { margin:18px auto 0; width:100%; max-width:440px; background:rgba(22,26,34,.82);
   border:1px solid rgba(217,164,65,.22); border-radius:20px; padding:18px 18px 16px;
   backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
   box-shadow:0 20px 60px rgba(0,0,0,.5), inset 0 1px 0 rgba(245,242,234,.06);
@@ -67,7 +67,7 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
 
 .hero-cta { margin:16px auto 0; display:flex; gap:12px; justify-content:center; }
 .btn { display:inline-flex; align-items:center; justify-content:center; gap:9px;
-  border:none; border-radius:14px; padding:16px 28px; font-weight:800; font-size:1rem;
+  border:none; border-radius:10px; padding:16px 28px; font-weight:800; font-size:1rem;
   cursor:pointer; text-decoration:none; transition:transform .15s ease; }
 .btn:active { transform:scale(.97); }
 .btn-gold { background:#D9A441; color:#0B0D12; box-shadow:0 10px 34px rgba(217,164,65,.28); }
@@ -88,7 +88,7 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
 .sec .dim { color:#8A8580; font-size:.95rem; line-height:1.65; max-width:430px;
   margin:12px auto 0; }
 .clock { display:flex; gap:10px; justify-content:center; margin-top:26px; }
-.cl { background:#1A1E27; border:1px solid rgba(217,164,65,.2); border-radius:14px;
+.cl { background:#161A22; border:1px solid rgba(217,164,65,.2); border-radius:10px;
   min-width:72px; padding:14px 8px 11px; }
 .cl .v { font-size:clamp(1.6rem,7.5vw,2.4rem); font-weight:800; color:#D9A441; line-height:1; }
 .cl .k { font-size:.56rem; letter-spacing:.2em; color:#8A8580; text-transform:uppercase;
@@ -104,10 +104,10 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
 .tickerband b { color:#D9A441; font-weight:800; }
 
 /* --------------------------------------------------------- CARD MAKER */
-.maker { background:#1A1E27; border:1px solid rgba(217,164,65,.2); border-radius:22px;
+.maker { background:#161A22; border:1px solid rgba(217,164,65,.2); border-radius:20px;
   padding:22px 18px; margin-top:24px; text-align:center;
   box-shadow:0 24px 70px rgba(0,0,0,.45); }
-.maker-preview { width:100%; max-width:340px; margin:0 auto; border-radius:14px;
+.maker-preview { width:100%; max-width:340px; margin:0 auto; border-radius:10px;
   overflow:hidden; border:1px solid rgba(217,164,65,.28); display:none;
   box-shadow:0 14px 44px rgba(0,0,0,.5); }
 .maker-preview.show { display:block; animation:pop .5s cubic-bezier(.2,1.5,.4,1); }
@@ -117,14 +117,14 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
   margin:16px 0 6px; }
 .year-in { background:#0B0D12; border:1px solid rgba(217,164,65,.35); color:#F5F2EA;
   font-size:1.35rem; font-weight:800; text-align:center; width:130px; padding:13px 10px;
-  border-radius:12px; outline:none; letter-spacing:.06em; }
+  border-radius:10px; outline:none; letter-spacing:.06em; }
 .year-in:focus { border-color:#D9A441; box-shadow:0 0 30px rgba(217,164,65,.16); }
-.year-go { background:#D9A441; color:#0B0D12; border:none; border-radius:12px;
+.year-go { background:#D9A441; color:#0B0D12; border:none; border-radius:10px;
   padding:13px 20px; font-weight:800; font-size:.95rem; cursor:pointer; }
 .maker-actions { display:none; gap:10px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
 .maker-actions.show { display:flex; }
 .mk-btn { background:transparent; border:1px solid rgba(217,164,65,.4); color:#D9A441;
-  border-radius:11px; padding:13px 18px; min-height:44px; font-weight:800; font-size:.82rem;
+  border-radius:10px; padding:13px 18px; min-height:44px; font-weight:800; font-size:.82rem;
   cursor:pointer; }
 .mk-btn.solid { background:#D9A441; color:#0B0D12; border-color:#D9A441; }
 
@@ -133,7 +133,7 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
   padding:22px 18px 8px; margin:0 -18px; -webkit-overflow-scrolling:touch;
   scrollbar-width:none; }
 .rail::-webkit-scrollbar { display:none; }
-.rc { scroll-snap-align:center; flex:0 0 78%; max-width:330px; background:#1A1E27;
+.rc { scroll-snap-align:center; flex:0 0 78%; max-width:330px; background:#161A22;
   border:1px solid rgba(245,242,234,.1); border-radius:20px; padding:26px 22px;
   text-align:left; min-height:170px; display:flex; flex-direction:column;
   justify-content:space-between; }
@@ -149,7 +149,7 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
 @media (min-width:900px){ .rail-hint { display:none; } .rc { flex:0 0 31%; } }
 
 /* -------------------------------------------------------------- WORLD */
-.world-card { background:#1A1E27; border:1px solid rgba(217,164,65,.2); border-radius:20px;
+.world-card { background:#161A22; border:1px solid rgba(217,164,65,.2); border-radius:20px;
   padding:22px 20px; margin-top:22px; display:flex; align-items:center; gap:16px;
   text-align:left; text-decoration:none; }
 .world-card .fl { font-size:2rem; line-height:1; }
@@ -164,7 +164,7 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
   background:linear-gradient(180deg, rgba(11,13,18,0), rgba(11,13,18,.92) 40%);
   pointer-events:none; opacity:0; transform:translateY(12px); transition:all .35s ease; }
 .dock.on { opacity:1; transform:none; pointer-events:auto; }
-.dock .btn { flex:1; padding:16px 10px; font-size:.95rem; border-radius:14px; }
+.dock .btn { flex:1; padding:16px 10px; font-size:.95rem; border-radius:10px; }
 @media (min-width:900px){ .dock { display:none; } }
 .pad-dock { height:86px; }
 @media (min-width:900px){ .pad-dock { height:0; } }
@@ -174,6 +174,11 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
   .maker-preview.show { animation:none; }
 }
 #mortCanvas { background:#0B0D12; }
+/* Doc 17: visible keyboard focus on every interactive element. */
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, [tabindex]:focus-visible {
+  outline:2px solid #D9A441; outline-offset:3px; border-radius:6px;
+}
 </style>
 </head>
 <body>
@@ -214,7 +219,7 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
     </div>
 
     <div class="hero-cta">
-      <a class="btn btn-gold" href="/start" id="heroMine">⛏&nbsp; Mine your first block</a>
+      <a class="btn btn-gold" href="/start" id="heroMine">Mine your first block</a>
     </div>
     <div class="hero-proof">No signup · no purchase · your CPU is the hardware</div>
     <div class="scroll-cue">THE REWARD IS FALLING<i></i></div>
@@ -283,7 +288,7 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
   <!-- =========================================================== WORLD -->
   <section class="sec" style="padding-top:6vh;">
     <a class="world-card" href="/world-cup">
-      <div class="fl">🌍</div>
+      <div class="fl"></div>
       <div class="t">
         <b id="wcLine">The Mining World Cup</b>
         <span id="wcSub">Every block has a country. Claim your nation's number.</span>
@@ -291,7 +296,7 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
       <div class="arr">→</div>
     </a>
     <div class="hero-cta" style="margin-top:26px;">
-      <a class="btn btn-gold" href="/start">⛏&nbsp; Start mining</a>
+      <a class="btn btn-gold" href="/start">Start mining</a>
       <a class="btn btn-ghost" href="/calculator">Run your numbers</a>
     </div>
   </section>
@@ -303,7 +308,7 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
 
 <!-- mobile thumb dock -->
 <div class="dock" id="dock">
-  <a class="btn btn-gold" href="/start">⛏&nbsp; Mine your first block</a>
+  <a class="btn btn-gold" href="/start">Mine your first block</a>
 </div>
 
 <script>
@@ -321,6 +326,8 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
   };
   function $(id){ return document.getElementById(id); }
   function fmt(n){ return Math.round(n).toLocaleString('en-US'); }
+  /* Doc 11: block heights are never thousands-separated — only amounts are. */
+  function ht(n){ return String(Math.round(n||0)); }
   /* clipboard.writeText rejects on insecure contexts, denied permission and
      some browsers; an uncaught rejection surfaces as a console error. */
   function copyText(s){
@@ -372,38 +379,32 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
   /* ------------------------------------------------- orb: the living mark */
   var orb = $('orb'), og = orb.getContext('2d');
   var minedFrac = 0, orbT = 0;
+  /* Doc 01: the mark is a single closed path, never assembled from two
+     overlapping circles, and never carries a stroke, gradient or shadow.
+     This is the canonical path from the standard, drawn verbatim via Path2D
+     so the geometry cannot drift from spec.
+     Doc 06: the bite deepens by one increment as blocks are found, so mined
+     supply scales the cut rather than any decorative ring. */
+  var MARK = new Path2D('M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 ' +
+                        'A 62.00 62.00 0 0 1 13.99 -99.02 Z');
   function drawOrb(){
-    orbT += reduced ? 0 : .012;
     var S = orb.clientWidth;
     if (S > 0 && orb.width !== S*DPR){ orb.width = S*DPR; orb.height = S*DPR; }
     og.setTransform(DPR,0,0,DPR,0,0);
     og.clearRect(0,0,S,S);
-    var c = S/2, r = S*.30;
-    /* glow */
-    var gr = og.createRadialGradient(c,c,r*.5,c,c,r*2);
-    gr.addColorStop(0,'rgba(245,242,234,.13)'); gr.addColorStop(1,'rgba(245,242,234,0)');
-    og.fillStyle = gr; og.beginPath(); og.arc(c,c,r*2,0,6.2832); og.fill();
-    /* bone disc */
-    var bg = og.createRadialGradient(c-r*.35,c-r*.35,r*.1,c,c,r);
-    bg.addColorStop(0,'#FFFFFF'); bg.addColorStop(.6,'#F5F2EA'); bg.addColorStop(1,'#CFC9BB');
-    og.fillStyle = bg; og.beginPath(); og.arc(c,c,r,0,6.2832); og.fill();
-    /* crescent bite */
-    og.fillStyle = '#0B0D12';
-    og.beginPath(); og.arc(c+r*.55, c-r*.75, r*.78, 0, 6.2832); og.fill();
-    /* bars */
-    var bh = Math.max(3, r*.13), bw1 = r*2.9, bw2 = r*2.7;
+
+    var k = (S*0.78)/280;                 /* viewBox -140..140 */
+    og.save();
+    og.translate(S/2, S/2 + S*0.012);
+    og.scale(k, k);
+    og.fillStyle = '#F5F2EA';
+    og.fill(MARK);
+    /* struck bars: 2.55R wide, 0.13R thick, at -0.34R and +0.18R */
     og.fillStyle = '#D9A441';
-    og.beginPath(); og.roundRect(c-bw1/2, c-r*.33-bh/2, bw1, bh, bh/2); og.fill();
-    og.beginPath(); og.roundRect(c-bw2/2, c+r*.22-bh/2, bw2, bh, bh/2); og.fill();
-    /* supply ring drawn LAST so the bite never occludes it — it closes as
-       the coin is mined out; a faint breath while near-zero */
-    var ringR = S*.46;
-    og.lineWidth = Math.max(2, S*.012);
-    og.strokeStyle = 'rgba(245,242,234,.09)';
-    og.beginPath(); og.arc(c,c,ringR,0,6.2832); og.stroke();
-    var sweep = Math.max(.02 + .015*Math.sin(orbT*2), minedFrac) * 6.2832;
-    og.strokeStyle = '#D9A441'; og.lineCap = 'round';
-    og.beginPath(); og.arc(c,c,ringR,-1.5708,-1.5708+sweep); og.stroke();
+    og.beginPath(); og.roundRect(-127.5, -34, 255, 13, 6.5); og.fill();
+    og.beginPath(); og.roundRect(-127.5,  18, 255, 13, 6.5); og.fill();
+    og.restore();
+
     requestAnimationFrame(drawOrb);
   }
   requestAnimationFrame(drawOrb);
@@ -411,7 +412,7 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
   /* --------------------------------------------------------- live chain */
   var chainH = 0;
   function paintChain(){
-    $('tHeight').textContent = fmt(chainH);
+    $('tHeight').textContent = ht(chainH);
     var mined = Math.min(chainH, CONS.halving) * CONS.reward;
     $('tMined').textContent = fmt(mined) + ' MBITE';
     var pct = 100 * mined / CONS.cap;
@@ -464,7 +465,7 @@ button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
   function drawCard(m){
     var cv = $('mortCanvas'), x = cv.getContext('2d');
     var bg = x.createLinearGradient(0,0,0,1080);
-    bg.addColorStop(0,'#0B0D12'); bg.addColorStop(1,'#1A1E27');
+    bg.addColorStop(0,'#0B0D12'); bg.addColorStop(1,'#161A22');
     x.fillStyle = bg; x.fillRect(0,0,1080,1080);
     for (var i=0;i<80;i++){
       x.globalAlpha = .12+Math.random()*.45; x.fillStyle = '#F5F2EA';

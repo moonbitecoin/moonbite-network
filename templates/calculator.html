@@ -26,8 +26,8 @@ h1 .r { color:#C8402F; }
 .lede { color:#8A8580; font-size:.96rem; line-height:1.62; max-width:410px; margin:0 auto; }
 
 /* ------------------------------------------------------------ THE LOSS */
-.loss { background:linear-gradient(140deg, rgba(200,64,47,.16), rgba(26,30,39,.6));
-  border:1px solid rgba(200,64,47,.36); border-radius:22px; padding:24px 18px; margin-top:24px;
+.loss { background:linear-gradient(140deg, rgba(200,64,47,.16), rgba(22,26,34,.6));
+  border:1px solid rgba(200,64,47,.36); border-radius:20px; padding:24px 18px; margin-top:24px;
   text-align:center; box-shadow:0 22px 66px rgba(0,0,0,.5); }
 .loss .k { font-size:.6rem; letter-spacing:.2em; color:#8A8580; text-transform:uppercase;
   font-weight:800; }
@@ -40,7 +40,7 @@ h1 .r { color:#C8402F; }
   font-size:.8rem; font-weight:800; color:#C8402F; letter-spacing:.05em; }
 
 /* ---------------------------------------------------------- THE CURVE */
-.chartcard { background:#1A1E27; border:1px solid rgba(217,164,65,.2); border-radius:20px;
+.chartcard { background:#161A22; border:1px solid rgba(217,164,65,.2); border-radius:20px;
   padding:20px 16px 14px; margin-top:16px; }
 .chart-t { font-size:.6rem; letter-spacing:.2em; color:#8A8580; text-transform:uppercase;
   font-weight:800; margin-bottom:4px; }
@@ -48,12 +48,12 @@ h1 .r { color:#C8402F; }
 #decay { width:100%; height:210px; display:block; }
 
 /* ----------------------------------------------------------- CONTROLS */
-.panel { background:#1A1E27; border:1px solid rgba(245,242,234,.09); border-radius:20px;
+.panel { background:#161A22; border:1px solid rgba(245,242,234,.09); border-radius:20px;
   padding:20px 18px; margin-top:16px; }
 .lab { display:block; font-size:.6rem; letter-spacing:.2em; color:#8A8580; text-transform:uppercase;
   font-weight:800; margin-bottom:9px; }
 select, input[type=number] { width:100%; background:#0B0D12; color:#F5F2EA; font-size:.95rem;
-  border:1px solid rgba(217,164,65,.28); border-radius:12px; padding:14px 12px; min-height:50px; }
+  border:1px solid rgba(217,164,65,.28); border-radius:10px; padding:14px 12px; min-height:50px; }
 select:focus, input[type=number]:focus { outline:none; border-color:#D9A441; }
 .field + .field { margin-top:18px; }
 .slider { width:100%; accent-color:#D9A441; height:34px; }
@@ -72,17 +72,22 @@ select:focus, input[type=number]:focus { outline:none; border-color:#D9A441; }
 .row .pen { font-size:.72rem; color:#C8402F; font-weight:800; min-width:52px; text-align:right; }
 
 .actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:24px; }
-.btn { border:none; border-radius:13px; padding:15px 24px; min-height:50px; font-weight:800;
+.btn { border:none; border-radius:10px; padding:15px 24px; min-height:50px; font-weight:800;
   font-size:.94rem; cursor:pointer; text-decoration:none; display:inline-flex;
   align-items:center; justify-content:center; gap:8px; }
 .btn-gold { background:#D9A441; color:#0B0D12; box-shadow:0 12px 36px rgba(217,164,65,.28); }
 .btn-ghost { background:transparent; color:#F5F2EA; border:1px solid rgba(245,242,234,.24); }
 .fine { font-size:.73rem; color:#8A8580; line-height:1.72; text-align:center; margin-top:22px; }
 .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(16px);
-  background:#2E9E6B; color:#04160E; font-weight:800; padding:12px 22px; border-radius:11px;
+  background:#2E9E6B; color:#04160E; font-weight:800; padding:12px 22px; border-radius:10px;
   opacity:0; transition:all .3s; z-index:60; pointer-events:none; font-size:.88rem; }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 #card { display:none; }
+/* Doc 17: visible keyboard focus on every interactive element. */
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, [tabindex]:focus-visible {
+  outline:2px solid #D9A441; outline-offset:3px; border-radius:6px;
+}
 </style>
 </head>
 <body>
@@ -133,7 +138,7 @@ select:focus, input[type=number]:focus { outline:none; border-color:#D9A441; }
   </div>
 
   <div class="actions">
-    <a class="btn btn-gold" href="/start">⛏&nbsp; Start mining now</a>
+    <a class="btn btn-gold" href="/start">Start mining now</a>
     <button class="btn btn-ghost" id="btnCard">Share this</button>
   </div>
 
@@ -334,7 +339,7 @@ select:focus, input[type=number]:focus { outline:none; border-color:#D9A441; }
     else { copyText(shareText()); toast('Copied'); }
     var cv2=$('card'), x=cv2.getContext('2d');
     var bg=x.createLinearGradient(0,0,0,1080);
-    bg.addColorStop(0,'#0B0D12'); bg.addColorStop(1,'#1A1E27');
+    bg.addColorStop(0,'#0B0D12'); bg.addColorStop(1,'#161A22');
     x.fillStyle=bg; x.fillRect(0,0,1080,1080);
     for(var i=0;i<80;i++){ x.globalAlpha=.12+Math.random()*.45; x.fillStyle='#F5F2EA';
       x.beginPath(); x.arc(Math.random()*1080,Math.random()*1080,Math.random()*1.8+.4,0,6.2832); x.fill(); }

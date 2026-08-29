@@ -27,7 +27,7 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
 .step { text-align:center; padding-top:5vh; }
 
 .btn { display:inline-flex; align-items:center; justify-content:center; gap:9px; border:none;
-  border-radius:14px; padding:17px 30px; min-height:52px; font-weight:800; font-size:1rem;
+  border-radius:10px; padding:17px 30px; min-height:52px; font-weight:800; font-size:1rem;
   cursor:pointer; text-decoration:none; transition:transform .15s ease; }
 .btn:active { transform:scale(.97); }
 .btn-gold { background:#D9A441; color:#0B0D12; box-shadow:0 12px 38px rgba(217,164,65,.3); }
@@ -36,7 +36,7 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
 .actions { display:flex; gap:11px; justify-content:center; flex-wrap:wrap; margin-top:22px; }
 
 /* ---------------------------------------------------------- ADDRESS card */
-.acard { background:#1A1E27; border:1px solid rgba(217,164,65,.22); border-radius:20px;
+.acard { background:#161A22; border:1px solid rgba(217,164,65,.22); border-radius:20px;
   padding:20px 18px; margin-top:26px; text-align:left;
   box-shadow:0 20px 60px rgba(0,0,0,.45); }
 .acard .lbl { font-size:.6rem; letter-spacing:.22em; color:#8A8580; text-transform:uppercase;
@@ -51,7 +51,7 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
 
 /* prize strip */
 .prize { display:flex; align-items:center; justify-content:center; gap:14px; margin-top:24px;
-  padding:16px 18px; border-radius:18px;
+  padding:16px 18px; border-radius:20px;
   background:linear-gradient(135deg, rgba(217,164,65,.14), rgba(184,134,59,.06));
   border:1px solid rgba(217,164,65,.3); }
 .prize .v { font-size:clamp(1.7rem,7vw,2.3rem); font-weight:800; color:#D9A441; line-height:1; }
@@ -66,7 +66,7 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
   letter-spacing:-.02em; margin-top:6px; }
 .elapsed-k { font-size:.6rem; letter-spacing:.26em; color:#8A8580; text-transform:uppercase;
   font-weight:800; margin-top:9px; }
-.odds { background:#1A1E27; border:1px solid rgba(200,64,47,.28); border-radius:18px;
+.odds { background:#161A22; border:1px solid rgba(200,64,47,.28); border-radius:20px;
   padding:18px 16px; margin-top:22px; }
 .odds .k { font-size:.6rem; letter-spacing:.2em; color:#8A8580; text-transform:uppercase;
   font-weight:800; }
@@ -75,7 +75,7 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
 .odds .vsub { font-size:.8rem; color:#F5F2EA; margin-top:6px; font-weight:600; }
 .odds .n { font-size:.76rem; color:#8A8580; margin-top:9px; line-height:1.55; }
 .mgrid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px; margin-top:14px; }
-.mcell { background:#1A1E27; border:1px solid rgba(245,242,234,.08); border-radius:14px;
+.mcell { background:#161A22; border:1px solid rgba(245,242,234,.08); border-radius:10px;
   padding:13px 8px; }
 .mcell .v { font-size:clamp(.95rem,3.8vw,1.2rem); font-weight:800; color:#D9A441; line-height:1.1; }
 .mcell .k { font-size:.52rem; letter-spacing:.14em; color:#8A8580; text-transform:uppercase;
@@ -87,8 +87,8 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
   text-transform:uppercase; font-weight:700; cursor:pointer; padding:12px 18px; min-height:44px; }
 
 /* ---------------------------------------------------------- DONE screen */
-.dcard { background:linear-gradient(160deg,#1A1E27,#0B0D12); border:1px solid rgba(217,164,65,.35);
-  border-radius:22px; padding:26px 20px; margin-top:24px;
+.dcard { background:linear-gradient(160deg,#161A22,#0B0D12); border:1px solid rgba(217,164,65,.35);
+  border-radius:20px; padding:26px 20px; margin-top:24px;
   box-shadow:0 24px 70px rgba(0,0,0,.5); }
 .dcard .amt { font-size:clamp(2.4rem,11vw,3.4rem); font-weight:800; color:#D9A441; line-height:1; }
 .dcard .meta { color:#8A8580; font-size:.86rem; margin-top:10px; }
@@ -97,14 +97,14 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
   border-radius:999px; padding:7px 13px; font-size:.75rem; font-weight:800; }
 .nextrow { display:flex; flex-direction:column; gap:10px; margin-top:22px; }
 .nextcard { display:flex; align-items:center; gap:14px; text-decoration:none; text-align:left;
-  background:#1A1E27; border:1px solid rgba(217,164,65,.2); border-radius:16px; padding:16px 16px; }
+  background:#161A22; border:1px solid rgba(217,164,65,.2); border-radius:10px; padding:16px 16px; }
 .nextcard .ic { font-size:1.5rem; }
 .nextcard b { color:#F5F2EA; font-size:.95rem; display:block; }
 .nextcard span { color:#8A8580; font-size:.79rem; }
 .nextcard .ar { margin-left:auto; color:#D9A441; font-weight:800; }
 
 .toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(16px);
-  background:#2E9E6B; color:#04160E; font-weight:800; padding:12px 22px; border-radius:11px;
+  background:#2E9E6B; color:#04160E; font-weight:800; padding:12px 22px; border-radius:10px;
   opacity:0; transition:all .3s; z-index:60; pointer-events:none; font-size:.88rem; }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
@@ -113,7 +113,7 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
   justify-content:center; background:rgba(5,8,20,.93); }
 .mb-confetti { position:absolute; inset:0; pointer-events:none; }
 .mb-first-block-card { position:relative; max-width:400px; width:calc(100% - 36px); text-align:center;
-  padding:34px 26px; border-radius:22px; background:linear-gradient(180deg,#1A1E27,#0B0D12);
+  padding:34px 26px; border-radius:20px; background:linear-gradient(180deg,#161A22,#0B0D12);
   border:1px solid rgba(217,164,65,.42); box-shadow:0 0 70px rgba(217,164,65,.16);
   animation:mbFbPop .55s cubic-bezier(.2,1.6,.4,1); }
 @keyframes mbFbPop { from{transform:scale(.72);opacity:0} to{transform:scale(1);opacity:1} }
@@ -126,12 +126,17 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
   border:1px solid rgba(217,164,65,.5); background:rgba(217,164,65,.1); color:#D9A441; }
 .mb-fb-quote { font-style:italic; color:rgba(245,242,234,.6); font-size:.89rem; margin:12px 0 18px; }
 .mb-fb-actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
-.mb-fb-btn { padding:13px 20px; min-height:44px; border-radius:11px; cursor:pointer; font-weight:800;
+.mb-fb-btn { padding:13px 20px; min-height:44px; border-radius:10px; cursor:pointer; font-weight:800;
   border:1px solid rgba(217,164,65,.6); color:#0B0D12; background:#D9A441; font-family:inherit; }
 .mb-fb-btn.ghost { background:transparent; color:#F5F2EA; border-color:rgba(245,242,234,.3); }
 .mb-badge-toast { position:fixed; left:50%; bottom:40px; transform:translateX(-50%);
-  background:#D9A441; color:#0B0D12; font-weight:800; padding:12px 22px; border-radius:12px; z-index:1000; }
+  background:#D9A441; color:#0B0D12; font-weight:800; padding:12px 22px; border-radius:10px; z-index:1000; }
 @media (prefers-reduced-motion: reduce){ .mb-first-block-card { animation:none; } }
+/* Doc 17: visible keyboard focus on every interactive element. */
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, [tabindex]:focus-visible {
+  outline:2px solid #D9A441; outline-offset:3px; border-radius:6px;
+}
 </style>
 </head>
 <body>
@@ -168,7 +173,7 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
     </div>
 
     <div class="actions">
-      <button class="btn btn-gold" id="btnStart" disabled>⛏&nbsp; START MINING</button>
+      <button class="btn btn-gold" id="btnStart" disabled>START MINING</button>
     </div>
     <p class="sub" style="margin-top:14px; font-size:.78rem;">
       RandomX is genuine proof-of-work. The difficulty is the point.</p>
@@ -214,7 +219,7 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
     </div>
     <div class="nextrow">
       <a class="nextcard" href="/world-cup">
-        <div class="ic">🌍</div>
+        <div class="ic"></div>
         <div><b>Claim your country</b><span>Put your flag on the world board</span></div>
         <div class="ar">→</div>
       </a>
@@ -251,6 +256,8 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
 
   function $(id){ return document.getElementById(id); }
   function fmt(n){ return Math.round(n).toLocaleString('en-US'); }
+  /* Doc 11: block heights are never thousands-separated — only amounts are. */
+  function ht(n){ return String(Math.round(n||0)); }
   /* clipboard.writeText rejects on insecure contexts, denied permission and
      some browsers; an uncaught rejection surfaces as a console error. */
   function copyText(s){
@@ -391,7 +398,7 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
           $('mDiff').textContent = fmt(d.difficulty);
           $('oOdds').textContent = fmt(d.difficulty*4294967296);
         }
-        $('mHeight').textContent = fmt(d.current_height);
+        $('mHeight').textContent = ht(d.current_height);
         $('mReward').textContent = (d.next_block_reward_coins||CONS.reward);
 
         var mine=myBlocks(d);
@@ -406,15 +413,15 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
     fetch('/api/mining/stop').catch(function(){});
     var reward = CONS.reward * delta;
     $('dAmt').textContent = '+' + reward + ' MBITE';
-    $('dMeta').textContent = 'Block #' + fmt(height) + ' · paid to ' +
+    $('dMeta').textContent = 'Block #' + ht(height) + ' · paid to ' +
       (addr.length>18 ? addr.slice(0,10)+'…'+addr.slice(-6) : addr);
     if(window.MoonBiteBadges){
       try { MoonBiteBadges.recordBlocks(delta, height, addr); } catch(e){}
       try {
         var prof=JSON.parse(localStorage.getItem('mb_miner_profiles')||'{}')[addr];
         if(prof && prof.badges){
-          var NAMES={first_bite:'🌑 First Bite',genesis:'🌟 Genesis Miner',pioneer:'🚀 Pioneer',
-            pre_halving:'⏳ Pre-Halving',ten:'⛏️ Ten Bites',hundred:'💯 Hundred Bites',
+          var NAMES={first_bite:'🌑 First Bite',genesis:'🌟 Genesis Miner',pioneer:'Pioneer',
+            pre_halving:'⏳ Pre-Halving',ten:'Ten Bites',hundred:'💯 Hundred Bites',
             week_streak:'🔥 Seven Moons'};
           $('dBadges').innerHTML = prof.badges.map(function(b){
             return '<span class="bpill">'+(NAMES[b]||b)+'</span>'; }).join('');
@@ -430,7 +437,7 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
     if(ticker){ clearInterval(ticker); ticker=null; }
     fetch('/api/mining/stop').catch(function(){});
     if(!found){ show('sReady'); $('btnStart').disabled=false;
-      $('btnStart').innerHTML='⛏&nbsp; START MINING'; }
+      $('btnStart').innerHTML='START MINING'; }
   }
 
   function begin(){
@@ -448,7 +455,7 @@ h1 { font-size:clamp(2rem,8vw,3rem); font-weight:800; line-height:1.05;
           if(mining) $('mElapsed').textContent=clock((Date.now()-started)/1000);
         },1000);
       }).catch(function(){
-        b.disabled=false; b.innerHTML='⛏&nbsp; START MINING';
+        b.disabled=false; b.innerHTML='START MINING';
         toast('Could not start mining. Try again.');
       });
   }

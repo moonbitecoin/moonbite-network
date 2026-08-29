@@ -31,7 +31,7 @@ h1 .g { color:#D9A441; }
 h1 .r { color:#C8402F; }
 .lede { color:#8A8580; font-size:.97rem; line-height:1.62; max-width:420px; margin:0 auto; }
 
-.btn { border:none; border-radius:14px; padding:18px 30px; min-height:56px; font-weight:800;
+.btn { border:none; border-radius:10px; padding:18px 30px; min-height:56px; font-weight:800;
   font-size:1.02rem; cursor:pointer; text-decoration:none; display:inline-flex;
   align-items:center; justify-content:center; gap:9px; transition:transform .15s ease; }
 .btn:active { transform:scale(.97); }
@@ -41,7 +41,7 @@ h1 .r { color:#C8402F; }
 .actions { display:flex; gap:11px; justify-content:center; flex-wrap:wrap; margin-top:26px; }
 
 /* ------------------------------------------------------------- SCANNER */
-.scan { background:#1A1E27; border:1px solid rgba(217,164,65,.22); border-radius:20px;
+.scan { background:#161A22; border:1px solid rgba(217,164,65,.22); border-radius:20px;
   padding:20px 18px; margin-top:24px; text-align:left; min-height:236px; }
 .scan-t { font-size:.6rem; letter-spacing:.2em; color:#8A8580; text-transform:uppercase;
   font-weight:800; display:flex; align-items:center; gap:8px; }
@@ -67,10 +67,10 @@ h1 .r { color:#C8402F; }
   letter-spacing:-.03em; }
 .reveal .big .r { color:#C8402F; }
 .stamp { display:inline-block; margin-top:20px; border:3px solid #C8402F; color:#C8402F;
-  border-radius:12px; padding:11px 20px; font-size:clamp(1rem,4.4vw,1.3rem); font-weight:800;
+  border-radius:10px; padding:11px 20px; font-size:clamp(1rem,4.4vw,1.3rem); font-weight:800;
   letter-spacing:.16em; transform:rotate(-4deg); }
 
-.card { background:#1A1E27; border:1px solid rgba(245,242,234,.09); border-radius:20px;
+.card { background:#161A22; border:1px solid rgba(245,242,234,.09); border-radius:20px;
   padding:20px 18px; margin-top:18px; text-align:left; }
 .card-t { font-size:.6rem; letter-spacing:.2em; color:#D9A441; text-transform:uppercase;
   font-weight:800; margin-bottom:13px; }
@@ -92,11 +92,16 @@ h1 .r { color:#C8402F; }
 
 .fine { font-size:.73rem; color:#8A8580; line-height:1.72; text-align:center; margin-top:22px; }
 .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(16px);
-  background:#2E9E6B; color:#04160E; font-weight:800; padding:12px 22px; border-radius:11px;
+  background:#2E9E6B; color:#04160E; font-weight:800; padding:12px 22px; border-radius:10px;
   opacity:0; transition:all .3s; z-index:60; pointer-events:none; font-size:.88rem; }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 #card { display:none; }
 @media (prefers-reduced-motion: reduce){ .line { transition:none; } .scan-t i { animation:none; } }
+/* Doc 17: visible keyboard focus on every interactive element. */
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, [tabindex]:focus-visible {
+  outline:2px solid #D9A441; outline-offset:3px; border-radius:6px;
+}
 </style>
 </head>
 <body>
@@ -171,7 +176,7 @@ h1 .r { color:#C8402F; }
     </div>
 
     <div class="actions">
-      <a class="btn btn-gold" href="/start">⛏&nbsp; Go earn some instead</a>
+      <a class="btn btn-gold" href="/start">Go earn some instead</a>
       <button class="btn btn-ghost" id="btnShare">Share this</button>
     </div>
 
@@ -277,7 +282,7 @@ h1 .r { color:#C8402F; }
     else { copyText(shareText()); toast('Copied'); }
     var cv=$('card'), x=cv.getContext('2d');
     var bg=x.createLinearGradient(0,0,0,1080);
-    bg.addColorStop(0,'#0B0D12'); bg.addColorStop(1,'#1A1E27');
+    bg.addColorStop(0,'#0B0D12'); bg.addColorStop(1,'#161A22');
     x.fillStyle=bg; x.fillRect(0,0,1080,1080);
     for(var i=0;i<80;i++){ x.globalAlpha=.12+Math.random()*.45; x.fillStyle='#F5F2EA';
       x.beginPath(); x.arc(Math.random()*1080,Math.random()*1080,Math.random()*1.8+.4,0,6.2832); x.fill(); }

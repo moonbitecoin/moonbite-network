@@ -39,17 +39,17 @@
             --fire-orange: #B8863B;
             --gold: #D9A441;
             --emerald: #2E9E6B;
-            --slate: #1A1E27;
+            --slate: #161A22;
 
             /* Dark (the only mode the brand ships) */
             --bg-primary: #0B0D12;
-            --bg-secondary: #1A1E27;
+            --bg-secondary: #161A22;
             --bg-tertiary: #232833;
             --text-primary: #F5F2EA;
             --text-secondary: #8A8580;
             --text-tertiary: #6E6A66;
             --border-color: rgba(217, 164, 65, 0.14);
-            --card-bg: rgba(26, 30, 39, 0.6);
+            --card-bg: rgba(22, 26, 34, 0.6);
 
             /* Light Mode */
             --bg-primary-light: #F5F2EA;
@@ -367,7 +367,7 @@
             /* Slate is the surface for panels; Moongold is an accent, not a
                background. A gold slab reads as a memecoin — the brand's own
                rule is restraint. */
-            background: linear-gradient(168deg, #1F242F 0%, #1A1E27 55%, #151921 100%);
+            background: linear-gradient(168deg, #1F242F 0%, #161A22 55%, #151921 100%);
             border: 1px solid rgba(217,164,65,.20);
             box-shadow: 0 24px 60px rgba(0,0,0,.55);
         }
@@ -533,7 +533,7 @@
 
         .action-btn {
             flex: 1;
-            background: rgba(26,30,39,.9);
+            background: rgba(22,26,34,.9);
             border: 1px solid rgba(217,164,65,.22);
             border-radius: 16px;
             padding: 15px 8px;
@@ -1427,12 +1427,7 @@
                     <div class="premium-balance-card">
                         <div class="vault-top">
                             <div class="vault-brand">
-                                <svg viewBox="0 0 100 100" width="22" height="22" aria-hidden="true">
-                                    <circle cx="48" cy="54" r="38" fill="#F5F2EA"/>
-                                    <circle cx="69" cy="25.5" r="29.5" fill="#1A1E27"/>
-                                    <rect x="2" y="37.5" width="96" height="8" rx="4" fill="#D9A441"/>
-                                    <rect x="5" y="58.5" width="90" height="8" rx="4" fill="#D9A441"/>
-                                </svg>
+                                <svg class="brand-mark" viewBox="-140 -125 280 250" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 A 62.00 62.00 0 0 1 13.99 -99.02 Z" fill="#F5F2EA"/><rect x="-127.5" y="-34" width="255" height="13" rx="6.5" fill="#D9A441"/><rect x="-127.5" y="18" width="255" height="13" rx="6.5" fill="#D9A441"/></svg>
                                 <span>MOONBITE</span>
                             </div>
                             <div class="vault-net">MAINNET</div>
@@ -2449,7 +2444,7 @@
             const ctx = canvas.getContext('2d');
 
             // Fill background
-            ctx.fillStyle = '#1A1E27';
+            ctx.fillStyle = '#161A22';
             ctx.fillRect(0, 0, size, size);
 
             // Draw a simple pattern (simplified QR representation)
