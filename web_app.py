@@ -967,6 +967,71 @@ def _blocks_mined_by(address: str) -> int:
         return 0
 
 
+# The archive index. Grouped rather than alphabetical so a visitor can tell at
+# a glance which pages are current tools and which are superseded builds.
+_ARCHIVE = [
+    ("Tools", [
+        ("/explorer", "Block explorer", ("live", "live")),
+        ("/mining", "Mining console (advanced)", ("live", "live")),
+        ("/dashboard", "Network dashboard", ("live", "live")),
+        ("/leaderboard", "Mining leaderboard", ("live", "live")),
+        ("/merchants", "Merchant payments", None),
+    ]),
+    ("Reference", [
+        ("/whitepaper", "Whitepaper", ("live", "live")),
+        ("/how-it-works", "How it works", None),
+        ("/moonbite-core", "MoonBite Core", None),
+        ("/vocabulary", "Vocabulary", None),
+        ("/learn", "Learn", None),
+        ("/you-need-to-know", "What you need to know", None),
+        ("/full-node", "Run a full node", None),
+        ("/developers", "Developers", None),
+        ("/development", "Development", None),
+    ]),
+    ("Getting started", [
+        ("/getting-started", "Getting started", None),
+        ("/mine", "Start mining", None),
+        ("/get-wallet", "Get a wallet", None),
+        ("/individuals", "For individuals", None),
+        ("/businesses", "For businesses", None),
+    ]),
+    ("Markets & honesty", [
+        ("/markets", "Markets", None),
+        ("/exchanges", "Exchanges", None),
+        ("/buy", "Buying MBITE", None),
+        ("/sell", "Selling MBITE", None),
+        ("/scams", "Scams & impersonation", ("live", "live")),
+        ("/legal", "Legal", None),
+        ("/privacy", "Privacy", ("live", "live")),
+    ]),
+    ("Community", [
+        ("/community", "Community", None),
+        ("/discussions", "Discussions", ("live", "live")),
+        ("/events", "Events", None),
+        ("/blog", "Blog", None),
+        ("/press", "Press kit", None),
+        ("/support", "Support", None),
+        ("/resources", "Resources", None),
+        ("/why", "Why MoonBite", None),
+        ("/about", "About", None),
+    ]),
+    ("Superseded builds", [
+        ("/home-classic", "Homepage — classic", ("older", "moved")),
+        ("/home-v2", "Homepage — v2", ("older", "moved")),
+        ("/home-zeldman", "Homepage — Zeldman", ("older", "moved")),
+        ("/take-a-bite", "Take a Bite", ("older", "moved")),
+        ("/logo-sting", "Logo sting", ("older", "moved")),
+        ("/wallet-app", "Wallet builds → /wallet", ("redirects", "moved")),
+    ]),
+]
+
+
+@app.route("/classic")
+def classic_page():
+    """Render the archive index of every page, including superseded builds."""
+    return render_template("classic.html", archive=_ARCHIVE)
+
+
 @app.route("/free")
 def free_page():
     """Render the Un-Airdrop: there is nothing to claim, and that is the point."""

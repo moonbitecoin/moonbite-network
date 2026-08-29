@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0B0D12">
+<title>Archive — MoonBite</title>
+<meta name="description" content="Every page on moonbite.org, including the older ones the main navigation no longer links.">
+<meta name="robots" content="noindex, follow">
+<link rel="icon" type="image/svg+xml" href="/static/moonbite-logo.svg">
+<link rel="stylesheet" href="/static/fonts/moonbite-fonts.css">
+<style>
+/* Doc 04: three type roles — heavy grotesque for display, quiet sans for
+   reading, monospace for anything that is a number or a path. Archivo Black
+   and Inter are self-hosted from /static/fonts; /privacy states the site
+   loads nothing that phones home. */
+:root{
+  --font-display:'Archivo Black','Helvetica Neue','Arial Black',sans-serif;
+  --font-body:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --font-data:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0B0D12; color:#F5F2EA; font-family:var(--font-body);
+  overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+::selection { background:#D9A441; color:#0B0D12; }
+a,button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
+.wrap { max-width:660px; margin:0 auto; padding:0 18px 70px; }
+.kicker { letter-spacing:.3em; font-size:.62rem; color:#D9A441; text-transform:uppercase;
+  font-weight:800; }
+h1 { font-family:var(--font-display); font-weight:400; letter-spacing:-.02em;
+  font-size:clamp(2rem,8vw,3rem); line-height:1.04; margin:13px 0 11px; }
+.lede { color:#8A8580; font-size:.96rem; line-height:1.62; max-width:440px; }
+.head { text-align:center; padding-top:5vh; }
+.head .lede { margin:0 auto; }
+
+.note { background:#161A22; border:1px solid rgba(217,164,65,.22); border-radius:10px;
+  padding:16px 18px; margin-top:22px; color:#8A8580; font-size:.86rem; line-height:1.65; }
+.note b { color:#F5F2EA; }
+
+.grp { margin-top:26px; }
+.grp-t { font-size:.6rem; letter-spacing:.2em; color:#D9A441; text-transform:uppercase;
+  font-weight:800; padding-bottom:9px; border-bottom:1px solid rgba(217,164,65,.2); }
+.row { display:flex; align-items:baseline; gap:12px; padding:12px 2px;
+  border-bottom:1px solid rgba(245,242,234,.06); text-decoration:none; }
+.row:hover .nm { color:#D9A441; }
+.row .nm { color:#F5F2EA; font-size:.95rem; font-weight:600; flex:1; }
+.row .pt { font-family:var(--font-data); font-size:.74rem; color:#8A8580; }
+.row .tag { font-size:.54rem; letter-spacing:.14em; font-weight:800; text-transform:uppercase;
+  border-radius:6px; padding:3px 7px; }
+.tag.live { color:#2E9E6B; border:1px solid rgba(46,158,107,.4); }
+.tag.moved { color:#D9A441; border:1px solid rgba(217,164,65,.4); }
+
+.back { display:inline-flex; align-items:center; justify-content:center; margin-top:28px;
+  background:#D9A441; color:#0B0D12; border-radius:6px; padding:15px 26px; min-height:50px;
+  font-weight:800; text-decoration:none; font-size:.94rem; }
+.fine { font-size:.73rem; color:#8A8580; line-height:1.72; text-align:center; margin-top:24px; }
+/* Doc 17: visible keyboard focus on every interactive element. */
+a:focus-visible, button:focus-visible { outline:2px solid #D9A441; outline-offset:3px;
+  border-radius:6px; }
+</style>
+</head>
+<body>
+{% include 'partials/nav.html' %}
+
+<div class="wrap">
+  <section class="head">
+    <div class="kicker">ARCHIVE</div>
+    <h1>Every page,<br>including the old ones.</h1>
+    <p class="lede">The main navigation carries eight pages. Everything MoonBite has ever
+      published still resolves, and it is all listed here.</p>
+  </section>
+
+  <div class="note">
+    <b>Nothing here is deleted, and nothing is hidden.</b> These pages predate the current
+    site and some describe things in older language, but their figures were swept to match
+    consensus: {{ consensus.initial_subsidy_coins }} MBITE per block, halving every
+    {{ '{:,}'.format(consensus.halving_interval) }} blocks, a ceiling of
+    {{ consensus.max_supply_label }} MBITE. If you find a page that still disagrees with the
+    chain, that is a bug — the <a href="/whitepaper" style="color:#D9A441;">whitepaper</a> and
+    <code style="font-family:var(--font-data);">/api/consensus</code> are the sources of truth.
+  </div>
+
+  {% for group, pages in archive %}
+  <section class="grp">
+    <div class="grp-t">{{ group }}</div>
+    {% for path, name, tag in pages %}
+    <a class="row" href="{{ path }}">
+      <span class="nm">{{ name }}</span>
+      <span class="pt">{{ path }}</span>
+      {% if tag %}<span class="tag {{ tag[1] }}">{{ tag[0] }}</span>{% endif %}
+    </a>
+    {% endfor %}
+  </section>
+  {% endfor %}
+
+  <div style="text-align:center;">
+    <a class="back" href="/">Back to MoonBite</a>
+  </div>
+
+  <p class="fine">
+    MBITE is a proof-of-work cryptocurrency. It is not an investment, a security, or a promise
+    of future value. It has no guaranteed price, no listing, and no team allocation. Mining
+    consumes electricity that may never be recovered.
+  </p>
+</div>
+
+{% include 'partials/footer.html' %}
+</body>
+</html>
