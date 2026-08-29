@@ -42,6 +42,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 import price_feed
 import wall
+import wallet_history
 
 from node import Node
 from store import BlockStore
@@ -2064,6 +2065,61 @@ def api_wallet_balance():
             }
         ), 200
     except Exception as e:
+        return json_error(
+            "NETWORK_CONNECTION_ERROR",
+            debug_message=str(e),
+            suggested_action="Please wait and try again",
+        )
+
+
+@app.route("/api/address/<address>/balance", methods=["GET"])
+@rate_limit(60, 60)
+def api_address_balance(address: str):
+    """Public balance lookup for any address on the chain.
+
+    /api/wallet/balance only reports addresses held in the caller's Flask
+    session, which is useless to the wallet PWA: it derives its address
+    client-side from the user's own seed phrase, so the server has never seen
+    that address and would always answer zero.
+
+    Balances on a public chain are public — every block explorer exposes this
+    and the UTXO set is broadcast to every node — so there is nothing to
+    protect here by requiring ownership proof. Spending still requires the
+    private key; this endpoint is read-only.
+    """
+    try:
+        if not is_valid_address(address):
+            return json_error(
+                "VALIDATION_INVALID_ADDRESS",
+                suggested_action="Check the address and try again",
+            )
+
+        pkh = pubkey_hash_from_address(address)
+
+        node = get_node()
+        total = 0
+        utxos = []
+        for txid, idx, out in node.chain.utxo.items():
+            if out.pubkey_hash == pkh:
+                total += out.amount
+                utxos.append({"txid": txid, "vout": idx, "amount_units": out.amount})
+
+        from params import CENTS_PER_COIN
+
+        balance_coins = total / CENTS_PER_COIN
+        return jsonify(
+            {
+                "status": "success",
+                "address": address,
+                "balance_coins": balance_coins,
+                "balance_units": total,
+                "balance_display": f"{balance_coins:.8f}".rstrip("0").rstrip(".") or "0",
+                "utxo_count": len(utxos),
+                "utxos": utxos,
+                "height": node.chain.height,
+            }
+        ), 200
+    except Exception as e:  # noqa: BLE001
         return json_error(
             "NETWORK_CONNECTION_ERROR",
             debug_message=str(e),

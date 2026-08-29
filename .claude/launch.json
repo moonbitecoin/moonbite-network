@@ -2,29 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "web-miner",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["web_app.py"],
-      "port": 5000,
-      "autoPort": true
-    },
-    {
       "name": "moonbite-web",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8080", "--directory", "D:\\moonbite-app\\build\\web"],
-      "port": 8080
-    },
-    {
-      "name": "moonbite-site",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "4174", "--directory", "C:\\Users\\usman\\Desktop\\BigCoinBB\\moonbite-site"],
-      "port": 4174
-    },
-    {
-      "name": "reactor-app",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["reactor-app/moonbite_reactor.py", "--no-browser", "--port", "7802"],
-      "port": 7802
+      "runtimeArgs": ["web_app.py"],
+      "port": 5000
     }
   ]
 }

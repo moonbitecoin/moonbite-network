@@ -2405,7 +2405,10 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                         address: this.generateAddress(userId),
                         privateKey: this.generatePrivateKey(userId),
                         seedPhrase: this.generateSeedPhrase(userId),
-                        balanceCents: 10 * CENTS_PER_COIN,
+                        /* A new wallet owns nothing until the chain says it
+                           does. Seeding a balance here showed every user
+                           10 MBITE they could never spend. */
+                        balanceCents: 0,
                         currency: 'MBITE',
                         walletName: 'Primary Wallet',
                         blockchainHeight: 0,
@@ -2516,6 +2519,44 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 localStorage.setItem(userWalletKey, JSON.stringify(updated));
                 this.syncAllScreens();
                 return updated;
+            },
+
+            /* Ask the chain what this address actually holds.
+
+               The balance in localStorage is a cache for instant paint, never
+               the source of truth — only the UTXO set is. A wallet that
+               believes its own cache will happily show coins the chain never
+               credited. Failures leave the cached value alone rather than
+               blanking the screen, so a dropped request reads as "stale",
+               not "your funds are gone". */
+            refreshBalance: async function() {
+                const wallet = this.getWallet();
+                if (!wallet || !wallet.address) return null;
+                try {
+                    const res = await fetch(
+                        '/api/address/' + encodeURIComponent(wallet.address) + '/balance',
+                        { headers: { 'Accept': 'application/json' } }
+                    );
+                    if (!res.ok) return null;
+                    const data = await res.json();
+                    if (data.status !== 'success') return null;
+
+                    // balance_units is integer cents from the server; keep it
+                    // integral so no float ever touches a balance.
+                    const cents = Number(data.balance_units);
+                    if (!Number.isSafeInteger(cents)) return null;
+
+                    if (cents !== wallet.balanceCents ||
+                        data.height !== wallet.blockchainHeight) {
+                        this.updateWallet({
+                            balanceCents: cents,
+                            blockchainHeight: data.height
+                        });
+                    }
+                    return cents;
+                } catch (e) {
+                    return null;
+                }
             },
 
             // Sync wallet data to all screens
@@ -2649,7 +2690,17 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             // Sync user's wallet data to all screens
             setTimeout(() => {
                 CustodialWallet.syncAllScreens();
+                // Paint the cached value first, then reconcile against the
+                // chain; updateWallet() re-syncs the screens if it differs.
+                CustodialWallet.refreshBalance();
             }, 100);
+
+            // Keep the balance current while the wallet is open.
+            if (!window._mbBalancePoll) {
+                window._mbBalancePoll = setInterval(() => {
+                    if (!document.hidden) CustodialWallet.refreshBalance();
+                }, 30000);
+            }
         }
 
         // Call initialization immediately and also on load as fallback
