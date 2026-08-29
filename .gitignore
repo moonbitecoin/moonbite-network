@@ -4,3 +4,12 @@ blockchain_node.log
 .git-rewrite/
 __pycache__/
 *.pyc
+
+# Runtime SQLite databases. These are per-deployment state, not source: when
+# they were committed, every deploy overwrote whatever users had written with
+# a stale local snapshot. Each module recreates its schema on startup, so an
+# absent file is the normal cold-start case, not an error.
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
