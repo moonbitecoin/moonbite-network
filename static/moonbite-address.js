@@ -108,6 +108,44 @@ function convertBits(data, fromBits, toBits, pad) {
     return ret;
 }
 
+function bech32VerifyChecksum(hrp, data) {
+    return bech32Polymod(bech32HrpExpand(hrp).concat(data)) === 1;
+}
+
+/* Decode an address back to the public-key hash it locks coins to.
+ *
+ * The checksum is what makes a mistyped recipient address fail here instead of
+ * silently sending coins somewhere unspendable, so a failed check must throw
+ * rather than return something usable. */
+export function pubkeyHashFromAddress(addr) {
+    const address = String(addr).trim().toLowerCase();
+    const pos = address.lastIndexOf('1');
+    if (pos < 1 || pos + 7 > address.length) throw new Error('invalid address');
+
+    const hrp = address.slice(0, pos);
+    const chars = address.slice(pos + 1);
+    const data = [];
+    for (const c of chars) {
+        const v = BECH32_CHARSET.indexOf(c);
+        if (v === -1) throw new Error('invalid address');
+        data.push(v);
+    }
+    if (!bech32VerifyChecksum(hrp, data)) throw new Error('invalid address checksum');
+
+    const decoded = convertBits(data.slice(0, -6), 5, 8, false);
+    if (decoded === null) throw new Error('invalid address payload');
+    return bytesToHex(Uint8Array.from(decoded));
+}
+
+export function isValidAddress(addr) {
+    try {
+        pubkeyHashFromAddress(addr);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
 export function addressFromPubkeyHash(pkhHex, hrp = MOONBITE_HRP) {
     const data = convertBits(hexToBytes(pkhHex), 8, 5, true);
     if (data === null) throw new Error('cannot encode pubkey hash');

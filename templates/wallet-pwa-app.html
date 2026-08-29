@@ -2015,7 +2015,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                     </div>
 
                     <button class="btn btn-primary" id="sendConfirmBtn" disabled
-                            onclick="showScreen('transactionSuccessScreen')"
+                            onclick="sendTransaction()"
                             style="background: var(--danger); opacity:.45; cursor:not-allowed;">Confirm &amp; Send</button>
                     <button class="btn btn-secondary" onclick="showScreen('sendScreen')">← Edit Transaction</button>
                 </div>
@@ -2024,18 +2024,20 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             <!-- Transaction Success Screen -->
             <div class="screen" id="transactionSuccessScreen">
                 <div class="screen-header">
-                    <h1>Sent Successfully</h1>
-                    <p>Transaction confirmed</p>
+                    <h1>Transaction Sent</h1>
+                    <!-- Broadcast is not confirmation: it waits in the mempool
+                         until a miner includes it in a block. -->
+                    <p>Waiting to be included in a block</p>
                 </div>
                 <div class="screen-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-lg);">
-                    <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #2E9E6B, #25845A); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 60px; animation: pulse 1s ease-out;"></div>
+                    <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #2E9E6B, #25845A); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; animation: pulse 1s ease-out;"><svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></div>
                     <div style="text-align: center;">
-                        <h3 style="color: var(--gold); margin-bottom: var(--spacing-sm);">1.5 MBITE Sent</h3>
+                        <h3 style="color: var(--gold); margin-bottom: var(--spacing-sm);"><span id="successAmount">0</span> MBITE Sent</h3>
                         <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: var(--spacing-lg);">Your transaction has been broadcast to the network</p>
                     </div>
                     <div class="card">
                         <div class="card-title">Transaction Hash</div>
-                        <div style="color: var(--gold); font-family: monospace; font-size: 12px; word-break: break-all; margin-top: var(--spacing-sm);">0x1a2b3c4d5e6f7g8h9i0j...</div>
+                        <div id="successTxid" style="color: var(--gold); font-family: monospace; font-size: 12px; word-break: break-all; margin-top: var(--spacing-sm);">—</div>
                     </div>
                     <button class="btn btn-primary" onclick="showScreen('dashboardScreen')" style="background: #2E9E6B;">Back to Dashboard</button>
                     <button class="btn btn-secondary" onclick="showScreen('sendScreen')">Send More</button>
@@ -2310,9 +2312,16 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
          main script so window.MoonBiteAddress is in place by the time
          onboarding needs it. The user's seed never leaves this page. -->
     <script type="module">
-        import { deriveFromSeedPhrase, normalizeSeedPhrase }
+        import { deriveFromSeedPhrase, normalizeSeedPhrase,
+                 pubkeyHashFromAddress, isValidAddress }
             from '{{ url_for('static', filename='moonbite-address.js') }}';
-        window.MoonBiteAddress = { deriveFromSeedPhrase, normalizeSeedPhrase };
+        import { buildSignedTransaction }
+            from '{{ url_for('static', filename='moonbite-tx.js') }}';
+        window.MoonBiteAddress = {
+            deriveFromSeedPhrase, normalizeSeedPhrase,
+            pubkeyHashFromAddress, isValidAddress
+        };
+        window.MoonBiteTx = { buildSignedTransaction };
         window.dispatchEvent(new Event('moonbite-address-ready'));
     </script>
 
@@ -3231,6 +3240,128 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             const amount = parseFloat(document.getElementById('sendAmount').value) || 1.5;
             const fee = parseFloat(fees[speed]);
             document.getElementById('totalAmountDisplay').textContent = (amount + fee).toFixed(4) + ' MBITE';
+        }
+
+        /* Spend: build the transaction, sign it here, broadcast the result.
+           The server is only ever handed an already-signed transaction, so it
+           has nothing it could spend on the user's behalf. */
+        async function sendTransaction() {
+            const btn = document.getElementById('sendConfirmBtn');
+            const original = btn ? btn.textContent : '';
+            const fail = (msg) => {
+                alert(msg);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = original;
+                }
+            };
+
+            try {
+                if (!window.MoonBiteTx || !window.MoonBiteAddress) {
+                    return fail('Wallet is still loading. Please try again in a moment.');
+                }
+
+                const recipient =
+                    (document.getElementById('sendRecipient').value || '').trim();
+                if (!window.MoonBiteAddress.isValidAddress(recipient)) {
+                    return fail('That recipient address is not valid. Check it and try again.');
+                }
+
+                const wallet = CustodialWallet.getWallet();
+                if (!wallet || !wallet.address) {
+                    return fail('Unlock your wallet before sending.');
+                }
+                if (recipient === wallet.address) {
+                    return fail('That is your own address.');
+                }
+
+                const amountUnits = toCents(document.getElementById('sendAmount').value);
+                if (!amountUnits || amountUnits <= 0) {
+                    return fail('Enter an amount greater than zero.');
+                }
+
+                const feeText = (document.getElementById('networkFeeDisplay')
+                    .textContent || '0').replace(/[^0-9.]/g, '');
+                const feeUnits = toCents(feeText) || 0;
+
+                /* The seed is only ever stored PIN-encrypted, so spending asks
+                   for the PIN. That is also the point of the PIN: it is what
+                   stands between someone holding this device and the funds. */
+                const pin = prompt('Enter your PIN to authorize this transaction');
+                if (!pin) return fail('Transaction cancelled.');
+                if (pin !== localStorage.getItem('moonbite_pin')) {
+                    return fail('Incorrect PIN. The transaction was not sent.');
+                }
+                const seed = CustodialWallet.decryptWithPIN(
+                    localStorage.getItem('moonbite_seed_encrypted'), pin);
+                if (!seed) return fail('Could not unlock your seed phrase.');
+
+                if (btn) {
+                    btn.disabled = true;
+                    btn.textContent = 'Signing...';
+                }
+
+                /* Spend against what the chain says is unspent right now, not
+                   a cached balance that may already be stale. */
+                const balRes = await fetch(
+                    '/api/address/' + encodeURIComponent(wallet.address) + '/balance');
+                if (!balRes.ok) return fail('Could not reach the network. Try again.');
+                const bal = await balRes.json();
+                if (amountUnits + feeUnits > bal.balance_units) {
+                    return fail('Not enough MBITE for that amount plus the network fee.');
+                }
+
+                const built = await window.MoonBiteTx.buildSignedTransaction({
+                    seedPhrase: seed,
+                    toPubkeyHash: window.MoonBiteAddress.pubkeyHashFromAddress(recipient),
+                    amountUnits: amountUnits,
+                    feeUnits: feeUnits,
+                    utxos: bal.utxos || []
+                });
+
+                if (btn) btn.textContent = 'Broadcasting...';
+                const res = await fetch('/api/tx/broadcast', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ transaction: built.transaction })
+                });
+                const result = await res.json();
+                if (!res.ok || result.status !== 'success') {
+                    return fail(result.message ||
+                        'The network rejected this transaction.');
+                }
+
+                // Record it for history, but never let a bookkeeping failure
+                // imply the spend itself failed - it is already on the chain.
+                fetch('/api/wallet/transaction/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        txid: result.txid,
+                        amount_units: amountUnits,
+                        fee_units: built.feeUnits,
+                        from_address: wallet.address,
+                        to_address: recipient,
+                        status: 'pending'
+                    })
+                }).catch(() => {});
+
+                const txidEl = document.getElementById('successTxid');
+                if (txidEl) txidEl.textContent = result.txid;
+                const amtEl = document.getElementById('successAmount');
+                if (amtEl) amtEl.textContent = mbite(amountUnits);
+
+                await CustodialWallet.refreshBalance();
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = original;
+                }
+                showScreen('transactionSuccessScreen');
+            } catch (e) {
+                fail(e && e.message === 'insufficient funds'
+                    ? 'Not enough MBITE for that amount plus the network fee.'
+                    : 'Could not send: ' + (e && e.message ? e.message : 'unknown error'));
+            }
         }
 
         // Copy Address Function

@@ -46,7 +46,7 @@ import wallet_history
 
 from node import Node
 from store import BlockStore
-from transaction import generate_keypair, pubkey_hash
+from transaction import Transaction, generate_keypair, pubkey_hash
 from wallet import (HDWallet, address_from_pubkey_hash, is_valid_address,
                     pubkey_hash_from_address)
 
@@ -4144,29 +4144,83 @@ def restore_backup():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/tx/broadcast", methods=["POST"])
+@rate_limit(30, 60)
+def api_tx_broadcast():
+    """Accept a transaction signed in the browser and put it on the chain.
+
+    The wallet holds the only copy of the key, so it builds and signs the
+    transaction itself and this endpoint never sees a private key or a seed.
+    What arrives is already authorized; the node re-verifies it against the
+    UTXO set exactly as it would a transaction from any peer, and rejects it
+    otherwise. A malformed or unauthorized submission can only waste its
+    sender's time.
+    """
+    data = request.get_json(silent=True) or {}
+    try:
+        raw = data.get("transaction")
+        if not isinstance(raw, dict):
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="A signed transaction is required",
+            )
+
+        try:
+            tx = Transaction.from_dict(raw)
+        except (KeyError, TypeError, ValueError) as e:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="Transaction is malformed",
+                debug_message=str(e),
+            )
+
+        node = get_node()
+        # submit_transaction validates signatures, ownership, maturity and
+        # value conservation before it will touch the mempool.
+        if not node.submit_transaction(tx):
+            return json_error(
+                "VALIDATION_INSUFFICIENT_BALANCE",
+                user_message=(
+                    "The network rejected this transaction. Its inputs may "
+                    "already be spent, or the balance may have changed."
+                ),
+                suggested_action="Refresh your balance and try again",
+            )
+
+        return jsonify(
+            {
+                "status": "success",
+                "txid": tx.txid,
+                "accepted": True,
+                "mempool_size": len(node.chain.mempool),
+            }
+        ), 200
+    except Exception as e:  # noqa: BLE001
+        return json_error(
+            "NETWORK_CONNECTION_ERROR",
+            debug_message=str(e),
+            suggested_action="Please wait and try again",
+        )
+
+
 @app.route("/api/wallet/send", methods=["POST"])
 def wallet_send():
-    """Send transaction (simplified for wallet UI)"""
-    try:
-        data = request.get_json() or {}
-        address = data.get("address")
-        amount = data.get("amount", 0)
+    """Refuse to fake a send.
 
-        if not address or amount <= 0:
-            return jsonify({"error": "Invalid address or amount"}), 400
-
-        # Simulate transaction (in production, use actual blockchain)
-        txid = secrets.token_hex(16)
-
-        return jsonify({
-            "success": True,
-            "txid": txid,
-            "address": address,
-            "amount": amount,
-            "timestamp": time.time()
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    This used to mint a random hex string, call it a txid and report success,
+    so a user could believe coins had moved when nothing had touched the
+    chain. Spending now happens through /api/tx/broadcast with a transaction
+    the wallet signed itself; there is no server-side path that can send on a
+    user's behalf, because the server has no key to sign with.
+    """
+    return json_error(
+        "VALIDATION_MISSING_FIELD",
+        user_message=(
+            "This endpoint no longer sends coins. Sign the transaction in the "
+            "wallet and submit it to /api/tx/broadcast."
+        ),
+        status_code=410,
+    )
 
 @app.route("/api/achievements", methods=["GET"])
 def get_achievements():
