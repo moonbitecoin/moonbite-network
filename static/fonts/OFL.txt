@@ -1,0 +1,11 @@
+MoonBite self-hosted webfonts
+=============================
+Archivo Black — Copyright (c) Omnibus-Type. SIL Open Font License 1.1.
+Inter        — Copyright (c) The Inter Project Authors. SIL Open Font License 1.1.
+
+Both faces are licensed under the SIL Open Font License, Version 1.1, which
+permits self-hosting and redistribution as part of a larger work. Full licence
+text: https://openfontlicense.org
+
+Latin subset only, extracted from the Google Fonts woff2 builds and served from
+this origin so no visitor request reaches a third party.

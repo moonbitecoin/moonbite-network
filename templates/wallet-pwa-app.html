@@ -15,16 +15,15 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231a4d7a' width='100' height='100' rx='20'/><circle cx='50' cy='50' r='40' fill='%23ff6b35' opacity='0.3'/><path d='M50 20 Q65 35 65 50 Q65 65 50 80 Q35 65 35 50 Q35 35 50 20' fill='%23ffd700'/></svg>">
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;">
     <title>MoonBite Wallet</title>
-    <style>
+    <link rel="stylesheet" href="/static/fonts/moonbite-fonts.css">
+<style>
 /* Doc 04: three roles. A heavy grotesque for display, a quiet sans for
    reading, a monospace for anything that is a number.
 
-   These are the doc-04 fallback stacks, resolved locally. The faces are NOT
-   fetched from Google Fonts: /privacy promises no third-party request that
-   phones home, and a webfont CDN sends every visitor's IP to Google on every
-   page load. To ship the real Archivo Black and Inter, self-host the woff2
-   files under /static/fonts and add @font-face here — the stacks below pick
-   them up with no other change. Every figure that is
+   Archivo Black and Inter are self-hosted from /static/fonts (latin subset,
+   OFL-licensed). They are deliberately not loaded from Google Fonts: /privacy
+   states the site loads nothing that phones home, and a webfont CDN sends
+   every visitor's IP to Google on every page load. Every figure that is
    money, a hash, an address or a block height is monospace with tabular
    figures — amounts that shift width as they update look untrustworthy. */
 :root{
