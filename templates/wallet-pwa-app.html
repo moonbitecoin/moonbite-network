@@ -1639,10 +1639,6 @@
                                 <div class="card-title">Amount</div>
                                 <div class="card-value" style="font-size: 20px;">1.5 MBITE</div>
                             </div>
-                            <div style="text-align: right;">
-
-                                <div class="card-value" style="font-size: 20px; color: var(--success);">$37.50</div>
-                            </div>
                         </div>
                     </div>
 
@@ -1657,7 +1653,25 @@
                         </div>
                     </div>
 
-                    <button class="btn btn-primary" onclick="showScreen('transactionSuccessScreen')" style="background: #2E9E6B;">✓ Confirm & Send</button>
+                    <div class="card" style="border-color: rgba(200,64,47,.4);">
+                        <div class="card-title" style="color: var(--danger);">THIS CANNOT BE UNDONE</div>
+                        <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; margin: 8px 0 12px;">
+                            A sent transaction cannot be recalled, reversed or refunded by anyone,
+                            including us. Type the amount below to confirm you have checked it.</p>
+                        <input type="text" class="form-input" id="sendConfirmInput"
+                               inputmode="decimal" autocomplete="off" autocorrect="off"
+                               autocapitalize="off" spellcheck="false"
+                               data-lpignore="true" data-1p-ignore
+                               placeholder="Type the amount, e.g. 1.5"
+                               aria-label="Type the amount to confirm"
+                               style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">
+                        <div id="sendConfirmHint" style="font-size: 12px; color: var(--text-tertiary); margin-top: 8px;">
+                            Must match <span id="sendConfirmTarget" style="font-family: ui-monospace, Menlo, monospace; color: var(--text-primary);">1.5</span> exactly.</div>
+                    </div>
+
+                    <button class="btn btn-primary" id="sendConfirmBtn" disabled
+                            onclick="showScreen('transactionSuccessScreen')"
+                            style="background: var(--danger); opacity:.45; cursor:not-allowed;">Confirm &amp; Send</button>
                     <button class="btn btn-secondary" onclick="showScreen('sendScreen')">← Edit Transaction</button>
                 </div>
             </div>
@@ -1876,74 +1890,7 @@
             </div>
 
             <!-- Seed Phrase Screen -->
-            <div class="screen" id="seedPhraseScreen">
-                <div class="screen-header">
-                    <h1>Recovery Phrase</h1>
-                    <p>Keep this safe and secret</p>
-                </div>
-                <div class="screen-content">
-                    <div class="card" style="background: linear-gradient(135deg, rgba(184, 134, 59, 0.15), rgba(217, 164, 65, 0.1)); border-color: var(--fire-orange);">
-                        <div style="display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-md);">
-                            <span style="color: var(--danger); font-size: 20px;">⚠️</span>
-                            <div style="color: var(--danger);">This is the only way to recover your wallet. Write it down and store it safely.</div>
-                        </div>
-                    </div>
-
-                    <div class="seed-grid">
-                        <div class="seed-item">
-                            <div class="seed-number">1</div>
-                            <div class="seed-word">abandon</div>
-                        </div>
-                        <div class="seed-item">
-                            <div class="seed-number">2</div>
-                            <div class="seed-word">ability</div>
-                        </div>
-                        <div class="seed-item">
-                            <div class="seed-number">3</div>
-                            <div class="seed-word">about</div>
-                        </div>
-                        <div class="seed-item">
-                            <div class="seed-number">4</div>
-                            <div class="seed-word">above</div>
-                        </div>
-                        <div class="seed-item">
-                            <div class="seed-number">5</div>
-                            <div class="seed-word">absent</div>
-                        </div>
-                        <div class="seed-item">
-                            <div class="seed-number">6</div>
-                            <div class="seed-word">absorb</div>
-                        </div>
-                        <div class="seed-item">
-                            <div class="seed-number">7</div>
-                            <div class="seed-word">abstract</div>
-                        </div>
-                        <div class="seed-item">
-                            <div class="seed-number">8</div>
-                            <div class="seed-word">abuse</div>
-                        </div>
-                        <div class="seed-item">
-                            <div class="seed-number">9</div>
-                            <div class="seed-word">access</div>
-                        </div>
-                        <div class="seed-item">
-                            <div class="seed-number">10</div>
-                            <div class="seed-word">accident</div>
-                        </div>
-                        <div class="seed-item">
-                            <div class="seed-number">11</div>
-                            <div class="seed-word">account</div>
-                        </div>
-                        <div class="seed-item">
-                            <div class="seed-number">12</div>
-                            <div class="seed-word">accuse</div>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-primary" onclick="copySeed()">📋 Copy Seed Phrase</button>
-                    <button class="btn btn-secondary" onclick="showScreen('successScreen')">✓ I Saved It</button>
-                </div>
-            </div>
+            <!-- duplicate seedPhraseScreen removed: shadowed by the first, unreachable -->
 
             <!-- Success Screen -->
             <div class="screen" id="successScreen">
@@ -1963,29 +1910,7 @@
             </div>
 
             <!-- Create Wallet Screen -->
-            <div class="screen" id="createWalletScreen">
-                <div class="screen-header">
-                    <h1>Create Wallet</h1>
-                    <p>Add a new wallet</p>
-                </div>
-                <div class="screen-content">
-                    <div class="form-group">
-                        <label class="form-label">Wallet Name</label>
-                        <input type="text" class="form-input" placeholder="e.g., My Trading Wallet">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Wallet Type</label>
-                        <select class="form-input">
-                            <option>Standard (P2PKH)</option>
-                            <option>Segwit (P2WPKH)</option>
-                            <option>Multi-Sig</option>
-                        </select>
-                    </div>
-
-                    <button class="btn btn-primary" onclick="showScreen('seedPhraseScreen')">Create Wallet</button>
-                </div>
-            </div>
+            <!-- duplicate createWalletScreen removed: shadowed by the first, unreachable -->
 
             <!-- Add Contact Screen -->
             <div class="screen" id="addContactScreen">
@@ -2009,36 +1934,7 @@
             </div>
 
             <!-- Confirm Send Screen -->
-            <div class="screen" id="confirmSendScreen">
-                <div class="screen-header">
-                    <h1>Confirm Send</h1>
-                    <p>Review transaction details</p>
-                </div>
-                <div class="screen-content">
-                    <div class="card">
-                        <div class="card-title">Recipient</div>
-                        <div style="font-family: 'Monaco', 'Menlo', monospace; font-size: 12px; color: var(--gold); word-break: break-all;">moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k</div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-title">Amount</div>
-                        <div class="card-value">1.5 MBITE</div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-title">Network Fee</div>
-                        <div class="card-value">0.0001 MBITE</div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-title">Total</div>
-                        <div class="card-value">1.5001 MBITE</div>
-                    </div>
-
-                    <button class="btn btn-primary" onclick="showScreen('successScreen')">✓ Confirm & Send</button>
-                    <button class="btn btn-secondary" onclick="showScreen('sendScreen')">← Edit Transaction</button>
-                </div>
-            </div>
+            <!-- duplicate confirmSendScreen removed: shadowed by the first, unreachable -->
         </div>
 
         <!-- Theme Toggle Button -->
@@ -2078,16 +1974,79 @@
         // CUSTODIAL WALLET SYSTEM - INDIVIDUAL WALLETS
         // ============================================
 
-        /* Doc 18: never truncate an amount, never round a balance down for
-           display. Doc 11: 8 decimal places in technical contexts. A wallet
-           balance is technical, so it is rendered at full precision — toFixed
-           would round and could understate what a miner actually holds. */
-        function mbite(v) {
-            const cents = Math.round((Number(v) || 0) * 1e8);
-            const whole = Math.floor(cents / 1e8);
-            const frac = String(cents % 1e8).padStart(8, '0');
-            return whole.toLocaleString('en-US') + '.' + frac;
+        /* ---------------------------------------------------------------
+           Money is stored and moved as an INTEGER number of cents, never as a
+           float. 0.1 + 0.2 !== 0.3 in IEEE-754, and a balance that drifts by a
+           cent is a balance a miner cannot reconcile against the chain. Coins
+           exist only at the display boundary.
+
+           Doc 18: never truncate an amount, never round a balance down.
+           Doc 11: 8 decimal places in technical contexts.
+           --------------------------------------------------------------- */
+        const CENTS_PER_COIN = 100000000;
+
+        /* Parse a user- or storage-supplied value into integer cents without
+           going through float arithmetic on the fractional part. */
+        function toCents(v) {
+            if (typeof v === 'number' && Number.isSafeInteger(v) && Math.abs(v) >= CENTS_PER_COIN) {
+                return v;                       // already cents
+            }
+            const str = String(v == null ? 0 : v).trim();
+            const m = /^(-?)(\d*)(?:\.(\d*))?$/.exec(str);
+            if (!m) return 0;
+            const sign = m[1] === '-' ? -1 : 1;
+            const whole = m[2] || '0';
+            const frac = (m[3] || '').slice(0, 8).padEnd(8, '0');
+            return sign * (Number(whole) * CENTS_PER_COIN + Number(frac));
         }
+
+        /* Render integer cents as MBITE. Exact: no rounding, no truncation. */
+        function mbite(cents) {
+            const c = Math.trunc(Number(cents) || 0);
+            const neg = c < 0 ? '-' : '';
+            const abs = Math.abs(c);
+            const whole = Math.floor(abs / CENTS_PER_COIN);
+            const frac = String(abs % CENTS_PER_COIN).padStart(8, '0');
+            return neg + whole.toLocaleString('en-US') + '.' + frac;
+        }
+
+
+        /* Doc 18: an irreversible action is gated on typed confirmation, not a
+           tap or a checkbox. The sender must retype the exact amount, compared
+           in integer cents so 1.50 and 1.5 both pass while 15 does not. */
+        (function wireSendConfirmation() {
+            function bind() {
+                const input = document.getElementById('sendConfirmInput');
+                const btn = document.getElementById('sendConfirmBtn');
+                const target = document.getElementById('sendConfirmTarget');
+                const hint = document.getElementById('sendConfirmHint');
+                if (!input || !btn || !target) return;
+
+                function check() {
+                    const want = toCents(target.textContent);
+                    const got = toCents(input.value);
+                    const ok = input.value.trim() !== '' && got === want;
+                    btn.disabled = !ok;
+                    btn.style.opacity = ok ? '1' : '.45';
+                    btn.style.cursor = ok ? 'pointer' : 'not-allowed';
+                    btn.style.background = ok ? 'var(--success)' : 'var(--danger)';
+                    if (hint) {
+                        hint.style.color = ok ? 'var(--success)'
+                            : (input.value.trim() ? 'var(--danger)' : 'var(--text-tertiary)');
+                    }
+                    input.setAttribute('aria-invalid', ok ? 'false' : 'true');
+                }
+                input.addEventListener('input', check);
+                btn.addEventListener('click', function (e) {
+                    if (btn.disabled) { e.preventDefault(); e.stopPropagation(); }
+                });
+                check();
+            }
+            document.readyState === 'loading'
+                ? document.addEventListener('DOMContentLoaded', bind)
+                : bind();
+        })();
+
         const CustodialWallet = {
             // Generate unique wallet for each user
             generateWallet: function(userId) {
@@ -2101,7 +2060,7 @@
                         address: this.generateAddress(userId),
                         privateKey: this.generatePrivateKey(userId),
                         seedPhrase: this.generateSeedPhrase(userId),
-                        balance: 10.0000,
+                        balanceCents: 10 * CENTS_PER_COIN,
                         currency: 'MBITE',
                         walletName: 'Primary Wallet',
                         blockchainHeight: 0,
@@ -2113,7 +2072,17 @@
                     return walletData;
                 }
 
-                return JSON.parse(userWallet);
+                const parsed = JSON.parse(userWallet);
+                /* Migrate wallets written before balances moved to integer
+                   cents. Done once, in place, so no reconciliation is needed
+                   later against a value that was already lossy. */
+                if (parsed.balanceCents === undefined) {
+                    parsed.balanceCents = toCents(parsed.balance);
+                    delete parsed.balance;
+                    delete parsed.usdValue;
+                    localStorage.setItem(userWalletKey, JSON.stringify(parsed));
+                }
+                return parsed;
             },
 
             // Generate unique address using user ID
@@ -2195,8 +2164,8 @@
                     // Write only the number node: assigning textContent here would
                     // delete the nested .balance-unit span and lose the ticker.
                     balanceAmount.firstChild
-                        ? balanceAmount.firstChild.nodeValue = mbite(wallet.balance)
-                        : balanceAmount.prepend(mbite(wallet.balance));
+                        ? balanceAmount.firstChild.nodeValue = mbite(wallet.balanceCents)
+                        : balanceAmount.prepend(mbite(wallet.balanceCents));
                 }
 
                 // Update Receive Screen Address
@@ -2214,7 +2183,7 @@
                 // Update Wallet Balance Display
                 const walletBalanceEl = document.getElementById('walletBalance');
                 if (walletBalanceEl) {
-                    walletBalanceEl.textContent = mbite(wallet.balance) + ' MBITE';
+                    walletBalanceEl.textContent = mbite(wallet.balanceCents) + ' MBITE';
                 }
 
                 // Update all wallet items on Wallets Screen
@@ -2222,7 +2191,7 @@
                 walletItems.forEach((item, index) => {
                     const balanceEl = item.querySelector('.wallet-balance');
                     if (balanceEl && index === 0) { // Primary wallet
-                        balanceEl.textContent = mbite(wallet.balance) + ' MBITE';
+                        balanceEl.textContent = mbite(wallet.balanceCents) + ' MBITE';
                         const usdEl = item.querySelector('.wallet-usd');
                         if (usdEl) {
                         }
@@ -2238,7 +2207,7 @@
                 // Update wallet amount
                 const walletAmount = document.querySelector('.wallet-amount');
                 if (walletAmount) {
-                    walletAmount.textContent = mbite(wallet.balance) + ' MBITE';
+                    walletAmount.textContent = mbite(wallet.balanceCents) + ' MBITE';
                 }
 
                 // Update premium wallet card
@@ -2247,7 +2216,7 @@
                     const nameEl = premiumWalletCard.querySelector('.wallet-name-display');
                     if (nameEl) nameEl.textContent = wallet.walletName;
                     const amountEl = premiumWalletCard.querySelector('.wallet-amount');
-                    if (amountEl) amountEl.textContent = mbite(wallet.balance) + ' MBITE';
+                    if (amountEl) amountEl.textContent = mbite(wallet.balanceCents) + ' MBITE';
                 }
             }
         };
@@ -2322,6 +2291,8 @@
 
             // Update confirmation screen with actual user input
             if (screenId === 'confirmSendScreen') {
+                const sc = document.getElementById('sendConfirmInput');
+                if (sc) { sc.value = ''; sc.dispatchEvent(new Event('input')); }
                 const recipient = document.getElementById('sendRecipient')?.value || '-';
                 const amount = document.getElementById('sendAmount')?.value || '0';
                 document.getElementById('confirmRecipient').textContent = recipient;
