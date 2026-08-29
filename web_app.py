@@ -122,6 +122,11 @@ app.mining_state = {
     "total_blocks_mined": 0,  # Total blocks mined across all jobs
 }
 
+# How long a finished mining job stays readable in /api/mining/status before it
+# is dropped. Long enough that a UI polling every few seconds still sees the
+# final block count, short enough that the job dict cannot grow without bound.
+_FINISHED_JOB_RETENTION_SEC = 60
+
 # Global node instance (initialized once per app instance)
 app.node: Optional[Node] = None
 
@@ -524,6 +529,10 @@ def mining_worker(job_id: str, blocks_to_mine: int, miner_address: str) -> None:
             break
 
     job_state["is_mining"] = False
+    # Stamped so /api/mining/status can retire the job once a poller has had a
+    # chance to read its final counts.
+    job_state["finished_at"] = time.time()
+    job_state["hashrate"] = 0.0
     with app.mining_lock:
         app.mining_state["active_jobs"][job_id] = job_state
 
@@ -3405,31 +3414,51 @@ def api_mining_status():
         next_height = chain.height + 1
         block_reward = block_subsidy(next_height)
 
+        now = time.time()
         with app.mining_lock:
-            active_jobs = app.mining_state["active_jobs"].copy()
+            jobs = app.mining_state["active_jobs"]
+            # Finished jobs stay briefly so a poller can read the final counts,
+            # then go. Keeping them forever both pinned the status at "mining"
+            # and grew this dict without bound, one entry per job for the life
+            # of the process.
+            for job_id in [
+                jid for jid, j in jobs.items()
+                if not j.get("is_mining")
+                and now - j.get("finished_at", now) > _FINISHED_JOB_RETENTION_SEC
+            ]:
+                del jobs[job_id]
+            active_jobs = jobs.copy()
 
-        # Aggregate stats from all active jobs
-        total_blocks_mined = 0
-        total_blocks_target = 0
-        total_hashes_tried = 0
-        combined_hashrate = 0.0
-        is_mining = len(active_jobs) > 0
+        running = {jid: j for jid, j in active_jobs.items() if j.get("is_mining")}
+        # Only a job that is actually running means we are mining. This counted
+        # every retained job, so the endpoint reported "mining" forever after
+        # the first one and no caller could ever see it finish.
+        is_mining = len(running) > 0
 
-        for job in active_jobs.values():
-            if job.get("is_mining"):
-                total_blocks_mined += job.get("blocks_mined", 0)
-                total_blocks_target += job.get("blocks_to_mine", 0)
-                total_hashes_tried += job.get("hashes_tried", 0)
-                combined_hashrate += job.get("hashrate", 0.0)
+        # Counters cover finished jobs too: a caller that polls after the last
+        # block lands should still see how many were mined, not a sudden zero.
+        total_blocks_mined = sum(j.get("blocks_mined", 0) for j in active_jobs.values())
+        total_blocks_target = sum(j.get("blocks_to_mine", 0) for j in active_jobs.values())
+        total_hashes_tried = sum(j.get("hashes_tried", 0) for j in active_jobs.values())
+        # Hashrate is an instantaneous rate, so only running jobs contribute.
+        combined_hashrate = sum(j.get("hashrate", 0.0) for j in running.values())
 
         # Estimated seconds to the next block at combined hashrate
         eta_seconds = (difficulty / combined_hashrate) if combined_hashrate > 0 else None
 
         response = {
             "status": "mining" if is_mining else "idle",
-            "active_jobs": len(active_jobs),
+            # Explicit boolean so a caller does not have to string-compare
+            # "mining"/"idle"/"error" to answer "is it still going?".
+            "mining": is_mining,
+            "active_jobs": len(running),
+            "retained_jobs": len(active_jobs),
             "blocks_mined": total_blocks_mined,
             "total_blocks_target": total_blocks_target,
+            # mining.html reads total_blocks, so its progress bar sat at 0%.
+            # Kept as an alias rather than renamed, so existing callers of
+            # total_blocks_target keep working.
+            "total_blocks": total_blocks_target,
             "current_height": chain.height,
             "tip_hash": chain.tip,
             "bits": next_bits,
