@@ -16,6 +16,30 @@
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;">
     <title>MoonBite Wallet</title>
     <style>
+/* Doc 04: three roles. A heavy grotesque for display, a quiet sans for
+   reading, a monospace for anything that is a number.
+
+   These are the doc-04 fallback stacks, resolved locally. The faces are NOT
+   fetched from Google Fonts: /privacy promises no third-party request that
+   phones home, and a webfont CDN sends every visitor's IP to Google on every
+   page load. To ship the real Archivo Black and Inter, self-host the woff2
+   files under /static/fonts and add @font-face here — the stacks below pick
+   them up with no other change. Every figure that is
+   money, a hash, an address or a block height is monospace with tabular
+   figures — amounts that shift width as they update look untrustworthy. */
+:root{
+  --font-display:'Archivo Black','Helvetica Neue','Arial Black',sans-serif;
+  --font-body:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --font-data:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
+  font-family:var(--font-display); font-weight:400; letter-spacing:-.02em;
+}
+.num,.mono,.addr,.cert .amt,.cl .v,.tot .v,.mcell .v,.odds .v,
+.loss .v,.count .v,.zero-band .v,.total .v,.vault-v,td.n,th.n{
+  font-family:var(--font-data); font-variant-numeric:tabular-nums;
+}
+
         * {
             margin: 0;
             padding: 0;
@@ -83,7 +107,7 @@
         html, body {
             width: 100%;
             height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', system-ui, sans-serif;
+            font-family: var(--font-body);
             background: var(--bg-primary);
             color: var(--text-primary);
             overflow: hidden;
@@ -389,7 +413,10 @@
             font-size: clamp(1.9rem, 9vw, 2.7rem); font-weight: 800;
             line-height: 1; letter-spacing: -.035em; margin-top: 10px; color: #F5F2EA;
             font-variant-numeric: tabular-nums; display: flex; align-items: baseline; gap: 10px; }
-        .balance-unit { font-size: .28em; font-weight: 800; letter-spacing: .18em; color: #D9A441; }
+        /* Doc 02: the glyph sets on the baseline at cap height and takes the colour
+           of surrounding text, except the struck bars which stay Moongold. */
+        .mbite-glyph { height: .58em; width: auto; color: #F5F2EA; flex: none;
+            position: relative; top: .02em; }
         .vault-sub { font-size: .74rem; font-weight: 700; color: #8A8580; margin-top: 9px;
             letter-spacing: .04em; }
         .vault-bottom { display: flex; justify-content: space-between; align-items: flex-end;
@@ -1437,7 +1464,7 @@
                         </div>
                         <div class="vault-mid">
                             <div class="balance-label">Total balance</div>
-                            <div class="balance-amount">17.6912<span class="balance-unit">MBITE</span></div>
+                            <div class="balance-amount">17.6912<svg class="mbite-glyph" viewBox="-140 -125 280 250" aria-label="MBITE" role="img"><path d="M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 A 62.00 62.00 0 0 1 13.99 -99.02 Z" fill="currentColor"/><rect x="-127.5" y="-34" width="255" height="13" rx="6.5" fill="#D9A441"/><rect x="-127.5" y="18" width="255" height="13" rx="6.5" fill="#D9A441"/></svg></div>
                             <div class="vault-sub" id="vaultSub">Mined, not bought</div>
                         </div>
                         <div class="vault-bottom">

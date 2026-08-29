@@ -8,9 +8,33 @@
 <meta name="description" content="The MoonBite block reward halves at block {{ '{:,}'.format(consensus.halving_interval) }} and never rises again. Watch the countdown, and the staircase down to nothing.">
 <link rel="icon" type="image/svg+xml" href="/static/moonbite-logo.svg">
 <style>
+/* Doc 04: three roles. A heavy grotesque for display, a quiet sans for
+   reading, a monospace for anything that is a number.
+
+   These are the doc-04 fallback stacks, resolved locally. The faces are NOT
+   fetched from Google Fonts: /privacy promises no third-party request that
+   phones home, and a webfont CDN sends every visitor's IP to Google on every
+   page load. To ship the real Archivo Black and Inter, self-host the woff2
+   files under /static/fonts and add @font-face here — the stacks below pick
+   them up with no other change. Every figure that is
+   money, a hash, an address or a block height is monospace with tabular
+   figures — amounts that shift width as they update look untrustworthy. */
+:root{
+  --font-display:'Archivo Black','Helvetica Neue','Arial Black',sans-serif;
+  --font-body:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --font-data:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
+  font-family:var(--font-display); font-weight:400; letter-spacing:-.02em;
+}
+.num,.mono,.addr,.cert .amt,.cl .v,.tot .v,.mcell .v,.odds .v,
+.loss .v,.count .v,.zero-band .v,.total .v,.vault-v,td.n,th.n{
+  font-family:var(--font-data); font-variant-numeric:tabular-nums;
+}
+
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background:#0B0D12; color:#F5F2EA;
-  font-family:'Segoe UI',system-ui,-apple-system,'Helvetica Neue',sans-serif;
+  font-family:var(--font-body);
   overflow-x:hidden; -webkit-font-smoothing:antialiased; }
 ::selection { background:#D9A441; color:#0B0D12; }
 a,button { -webkit-tap-highlight-color:transparent; font-family:inherit; }
