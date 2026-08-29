@@ -8,9 +8,9 @@ transaction is a coinbase that mints the block subsidy plus fees for the miner
 Consensus parameters (my own numbers; see README):
   * Target block time: 10 minutes.
   * Retarget interval: 2016 blocks (handled in pow.py).
-  * Max supply: 42,000,000 coins, expressed in the smallest unit "cent" where
+  * Max supply: ~33,000,000 coins (derived in params.py), expressed in the smallest unit "cent" where
     1 coin = 100_000_000 cents (like Bitcoin's satoshi).
-  * Initial subsidy: 50 coins, halving every 210,000 blocks.
+  * Initial subsidy: 50 coins, halving every 330,000 blocks.
 """
 
 from __future__ import annotations

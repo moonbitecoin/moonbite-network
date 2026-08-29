@@ -22,7 +22,7 @@ from block import Block
 
 # Consensus timing comes from params.py — the single source of truth.
 from params import TARGET_BLOCK_TIME
-RETARGET_INTERVAL = 2016  # blocks (every 2016 blocks = ~2 weeks at 10 min/block)
+from params import RETARGET_INTERVAL  # single source of truth
 EXPECTED_TIMESPAN = TARGET_BLOCK_TIME * RETARGET_INTERVAL  # 20,160 minutes = 1,209,600 seconds
 
 # Difficulty bounds

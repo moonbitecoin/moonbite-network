@@ -236,7 +236,7 @@ select:focus-visible, [tabindex]:focus-visible {
     <div class="kicker">YOU ARE A MINER NOW</div>
     <h1>Block found.</h1>
     <div class="dcard">
-      <div class="amt num" id="dAmt">+50 MBITE</div>
+      <div class="amt num" id="dAmt">+{{ consensus.current_reward_coins|int }} MBITE</div>
       <div class="meta" id="dMeta">—</div>
       <div class="badgerow" id="dBadges"></div>
     </div>

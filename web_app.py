@@ -566,7 +566,10 @@ def _consensus_dict() -> dict:
         "block_time_sec": TARGET_BLOCK_TIME,
         "block_time_min": TARGET_BLOCK_TIME // 60,
         "blocks_per_day": 86_400 // TARGET_BLOCK_TIME,
-        "daily_emission_coins": (86_400 // TARGET_BLOCK_TIME) * (INITIAL_SUBSIDY // CENTS_PER_COIN),
+        # Current subsidy, not the genesis one: after the first halving the
+        # genesis figure would overstate daily emission by 2x.
+        "daily_emission_coins": (86_400 // TARGET_BLOCK_TIME)
+        * (block_subsidy(height + 1) / CENTS_PER_COIN),
         "max_supply_coins": MAX_SUPPLY / CENTS_PER_COIN,
         "max_supply_label": "~33,000,000",
         "halving_years": round(halving_years, 2),
@@ -4137,97 +4140,53 @@ def unlock_achievement():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/wallet/transactions", methods=["GET"])
-def get_wallet_transactions():
-    """Get transaction history for current wallet"""
-    try:
-        limit = request.args.get("limit", 20, type=int)
-        offset = request.args.get("offset", 0, type=int)
-
-        # Simulated transaction history
-        transactions = [
-            {
-                "txid": "abc123",
-                "timestamp": time.time() - 3600,
-                "type": "receive",
-                "amount": 5.5,
-                "address": "moon1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc8uk6q",
-                "status": "confirmed",
-                "blockHeight": 1234
-            },
-            {
-                "txid": "def456",
-                "timestamp": time.time() - 7200,
-                "type": "send",
-                "amount": 2.0,
-                "address": "moon1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa3nk5",
-                "status": "confirmed",
-                "blockHeight": 1233,
-                "fee": 0.001
-            }
-        ]
-
-        return jsonify({
-            "transactions": transactions[offset:offset+limit],
-            "total": len(transactions),
-            "offset": offset,
-            "limit": limit
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+# NOTE: a second GET handler for /api/wallet/transactions lived here. Flask
+# accepted it (the endpoint names differed) but Werkzeug matches the first
+# registered rule, so it was unreachable code shadowed by
+# api_wallet_transactions_list above. Removed rather than left to rot as a
+# second, divergent implementation of a live endpoint.
 
 @app.route("/api/wallet/price", methods=["GET"])
 def get_wallet_price():
-    """Get current MBITE price and market data"""
-    try:
-        currency = request.args.get("currency", "usd").lower()
+    """MBITE market price — reports that there is none.
 
-        # Demo price data (in production, fetch from CoinGecko)
-        prices = {
-            "usd": 0.0234,
-            "eur": 0.0215,
-            "gbp": 0.0185,
-            "jpy": 3.42
-        }
+    This endpoint previously returned a hardcoded $0.0234 with a $327m market
+    cap, while /api/price/mbite simultaneously returned $45.67 with a $9.13bn
+    cap. Two live endpoints inventing different prices, three orders of
+    magnitude apart, for a coin that is not listed anywhere. Both now defer to
+    price_feed, which answers honestly.
+    """
+    data = price_feed.get_price()
+    return jsonify({
+        "listed": data["listed"],
+        "price": data["price_usd"],          # None while unlisted
+        "currency": request.args.get("currency", "usd").lower(),
+        "change24h": data["change_24h"],
+        "marketCap": data["market_cap"],
+        "volume24h": data["volume_24h"],
+        "message": data.get("message"),
+        "timestamp": data["timestamp"],
+    })
 
-        return jsonify({
-            "price": prices.get(currency, 0.0234),
-            "currency": currency,
-            "change24h": 2.34,
-            "change7d": -1.5,
-            "marketCap": 327340000,
-            "volume24h": 1234567,
-            "timestamp": time.time()
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/wallet/price-history", methods=["GET"])
-def get_price_history():
-    """Get historical price data for charts"""
-    try:
-        days = request.args.get("days", 30, type=int)
+def get_wallet_price_history():
+    """Historical prices — empty, because none exist.
 
-        # Generate demo history
-        history = []
-        price = 0.02
-        now = time.time()
+    The previous implementation synthesized a series from hash(i), producing a
+    chart indistinguishable from real market data for an asset that has never
+    traded.
+    """
+    days = request.args.get("days", 30, type=int)
+    data = price_feed.get_price_history(hours=max(1, min(days, 365)) * 24)
+    return jsonify({
+        "listed": data["listed"],
+        "history": data["points"],
+        "currency": "usd",
+        "days": days,
+        "message": data["message"],
+    })
 
-        for i in range(days, 0, -1):
-            price += (hash(i) % 5 - 2) * 0.0001
-            price = max(0.01, min(0.05, price))
-            history.append({
-                "date": now - (i * 86400),
-                "price": round(price, 4)
-            })
-
-        return jsonify({
-            "history": history,
-            "currency": "usd",
-            "days": days
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/hardware-wallet/detect", methods=["GET"])
 def detect_hardware_wallets():

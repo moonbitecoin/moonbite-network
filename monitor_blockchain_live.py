@@ -186,7 +186,8 @@ class BlockchainMonitor:
 
         subsidy_per_block = 50
         blocks_mined = height
-        total_supply_cap = 20_999_999.976900  # ~21 million MBITE
+        from params import MAX_SUPPLY, CENTS_PER_COIN
+    total_supply_cap = MAX_SUPPLY / CENTS_PER_COIN  # derived, never hardcoded
 
         print(f"  Block subsidy:       {subsidy_per_block:>10.1f} MBITE per block")
         print(f"  Mined supply:        {coins:>10.1f} / {total_supply_cap:.1f} ({100*coins/total_supply_cap:.2f}%)")
