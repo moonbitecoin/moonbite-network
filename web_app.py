@@ -919,11 +919,25 @@ def wallet_manifest():
 
 @app.route("/wallet-sw.js")
 def wallet_service_worker():
-    """Serve the service worker for offline support."""
-    import os
-    sw_path = os.path.join(os.path.dirname(__file__), "wallet-sw.js")
+    """Serve the service worker for offline support.
+
+    Served from the site root, not /static, because a worker's scope is capped
+    by the path it is served from — at /static/ it could not intercept /wallet.
+
+    This looked in the repo root and 404'd, so no new worker could ever
+    install and browsers kept running whatever version they had cached. Any
+    stale worker's caches are purged by the activate handler in wallet-sw.js
+    once a current copy finally installs.
+    """
+    sw_path = os.path.join(os.path.dirname(__file__), "static", "wallet-sw.js")
     if os.path.exists(sw_path):
-        return send_file(sw_path, mimetype="application/javascript")
+        response = send_file(sw_path, mimetype="application/javascript")
+        # Never let a proxy or the browser pin an old worker: this is the one
+        # file that must always be revalidated, or an install can never be
+        # superseded.
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Service-Worker-Allowed"] = "/"
+        return response
     return jsonify({"error": "Service worker not found"}), 404
 
 

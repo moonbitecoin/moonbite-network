@@ -488,3 +488,61 @@ class HDWallet(Wallet):
     def from_mnemonic(cls, mnemonic: str, passphrase: str = "") -> HDWallet:
         """Recover wallet from BIP39 mnemonic seed phrase."""
         return cls(mnemonic, passphrase)
+
+
+# --------------------------------------------------------------------------- #
+# Seed-phrase key derivation (shared with the browser wallet)
+# --------------------------------------------------------------------------- #
+# The wallet PWA derives its address in the browser so the user's seed phrase
+# never crosses the network. That only works if both sides agree byte-for-byte,
+# so this is the reference implementation and static/moonbite-address.js is a
+# direct port of it. tests/test_address_derivation.py runs the JS under node
+# and asserts the two produce identical addresses; change one and that test
+# fails rather than silently splitting users' funds across two address spaces.
+#
+# The scheme is deliberately not BIP32/BIP39: the user's 9-word phrase is
+# free-form (their own dice, their own generator), so there is no wordlist to
+# index against and no checksum to validate.
+SEED_DERIVATION_PREFIX = "moonbite-seed-v1:"
+
+
+def normalize_seed_phrase(phrase: str) -> str:
+    """Canonicalize a user-typed phrase so trivial typing differences agree.
+
+    Case and runs of whitespace carry no meaning in a spoken/written phrase,
+    and a user retyping their seed on a new device will not reproduce them
+    exactly. Everything else is preserved verbatim — this normalizes
+    formatting, not content.
+    """
+    return " ".join(phrase.strip().lower().split())
+
+
+def privkey_from_seed_phrase(phrase: str) -> str:
+    """Derive the private scalar (hex) from a seed phrase.
+
+    The hash is reduced mod the curve order because a raw 256-bit digest can
+    land outside [1, n-1], which is not a valid secp256k1 key.
+    """
+    normalized = normalize_seed_phrase(phrase)
+    if not normalized:
+        raise ValueError("seed phrase is empty")
+    digest = hashlib.sha256((SEED_DERIVATION_PREFIX + normalized).encode("utf-8")).digest()
+    scalar = int.from_bytes(digest, "big") % SECP256k1.order
+    if scalar == 0:  # pragma: no cover — needs a preimage of the group order
+        raise ValueError("degenerate key for this seed phrase")
+    return format(scalar, "064x")
+
+
+def derive_from_seed_phrase(phrase: str) -> dict:
+    """Full derivation: seed phrase -> private key, public key, hash, address."""
+    privkey_hex = privkey_from_seed_phrase(phrase)
+    sk = SigningKey.from_string(bytes.fromhex(privkey_hex), curve=SECP256k1)
+    # Raw X||Y, matching transaction.generate_keypair's vk.to_string().hex().
+    pubkey_hex = sk.get_verifying_key().to_string().hex()
+    pkh_hex = pubkey_hash(pubkey_hex)
+    return {
+        "private_key": privkey_hex,
+        "public_key": pubkey_hex,
+        "pubkey_hash": pkh_hex,
+        "address": address_from_pubkey_hash(pkh_hex),
+    }

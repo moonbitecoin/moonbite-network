@@ -2306,6 +2306,16 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
         </div>
     </div>
 
+    <!-- Real secp256k1 address derivation. Loaded as a module before the
+         main script so window.MoonBiteAddress is in place by the time
+         onboarding needs it. The user's seed never leaves this page. -->
+    <script type="module">
+        import { deriveFromSeedPhrase, normalizeSeedPhrase }
+            from '{{ url_for('static', filename='moonbite-address.js') }}';
+        window.MoonBiteAddress = { deriveFromSeedPhrase, normalizeSeedPhrase };
+        window.dispatchEvent(new Event('moonbite-address-ready'));
+    </script>
+
     <script>
         // Service Worker registration
         if ('serviceWorker' in navigator) {
@@ -2402,8 +2412,14 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                     // Generate new wallet
                     const walletData = {
                         userId: userId,
-                        address: this.generateAddress(userId),
-                        privateKey: this.generatePrivateKey(userId),
+                        /* Filled in by deriveAddressFromSeed() once the user
+                           supplies their seed. The previous build synthesized
+                           one from the userId here, which produced a string
+                           the chain rejected — and the same string for every
+                           user, so everyone shared one wallet. */
+                        address: null,
+                        publicKey: null,
+                        pubkeyHash: null,
                         seedPhrase: this.generateSeedPhrase(userId),
                         /* A new wallet owns nothing until the chain says it
                            does. Seeding a balance here showed every user
@@ -2434,16 +2450,43 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             },
 
             // Generate unique address using user ID
-            generateAddress: function(userId) {
-                const hash = this.simpleHash('moon' + userId);
-                const bech32Address = 'moon1' + hash.substring(0, 42);
-                return bech32Address;
+            /* Derive this wallet's real chain address from the user's seed.
+               Runs entirely in the browser — the seed is never sent anywhere.
+
+               The address is stored once, at onboarding or unlock, because
+               deriving it needs the plaintext seed and the rest of the app
+               reads the wallet synchronously. */
+            deriveAddressFromSeed: async function(seedPhrase) {
+                if (!window.MoonBiteAddress) {
+                    console.error('address derivation module not loaded');
+                    return null;
+                }
+                try {
+                    const derived =
+                        await window.MoonBiteAddress.deriveFromSeedPhrase(seedPhrase);
+                    this.updateWallet({
+                        address: derived.address,
+                        publicKey: derived.public_key,
+                        pubkeyHash: derived.pubkey_hash
+                    });
+                    return derived.address;
+                } catch (e) {
+                    console.error('could not derive address:', e);
+                    return null;
+                }
             },
 
-            // Generate private key using user ID
-            generatePrivateKey: function(userId) {
-                const hash = this.simpleHash('key' + userId);
-                return '0x' + hash.substring(0, 64);
+            /* Older installs hold the placeholder address that the previous
+               build handed to every user identically. Replace it the moment
+               we have the seed in hand. */
+            ensureRealAddress: async function(seedPhrase) {
+                const wallet = this.getWallet();
+                if (wallet && wallet.address &&
+                    wallet.address.startsWith('moon1') &&
+                    wallet.pubkeyHash) {
+                    return wallet.address;
+                }
+                return this.deriveAddressFromSeed(seedPhrase);
             },
 
             // User-provided seed phrase (no auto-generation)
@@ -2531,6 +2574,8 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                not "your funds are gone". */
             refreshBalance: async function() {
                 const wallet = this.getWallet();
+                // No address until the user's seed has been supplied; there is
+                // nothing to ask the chain about yet.
                 if (!wallet || !wallet.address) return null;
                 try {
                     const res = await fetch(
@@ -2576,7 +2621,9 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 // Update Receive Screen Address
                 const receiveAddress = document.getElementById('receiveAddress');
                 if (receiveAddress) {
-                    receiveAddress.textContent = wallet.address;
+                    // Reads 'Unlock…' rather than 'null' before derivation.
+                    receiveAddress.textContent =
+                        wallet.address || 'Unlock your wallet to reveal your address';
                 }
 
                 // Update Blockchain Height
@@ -2637,7 +2684,8 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                         // Populate empty state address
                         const emptyAddrDisplay = document.getElementById('emptyAddrDisplay');
                         if (emptyAddrDisplay) {
-                            emptyAddrDisplay.textContent = wallet.address;
+                            emptyAddrDisplay.textContent =
+                                wallet.address || 'Unlock your wallet to reveal your address';
                         }
                     } else {
                         emptyStateCard.style.display = 'none';
@@ -2678,10 +2726,15 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                     currentScreen = 'pinVerifyScreen';
                 }
             } else {
-                // First time user - show PIN setup screen
-                const pinScreen = document.getElementById('pinSetupScreen');
-                if (pinScreen) {
-                    pinScreen.classList.add('active');
+                /* First-time user: the seed comes first, then the PIN that
+                   encrypts it. Starting at the PIN screen dead-ended, because
+                   saveSetupPINAndContinue() reads the seed that only the seed
+                   screen writes, so a new user hit "Seed phrase not found" and
+                   never got an address at all. */
+                const seedScreen = document.getElementById('seedPhraseScreen');
+                if (seedScreen) {
+                    seedScreen.classList.add('active');
+                    currentScreen = 'seedPhraseScreen';
                 }
             }
 
@@ -3098,6 +3151,13 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             localStorage.setItem('moonbite_pin', pin);
             localStorage.setItem('moonbite_seed_encrypted', encryptedSeed);
             localStorage.setItem('moonbite_onboarding_complete', 'true');
+
+            /* Derive the real chain address now, while the plaintext seed is
+               still in hand — afterwards it exists only PIN-encrypted. Then
+               ask the chain what that address holds. */
+            CustodialWallet.deriveAddressFromSeed(seedPhrase)
+                .then(() => CustodialWallet.refreshBalance());
+
             sessionStorage.removeItem('pendingSeedPhrase');
 
             // Show success feedback
@@ -3350,6 +3410,12 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             // Update stored PIN and encrypted seed
             localStorage.setItem('moonbite_pin', newPin);
             localStorage.setItem('moonbite_seed_encrypted', encryptedSeed);
+
+            /* Recovering on a new device: derive the address from the seed the
+               user just proved they hold, so their existing funds appear. */
+            CustodialWallet.deriveAddressFromSeed(recoveredSeed)
+                .then(() => CustodialWallet.refreshBalance());
+
             sessionStorage.removeItem('recoverySeedPhrase');
 
             // Show success
@@ -3376,7 +3442,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                     <div class="wallet-name">${wallet.walletName}</div>
                     <div class="wallet-balance">${mbite(wallet.balanceCents)} MBITE</div>
                     <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
-                        ${wallet.address}
+                        ${wallet.address || 'Unlock your wallet to reveal your address'}
                     </div>
                 </div>
                 <button class="btn btn-secondary" onclick="showScreen('dashboardScreen')" style="width: 100%; margin-top: var(--spacing-lg);">View Details →</button>
@@ -3403,6 +3469,19 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             if (enteredPIN === storedPIN) {
                 // PIN is correct - show dashboard
                 document.getElementById('pinVerifyError').style.display = 'none';
+
+                /* Unlock is the only moment the plaintext seed is available on
+                   a returning visit, so it is where a wallet still carrying
+                   the old placeholder address gets its real one. */
+                const encryptedSeed = localStorage.getItem('moonbite_seed_encrypted');
+                if (encryptedSeed) {
+                    const seed = CustodialWallet.decryptWithPIN(encryptedSeed, enteredPIN);
+                    if (seed) {
+                        CustodialWallet.ensureRealAddress(seed)
+                            .then(() => CustodialWallet.refreshBalance());
+                    }
+                }
+
                 showScreen('dashboardScreen');
                 setActiveNav(document.querySelectorAll('.nav-item')[0]);
             } else {
