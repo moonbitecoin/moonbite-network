@@ -41,6 +41,7 @@ from flask import (
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 import price_feed
+import storage
 import wall
 import wallet_history
 
@@ -53,12 +54,21 @@ from wallet import (HDWallet, address_from_pubkey_hash, is_valid_address,
 # Pragmatic email validation for the listing-notify capture.
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
-# Optional durable block store. When MOONBITE_CHAIN_DB points at a path, the demo
-# node persists every mined block and replays them on startup so the chain
-# survives restarts (e.g. a droplet redeploy). Unset (the default, and in tests)
-# keeps the node purely in-memory. Persistence never changes consensus: reload
-# replays each block through full validation.
+# Durable block store. The node persists every mined block and replays them on
+# startup, so the chain survives a restart or redeploy. Persistence never
+# changes consensus: reload replays each block through full validation.
+#
+# On a host with a volume this defaults on, because the alternative is a coin
+# whose entire history is deleted by its next deploy — every block, every
+# balance, back to height 0. Without a volume it stays off, so local runs and
+# tests still get a clean in-memory chain unless MOONBITE_CHAIN_DB says
+# otherwise.
 _CHAIN_DB = os.environ.get("MOONBITE_CHAIN_DB", "").strip() or None
+if _CHAIN_DB is None and storage.is_persistent():
+    _CHAIN_DB = storage.data_path("chain.db")
+elif _CHAIN_DB is not None:
+    # Honour an explicit path, but make sure its directory exists first.
+    _CHAIN_DB = storage.data_path(_CHAIN_DB, "MOONBITE_CHAIN_DB")
 _chain_store: Optional["BlockStore"] = None
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
