@@ -2,5 +2,18 @@ flask>=2.0.0
 werkzeug>=2.0.0
 jinja2>=3.0.0
 ecdsa>=0.19
-pytest>=8
 qrcode>=7.4
+
+# BIP39 seed phrases. wallet.py imports this at module scope and web_app.py
+# imports wallet, so a deploy without it dies on ModuleNotFoundError before
+# serving a single request.
+mnemonic>=0.21
+
+# Password hashing. wallet_history.py imports it lazily and falls back to a
+# bare SHA-256 digest when it is absent, so leaving it undeclared does not
+# crash anything — it quietly downgrades password hashing in production,
+# which is worse than crashing.
+argon2-cffi>=23.1.0
+
+# Test-only, kept out of the runtime install path.
+pytest>=8
