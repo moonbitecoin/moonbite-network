@@ -255,6 +255,12 @@ select:focus-visible, [tabindex]:focus-visible {
   var baseBlocks = 0, mining = false;
 
   function $(id){ return document.getElementById(id); }
+function shortAddr(a){
+    /* Doc 18: first and last six characters are always visible, so a miner can
+       verify an address by eye. Never shorten past that. */
+    if (!a) return '';
+    return a.length > 14 ? a.slice(0,6) + '…' + a.slice(-6) : a;
+  }
   function fmt(n){ return Math.round(n).toLocaleString('en-US'); }
   /* Doc 11: block heights are never thousands-separated — only amounts are. */
   function ht(n){ return String(Math.round(n||0)); }
@@ -414,7 +420,7 @@ select:focus-visible, [tabindex]:focus-visible {
     var reward = CONS.reward * delta;
     $('dAmt').textContent = '+' + reward + ' MBITE';
     $('dMeta').textContent = 'Block #' + ht(height) + ' · paid to ' +
-      (addr.length>18 ? addr.slice(0,10)+'…'+addr.slice(-6) : addr);
+      shortAddr(addr);
     if(window.MoonBiteBadges){
       try { MoonBiteBadges.recordBlocks(delta, height, addr); } catch(e){}
       try {

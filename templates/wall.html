@@ -239,7 +239,10 @@ select:focus-visible, [tabindex]:focus-visible {
     if(!myAddr) myAddr=localStorage.getItem('mb_start_address');
   } catch(e){}
 
-  function short(a){ return a && a.length>18 ? a.slice(0,10)+'…'+a.slice(-6) : (a||''); }
+  function short(a){
+    /* Doc 18: first and last six always visible. */
+    return a && a.length > 14 ? a.slice(0,6)+'…'+a.slice(-6) : (a||'');
+  }
   function when(ts){
     var d=new Date((ts||0)*1000);
     return d.toUTCString().slice(5,16);

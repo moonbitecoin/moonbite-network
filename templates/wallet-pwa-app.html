@@ -385,7 +385,8 @@
         .vault-mid { margin: 4px 0; }
         .balance-label { font-size: .56rem; letter-spacing: .24em; text-transform: uppercase;
             font-weight: 800; color: #8A8580; }
-        .balance-amount { font-size: clamp(2.5rem, 12.5vw, 3.5rem); font-weight: 800;
+        .balance-amount { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: clamp(1.9rem, 9vw, 2.7rem); font-weight: 800;
             line-height: 1; letter-spacing: -.035em; margin-top: 10px; color: #F5F2EA;
             font-variant-numeric: tabular-nums; display: flex; align-items: baseline; gap: 10px; }
         .balance-unit { font-size: .28em; font-weight: 800; letter-spacing: .18em; color: #D9A441; }
@@ -1154,7 +1155,7 @@
                             <span style="font-size: 20px;">⚠️</span>
                             <div>
                                 <div style="color: var(--fire-orange); font-weight: 600; margin-bottom: var(--spacing-sm);">Critical Information</div>
-                                <div style="color: var(--text-secondary); font-size: 12px;">Anyone with this phrase can access your funds. Never share it or take screenshots.</div>
+                                <div style="color: var(--text-secondary); font-size: 12px;">Anyone with this phrase can access your funds. Write it down on paper. Never screenshot it, never store it in the cloud, and never type it into any site.</div>
                             </div>
                         </div>
                     </div>
@@ -1191,7 +1192,9 @@
                 <div class="screen-content">
                     <div class="form-group">
                         <label class="form-label">Seed Phrase</label>
-                        <textarea class="form-input" placeholder="mineral swift option stale harbor pearl space bench payment bomb hail motes" style="height: 100px; resize: none;"></textarea>
+                        <textarea class="form-input" placeholder="mineral swift option stale harbor pearl space bench payment bomb hail motes" style="height: 100px; resize: none;"
+                              autocomplete="off" autocorrect="off" autocapitalize="off"
+                              spellcheck="false" data-lpignore="true" data-1p-ignore></textarea>
                         <div style="color: var(--text-secondary); font-size: 12px; margin-top: var(--spacing-sm);">Enter your 12 or 24-word seed phrase</div>
                     </div>
 
@@ -1235,7 +1238,7 @@
                     <div class="form-group">
                         <label class="form-label">New Password</label>
                         <div style="position: relative;">
-                            <input type="password" class="form-input" placeholder="Password" id="passwordInput" onchange="updatePasswordStrength()">
+                            <input type="password" autocomplete="off" data-lpignore="true" data-1p-ignore class="form-input" placeholder="Password" id="passwordInput" onchange="updatePasswordStrength()">
                             <button style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;" onclick="togglePasswordVisibility('passwordInput')">👁️</button>
                         </div>
                         <div style="color: var(--text-secondary); font-size: 12px; margin-top: var(--spacing-sm);">Must be at least 8 characters</div>
@@ -1244,7 +1247,7 @@
                     <div class="form-group">
                         <label class="form-label">Confirm New Password</label>
                         <div style="position: relative;">
-                            <input type="password" class="form-input" placeholder="Password" id="confirmPasswordInput">
+                            <input type="password" autocomplete="off" data-lpignore="true" data-1p-ignore class="form-input" placeholder="Password" id="confirmPasswordInput">
                             <button style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px;" onclick="togglePasswordVisibility('confirmPasswordInput')">👁️</button>
                         </div>
                     </div>
@@ -1823,12 +1826,12 @@
                 <div class="screen-content">
                     <div class="form-group">
                         <label class="form-label">Password</label>
-                        <input type="password" class="form-input" placeholder="Enter password">
+                        <input type="password" autocomplete="off" data-lpignore="true" data-1p-ignore class="form-input" placeholder="Enter password">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Confirm Password</label>
-                        <input type="password" class="form-input" placeholder="Confirm password">
+                        <input type="password" autocomplete="off" data-lpignore="true" data-1p-ignore class="form-input" placeholder="Confirm password">
                     </div>
 
                     <div class="card">
@@ -2074,6 +2077,17 @@
         // ============================================
         // CUSTODIAL WALLET SYSTEM - INDIVIDUAL WALLETS
         // ============================================
+
+        /* Doc 18: never truncate an amount, never round a balance down for
+           display. Doc 11: 8 decimal places in technical contexts. A wallet
+           balance is technical, so it is rendered at full precision — toFixed
+           would round and could understate what a miner actually holds. */
+        function mbite(v) {
+            const cents = Math.round((Number(v) || 0) * 1e8);
+            const whole = Math.floor(cents / 1e8);
+            const frac = String(cents % 1e8).padStart(8, '0');
+            return whole.toLocaleString('en-US') + '.' + frac;
+        }
         const CustodialWallet = {
             // Generate unique wallet for each user
             generateWallet: function(userId) {
@@ -2181,8 +2195,8 @@
                     // Write only the number node: assigning textContent here would
                     // delete the nested .balance-unit span and lose the ticker.
                     balanceAmount.firstChild
-                        ? balanceAmount.firstChild.nodeValue = wallet.balance.toFixed(4)
-                        : balanceAmount.prepend(wallet.balance.toFixed(4));
+                        ? balanceAmount.firstChild.nodeValue = mbite(wallet.balance)
+                        : balanceAmount.prepend(mbite(wallet.balance));
                 }
 
                 // Update Receive Screen Address
@@ -2200,7 +2214,7 @@
                 // Update Wallet Balance Display
                 const walletBalanceEl = document.getElementById('walletBalance');
                 if (walletBalanceEl) {
-                    walletBalanceEl.textContent = wallet.balance.toFixed(4) + ' MBITE';
+                    walletBalanceEl.textContent = mbite(wallet.balance) + ' MBITE';
                 }
 
                 // Update all wallet items on Wallets Screen
@@ -2208,7 +2222,7 @@
                 walletItems.forEach((item, index) => {
                     const balanceEl = item.querySelector('.wallet-balance');
                     if (balanceEl && index === 0) { // Primary wallet
-                        balanceEl.textContent = wallet.balance.toFixed(4) + ' MBITE';
+                        balanceEl.textContent = mbite(wallet.balance) + ' MBITE';
                         const usdEl = item.querySelector('.wallet-usd');
                         if (usdEl) {
                         }
@@ -2224,7 +2238,7 @@
                 // Update wallet amount
                 const walletAmount = document.querySelector('.wallet-amount');
                 if (walletAmount) {
-                    walletAmount.textContent = wallet.balance.toFixed(4) + ' MBITE';
+                    walletAmount.textContent = mbite(wallet.balance) + ' MBITE';
                 }
 
                 // Update premium wallet card
@@ -2233,7 +2247,7 @@
                     const nameEl = premiumWalletCard.querySelector('.wallet-name-display');
                     if (nameEl) nameEl.textContent = wallet.walletName;
                     const amountEl = premiumWalletCard.querySelector('.wallet-amount');
-                    if (amountEl) amountEl.textContent = wallet.balance.toFixed(4) + ' MBITE';
+                    if (amountEl) amountEl.textContent = mbite(wallet.balance) + ' MBITE';
                 }
             }
         };

@@ -135,8 +135,9 @@
 
   /* ------------------------------------------------- first-block ceremony */
   function celebrateFirstBlock(p, address, freshBadges) {
-    var short = address.length > 18
-      ? address.slice(0, 10) + '…' + address.slice(-6) : address;
+    /* Doc 18: first and last six always visible. */
+    var short = address.length > 14
+      ? address.slice(0, 6) + '…' + address.slice(-6) : address;
     var dateStr = new Date(p.firstDate).toUTCString().slice(5, 16);
 
     var ov = document.createElement('div');
