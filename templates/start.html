@@ -271,7 +271,7 @@ select:focus-visible, [tabindex]:focus-visible {
     reward: {{ consensus.current_reward_coins }},
     blockMin: {{ consensus.block_time_min }}
   };
-  var addr = null, poller = null, ticker = null, started = 0, busy = false;
+  var addr = null, poller = null, ticker = null, started = 0, busy = false, baseHeight = null;
   /* A freshly generated address has provably mined nothing, so its baseline is
      zero. Sampling it on the first poll would race a fast node that already
      found the block and swallow the ceremony. */
@@ -332,7 +332,11 @@ function shortAddr(a){
   })();
 
   /* ------------------------------------------------- the hunting mark */
-  var hunt=$('hunt'), hg=hunt.getContext('2d'), ht=0;
+  /* Renamed from ht: it shadowed the ht() height formatter declared above,
+     so by the time the miner polled, ht was a number and ht(height) threw —
+     which aborted the poll handler before it could ever detect a found
+     block, leaving the page hunting forever. */
+  var hunt=$('hunt'), hg=hunt.getContext('2d'), huntT=0;
   if (!CanvasRenderingContext2D.prototype.roundRect) {
     CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
       r=Math.min(r,w/2,h/2); this.moveTo(x+r,y);
@@ -340,13 +344,13 @@ function shortAddr(a){
       this.arcTo(x,y+h,x,y,r); this.arcTo(x,y,x+w,y,r); this.closePath(); return this; };
   }
   (function drawHunt(){
-    ht += reduced?0:.03;
+    huntT += reduced?0:.03;
     var S=hunt.clientWidth;
     if(S>0 && hunt.width!==S*DPR){ hunt.width=S*DPR; hunt.height=S*DPR; }
     hg.setTransform(DPR,0,0,DPR,0,0); hg.clearRect(0,0,S,S);
     var c=S/2, r=S*.29;
     /* searching sweep — a radar, not a progress bar: it never fills */
-    var sweepA = ht % 6.2832;
+    var sweepA = huntT % 6.2832;
     var grad = hg.createConicGradient ? null : null;
     hg.save();
     hg.strokeStyle='rgba(217,164,65,.75)'; hg.lineWidth=Math.max(2,S*.014); hg.lineCap='round';
@@ -355,7 +359,7 @@ function shortAddr(a){
     hg.beginPath(); hg.arc(c,c,S*.44,0,6.2832); hg.stroke();
     hg.restore();
     /* glow pulse */
-    var pulse = .5+.5*Math.sin(ht*1.6);
+    var pulse = .5+.5*Math.sin(huntT*1.6);
     var gr=hg.createRadialGradient(c,c,r*.5,c,c,r*1.9);
     gr.addColorStop(0,'rgba(217,164,65,'+(.10+.10*pulse)+')');
     gr.addColorStop(1,'rgba(217,164,65,0)');
@@ -419,21 +423,51 @@ function shortAddr(a){
     fetch('/api/mining/status?include=leaderboard').then(function(r){return r.json();})
       .then(function(d){
         busy=false;
-        if(d.status==='error') return;
-        /* Only values the node can vouch for right now. hashes_tried and
-           hashrate are written only AFTER a block lands, so showing them
-           mid-search would sit frozen at 0 and read as broken. */
-        if(d.difficulty){
-          $('mDiff').textContent = fmt(d.difficulty);
-          $('oOdds').textContent = fmt(d.difficulty*4294967296);
-        }
-        $('mHeight').textContent = ht(d.current_height);
-        $('mReward').textContent = (d.next_block_reward_coins||CONS.reward);
+        if(!d || d.status==='error') return;
 
-        var mine=myBlocks(d);
+        /* Each field is written independently. A single throw here used to
+           abort the whole handler before the completion check ever ran, and
+           the bare catch below hid it — the page then hunted forever while the
+           node had already mined the block. */
+        try {
+          if(d.difficulty){
+            $('mDiff').textContent = fmt(d.difficulty);
+            $('oOdds').textContent = fmt(d.difficulty*4294967296);
+          }
+          if(d.current_height!=null) $('mHeight').textContent = ht(d.current_height);
+          $('mReward').textContent = (d.next_block_reward_coins||CONS.reward);
+        } catch(e){ if(window.console) console.warn('stat render failed', e); }
+
+        var mine = 0;
+        try { mine = myBlocks(d); } catch(e){ mine = 0; }
         if(mine>baseBlocks){ finish(mine-baseBlocks, d.current_height); return; }
-        if(d.status!=='mining') stop(false);
-      }).catch(function(){ busy=false; });
+
+        /* The leaderboard is the primary signal but needs the coinbase
+           indexed, so it can lag behind the block. Only this address's own
+           balance is checked as a backstop — a global signal like the chain
+           height or the node's blocks_mined would credit this miner for
+           somebody else's block. */
+        if(d.status!=='mining' && !d.mining){
+          confirmEarned(d.current_height);
+        }
+      }).catch(function(e){
+        busy=false;
+        if(window.console) console.warn('mining poll failed', e);
+      });
+  }
+
+  /* The job has stopped. Decide between "found one" and "nothing yet" by
+     asking what this address actually holds, rather than trusting a signal
+     that could belong to another miner. */
+  function confirmEarned(height){
+    if(!addr){ stop(false); return; }
+    fetch('/api/address/'+encodeURIComponent(addr)+'/balance')
+      .then(function(r){ return r.json(); })
+      .then(function(b){
+        if(b && b.status==='success' && (b.balance_units||0) > 0){ finish(1, height); }
+        else { stop(false); }
+      })
+      .catch(function(){ stop(false); });
   }
 
   function finish(delta, height){
@@ -476,7 +510,7 @@ function shortAddr(a){
       body:JSON.stringify({blocks:1,address:addr})})
       .then(function(r){return r.json();}).then(function(d){
         if(d.status!=='mining') throw new Error(d.message||'start failed');
-        mining=true; started=Date.now(); baseBlocks=0;
+        mining=true; started=Date.now(); baseBlocks=0; baseHeight=null;
         show('sMining'); poll();
         poller=setInterval(poll,2000);
         /* elapsed ticks locally every second — the one number measured here */
