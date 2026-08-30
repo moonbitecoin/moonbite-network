@@ -289,11 +289,16 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             background: rgba(26, 77, 122, 0.15);
             border-top: 1px solid var(--border-color);
             backdrop-filter: blur(10px);
-            display: flex;
+            /* Hidden by default so it never shows on the seed/PIN onboarding
+               screens, where it let a visitor tap straight into the wallet
+               before setting anything up. showScreen() reveals it only on the
+               signed-in app screens. */
+            display: none;
             justify-content: space-around;
             padding: var(--spacing-sm) 0;
             z-index: 100;
         }
+        .bottom-nav.show { display: flex; }
 
         .nav-item {
             flex: 1;
@@ -2167,31 +2172,15 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 </div>
                 <div class="screen-content">
                     <div class="form-group">
-                        <input type="text" class="form-input" placeholder="Search contacts...">
+                        <input type="text" class="form-input" id="contactSearch" placeholder="Search contacts..." oninput="renderContacts(this.value)">
                     </div>
 
-                    <div class="contact-item">
-                        <div class="contact-avatar">JW</div>
-                        <div class="contact-info">
-                            <div class="contact-name">Jenny Wilson</div>
-                            <div class="contact-address">moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k</div>
-                        </div>
-                    </div>
-
-                    <div class="contact-item">
-                        <div class="contact-avatar" style="background:#232833; color:#D9A441;">ET</div>
-                        <div class="contact-info">
-                            <div class="contact-name">Edgar Torrey</div>
-                            <div class="contact-address">M2hX7kL9Qp5Jm3Zw8Yd1Fs4Xn6Rc2Vt</div>
-                        </div>
-                    </div>
-
-                    <div class="contact-item">
-                        <div class="contact-avatar" style="background: linear-gradient(135deg, #B8863B, var(--fire-orange));">EB</div>
-                        <div class="contact-info">
-                            <div class="contact-name">Evelina Burke</div>
-                            <div class="contact-address">moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k</div>
-                        </div>
+                    <!-- Populated from the user's own saved contacts. It used to
+                         ship three hardcoded demo entries, so every brand-new
+                         wallet looked like it already had an address book. -->
+                    <div id="contactsList"></div>
+                    <div id="contactsEmpty" style="text-align:center; padding: var(--spacing-lg) 0; color: var(--text-secondary); font-size: 13px; display:none;">
+                        No contacts yet. Add an address you send to often.
                     </div>
 
                     <button class="btn btn-primary" onclick="showScreen('addContactScreen')">Add Contact</button>
@@ -2288,15 +2277,15 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 <div class="screen-content">
                     <div class="form-group">
                         <label class="form-label">Contact Name</label>
-                        <input type="text" class="form-input" placeholder="e.g., John">
+                        <input type="text" class="form-input" id="newContactName" placeholder="e.g., John">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Wallet Address</label>
-                        <input type="text" class="form-input" placeholder="Enter MBITE address">
+                        <input type="text" class="form-input" id="newContactAddress" placeholder="Enter MBITE address">
                     </div>
 
-                    <button class="btn btn-primary">Save Contact</button>
+                    <button class="btn btn-primary" onclick="saveContact()">Save Contact</button>
                 </div>
             </div>
 
@@ -2545,7 +2534,23 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                literal '0' for any seed shorter than the padding — every PIN
                decrypted, and so did no PIN at all. Real key derivation and
                authenticated encryption now live in moonbite-crypto.js. */
+            /* The crypto module is a deferred ES module that async-imports the
+               vendor file, so on a fresh load it can still be resolving when a
+               returning user types their PIN. Waiting for it here is what keeps
+               unlock from throwing on window.MoonBiteCrypto being undefined and
+               leaving the PIN screen frozen with no feedback. */
+            _whenCryptoReady: async function(timeoutMs) {
+                const deadline = Date.now() + (timeoutMs || 5000);
+                while (!window.MoonBiteCrypto || !window.MoonBiteCrypto.readSeed) {
+                    if (Date.now() > deadline) {
+                        throw new Error('encryption module failed to load');
+                    }
+                    await new Promise(r => setTimeout(r, 50));
+                }
+            },
+
             encryptSeedWithPIN: async function(seedPhrase, pin) {
+                await this._whenCryptoReady();
                 return window.MoonBiteCrypto.encryptSeed(seedPhrase, pin);
             },
 
@@ -2556,6 +2561,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                without storing it. */
             decryptSeedWithPIN: async function(stored, pin) {
                 if (!stored) return null;
+                await this._whenCryptoReady();
                 const { seed, migrated } =
                     await window.MoonBiteCrypto.readSeed(stored, pin);
                 if (seed && migrated) {
@@ -2885,6 +2891,18 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 screen.classList.remove('active');
             });
 
+            // Show the bottom nav only on signed-in app screens, never during
+            // seed/PIN onboarding or recovery.
+            const APP_SCREENS = new Set([
+                'dashboardScreen', 'walletsScreen', 'contactsScreen',
+                'securityScreen', 'sendScreen', 'receiveScreen',
+                'confirmSendScreen', 'transactionSuccessScreen',
+                'qrScannerScreen', 'addContactScreen', 'editNetworkFeeScreen',
+                'settingsScreen'
+            ]);
+            const nav = document.querySelector('.bottom-nav');
+            if (nav) nav.classList.toggle('show', APP_SCREENS.has(screenId));
+
             // Show only the new screen
             const newScreenEl = document.getElementById(screenId);
             if (newScreenEl) {
@@ -2900,6 +2918,11 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 // Populate wallets screen with user's actual wallet data
                 if (screenId === 'walletsScreen') {
                     setTimeout(populateWalletsScreen, 100);
+                }
+
+                // Render the user's own (initially empty) contact list.
+                if (screenId === 'contactsScreen') {
+                    setTimeout(() => renderContacts(), 50);
                 }
             }
         }
@@ -3459,6 +3482,71 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             location.reload();  // reloads into seed-first onboarding
         }
 
+        /* Contacts — the user's own address book, stored per wallet.
+
+           These were three hardcoded demo people baked into the HTML, so a
+           fresh wallet appeared to already have contacts. They are now real
+           and start empty. */
+        function contactsKey() {
+            return 'moonbite_contacts_' + (localStorage.getItem('moonbite_user_id') || 'anon');
+        }
+        function getContacts() {
+            try { return JSON.parse(localStorage.getItem(contactsKey()) || '[]'); }
+            catch (e) { return []; }
+        }
+        function renderContacts(filter) {
+            const list = document.getElementById('contactsList');
+            const empty = document.getElementById('contactsEmpty');
+            if (!list) return;
+            const q = (filter || '').trim().toLowerCase();
+            const items = getContacts().filter(c =>
+                !q || c.name.toLowerCase().includes(q) || c.address.toLowerCase().includes(q));
+            list.innerHTML = '';
+            if (!items.length) {
+                if (empty) empty.style.display = getContacts().length ? 'none' : 'block';
+                return;
+            }
+            if (empty) empty.style.display = 'none';
+            items.forEach(c => {
+                const initials = c.name.trim().split(/\s+/).map(w => w[0]).join('').slice(0,2).toUpperCase() || '?';
+                const row = document.createElement('div');
+                row.className = 'contact-item';
+                row.style.cursor = 'pointer';
+                row.onclick = () => {
+                    // Tapping a contact prefills the send form.
+                    const r = document.getElementById('sendRecipient');
+                    if (r) r.value = c.address;
+                    showScreen('sendScreen');
+                };
+                const av = document.createElement('div');
+                av.className = 'contact-avatar';
+                av.textContent = initials;
+                const info = document.createElement('div');
+                info.className = 'contact-info';
+                const nm = document.createElement('div');
+                nm.className = 'contact-name'; nm.textContent = c.name;
+                const ad = document.createElement('div');
+                ad.className = 'contact-address'; ad.textContent = c.address;
+                info.appendChild(nm); info.appendChild(ad);
+                row.appendChild(av); row.appendChild(info);
+                list.appendChild(row);
+            });
+        }
+        function saveContact() {
+            const name = (document.getElementById('newContactName')?.value || '').trim();
+            const address = (document.getElementById('newContactAddress')?.value || '').trim();
+            if (!name) { alert('Enter a name for this contact.'); return; }
+            if (!window.MoonBiteAddress || !window.MoonBiteAddress.isValidAddress(address)) {
+                alert('Enter a valid MBITE address.'); return;
+            }
+            const contacts = getContacts();
+            contacts.push({ name, address });
+            localStorage.setItem(contactsKey(), JSON.stringify(contacts));
+            document.getElementById('newContactName').value = '';
+            document.getElementById('newContactAddress').value = '';
+            showScreen('contactsScreen');
+        }
+
         // Copy Address Function
         function copyAddress() {
             const address = document.getElementById('receiveAddress')?.textContent || 'moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k';
@@ -3693,7 +3781,19 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                stored PIN to compare against — the previous build kept one in
                localStorage in the clear, beside the seed it guarded. */
             const encryptedSeed = localStorage.getItem('moonbite_seed_encrypted');
-            const seed = await CustodialWallet.decryptSeedWithPIN(encryptedSeed, enteredPIN);
+            let seed = null;
+            try {
+                seed = await CustodialWallet.decryptSeedWithPIN(encryptedSeed, enteredPIN);
+            } catch (e) {
+                // Never leave the screen frozen: a decrypt that throws (e.g. the
+                // crypto module failing to load) shows a clear message instead.
+                const err = document.getElementById('pinVerifyError');
+                if (err) {
+                    err.textContent = 'Could not unlock — please reload the page and try again.';
+                    err.style.display = 'block';
+                }
+                return;
+            }
 
             if (seed) {
                 document.getElementById('pinVerifyError').style.display = 'none';
