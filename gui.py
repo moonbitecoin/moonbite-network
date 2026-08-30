@@ -26,7 +26,9 @@ from PyQt6.QtCore import Qt, pyqtSignal, QObject, QThread
 from PyQt6.QtGui import QFont
 
 from node import Node
-from wallet import HDWallet
+# Wallet is used by MainWindow further down; importing only HDWallet left
+# it undefined, so the window failed to build with a NameError.
+from wallet import HDWallet, Wallet
 
 
 # Signal emitter for thread-safe GUI updates from mining threads

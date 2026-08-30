@@ -21,7 +21,9 @@ def test_subsidy_height_0_is_50(capsys):
 
 
 def test_subsidy_first_halving_is_25(capsys):
-    rc = cli.main(["subsidy", "--height", "210000"])
+    # MoonBite halves every 330,000 blocks; this asserted Bitcoin's 210,000.
+    from params import HALVING_INTERVAL
+    rc = cli.main(["subsidy", "--height", str(HALVING_INTERVAL)])
     assert rc == 0
     out = capsys.readouterr().out
     assert "25 coins" in out

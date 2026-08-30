@@ -17,17 +17,16 @@ from web_app import app
 def client():
     """Create a test client for the Flask app."""
     app.config["TESTING"] = True
-    # Reset global state between tests
+    # Reset global state between tests.
+    #
+    # This mirrored the single-job mining state that predates the concurrent
+    # job queue, so it dropped the active_jobs key the endpoints read and every
+    # mining request answered 500 on a KeyError.
+    import queue
     app.mining_state = {
-        "is_mining": False,
-        "blocks_to_mine": 0,
-        "blocks_mined": 0,
-        "current_block_height": 0,
-        "mining_address": None,
-        "mining_thread": None,
-        "hashes_tried": 0,
-        "hashrate": 0.0,
-        "started_at": 0.0,
+        "active_jobs": {},
+        "job_queue": queue.Queue(),
+        "total_blocks_mined": 0,
     }
     app.node = None
     app.generated_addresses = {}
@@ -54,7 +53,11 @@ class TestPageRendering:
         response = client.get("/wallet")
         assert response.status_code == 200
         assert b"Wallet" in response.data
-        assert b"Generate New Address" in response.data
+        # The wallet is seed-first now: there is no server-side "Generate New
+        # Address" button, because the address is derived in the browser from
+        # the user's own phrase.
+        assert b"seedPhraseScreen" in response.data
+        assert b"moonbite-address.js" in response.data
 
     def test_mining_page(self, client):
         """Test GET /mining returns mining page."""

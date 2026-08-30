@@ -49,11 +49,55 @@ _rl_lock = threading.Lock()
 _rl_hits: "defaultdict[tuple, list]" = defaultdict(list)
 
 
+# Per-client request history for the limiter below.
+_rl_lock = threading.Lock()
+_rl_hits = defaultdict(list)
+
+
+def _rl_client_id():
+    """Caller identity for rate limiting.
+
+    ProxyFix has already resolved remote_addr to what the trusted proxy saw, so
+    X-Forwarded-For is deliberately not parsed here — a client that could add
+    its own hops would otherwise rotate identities freely and never be capped.
+    """
+    return request.remote_addr or "unknown"
+
+
 def _rate_limit(max_calls, window_seconds=60):
-    """Rate limiter - DISABLED FOR BITCOIN ALGORITHM TESTING."""
+    """Cap a route at `max_calls` per rolling `window_seconds` per client.
+
+    This was a no-op that returned the function untouched, labelled "DISABLED
+    FOR BITCOIN ALGORITHM TESTING", which left the mining relay uncapped: one
+    client could pin the node's proof-of-work budget by looping on it.
+
+    CORS preflights are exempt. A browser miner sends an OPTIONS before every
+    POST, so counting them would halve the real budget and throttle a caller
+    who has not actually asked for any work yet.
+    """
     def decorator(fn):
-        # No-op: just return the function directly
-        return fn
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            if request.method == "OPTIONS":
+                return fn(*args, **kwargs)
+
+            key = (_rl_client_id(), fn.__name__)
+            now = time.time()
+            with _rl_lock:
+                hits = _rl_hits[key]
+                cutoff = now - window_seconds
+                hits[:] = [t for t in hits if t > cutoff]
+                if len(hits) >= max_calls:
+                    retry = int(window_seconds - (now - hits[0])) + 1
+                    resp = jsonify({
+                        "error": f"rate limit exceeded ({max_calls}/{window_seconds}s)",
+                        "retry_after": retry,
+                    })
+                    resp.headers["Retry-After"] = str(retry)
+                    return resp, 429
+                hits.append(now)
+            return fn(*args, **kwargs)
+        return wrapper
     return decorator
 
 
@@ -299,7 +343,21 @@ def mine():
     # may not support them. Base58 addresses still go through node RPC.
     from wallet import is_valid_address
     if address.lower().startswith(("moon1", "tmoon1", "rmoon1")):
-        # Bech32 address — validate client-side
+        # The prefix identifies the network on its own, so check for a
+        # wrong-chain address before the checksum. A tmoon1… address sent to a
+        # mainnet node is the common footgun, and "invalid MoonBite address"
+        # tells the miner nothing about what to do — this hint lived only in
+        # the base58 branch below, which those addresses never reach.
+        node_chain = None
+        try:
+            node_chain = (client.getblockchaininfo() or {}).get("chain")
+        except (RPCConnectionError, RPCError):
+            pass
+        hint = _wrong_network_hint(address, node_chain)
+        if hint:
+            return _err(hint, 400)
+
+        # Right network: now it has to be a well-formed address.
         if not is_valid_address(address):
             return _err("invalid MoonBite address", 400)
     else:

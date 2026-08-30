@@ -193,15 +193,38 @@ def _client_id() -> str:
     return request.remote_addr or "unknown"
 
 
+# Restored after being replaced by a pass-through stub in July, labelled
+# "TEMPORARILY DISABLED FOR BITCOIN ALGORITHM TESTING". It shipped that way,
+# so every rate-limited route on the live site was uncapped for a month:
+# the email capture, wallet creation, mining, the wall. Three security
+# regression tests had been failing the whole time.
 def rate_limit(max_calls: int, window_seconds: int = 60):
-    """Rate limiter - DISABLED FOR BITCOIN ALGORITHM TESTING (2026-07-31 21:12)."""
-    print(f"[DEBUG] rate_limit called with {max_calls}, {window_seconds}", flush=True)
+    """Cap a route at `max_calls` per rolling `window_seconds` per client.
+
+    A valid X-API-Key (configured via MOONBITE_API_KEYS) bypasses the cap.
+    """
     def decorator(fn):
-        print(f"[DEBUG] rate_limit.decorator called for {fn.__name__}", flush=True)
         @wraps(fn)
         def wrapper(*args, **kwargs):
-            print(f"[DEBUG] rate_limit.wrapper called for {fn.__name__}", flush=True)
-            # TEMPORARILY DISABLED - just call the function directly
+            has_valid_key = bool(_API_KEYS) and request.headers.get("X-API-Key", "") in _API_KEYS
+            if _RATE_DISABLED or has_valid_key:
+                return fn(*args, **kwargs)
+            key = (_client_id(), fn.__name__)
+            now = time.time()
+            with _rl_lock:
+                hits = _rl_hits[key]
+                cutoff = now - window_seconds
+                hits[:] = [t for t in hits if t > cutoff]
+                if len(hits) >= max_calls:
+                    retry = int(window_seconds - (now - hits[0])) + 1
+                    resp = jsonify({
+                        "status": "error",
+                        "message": f"rate limit exceeded ({max_calls}/{window_seconds}s)",
+                        "retry_after": retry,
+                    })
+                    resp.headers["Retry-After"] = str(retry)
+                    return resp, 429
+                hits.append(now)
             return fn(*args, **kwargs)
         return wrapper
     return decorator
@@ -3396,6 +3419,25 @@ def api_mining_start():
 
         # Generate unique job ID for this mining request
         job_id = str(uuid.uuid4())
+
+        # Register the job before the thread starts.
+        #
+        # The worker used to be the first thing to record it, so a caller that
+        # polled /api/mining/status right after this call could be told "idle"
+        # and conclude mining had finished before it began. Registering here
+        # means the status is accurate the moment this endpoint returns.
+        with app.mining_lock:
+            app.mining_state["active_jobs"][job_id] = {
+                "job_id": job_id,
+                "is_mining": True,
+                "blocks_to_mine": blocks_to_mine,
+                "blocks_mined": 0,
+                "hashes_tried": 0,
+                "hashrate": 0.0,
+                "started_at": time.time(),
+                "mining_address": miner_pubkey_hash,
+                "last_error": None,
+            }
 
         # Start mining in a background thread
         thread = threading.Thread(
