@@ -40,10 +40,19 @@ from flask import (
 )
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+# These were dropped when the modules were missing from the tree, which
+# left ~31 references to them raising NameError at runtime — swallowed by
+# fail-safe excepts, so merchant lookups silently returned zero and the
+# swap verifier 500'd. The merge restored the modules; restore the imports.
+import exchange
+import forum
+import merchants
 import price_feed
 import storage
+import swap_verifier
 import wall
 import wallet_history
+import worldcup
 
 from node import Node
 from store import BlockStore
