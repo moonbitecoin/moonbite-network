@@ -1735,6 +1735,26 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             <!-- Dashboard Screen -->
             <div class="screen" id="dashboardScreen">
                 <div class="screen-content dash-content">
+                    <!-- Shown only when this wallet's seed was stored by a build
+                         with the broken PIN encryption. The seed was recoverable
+                         from this device without the PIN while that build was
+                         installed, so re-encrypting it is not enough — the seed
+                         itself may already be known, and the only real remedy is
+                         to move to a fresh one. -->
+                    <div id="seedRotationWarning" style="display:none; margin-bottom: var(--spacing-md); padding: var(--spacing-md); border: 1px solid var(--danger, #C0392B); border-radius: 12px; background: rgba(192,57,67,0.08);">
+                        <div style="font-size: .62rem; letter-spacing: .18em; text-transform: uppercase; color: var(--danger, #C0392B); font-weight: 700; margin-bottom: 6px;">Security Notice</div>
+                        <div style="font-size: 13px; line-height: 1.5; color: var(--text-primary);">
+                            This wallet's recovery phrase was saved by an earlier
+                            version that stored it insecurely, so it should be
+                            treated as exposed. To stay safe, create a new wallet
+                            with a fresh phrase and move any balance to it.
+                        </div>
+                        <div style="display:flex; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
+                            <button class="btn btn-primary" style="flex:1;" onclick="beginSeedRotation()">Create New Wallet</button>
+                            <button class="btn btn-secondary" onclick="acknowledgeSeedExposure()" title="Dismiss this notice">I understand</button>
+                        </div>
+                    </div>
+
                     <div class="install-prompt" id="installPrompt">
                         <div class="install-prompt-title">Install MoonBite Wallet</div>
                         <div class="install-prompt-text">Fast, secure, offline access</div>
@@ -2642,6 +2662,15 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             syncAllScreens: function() {
                 const wallet = this.getWallet();
 
+                // Surface the exposed-seed notice on a migrated wallet, unless
+                // the holder has already acknowledged it.
+                const warn = document.getElementById('seedRotationWarning');
+                if (warn) {
+                    const exposed = localStorage.getItem('moonbite_seed_migrated') === '1'
+                        && localStorage.getItem('moonbite_seed_exposure_ack') !== '1';
+                    warn.style.display = exposed ? 'block' : 'none';
+                }
+
                 // Update Balance Card (Dashboard)
                 const balanceAmount = document.querySelector('.balance-amount');
                 if (balanceAmount) {
@@ -3388,6 +3417,46 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                     ? 'Not enough MBITE for that amount plus the network fee.'
                     : 'Could not send: ' + (e && e.message ? e.message : 'unknown error'));
             }
+        }
+
+        /* Dismiss the exposed-seed notice without rotating.
+
+           Records that the holder has seen it, so it does not nag on every
+           unlock — the risk is theirs to accept. */
+        function acknowledgeSeedExposure() {
+            localStorage.setItem('moonbite_seed_exposure_ack', '1');
+            const warn = document.getElementById('seedRotationWarning');
+            if (warn) warn.style.display = 'none';
+        }
+
+        /* Start over with a fresh recovery phrase.
+
+           Rotation on a seed-first, non-custodial wallet can only be done by
+           the holder: generate a new phrase and move any balance to its
+           address. This clears the exposed wallet from the device and returns
+           to onboarding so a new phrase can be entered. It does NOT sweep
+           funds automatically — the old phrase (which the holder generated and
+           should still hold) is what authorises that, and doing it silently
+           could strand a balance if the transaction failed. */
+        function beginSeedRotation() {
+            const ok = confirm(
+                "Rotate to a new wallet?\n\n" +
+                "If this wallet holds any MBITE, send it to your NEW address " +
+                "first — you will need your current recovery phrase to do that.\n\n" +
+                "This removes the exposed wallet from this device and starts a " +
+                "fresh setup. Continue?"
+            );
+            if (!ok) return;
+
+            const uid = localStorage.getItem('moonbite_user_id');
+            [
+                'moonbite_seed_encrypted', 'moonbite_pin',
+                'moonbite_onboarding_complete', 'moonbite_seed_migrated',
+                'moonbite_seed_exposure_ack', 'moonbite_user_id'
+            ].forEach(k => localStorage.removeItem(k));
+            if (uid) localStorage.removeItem('moonbite_wallet_' + uid);
+
+            location.reload();  // reloads into seed-first onboarding
         }
 
         // Copy Address Function
