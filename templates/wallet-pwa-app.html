@@ -1273,6 +1273,18 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
     </style>
 </head>
 <body>
+    <!-- Splash: covers the launch until the crypto modules have loaded, so the
+         PIN/seed screens are never interactive before the code that unlocks
+         them is ready. Fades out on the 'moonbite-ready' event (or a timeout
+         fallback so it can never trap the user). -->
+    <div id="splashScreen" style="position:fixed; inset:0; z-index:9999; background:#0B0D12; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; transition:opacity .4s ease;">
+        <img src="/static/moonbite-logo.svg" alt="MoonBite" style="width:88px; height:auto;" loading="eager">
+        <div style="font-size:15px; letter-spacing:.34em; text-transform:uppercase; color:#D9A441; font-weight:700;">MoonBite</div>
+        <div style="width:32px; height:32px; border:3px solid rgba(217,164,65,0.2); border-top-color:#D9A441; border-radius:50%; animation:mbSpin .8s linear infinite;"></div>
+        <div style="font-size:12px; color:#8A8580;">Securing your wallet…</div>
+    </div>
+    <style>@keyframes mbSpin { to { transform: rotate(360deg); } }</style>
+
     <div class="app-container">
         <!-- Premium Top Bar with Logo -->
         <div class="top-bar premium-header">
@@ -1394,49 +1406,49 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 </div>
             </div>
 
-            <!-- Wallet Setup Screen -->
+            <!-- Wallet Setup Screen (the new-user fork: one wallet, two ways in) -->
             <div class="screen" id="walletSetupScreen">
                 <div class="screen-header">
-                    <h1>Wallet Setup</h1>
-                    <p>Create your new Wallet or import using a seed phrase if you already have an account</p>
+                    <h1>Set Up Your Wallet</h1>
+                    <p>You have one MoonBite wallet. Create a new recovery phrase, or bring the one you already have.</p>
                 </div>
                 <div class="screen-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-lg); text-align: center;">
-                    <div style="width: 150px; height: 150px; background: linear-gradient(135deg, var(--fire-orange), var(--gold)); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 80px; box-shadow: 0 10px 40px rgba(184, 134, 59, 0.3);"></div>
-                    <div>
-                        <h3 style="color: var(--gold); margin-bottom: var(--spacing-md);">Get Started</h3>
-                        <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg);">Choose how you'd like to set up your MoonBite wallet</p>
+                    <div style="width: 96px; height: 96px; display: flex; align-items: center; justify-content: center;">
+                        <img src="/static/moonbite-logo.svg" alt="MoonBite" style="width: 96px; height: auto;">
                     </div>
-                    <button class="btn btn-primary" onclick="showScreen('createWalletScreen')" style="width: 100%; max-width: 300px;">Create a New Wallet</button>
-                    <button class="btn btn-secondary" onclick="showScreen('importSeedScreen')" style="width: 100%; max-width: 300px;">Import Using Seed Phrase</button>
+                    <div>
+                        <h3 style="color: var(--gold); margin-bottom: var(--spacing-sm);">Welcome to MoonBite</h3>
+                        <p style="color: var(--text-secondary);">Your recovery phrase is your wallet. It is created on this device and never sent anywhere.</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="createNewWallet()" style="width: 100%; max-width: 320px;">Create a New Wallet</button>
+                    <button class="btn btn-secondary" onclick="showScreen('seedPhraseScreen')" style="width: 100%; max-width: 320px;">I Already Have a Recovery Phrase</button>
                 </div>
             </div>
 
-            <!-- Create Wallet Screen -->
+            <!-- Generated Recovery Phrase — shown after "Create a New Wallet" -->
             <div class="screen" id="createWalletScreen">
                 <div class="screen-header">
-                    <h1>Create Wallet</h1>
-                    <p>Generate new wallet and seed phrase</p>
+                    <h1>Your Recovery Phrase</h1>
+                    <p>Write these 9 words down, in order, and keep them somewhere safe.</p>
                 </div>
                 <div class="screen-content">
-                    <div class="card">
-                        <div class="card-title">New Wallet Address</div>
-                        <div class="card-value" style="word-break: break-all; font-size: 14px;">MJX9vNr8Yj5Zq4Kp2Lm8Wn5Hs7Dg3Fx</div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Wallet Name</label>
-                        <input type="text" class="form-input" placeholder="e.g., My First Wallet" value="MoonBite Wallet 1">
-                    </div>
-                    <div class="card" style="background: rgba(74, 222, 128, 0.1); border-color: rgba(74, 222, 128, 0.3);">
-                        <div style="display: flex; align-items: flex-start; gap: var(--spacing-md);">
-                            <span style="font-size: 20px;"></span>
-                            <div>
-                                <div style="color: var(--success); font-weight: 600; margin-bottom: var(--spacing-sm);">Save Your Seed Phrase</div>
-                                <div style="color: var(--text-secondary); font-size: 12px;">Write down your 12-word seed phrase in a safe place. You'll need it to recover your wallet.</div>
-                            </div>
+                    <div class="card" style="background: rgba(192,57,67,0.08); border-color: var(--danger, #C0392B); margin-bottom: var(--spacing-md);">
+                        <div style="font-size:.6rem; letter-spacing:.16em; text-transform:uppercase; color:var(--danger,#C0392B); font-weight:700; margin-bottom:6px;">Critical</div>
+                        <div style="color: var(--text-secondary); font-size: 13px; line-height:1.5;">
+                            This phrase is the only way to recover your one wallet. Anyone who has it can take your funds. MoonBite cannot restore it for you — never share it, and never store it online.
                         </div>
                     </div>
-                    <button class="btn btn-primary" onclick="showScreen('seedPhraseScreen')" style="width: 100%;">View Seed Phrase →</button>
-                    <button class="btn btn-secondary" onclick="showScreen('passwordScreen')" style="width: 100%;">Skip for now</button>
+
+                    <div id="generatedPhraseDisplay" style="font-family: var(--font-data, ui-monospace, monospace); font-size: 16px; line-height: 1.9; color: var(--gold); background: rgba(217,164,65,0.06); border: 1px solid rgba(217,164,65,0.18); border-radius: 12px; padding: var(--spacing-md); word-spacing: 6px; text-align: center;"></div>
+
+                    <button class="btn btn-secondary" onclick="copyGeneratedPhrase()" style="width: 100%; margin-top: var(--spacing-md);">Copy Phrase</button>
+
+                    <label style="display:flex; align-items:center; gap:10px; margin-top: var(--spacing-lg); font-size: 13px; color: var(--text-primary); cursor:pointer;">
+                        <input type="checkbox" id="phraseBackedUp" onchange="document.getElementById('phraseContinueBtn').disabled = !this.checked" style="width:18px; height:18px; flex:none;">
+                        I have written down my recovery phrase
+                    </label>
+
+                    <button class="btn btn-primary" id="phraseContinueBtn" disabled onclick="confirmGeneratedPhrase()" style="width: 100%; margin-top: var(--spacing-md);">Continue</button>
                 </div>
             </div>
 
@@ -1865,7 +1877,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="9" r="1"/>
                                 </svg>
-                                <span>Wallets</span>
+                                <span>Wallet</span>
                             </button>
                             <button class="action-btn" onclick="showScreen('receiveScreen')">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1887,7 +1899,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             <!-- Wallets Screen -->
             <div class="screen" id="walletsScreen">
                 <div class="screen-header">
-                    <h1>My Wallets</h1>
+                    <h1>My Wallet</h1>
                     <p>Your active wallet</p>
                 </div>
                 <div class="screen-content" id="walletsContainer">
@@ -2314,9 +2326,9 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 <div class="nav-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12H3l9-9 9 9h-2"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6h6v6"/></svg></div>
                 <div>Home</div>
             </button>
-            <button class="nav-item" onclick="showScreen('walletsScreen'); setActiveNav(this)" title="Wallets">
+            <button class="nav-item" onclick="showScreen('walletsScreen'); setActiveNav(this)" title="Wallet">
                 <div class="nav-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6"/><circle cx="16" cy="14" r="1.2"/></svg></div>
-                <div>Wallets</div>
+                <div>Wallet</div>
             </button>
             <button class="nav-item" onclick="showScreen('contactsScreen'); setActiveNav(this)" title="Contacts">
                 <div class="nav-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M3 8h2M3 12h2M3 16h2"/><circle cx="12" cy="10" r="2.2"/><path d="M9 16a3 3 0 0 1 6 0"/></svg></div>
@@ -2346,7 +2358,14 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
         };
         window.MoonBiteTx = { buildSignedTransaction };
         window.MoonBiteCrypto = { encryptSeed, decryptSeed, readSeed, isNewFormat };
+
+        const { generatePhrase, wordlistSize } =
+            await import('{{ url_for('static', filename='moonbite-phrase.js') }}');
+        window.MoonBitePhrase = { generatePhrase, wordlistSize };
+
+        window.MoonBiteReady = true;
         window.dispatchEvent(new Event('moonbite-address-ready'));
+        window.dispatchEvent(new Event('moonbite-ready'));
     </script>
 
     <script>
@@ -2807,15 +2826,14 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                     currentScreen = 'pinVerifyScreen';
                 }
             } else {
-                /* First-time user: the seed comes first, then the PIN that
-                   encrypts it. Starting at the PIN screen dead-ended, because
-                   saveSetupPINAndContinue() reads the seed that only the seed
-                   screen writes, so a new user hit "Seed phrase not found" and
-                   never got an address at all. */
-                const seedScreen = document.getElementById('seedPhraseScreen');
-                if (seedScreen) {
-                    seedScreen.classList.add('active');
-                    currentScreen = 'seedPhraseScreen';
+                /* First-time user: show the setup fork so they choose between
+                   creating a new wallet and importing an existing phrase,
+                   rather than being dropped straight onto seed entry with no
+                   way to get a phrase if they do not have one. */
+                const setup = document.getElementById('walletSetupScreen');
+                if (setup) {
+                    setup.classList.add('active');
+                    currentScreen = 'walletSetupScreen';
                 }
             }
 
@@ -2942,7 +2960,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
         function updateTopBar(screenId) {
             const titles = {
                 'dashboardScreen': 'MoonBite',
-                'walletsScreen': 'My Wallets',
+                'walletsScreen': 'My Wallet',
                 'sendScreen': 'Send MBITE',
                 'receiveScreen': 'Receive MBITE',
                 'securityScreen': 'Security',
@@ -3676,6 +3694,58 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             sessionStorage.setItem('pendingSeedPhrase', seedInput);
 
             // Move to PIN setup
+            showScreen('passwordScreen');
+        }
+
+        /* Hide the splash once the crypto modules are loaded. A timeout
+           fallback guarantees it can never trap the user if a module stalls. */
+        (function initSplash() {
+            const splash = document.getElementById('splashScreen');
+            if (!splash) return;
+            const hide = () => {
+                splash.style.opacity = '0';
+                setTimeout(() => { splash.style.display = 'none'; }, 450);
+            };
+            if (window.MoonBiteReady) { hide(); return; }
+            window.addEventListener('moonbite-ready', hide, { once: true });
+            setTimeout(hide, 6000);
+        })();
+
+        /* --- New-wallet creation (the "Create a New Wallet" fork) --- */
+        let _generatedPhrase = '';
+
+        function createNewWallet() {
+            if (!window.MoonBitePhrase) {
+                alert('Wallet is still loading — please try again in a moment.');
+                return;
+            }
+            // A freshly generated, high-entropy phrase for the user's one wallet.
+            _generatedPhrase = window.MoonBitePhrase.generatePhrase(9);
+            const disp = document.getElementById('generatedPhraseDisplay');
+            if (disp) disp.textContent = _generatedPhrase;
+            const cb = document.getElementById('phraseBackedUp');
+            if (cb) cb.checked = false;
+            const btn = document.getElementById('phraseContinueBtn');
+            if (btn) btn.disabled = true;
+            showScreen('createWalletScreen');
+        }
+
+        function copyGeneratedPhrase() {
+            if (!_generatedPhrase) return;
+            const done = () => alert('Recovery phrase copied. Store it somewhere safe, then delete the copy.');
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(_generatedPhrase).then(done)
+                    .catch(() => alert('Copy failed — please write the words down manually.'));
+            } else {
+                alert('Your phrase:\n\n' + _generatedPhrase);
+            }
+        }
+
+        function confirmGeneratedPhrase() {
+            if (!_generatedPhrase) { showScreen('walletSetupScreen'); return; }
+            // Same path as an imported phrase: hold it for the PIN step, which
+            // encrypts it. Never persisted in the clear.
+            sessionStorage.setItem('pendingSeedPhrase', _generatedPhrase);
             showScreen('passwordScreen');
         }
 
