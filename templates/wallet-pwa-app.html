@@ -892,11 +892,6 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             margin-bottom: var(--spacing-xs);
         }
 
-        .wallet-usd {
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-
         /* Contact list */
         .contact-item {
             display: flex;
@@ -2808,9 +2803,6 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                     const balanceEl = item.querySelector('.wallet-balance');
                     if (balanceEl && index === 0) { // Primary wallet
                         balanceEl.textContent = mbite(wallet.balanceCents) + ' MBITE';
-                        const usdEl = item.querySelector('.wallet-usd');
-                        if (usdEl) {
-                        }
                     }
                 });
 
