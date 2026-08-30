@@ -1944,7 +1944,11 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
 
                     <div class="form-group">
                         <label class="form-label">Amount (MBITE)</label>
-                        <input type="number" class="form-input" placeholder="0.00" id="sendAmount" value="1.5" style="font-size: 18px;">
+                        <div style="display:flex; gap: var(--spacing-sm); align-items:center;">
+                            <input type="number" class="form-input" placeholder="0.00" id="sendAmount" style="font-size: 18px; flex:1;">
+                            <button type="button" onclick="setMaxSendAmount()" class="btn btn-secondary" style="width:auto; padding: 0 var(--spacing-md); min-height:44px; margin:0;">Max</button>
+                        </div>
+                        <div id="sendAvailable" style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;"></div>
                     </div>
 
                     <div class="card">
@@ -2075,8 +2079,9 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 <div class="screen-header">
                     <h1>Transaction Sent</h1>
                     <!-- Broadcast is not confirmation: it waits in the mempool
-                         until a miner includes it in a block. -->
-                    <p>Waiting to be included in a block</p>
+                         until a miner includes it in a block. Updated in place
+                         by pollSuccessConfirmation() once it lands. -->
+                    <p id="successStatusLine">Waiting to be included in a block</p>
                 </div>
                 <div class="screen-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-lg);">
                     <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #2E9E6B, #25845A); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; animation: pulse 1s ease-out;"><svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></div>
@@ -3018,6 +3023,12 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 if (screenId === 'activityScreen') {
                     setTimeout(() => { renderActivity(); refreshActivityConfirmations(); }, 50);
                 }
+
+                // Show spendable balance on the Send screen (refreshed first).
+                if (screenId === 'sendScreen') {
+                    updateSendAvailable();
+                    CustodialWallet.refreshBalance().then(updateSendAvailable);
+                }
             }
         }
 
@@ -3523,6 +3534,10 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 const amtEl = document.getElementById('successAmount');
                 if (amtEl) amtEl.textContent = mbite(amountUnits);
 
+                // Watch this tx and update the success screen in place when it
+                // lands in a block, instead of leaving it on "waiting".
+                startSuccessConfirmationPoll(result.txid);
+
                 // Record it in the local activity log as pending; the Activity
                 // screen promotes it to confirmed once it lands in a block.
                 try {
@@ -3732,6 +3747,61 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 }
             }
             if (changed) { saveActivity(a); renderActivity(); }
+        }
+
+        /* Poll a just-sent tx and reflect confirmation on the success screen.
+           Stops on confirmation, when the user leaves the screen, or after a
+           bounded number of tries so it never runs forever. */
+        let _successPollTimer = null;
+        function startSuccessConfirmationPoll(txid) {
+            if (_successPollTimer) { clearInterval(_successPollTimer); _successPollTimer = null; }
+            const line = document.getElementById('successStatusLine');
+            let tries = 0;
+            const stop = () => { clearInterval(_successPollTimer); _successPollTimer = null; };
+            _successPollTimer = setInterval(async () => {
+                tries++;
+                // Give up quietly after ~5 minutes, or if the user navigated away.
+                if (tries > 60 || !document.getElementById('transactionSuccessScreen').classList.contains('active')) {
+                    stop(); return;
+                }
+                try {
+                    const r = await fetch('/api/explorer/tx/' + txid);
+                    if (!r.ok) return;
+                    const d = await r.json();
+                    const tx = d && d.transaction;
+                    if (tx && (tx.status === 'confirmed' || tx.block_height != null)) {
+                        if (line) line.textContent = 'Confirmed in block ' + tx.block_height;
+                        // Reflect it in the activity log too.
+                        const a = getActivity();
+                        const e = a.find(x => x.txid === txid);
+                        if (e && e.status !== 'confirmed') { e.status = 'confirmed'; saveActivity(a); }
+                        stop();
+                    }
+                } catch (e) { /* offline: keep waiting */ }
+            }, 5000);
+        }
+
+        /* --- Send: available balance and Max --- */
+        function currentFeeUnits() {
+            const feeText = (document.getElementById('networkFeeDisplay')?.textContent || '0')
+                .replace(/[^0-9.]/g, '');
+            return toCents(feeText) || 0;
+        }
+        function updateSendAvailable() {
+            const el = document.getElementById('sendAvailable');
+            if (!el) return;
+            const bal = CustodialWallet.getWallet().balanceCents || 0;
+            el.textContent = 'Available: ' + mbite(bal) + ' MBITE';
+        }
+        function setMaxSendAmount() {
+            const bal = CustodialWallet.getWallet().balanceCents || 0;
+            const maxUnits = Math.max(0, bal - currentFeeUnits());
+            // Spend everything the fee leaves behind — trim trailing zeros so
+            // the field reads cleanly.
+            document.getElementById('sendAmount').value = maxUnits
+                ? (maxUnits / 1e8).toFixed(8).replace(/0+$/, '').replace(/\.$/, '')
+                : '0';
+            updateSendAvailable();
         }
 
         // Copy Address Function
