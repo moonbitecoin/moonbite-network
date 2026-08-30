@@ -157,6 +157,9 @@ _MAX_SESSION_ADDRESSES = 25
 # a cap, one request could ask for billions of blocks and tie up a worker's CPU
 # indefinitely (a self-inflicted DoS). 100 is plenty for the demo reactor.
 _MAX_MINE_BLOCKS = 100
+# Ceiling on simultaneously running mining jobs. Proof-of-work is CPU-bound
+# and this host is small, so unbounded concurrency is a denial-of-service.
+_MAX_CONCURRENT_MINING_JOBS = int(os.environ.get("MOONBITE_MAX_MINING_JOBS", "2"))
 
 # Lock for thread-safe mining and blockchain operations
 app.mining_lock = threading.Lock()
@@ -3378,6 +3381,7 @@ def api_blockchain_status():
 
 
 @app.route("/api/mining/start", methods=["POST"])
+@rate_limit(6, 60)
 def api_mining_start():
     """Start mining blocks. Expects JSON: {"blocks": N, "address": "..."}
 
@@ -3386,6 +3390,27 @@ def api_mining_start():
     """
     print(f"[MINING API] New concurrent mining endpoint called", flush=True)
     try:
+        # Refuse new work when the box is already saturated, before doing
+        # any parsing. Each job spawns a thread doing proof-of-work and this
+        # endpoint was uncapped: a caller could loop it and pin every core on a
+        # 1-vCPU host. The rate limit slows arrivals; this bounds concurrency,
+        # and checking first means a flood costs us almost nothing.
+        with app.mining_lock:
+            running = sum(
+                1 for j in app.mining_state["active_jobs"].values()
+                if j.get("is_mining")
+            )
+        if running >= _MAX_CONCURRENT_MINING_JOBS:
+            return jsonify(
+                {
+                    "status": "error",
+                    "message": (
+                        "The node is already mining at capacity "
+                        f"({_MAX_CONCURRENT_MINING_JOBS} jobs). Try again shortly."
+                    ),
+                }
+            ), 429
+
         data = request.get_json()
         blocks_to_mine = data.get("blocks", 1)
         miner_address = data.get("address")
@@ -4548,6 +4573,9 @@ if __name__ == "__main__":
     # file works locally (defaults) and on a server/PaaS (PORT/HOST/FLASK_DEBUG).
     host = os.environ.get("HOST", "localhost")
     port = int(os.environ.get("PORT", "5000"))
-    debug = os.environ.get("FLASK_DEBUG", "1") == "1"
+    # Default OFF: the Werkzeug debugger is a remote code execution
+    # console, so it must never be the default on a server. Opt in
+    # explicitly with FLASK_DEBUG=1 for local work.
+    debug = os.environ.get("FLASK_DEBUG", "0") == "1"
     print(f"MoonBite Dashboard starting on http://{host}:{port}")
     app.run(debug=debug, host=host, port=port)

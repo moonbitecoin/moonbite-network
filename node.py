@@ -43,7 +43,9 @@ from params import (
     COINBASE_MATURITY,
     MAX_BLOCK_BYTES,
     MAX_FUTURE_TIME,
+    MAX_MEMPOOL_TXS,
     MEDIAN_TIME_SPAN,
+    MIN_RELAY_FEE,
 )
 from transaction import Transaction
 from utxo import UTXOSet, validate_coinbase
@@ -267,10 +269,19 @@ class Blockchain:
     def add_to_mempool(self, tx: Transaction) -> bool:
         if tx.txid in self.mempool:
             return False
+        # Bound memory: without a ceiling, cheap transactions could be queued
+        # until the process dies.
+        if len(self.mempool) >= MAX_MEMPOOL_TXS:
+            return False
         # Validate as if it were mined into the next block (for maturity).
         if not self.utxo.validate_transaction(
             tx, spend_height=self.height + 1, maturity=self.coinbase_maturity
         ):
+            return False
+        # Require a minimum relay fee. Validation alone accepts inputs ==
+        # outputs, so zero-fee spam was free to send; this gives flooding a
+        # real cost. Coinbase transactions are exempt (they mint, not spend).
+        if not tx.is_coinbase() and tx.fee(self.utxo.resolve) < MIN_RELAY_FEE:
             return False
         self.mempool[tx.txid] = tx
         return True

@@ -13,6 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pow as powmod  # noqa: E402
+from params import MIN_RELAY_FEE  # noqa: E402
 from block import block_subsidy, build_block, create_coinbase  # noqa: E402
 from network import Network  # noqa: E402
 from node import INVALID, Node  # noqa: E402
@@ -38,7 +39,8 @@ def test_double_spend_within_mempool_rejected():
 
     block = node.mine_block(a_pkh)
     coinbase = block.transactions[0]
-    amount = block_subsidy(1)
+    # Leave the minimum relay fee behind; a zero-fee tx is no longer relayed.
+    amount = block_subsidy(1) - MIN_RELAY_FEE
 
     spend1 = Transaction([TxInput(coinbase.txid, 0)], [TxOutput(amount, b_pkh)])
     spend1.sign_input(0, a_sk)
@@ -93,7 +95,8 @@ def test_51_percent_reorg_rewrites_confirmed_payment():
     block1 = honest1.mine_block(a_pkh)
     coinbase = block1.transactions[0]
     pay = Transaction(
-        [TxInput(coinbase.txid, 0)], [TxOutput(block_subsidy(1), merchant_pkh)]
+        [TxInput(coinbase.txid, 0)],
+        [TxOutput(block_subsidy(1) - MIN_RELAY_FEE, merchant_pkh)],
     )
     pay.sign_input(0, a_sk)
     honest1.submit_transaction(pay)

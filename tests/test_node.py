@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pow as powmod  # noqa: E402
 from block import CENTS_PER_COIN, block_subsidy  # noqa: E402
-from params import HALVING_INTERVAL  # noqa: E402
+from params import HALVING_INTERVAL, MIN_RELAY_FEE  # noqa: E402
 from network import Network  # noqa: E402
 from node import ACCEPTED_REORG, ORPHAN, Node  # noqa: E402
 from transaction import Transaction, TxInput, TxOutput  # noqa: E402
@@ -116,7 +116,8 @@ def test_transaction_propagates_and_is_mined():
     coinbase = block.transactions[0]
     spend = Transaction(
         inputs=[TxInput(coinbase.txid, 0)],
-        outputs=[TxOutput(block_subsidy(1), b_pkh)],
+        # Leave the minimum relay fee; zero-fee transactions are not relayed.
+        outputs=[TxOutput(block_subsidy(1) - MIN_RELAY_FEE, b_pkh)],
     )
     spend.sign_input(0, a_sk)
 

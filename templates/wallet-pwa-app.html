@@ -4131,16 +4131,32 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             const container = document.getElementById('walletsContainer');
             if (!container) return;
 
-            container.innerHTML = `
-                <div class="wallet-item">
-                    <div class="wallet-name">${wallet.walletName}</div>
-                    <div class="wallet-balance">${mbite(wallet.balanceCents)} MBITE</div>
-                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
-                        ${wallet.address || 'Unlock your wallet to reveal your address'}
-                    </div>
-                </div>
-                <button class="btn btn-secondary" onclick="showScreen('dashboardScreen')" style="width: 100%; margin-top: var(--spacing-lg);">View Details →</button>
-            `;
+            /* Built with textContent rather than an innerHTML template so a
+               wallet name can never be interpreted as markup — harmless today
+               because the name is fixed, but a renaming feature would turn
+               this into self-XSS. */
+            container.innerHTML = '';
+            const item = document.createElement('div');
+            item.className = 'wallet-item';
+            const nameEl = document.createElement('div');
+            nameEl.className = 'wallet-name';
+            nameEl.textContent = wallet.walletName;
+            const balEl = document.createElement('div');
+            balEl.className = 'wallet-balance';
+            balEl.textContent = mbite(wallet.balanceCents) + ' MBITE';
+            const addrEl = document.createElement('div');
+            addrEl.style.cssText = 'font-size: 11px; color: var(--text-secondary); margin-top: 4px;';
+            addrEl.textContent = wallet.address || 'Unlock your wallet to reveal your address';
+            item.appendChild(nameEl); item.appendChild(balEl); item.appendChild(addrEl);
+
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-secondary';
+            btn.style.cssText = 'width: 100%; margin-top: var(--spacing-lg);';
+            btn.textContent = 'View Details →';
+            btn.onclick = () => showScreen('dashboardScreen');
+
+            container.appendChild(item);
+            container.appendChild(btn);
         }
 
         // PIN verification for returning users (fallback option)

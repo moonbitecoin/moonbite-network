@@ -10,6 +10,16 @@ from __future__ import annotations
 
 # --- monetary policy ------------------------------------------------------- #
 CENTS_PER_COIN = 100_000_000          # smallest unit; 1 coin = 100,000,000 cents
+
+# Anti-flood limits for the mempool.
+#
+# Acceptance only required inputs >= outputs, so a zero-fee transaction was
+# valid and there was no cap on how many could queue: an attacker could fill
+# memory with free transactions. A small relay fee makes flooding cost real
+# coins, and the cap bounds memory regardless.
+MIN_RELAY_FEE = 10                    # nominal floor: spam costs something, zero-fee is refused
+MAX_MEMPOOL_TXS = 5_000               # hard ceiling on queued transactions
+
 INITIAL_SUBSIDY = 50 * CENTS_PER_COIN  # block reward at height 0 — generous start, then only down
 HALVING_INTERVAL = 330_000            # halve the subsidy every N blocks (~6.27 yr at 10-min blocks)
 
