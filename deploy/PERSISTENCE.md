@@ -44,6 +44,24 @@ That line only appears when blocks were loaded from disk. If the height is 0
 after a redeploy that had mined blocks, the volume is not mounted where the app
 is looking.
 
+## The moonbite.org droplet
+
+It is set up already, and deliberately not at /data:
+
+    MOONBITE_DATA_DIR=/var/lib/moonbite-dashboard
+
+set through a systemd drop-in at
+/etc/systemd/system/moonbite-dashboard.service.d/persistence.conf, created by
+deploy/setup-persistence.sh.
+
+Do **not** point it at /var/lib/moonbite. That is moonbited's datadir, owned by
+a different user, and putting the dashboard's databases there means chowning a
+tree the Core daemon needs — it keeps running on open handles and fails on its
+next restart, which is a fault that appears hours later with no obvious cause.
+
+Keeping the databases outside /opt/moonbite-dashboard also means a deploy
+cannot take them with it: the cutover swaps that directory wholesale.
+
 ## Other hosts
 
 Mount any persistent disk and point the app at it:

@@ -36,11 +36,17 @@ rm -rf "$OLD"
 mv "$CUR" "$OLD" || { fail "could not move current aside"; systemctl start moonbite-dashboard; exit 1; }
 mv "$NEW" "$CUR" || { fail "could not move new into place"; mv "$OLD" "$CUR"; systemctl start moonbite-dashboard; exit 1; }
 
-echo "step: carry live databases across"
-cp -a "$OLD"/*.db "$CUR"/ 2>/dev/null || true
-echo -n "  databases now present: "
-ls "$CUR"/*.db 2>/dev/null | xargs -n1 basename | tr '\n' ' '
-echo
+echo "step: databases"
+# With MOONBITE_DATA_DIR set, durable state lives outside the deploy tree and
+# a cutover cannot touch it - which is the point. The copy below only applies
+# to a host still keeping its databases beside the code.
+DATA_DIR=$(systemctl show -p Environment --value moonbite-dashboard 2>/dev/null | grep -o "MOONBITE_DATA_DIR=[^ ]*" | cut -d= -f2-)
+if [ -n "${DATA_DIR:-}" ]; then
+    echo "  held outside the deploy tree in $DATA_DIR - nothing to copy"
+else
+    cp -a "$OLD"/*.db "$CUR"/ 2>/dev/null || true
+    echo "  carried across: $(ls "$CUR"/*.db 2>/dev/null | wc -l) database(s)"
+fi
 
 echo "step: rebuild venv at the new path"
 # venv scripts hardcode absolute paths, so the directory move breaks them.
