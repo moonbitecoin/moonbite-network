@@ -12,6 +12,32 @@ NEW=/opt/moonbite-next
 
 fail() { echo "CUTOVER-FAILED: $*"; }
 
+# Stop the service and confirm it is actually down.
+#
+# `systemctl stop` exits non-zero when its job is superseded — an auto-restart
+# (Restart=on-failure) or a concurrent systemctl call can cancel the stop job
+# with "Job canceled", even though the service often stops regardless. Trusting
+# that exit code aborted the whole cutover on a transient race. Instead, issue
+# the stop and poll the real state, retrying, and only fail if it is genuinely
+# still active after ~90s.
+stop_service() {
+    local name="moonbite-dashboard" i j state
+    for i in $(seq 1 6); do
+        systemctl stop "$name" 2>/dev/null || true
+        for j in $(seq 1 15); do
+            state=$(systemctl is-active "$name" 2>/dev/null || true)
+            case "$state" in
+                inactive|failed|unknown|"") return 0 ;;
+            esac
+            sleep 1
+        done
+        # Still active/activating — likely an auto-restart raced the stop. Loop
+        # and stop again.
+    done
+    state=$(systemctl is-active "$name" 2>/dev/null || true)
+    [ "$state" = "active" ] && return 1 || return 0
+}
+
 echo "step: stage $BRANCH"
 rm -rf "$NEW"
 git clone -q --branch "$BRANCH" --single-branch "$REPO" "$NEW" || { fail "clone failed"; exit 1; }
@@ -29,7 +55,8 @@ pkill -f 'bind 127.0.0.1:8051' 2>/dev/null || true
 sleep 2
 
 echo "step: stop service"
-systemctl stop moonbite-dashboard || { fail "could not stop service"; exit 1; }
+stop_service || { fail "service still active after repeated stop attempts"; exit 1; }
+echo "  stopped"
 
 echo "step: swap directories"
 rm -rf "$OLD"
@@ -85,7 +112,7 @@ CODE=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8050/wallet --max
 echo "  local /wallet -> $CODE"
 if [ "$CODE" != "200" ]; then
     fail "new build does not serve; rolling back"
-    systemctl stop moonbite-dashboard
+    stop_service
     rm -rf "$CUR"; mv "$OLD" "$CUR"
     systemctl start moonbite-dashboard
     sleep 8
