@@ -13,3 +13,8 @@ __pycache__/
 *.db-journal
 *.db-wal
 *.db-shm
+
+# Signup capture: runtime data, and it holds email addresses. It was
+# committed here, so every deploy overwrote the live list with the copy from
+# git, in a public repository.
+notify_signups.jsonl

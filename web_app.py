@@ -1220,7 +1220,11 @@ def api_notify():
 
     record = {"email": email, "source": source, "ts": int(time.time())}
     try:
-        with open("notify_signups.jsonl", "a", encoding="utf-8") as fh:
+        # Written into the data directory, not the working directory. Beside
+        # the code it sat inside the deploy tree, which a cutover replaces
+        # wholesale — and it was committed to a public repo, so every deploy
+        # also overwrote whatever had been collected with the copy from git.
+        with open(storage.data_path("notify_signups.jsonl"), "a", encoding="utf-8") as fh:
             fh.write(json.dumps(record) + "\n")
     except OSError:
         # Ephemeral FS (e.g. Railway) — client keeps a localStorage fallback.
