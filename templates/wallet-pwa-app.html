@@ -1873,11 +1873,11 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                         </div>
 
                         <div class="action-buttons">
-                            <button class="action-btn" onclick="showScreen('walletsScreen')">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="9" r="1"/><circle cx="15" cy="9" r="1"/>
+                            <button class="action-btn" onclick="showScreen('activityScreen')">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 12h4l2 5 4-12 2 7h6"/>
                                 </svg>
-                                <span>Wallet</span>
+                                <span>Activity</span>
                             </button>
                             <button class="action-btn" onclick="showScreen('receiveScreen')">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2176,7 +2176,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
 
                     <div class="card">
                         <div class="card-title">Recovery Options</div>
-                        <button class="btn btn-secondary" onclick="showScreen('seedPhraseScreen')">View Recovery Phrase</button>
+                        <button class="btn btn-secondary" onclick="revealRecoveryPhrase()">View Recovery Phrase</button>
                         <button class="btn btn-secondary" onclick="showScreen('createPasswordScreen')" style="margin-top: var(--spacing-sm);">Change Password</button>
                     </div>
 
@@ -2315,6 +2315,51 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
 
             <!-- Confirm Send Screen -->
             <!-- duplicate confirmSendScreen removed: shadowed by the first, unreachable -->
+
+            <!-- Activity / transaction history -->
+            <div class="screen" id="activityScreen">
+                <div class="screen-header">
+                    <h1>Activity</h1>
+                    <p>Your sends and receipts on this device</p>
+                </div>
+                <div class="screen-content">
+                    <div id="activityList"></div>
+                    <div id="activityEmpty" style="text-align:center; padding: var(--spacing-lg) 0; color: var(--text-secondary); font-size: 13px; display:none;">
+                        No activity yet. Sends and incoming MBITE will appear here.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reveal recovery phrase (PIN-gated, from Security) -->
+            <div class="screen" id="revealPhraseScreen">
+                <div class="screen-header">
+                    <h1>Recovery Phrase</h1>
+                    <p>Write it down and keep it offline. Never share it.</p>
+                </div>
+                <div class="screen-content">
+                    <div class="card" style="background: rgba(192,57,67,0.08); border-color: var(--danger,#C0392B); margin-bottom: var(--spacing-md);">
+                        <div style="color: var(--text-secondary); font-size: 13px; line-height:1.5;">
+                            Anyone with these words can take your funds. Make sure no one is watching your screen.
+                        </div>
+                    </div>
+                    <div id="revealedPhrase" style="font-family: var(--font-data, ui-monospace, monospace); font-size: 16px; line-height: 1.9; color: var(--gold); background: rgba(217,164,65,0.06); border: 1px solid rgba(217,164,65,0.18); border-radius: 12px; padding: var(--spacing-md); word-spacing: 6px; text-align: center;"></div>
+                    <button class="btn btn-primary" onclick="hideRevealedPhrase()" style="width:100%; margin-top: var(--spacing-lg);">Done</button>
+                </div>
+            </div>
+
+            <!-- Confirm the newly generated phrase was written down -->
+            <div class="screen" id="verifyBackupScreen">
+                <div class="screen-header">
+                    <h1>Confirm Your Backup</h1>
+                    <p>Enter the requested words to prove you saved your phrase.</p>
+                </div>
+                <div class="screen-content">
+                    <div id="verifyBackupPrompts"></div>
+                    <div id="verifyBackupError" style="color:#C8402F; font-size:13px; display:none; margin-top: var(--spacing-sm);">Those words do not match. Check your written copy and try again.</div>
+                    <button class="btn btn-primary" onclick="checkPhraseBackup()" style="width:100%; margin-top: var(--spacing-lg);">Confirm</button>
+                    <button class="btn btn-secondary" onclick="showScreen('createWalletScreen')" style="width:100%; margin-top: var(--spacing-sm);">Show My Phrase Again</button>
+                </div>
+            </div>
         </div>
 
         <!-- Theme Toggle Button -->
@@ -2682,11 +2727,25 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                     const cents = Number(data.balance_units);
                     if (!Number.isSafeInteger(cents)) return null;
 
+                    /* A net increase since we last looked is incoming MBITE
+                       (a receipt or a mining reward). A send never raises the
+                       balance — its change returns inside the same tx that
+                       reduces it — so this does not double-count our own
+                       sends. Seed the baseline silently on the first read so a
+                       pre-existing balance is not logged as a fresh receipt. */
+                    const prev = wallet.lastSeenBalanceCents;
+                    if (typeof prev === 'number' && cents > prev) {
+                        try { logActivity({ type: 'receive', amountUnits: cents - prev, status: 'confirmed' }); }
+                        catch (e) { /* activity is best-effort */ }
+                    }
+
                     if (cents !== wallet.balanceCents ||
-                        data.height !== wallet.blockchainHeight) {
+                        data.height !== wallet.blockchainHeight ||
+                        prev !== cents) {
                         this.updateWallet({
                             balanceCents: cents,
-                            blockchainHeight: data.height
+                            blockchainHeight: data.height,
+                            lastSeenBalanceCents: cents
                         });
                     }
                     return cents;
@@ -2928,7 +2987,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 'securityScreen', 'sendScreen', 'receiveScreen',
                 'confirmSendScreen', 'transactionSuccessScreen',
                 'qrScannerScreen', 'addContactScreen', 'editNetworkFeeScreen',
-                'settingsScreen'
+                'settingsScreen', 'activityScreen', 'revealPhraseScreen'
             ]);
             const nav = document.querySelector('.bottom-nav');
             if (nav) nav.classList.toggle('show', APP_SCREENS.has(screenId));
@@ -2953,6 +3012,11 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 // Render the user's own (initially empty) contact list.
                 if (screenId === 'contactsScreen') {
                     setTimeout(() => renderContacts(), 50);
+                }
+
+                // Render activity and refresh pending confirmations.
+                if (screenId === 'activityScreen') {
+                    setTimeout(() => { renderActivity(); refreshActivityConfirmations(); }, 50);
                 }
             }
         }
@@ -3459,6 +3523,15 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 const amtEl = document.getElementById('successAmount');
                 if (amtEl) amtEl.textContent = mbite(amountUnits);
 
+                // Record it in the local activity log as pending; the Activity
+                // screen promotes it to confirmed once it lands in a block.
+                try {
+                    logActivity({
+                        type: 'send', to: recipient, amountUnits: amountUnits,
+                        txid: result.txid, status: 'pending'
+                    });
+                } catch (e) { /* activity is best-effort */ }
+
                 await CustodialWallet.refreshBalance();
                 if (btn) {
                     btn.disabled = false;
@@ -3575,6 +3648,85 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             document.getElementById('newContactName').value = '';
             document.getElementById('newContactAddress').value = '';
             showScreen('contactsScreen');
+        }
+
+        /* --- Activity log (transaction history) ---
+
+           There is no per-address history endpoint on this chain, so the log
+           is kept locally per wallet: sends are recorded when broadcast and
+           confirmed by polling the explorer; incoming MBITE is detected as a
+           net balance increase on refresh. Honest for a non-custodial wallet —
+           it reflects what this device has seen, and clearing storage clears
+           it. */
+        function activityKey() {
+            return 'moonbite_activity_' + (localStorage.getItem('moonbite_user_id') || 'anon');
+        }
+        function getActivity() {
+            try { return JSON.parse(localStorage.getItem(activityKey()) || '[]'); }
+            catch (e) { return []; }
+        }
+        function saveActivity(a) {
+            localStorage.setItem(activityKey(), JSON.stringify(a.slice(0, 200)));
+        }
+        function logActivity(entry) {
+            const a = getActivity();
+            a.unshift(Object.assign({ ts: Math.floor(Date.now() / 1000) }, entry));
+            saveActivity(a);
+        }
+        function fmtWhen(ts) {
+            const d = new Date(ts * 1000);
+            return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
+                ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+        }
+        function renderActivity() {
+            const list = document.getElementById('activityList');
+            const empty = document.getElementById('activityEmpty');
+            if (!list) return;
+            const items = getActivity();
+            list.innerHTML = '';
+            if (!items.length) { if (empty) empty.style.display = 'block'; return; }
+            if (empty) empty.style.display = 'none';
+            items.forEach(it => {
+                const sent = it.type === 'send';
+                const row = document.createElement('div');
+                row.className = 'contact-item';
+                row.style.justifyContent = 'space-between';
+                const left = document.createElement('div');
+                left.className = 'contact-info';
+                const title = document.createElement('div');
+                title.className = 'contact-name';
+                title.textContent = sent ? 'Sent' : 'Received';
+                const sub = document.createElement('div');
+                sub.className = 'contact-address';
+                sub.textContent = fmtWhen(it.ts) +
+                    (it.status ? '  ·  ' + it.status : '') +
+                    (it.txid ? '  ·  ' + it.txid.slice(0, 10) + '…' : '');
+                left.appendChild(title); left.appendChild(sub);
+                const amt = document.createElement('div');
+                amt.style.fontFamily = 'var(--font-data, ui-monospace, monospace)';
+                amt.style.fontWeight = '700';
+                amt.style.whiteSpace = 'nowrap';
+                amt.style.color = sent ? 'var(--text-primary)' : 'var(--emerald, #2E9E6B)';
+                amt.textContent = (sent ? '-' : '+') + mbite(it.amountUnits) + ' MBITE';
+                row.appendChild(left); row.appendChild(amt);
+                list.appendChild(row);
+            });
+        }
+        async function refreshActivityConfirmations() {
+            const a = getActivity();
+            let changed = false;
+            for (const it of a) {
+                if (it.type === 'send' && it.status === 'pending' && it.txid) {
+                    try {
+                        const r = await fetch('/api/explorer/tx/' + it.txid);
+                        if (r.ok) {
+                            const d = await r.json();
+                            if (d && d.status === 'confirmed') { it.status = 'confirmed'; changed = true; }
+                        }
+                    } catch (e) { /* offline: leave pending */ }
+                }
+            }
+            if (changed) { saveActivity(a); renderActivity(); }
         }
 
         // Copy Address Function
@@ -3741,12 +3893,91 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             }
         }
 
+        let _backupChallenge = [];
+
         function confirmGeneratedPhrase() {
             if (!_generatedPhrase) { showScreen('walletSetupScreen'); return; }
-            // Same path as an imported phrase: hold it for the PIN step, which
-            // encrypts it. Never persisted in the clear.
+            // Prove the phrase was actually written down before it becomes the
+            // only key to the wallet: ask for three of the nine words by
+            // position. A checkbox alone let people skip the backup and lose
+            // their funds.
+            const words = _generatedPhrase.split(/\s+/);
+            const positions = [];
+            while (positions.length < 3) {
+                const p = window.MoonBiteAddress
+                    ? (unbiasedSmall(words.length))
+                    : Math.floor(Math.random() * words.length);
+                if (!positions.includes(p)) positions.push(p);
+            }
+            positions.sort((a, b) => a - b);
+            _backupChallenge = positions;
+
+            const host = document.getElementById('verifyBackupPrompts');
+            host.innerHTML = '';
+            positions.forEach(p => {
+                const g = document.createElement('div');
+                g.className = 'form-group';
+                const l = document.createElement('label');
+                l.className = 'form-label';
+                l.textContent = 'Word #' + (p + 1);
+                const inp = document.createElement('input');
+                inp.type = 'text'; inp.className = 'form-input';
+                inp.autocomplete = 'off'; inp.autocapitalize = 'off'; inp.spellcheck = false;
+                inp.dataset.pos = String(p);
+                inp.placeholder = 'the ' + ordinal(p + 1) + ' word';
+                g.appendChild(l); g.appendChild(inp);
+                host.appendChild(g);
+            });
+            document.getElementById('verifyBackupError').style.display = 'none';
+            showScreen('verifyBackupScreen');
+        }
+
+        function checkPhraseBackup() {
+            const words = _generatedPhrase.split(/\s+/);
+            const inputs = document.querySelectorAll('#verifyBackupPrompts input');
+            let ok = inputs.length === _backupChallenge.length;
+            inputs.forEach(inp => {
+                const pos = parseInt(inp.dataset.pos, 10);
+                if ((inp.value || '').trim().toLowerCase() !== words[pos]) ok = false;
+            });
+            if (!ok) {
+                document.getElementById('verifyBackupError').style.display = 'block';
+                return;
+            }
+            // Verified: hand the phrase to the PIN step, which encrypts it.
             sessionStorage.setItem('pendingSeedPhrase', _generatedPhrase);
             showScreen('passwordScreen');
+        }
+
+        function ordinal(n) {
+            const s = ['th', 'st', 'nd', 'rd'], v = n % 100;
+            return n + (s[(v - 20) % 10] || s[v] || s[0]);
+        }
+        function unbiasedSmall(max) {
+            const limit = Math.floor(0x100000000 / max) * max;
+            const b = new Uint32Array(1); let x;
+            do { crypto.getRandomValues(b); x = b[0]; } while (x >= limit);
+            return x % max;
+        }
+
+        /* --- Reveal the recovery phrase again, PIN-gated (from Security) --- */
+        async function revealRecoveryPhrase() {
+            const stored = localStorage.getItem('moonbite_seed_encrypted');
+            if (!stored) { alert('No wallet on this device.'); return; }
+            const pin = prompt('Enter your PIN to view your recovery phrase');
+            if (!pin) return;
+            let seed = null;
+            try { seed = await CustodialWallet.decryptSeedWithPIN(stored, pin); }
+            catch (e) { alert('Could not unlock — reload and try again.'); return; }
+            if (!seed) { alert('Incorrect PIN.'); return; }
+            document.getElementById('revealedPhrase').textContent = seed;
+            showScreen('revealPhraseScreen');
+        }
+        function hideRevealedPhrase() {
+            // Do not leave the plaintext phrase sitting in the DOM.
+            const el = document.getElementById('revealedPhrase');
+            if (el) el.textContent = '';
+            showScreen('securityScreen');
         }
 
         // Verify recovery seed phrase for PIN reset
