@@ -167,3 +167,49 @@ def test_every_data_fn_is_whitelisted():
     block = src[src.index("const MB_ACTIONS = {"):src.index("function mbDispatch")]
     mapped = set(re.findall(r"^\s{12}(\w+):", block, re.M))
     assert not (used - mapped), f"unmapped data-fn: {sorted(used - mapped)}"
+
+
+def test_no_template_has_inline_event_handlers():
+    """Site-wide: one inline handler anywhere forces 'unsafe-inline' back."""
+    import re
+    from pathlib import Path
+    root = Path(__file__).resolve().parent.parent / "templates"
+    offenders = {}
+    for f in root.rglob("*.html"):
+        found = re.findall(
+            r'\son(?:click|keyup|change|input|submit|load)=',
+            f.read_text(encoding="utf-8", errors="replace"))
+        if found:
+            offenders[f.name] = len(found)
+    assert not offenders, f"inline handlers reintroduced: {offenders}"
+
+
+def test_every_inline_script_carries_a_nonce():
+    """An un-nonced inline script is silently blocked under the strict policy."""
+    import re
+    from pathlib import Path
+    root = Path(__file__).resolve().parent.parent / "templates"
+    offenders = {}
+    for f in root.rglob("*.html"):
+        src = f.read_text(encoding="utf-8", errors="replace")
+        bad = [t for t in re.findall(r"<script(?:\s[^>]*)?>", src)
+               if "src=" not in t and "nonce=" not in t]
+        if bad:
+            offenders[f.name] = len(bad)
+    assert not offenders, f"inline scripts without a nonce: {offenders}"
+
+
+@pytest.mark.parametrize("route", [
+    "/", "/wallet", "/explorer", "/mining", "/leaderboard",
+    "/halving", "/calculator", "/free", "/wall", "/start",
+])
+def test_every_page_serves_a_strict_csp(route):
+    client = web_app.app.test_client()
+    res = client.get(route)
+    if res.status_code != 200:
+        pytest.skip(f"{route} not served ({res.status_code})")
+    csp = res.headers.get("Content-Security-Policy", "")
+    script_src = [d for d in csp.split(";") if d.strip().startswith("script-src")]
+    assert script_src, f"{route} has no script-src"
+    assert "unsafe-inline" not in script_src[0], f"{route} allows inline script"
+    assert "nonce-" in script_src[0], f"{route} carries no nonce"

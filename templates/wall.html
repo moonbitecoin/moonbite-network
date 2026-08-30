@@ -177,7 +177,7 @@ select:focus-visible, [tabindex]:focus-visible {
 {% include 'partials/footer.html' %}
 <div class="toast" id="toast"></div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   'use strict';
   var REWARD = {{ consensus.current_reward_coins }};

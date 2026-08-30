@@ -215,7 +215,7 @@ select:focus-visible, [tabindex]:focus-visible {
 <canvas id="card" width="1080" height="1080"></canvas>
 <div class="toast" id="toast"></div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   'use strict';
   var C = {

@@ -50,7 +50,7 @@
         <div class="card-header">Tip Hash (Most Recent Block)</div>
         <div class="card-body">
             <code id="tipHash" class="monospace">Loading...</code>
-            <button id="refreshBtn" class="btn btn-secondary" onclick="refreshBlockchainInfo()">
+            <button id="refreshBtn" class="btn btn-secondary" data-act="refresh">
                 🔄 Refresh
             </button>
         </div>
@@ -75,7 +75,7 @@
 {% endblock %}
 
 {% block scripts_extra %}
-<script>
+<script nonce="{{ csp_nonce }}">
     // Fetch and display blockchain info
     async function refreshBlockchainInfo() {
         try {
@@ -130,6 +130,12 @@
         // Auto-refresh every 3 seconds
         setInterval(refreshBlockchainInfo, 3000);
         setInterval(loadTransactions, 5000);
+    });
+    document.addEventListener('click', function (e) {
+        // Delegated so the page needs no inline handlers and can run under a
+        // strict CSP (no 'unsafe-inline').
+        var el = e.target.closest && e.target.closest('[data-act="refresh"]');
+        if (el) refreshBlockchainInfo();
     });
 </script>
 {% endblock %}

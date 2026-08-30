@@ -135,7 +135,7 @@ Response:
 {% endblock %}
 
 {% block scripts_extra %}
-<script>
+<script nonce="{{ csp_nonce }}">
     document.getElementById('testInvoiceForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 

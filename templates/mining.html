@@ -49,7 +49,7 @@
                     <button type="submit" id="startBtn" class="btn btn-success btn-large">
                         ⚒️ Start Mining
                     </button>
-                    <button type="button" id="stopBtn" class="btn btn-danger btn-large hidden" onclick="stopMining()">
+                    <button type="button" id="stopBtn" class="btn btn-danger btn-large hidden" data-act="stop-mining">
                         ⏹️ Stop Mining
                     </button>
                 </div>
@@ -185,7 +185,7 @@
 {% endblock %}
 
 {% block scripts_extra %}
-<script>
+<script nonce="{{ csp_nonce }}">
     let isMining = false;
     let startTime = 0;
     let statusCheckInterval = null;
@@ -370,5 +370,11 @@
     document.getElementById('miningForm').addEventListener('submit', startMining);
 </script>
 <script src="{{ url_for('static', filename='moonbite-badges.js') }}"></script>
-<script defer src="{{ url_for('static', filename='mining-god.js') }}"></script>
+<script defer src="{{ url_for('static', filename='mining-god.js') }}">    document.addEventListener('click', function (e) {
+        // Delegated so the page carries no inline handlers and can run under a
+        // strict CSP (no 'unsafe-inline').
+        var el = e.target.closest && e.target.closest('[data-act="stop-mining"]');
+        if (el) stopMining();
+    });
+</script>
 {% endblock %}

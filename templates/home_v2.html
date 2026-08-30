@@ -469,7 +469,7 @@
     {% include "partials/mega_footer.html" %}
   </main>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };

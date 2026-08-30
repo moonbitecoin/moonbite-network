@@ -13,10 +13,10 @@
 
     <!-- Period Selector -->
     <div class="cards-grid">
-        <button class="mb-period-btn active" onclick="loadLeaderboard('week')">
+        <button class="mb-period-btn active" data-period="week">
             This Week
         </button>
-        <button class="mb-period-btn" onclick="loadLeaderboard('all')">
+        <button class="mb-period-btn" data-period="all">
             All Time
         </button>
     </div>
@@ -78,7 +78,7 @@
 {% endblock %}
 
 {% block scripts_extra %}
-<script>
+<script nonce="{{ csp_nonce }}">
     async function loadLeaderboard(period) {
         try {
             // Update active button
@@ -122,6 +122,10 @@
     // Load on page load
     document.addEventListener('DOMContentLoaded', () => {
         loadLeaderboard('week');
+    });
+    document.addEventListener('click', function (e) {
+        var el = e.target.closest && e.target.closest('[data-period]');
+        if (el) loadLeaderboard(el.getAttribute('data-period'));
     });
 </script>
 {% endblock %}

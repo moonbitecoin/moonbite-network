@@ -28,7 +28,7 @@
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary btn-large">🔎 Search</button>
-                    <button type="button" id="backBtn" class="btn btn-secondary btn-large hidden" onclick="showBrowse()">← Back to Blocks</button>
+                    <button type="button" id="backBtn" class="btn btn-secondary btn-large hidden" data-act="browse">← Back to Blocks</button>
                 </div>
             </form>
         </div>
@@ -68,7 +68,7 @@
                     <p>Loading blocks...</p>
                 </div>
                 <div class="form-actions">
-                    <button type="button" id="loadMoreBtn" class="btn btn-secondary hidden" onclick="loadMoreBlocks()">Load More</button>
+                    <button type="button" id="loadMoreBtn" class="btn btn-secondary hidden" data-act="load-more">Load More</button>
                 </div>
             </div>
         </div>
@@ -88,7 +88,7 @@
 {% endblock %}
 
 {% block scripts_extra %}
-<script>
+<script nonce="{{ csp_nonce }}">
     let currentOffset = 0;
     const PAGE_SIZE = 15;
 
@@ -144,7 +144,7 @@
             document.getElementById('statBlocks').textContent = d.total;
 
             const rows = d.blocks.map(b => `
-                <div class="tx-item block-row" onclick="openBlock('${b.height}')">
+                <div class="tx-item block-row" data-block="${b.height}">
                     <div class="tx-info">
                         <div class="tx-id"><strong>#${b.height}</strong> &nbsp; <code>${esc(shortHash(b.hash))}</code></div>
                         <div class="tx-meta">
@@ -205,7 +205,7 @@
             </div>
         `).join('');
         return `
-            <div class="tx-item" style="cursor:pointer" onclick="openTx('${tx.txid}')">
+            <div class="tx-item" style="cursor:pointer" data-tx="${tx.txid}">
                 <div class="tx-info">
                     <div class="tx-id"><code>${esc(shortHash(tx.txid))}</code>
                         ${tx.is_coinbase ? '<span class="tx-status confirmed">coinbase</span>' : ''}
@@ -305,6 +305,17 @@
             if (!document.getElementById('detailView').classList.contains('hidden')) return;
             loadBlocks(true);
         }, 5000);
+    });
+    document.addEventListener('click', function (e) {
+        // Covers rows rendered later from template literals too.
+        var t = e.target;
+        if (!t.closest) return;
+        var b = t.closest('[data-block]');
+        if (b) { openBlock(b.getAttribute('data-block')); return; }
+        var x = t.closest('[data-tx]');
+        if (x) { openTx(x.getAttribute('data-tx')); return; }
+        if (t.closest('[data-act="browse"]')) { showBrowse(); return; }
+        if (t.closest('[data-act="load-more"]')) { loadMoreBlocks(); return; }
     });
 </script>
 {% endblock %}

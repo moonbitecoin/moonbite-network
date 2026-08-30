@@ -31,7 +31,7 @@
 
     {% include "partials/mega_footer.html" %}
 
-    <script>
+    <script nonce="{{ csp_nonce }}">
         // Force clear old service worker caches and register new version
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(registrations => {

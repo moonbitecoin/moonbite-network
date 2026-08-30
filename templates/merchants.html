@@ -177,7 +177,7 @@
 {% endblock %}
 
 {% block scripts_extra %}
-<script>
+<script nonce="{{ csp_nonce }}">
 (function () {
     "use strict";
     var CATS = [];

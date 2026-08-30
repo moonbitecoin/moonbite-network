@@ -35,7 +35,7 @@
     <span class="mbnav-word">MOONBITE</span>
   </a>
   <button class="mbnav-burger" aria-label="Menu"
-    onclick="document.getElementById('mbnavLinks').classList.toggle('open')">
+    data-act="mbnav-toggle">
     <span></span><span></span><span></span>
   </button>
   <div class="mbnav-links" id="mbnavLinks">
@@ -46,3 +46,15 @@
     <a class="mbnav-cta" href="/start">MINE</a>
   </div>
 </nav>
+
+<script nonce="{{ csp_nonce }}">
+  /* Delegated so the shared nav carries no inline handler — it appears on
+     every page, so one attribute here would have forced 'unsafe-inline'
+     site-wide. */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-act="mbnav-toggle"]');
+    if (!b) return;
+    var links = document.getElementById('mbnavLinks');
+    if (links) links.classList.toggle('open');
+  });
+</script>

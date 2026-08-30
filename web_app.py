@@ -967,9 +967,6 @@ def wallet_page():
     for this URL. The others now redirect here so there is a single surface
     holding keys, and a single place to audit.
     """
-        # Converted to delegated handlers, so it can run under the strict,
-    # nonce-based policy with no 'unsafe-inline'.
-    request.csp_strict = True
     return render_template("wallet-pwa-app.html")
 
 
@@ -4591,8 +4588,11 @@ def add_security_headers(response):
     # Pages rendered with a nonce get the strict policy: no 'unsafe-inline',
     # so an injected <script> cannot execute. Templates still carrying inline
     # handlers keep the legacy policy until they are converted too.
+    # Strict by default: every served template now carries nonced script tags
+    # and no inline handlers, so 'unsafe-inline' is no longer needed anywhere.
+    # A view can set request.csp_legacy = True if it ever needs the old policy.
     nonce = getattr(request, "csp_nonce", None)
-    if nonce and getattr(request, "csp_strict", False):
+    if nonce and not getattr(request, "csp_legacy", False):
         response.headers["Content-Security-Policy"] = _CSP_STRICT.format(nonce=nonce)
     else:
         response.headers.setdefault("Content-Security-Policy", _CSP)
