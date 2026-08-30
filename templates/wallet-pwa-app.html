@@ -207,6 +207,10 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             font-size: 24px;
             cursor: pointer;
             padding: var(--spacing-xs);
+            /* A 24px glyph in 4px padding was ~32px of tappable area; give it a
+               real 44px target. */
+            min-width: 44px;
+            min-height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -654,6 +658,13 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
         /* Buttons */
         .btn {
             padding: 12px var(--spacing-md);
+            /* 48px is the tap-target floor for reliable finger use. Padding
+               alone left the shorter secondary buttons around 40px. */
+            min-height: 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
             border: none;
             border-radius: 8px;
             font-size: 14px;
@@ -1128,6 +1139,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             border: none;
             border-radius: 6px;
             padding: var(--spacing-sm) var(--spacing-md);
+            min-height: 44px;
             font-weight: 600;
             font-size: 0.9rem;
             cursor: pointer;
@@ -1914,7 +1926,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                         <label class="form-label">Recipient Address</label>
                         <div style="display: flex; gap: var(--spacing-sm);">
                             <input type="text" class="form-input" placeholder="Enter MBITE address or scan QR" id="sendRecipient" style="flex: 1;">
-                            <button style="background: var(--fire-orange); color: white; border: none; padding: 0 var(--spacing-md); border-radius: 8px; cursor: pointer; font-size: 18px;" onclick="showScreen('qrScannerScreen')" title="Scan QR code" aria-label="Scan QR code"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM19 19h2M14 19v2"/></svg></button>
+                            <button style="background: var(--fire-orange); color: white; border: none; padding: 0 var(--spacing-md); min-width: 44px; min-height: 44px; border-radius: 8px; cursor: pointer; font-size: 18px;" onclick="showScreen('qrScannerScreen')" title="Scan QR code" aria-label="Scan QR code"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM19 19h2M14 19v2"/></svg></button>
                         </div>
                     </div>
 
@@ -2101,7 +2113,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                         <label class="form-label" style="margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-size: 11px;">Your Mining Address</label>
                         <div style="background: rgba(26, 31, 58, 0.5); border: 1px solid rgba(217, 164, 65, 0.12); border-radius: 12px; padding: 14px; display: flex; align-items: center; gap: 10px;">
                             <div id="receiveAddress" style="flex: 1; font-family: 'Courier New', monospace; font-size: 12px; color: var(--gold); word-break: break-all; font-weight: 600;">moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k</div>
-                            <button onclick="copyAddress()" style="background: linear-gradient(135deg, var(--fire-orange), #B8863B); border: none; color: white; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s ease; white-space: nowrap;">Copy</button>
+                            <button onclick="copyAddress()" style="background: linear-gradient(135deg, var(--fire-orange), #B8863B); border: none; color: white; padding: 10px 14px; min-height: 44px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s ease; white-space: nowrap;">Copy</button>
                         </div>
                         <div id="copyFeedback" style="font-size: 11px; color: #2E9E6B; margin-top: 6px; text-align: center; display: none;">Copied to clipboard!</div>
                     </div>
