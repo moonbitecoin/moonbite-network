@@ -2,11 +2,27 @@
 # Cut the dashboard over to the staged build, rolling back if it does not serve.
 set -u
 
+# Branch to deploy. Defaults to main now that the rebuild is merged.
+BRANCH="${1:-main}"
+REPO=https://github.com/moonbitecoin/MoonBite-Coin.git
+
 OLD=/opt/moonbite-dashboard-old
 CUR=/opt/moonbite-dashboard
 NEW=/opt/moonbite-next
 
 fail() { echo "CUTOVER-FAILED: $*"; }
+
+echo "step: stage $BRANCH"
+rm -rf "$NEW"
+git clone -q --branch "$BRANCH" --single-branch "$REPO" "$NEW" || { fail "clone failed"; exit 1; }
+(cd "$NEW" && git log --oneline -1 | sed "s/^/  staged: /")
+
+echo "step: back up current deployment"
+BK=/root/backups/moonbite-$(date +%Y%m%d-%H%M%S)
+mkdir -p "$BK"
+cp -a "$CUR"/*.db "$BK"/ 2>/dev/null || true
+(cd "$CUR" && git rev-parse HEAD > "$BK/DEPLOYED_COMMIT.txt" 2>/dev/null) || true
+echo "  backup: $BK"
 
 echo "step: stop staged test server"
 pkill -f 'bind 127.0.0.1:8051' 2>/dev/null || true
