@@ -3721,7 +3721,12 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                         const r = await fetch('/api/explorer/tx/' + it.txid);
                         if (r.ok) {
                             const d = await r.json();
-                            if (d && d.status === 'confirmed') { it.status = 'confirmed'; changed = true; }
+                            // The confirmation status is on the nested tx, not
+                            // the API envelope's top-level "success".
+                            const tx = d && d.transaction;
+                            if (tx && (tx.status === 'confirmed' || tx.block_height != null)) {
+                                it.status = 'confirmed'; changed = true;
+                            }
                         }
                     } catch (e) { /* offline: leave pending */ }
                 }
