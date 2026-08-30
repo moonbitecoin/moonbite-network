@@ -124,3 +124,46 @@ def test_source_does_not_default_debug_on():
     assert 'os.environ.get("FLASK_DEBUG", "1")' not in src, (
         "FLASK_DEBUG must not default to 1 — that enables the remote debugger"
     )
+
+
+# --------------------------------------------------------------------------- #
+# L1: the wallet must not need 'unsafe-inline' to run
+# --------------------------------------------------------------------------- #
+def test_wallet_csp_has_no_unsafe_inline_for_scripts():
+    """'unsafe-inline' lets an injected <script> execute — the XSS vector."""
+    client = web_app.app.test_client()
+    csp = client.get("/wallet").headers.get("Content-Security-Policy", "")
+    script_src = [d for d in csp.split(";") if d.strip().startswith("script-src")]
+    assert script_src, "no script-src directive on the wallet"
+    assert "unsafe-inline" not in script_src[0], (
+        "the wallet is back to allowing inline script execution"
+    )
+    assert "nonce-" in script_src[0], "the wallet's script-src carries no nonce"
+
+
+def test_wallet_nonce_is_per_response():
+    client = web_app.app.test_client()
+    a = client.get("/wallet").headers.get("Content-Security-Policy", "")
+    b = client.get("/wallet").headers.get("Content-Security-Policy", "")
+    assert a != b, "the CSP nonce is being reused across responses"
+
+
+def test_wallet_has_no_inline_event_handlers():
+    """Inline handlers are what forced 'unsafe-inline' in the first place."""
+    import re
+    client = web_app.app.test_client()
+    html = client.get("/wallet").get_data(as_text=True)
+    found = re.findall(r'\son(?:click|keyup|change|input|submit|load)=', html)
+    assert not found, f"{len(found)} inline handler(s) reintroduced in the wallet"
+
+
+def test_every_data_fn_is_whitelisted():
+    """Dispatch is by allow-list; an unmapped data-fn would silently no-op."""
+    import re
+    from pathlib import Path
+    src = (Path(__file__).resolve().parent.parent
+           / "templates" / "wallet-pwa-app.html").read_text(encoding="utf-8")
+    used = set(re.findall(r'data-fn="(\w+)"', src))
+    block = src[src.index("const MB_ACTIONS = {"):src.index("function mbDispatch")]
+    mapped = set(re.findall(r"^\s{12}(\w+):", block, re.M))
+    assert not (used - mapped), f"unmapped data-fn: {sorted(used - mapped)}"

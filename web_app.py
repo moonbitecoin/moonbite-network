@@ -630,6 +630,23 @@ def _consensus_dict() -> dict:
     }
 
 
+@app.before_request
+def _assign_csp_nonce():
+    """A fresh nonce per response.
+
+    With a nonce in script-src, only the page's own <script> blocks run —
+    an injected one has no nonce and is refused. That is the XSS protection
+    'unsafe-inline' was giving away.
+    """
+    g_nonce = secrets.token_urlsafe(16)
+    request.csp_nonce = g_nonce
+
+
+@app.context_processor
+def inject_csp_nonce():
+    return {"csp_nonce": getattr(request, "csp_nonce", "")}
+
+
 @app.context_processor
 def inject_consensus():
     return {"consensus": _consensus_dict()}
@@ -950,6 +967,9 @@ def wallet_page():
     for this URL. The others now redirect here so there is a single surface
     holding keys, and a single place to audit.
     """
+        # Converted to delegated handlers, so it can run under the strict,
+    # nonce-based policy with no 'unsafe-inline'.
+    request.csp_strict = True
     return render_template("wallet-pwa-app.html")
 
 
@@ -4528,6 +4548,20 @@ def get_mining_alerts():
 
 # script/style allow 'unsafe-inline'. Everything else is locked to 'self', no
 # framing, no plugins. Tightening to nonces is future work (see AUDIT_REPORT.md).
+# Strict policy for converted pages: inline scripts must carry the nonce, and
+# there is no 'unsafe-inline' fallback, so injected script is blocked outright.
+_CSP_STRICT = (
+    "default-src 'self'; "
+    "script-src 'self' 'nonce-{nonce}'; "
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+    "img-src 'self' data:; "
+    "font-src 'self' https://fonts.gstatic.com; "
+    "connect-src 'self'; "
+    "base-uri 'self'; "
+    "form-action 'self'; "
+    "frame-ancestors 'none'"
+)
+
 _CSP = (
     "default-src 'self'; "
     "script-src 'self' 'unsafe-inline'; "
@@ -4554,7 +4588,14 @@ def add_security_headers(response):
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
-    response.headers.setdefault("Content-Security-Policy", _CSP)
+    # Pages rendered with a nonce get the strict policy: no 'unsafe-inline',
+    # so an injected <script> cannot execute. Templates still carrying inline
+    # handlers keep the legacy policy until they are converted too.
+    nonce = getattr(request, "csp_nonce", None)
+    if nonce and getattr(request, "csp_strict", False):
+        response.headers["Content-Security-Policy"] = _CSP_STRICT.format(nonce=nonce)
+    else:
+        response.headers.setdefault("Content-Security-Policy", _CSP)
     return response
 
 
