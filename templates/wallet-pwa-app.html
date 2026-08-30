@@ -2317,11 +2317,14 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             from '{{ url_for('static', filename='moonbite-address.js') }}';
         import { buildSignedTransaction }
             from '{{ url_for('static', filename='moonbite-tx.js') }}';
+        import { encryptSeed, decryptSeed, readSeed, isNewFormat }
+            from '{{ url_for('static', filename='moonbite-crypto.js') }}';
         window.MoonBiteAddress = {
             deriveFromSeedPhrase, normalizeSeedPhrase,
             pubkeyHashFromAddress, isValidAddress
         };
         window.MoonBiteTx = { buildSignedTransaction };
+        window.MoonBiteCrypto = { encryptSeed, decryptSeed, readSeed, isNewFormat };
         window.dispatchEvent(new Event('moonbite-address-ready'));
     </script>
 
@@ -2515,35 +2518,57 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             },
 
             // Encrypt seed phrase with PIN
-            encryptWithPIN: function(data, pin) {
-                // Simple encryption: hash(pin) XORed with data
-                // Production: use Web Crypto API for AES-256-GCM
-                const pinHash = this.simpleHash(pin);
-                let encrypted = '';
-                for (let i = 0; i < data.length; i++) {
-                    const charCode = data.charCodeAt(i);
-                    const hashCharCode = pinHash.charCodeAt(i % pinHash.length);
-                    encrypted += String.fromCharCode(charCode ^ hashCharCode);
-                }
-                return btoa(encrypted); // Base64 encode
+            /* Encrypt the seed under the PIN.
+
+               The previous implementation XORed against simpleHash(pin),
+               whose 56 leading zero characters meant the keystream was the
+               literal '0' for any seed shorter than the padding — every PIN
+               decrypted, and so did no PIN at all. Real key derivation and
+               authenticated encryption now live in moonbite-crypto.js. */
+            encryptSeedWithPIN: async function(seedPhrase, pin) {
+                return window.MoonBiteCrypto.encryptSeed(seedPhrase, pin);
             },
 
-            // Decrypt seed phrase with PIN
-            decryptWithPIN: function(encrypted, pin) {
-                try {
-                    const pinHash = this.simpleHash(pin);
-                    const decoded = atob(encrypted); // Base64 decode
-                    let decrypted = '';
-                    for (let i = 0; i < decoded.length; i++) {
-                        const charCode = decoded.charCodeAt(i);
-                        const hashCharCode = pinHash.charCodeAt(i % pinHash.length);
-                        decrypted += String.fromCharCode(charCode ^ hashCharCode);
+            /* Returns the seed, or null when the PIN is wrong.
+
+               AES-GCM authenticates, so a wrong PIN fails to decrypt rather
+               than returning garbage. That is what lets the wallet check a PIN
+               without storing it. */
+            decryptSeedWithPIN: async function(stored, pin) {
+                if (!stored) return null;
+                const { seed, migrated } =
+                    await window.MoonBiteCrypto.readSeed(stored, pin);
+                if (seed && migrated) {
+                    /* Written by the broken scheme. Re-encrypt it properly now
+                       that the plaintext is in hand — but note the old blob
+                       was readable by anyone with the device, so this seed
+                       should be considered already exposed. */
+                    try {
+                        localStorage.setItem('moonbite_seed_encrypted',
+                            await window.MoonBiteCrypto.encryptSeed(seed, pin));
+                        localStorage.setItem('moonbite_seed_migrated', '1');
+                    } catch (e) {
+                        console.error('could not migrate stored seed:', e);
                     }
-                    return decrypted;
-                } catch (e) {
-                    console.error('Decryption failed:', e);
-                    return null;
                 }
+                return seed;
+            },
+
+            /* Check a PIN by trying to decrypt with it.
+
+               The PIN used to be compared against a copy kept in localStorage
+               in the clear, sitting beside the seed it was supposed to
+               protect. Nothing is stored to compare against now. */
+            verifyPIN: async function(pin) {
+                const stored = localStorage.getItem('moonbite_seed_encrypted');
+                if (!stored) return false;
+                if (!window.MoonBiteCrypto.isNewFormat(stored)) {
+                    /* A legacy blob carries no way to check a PIN — the old
+                       scheme ignored it. Accept, migrate, and from then on the
+                       PIN is real. */
+                    return true;
+                }
+                return (await window.MoonBiteCrypto.decryptSeed(stored, pin)) !== null;
             },
 
             // Get user's wallet
@@ -3142,7 +3167,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             }
         }
 
-        function saveSetupPINAndContinue() {
+        async function saveSetupPINAndContinue() {
             const pin = window.tempPin;
             const seedPhrase = sessionStorage.getItem('pendingSeedPhrase');
 
@@ -3154,10 +3179,12 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
 
             // Encrypt seed phrase with PIN using simple XOR + hash
             // In production: use proper AES-256-GCM
-            const encryptedSeed = CustodialWallet.encryptWithPIN(seedPhrase, pin);
+            const encryptedSeed = await CustodialWallet.encryptSeedWithPIN(seedPhrase, pin);
 
-            // Save PIN, encrypted seed, and mark onboarding as complete
-            localStorage.setItem('moonbite_pin', pin);
+            /* The PIN itself is never stored. It is checked by decrypting,
+               which the previous build could not do: it kept the PIN in
+               localStorage in the clear, next to the seed. */
+            localStorage.removeItem('moonbite_pin');
             localStorage.setItem('moonbite_seed_encrypted', encryptedSeed);
             localStorage.setItem('moonbite_onboarding_complete', 'true');
 
@@ -3289,12 +3316,11 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                    stands between someone holding this device and the funds. */
                 const pin = prompt('Enter your PIN to authorize this transaction');
                 if (!pin) return fail('Transaction cancelled.');
-                if (pin !== localStorage.getItem('moonbite_pin')) {
-                    return fail('Incorrect PIN. The transaction was not sent.');
-                }
-                const seed = CustodialWallet.decryptWithPIN(
+                // A wrong PIN simply fails to decrypt; there is no stored copy
+                // to compare against.
+                const seed = await CustodialWallet.decryptSeedWithPIN(
                     localStorage.getItem('moonbite_seed_encrypted'), pin);
-                if (!seed) return fail('Could not unlock your seed phrase.');
+                if (!seed) return fail('Incorrect PIN. The transaction was not sent.');
 
                 if (btn) {
                     btn.disabled = true;
@@ -3515,7 +3541,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
         }
 
         // Save new PIN after successful recovery
-        function saveRecoveredPIN() {
+        async function saveRecoveredPIN() {
             const newPin = document.getElementById('newPin0').value +
                           document.getElementById('newPin1').value +
                           document.getElementById('newPin2').value +
@@ -3536,10 +3562,10 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             }
 
             // Re-encrypt seed with new PIN
-            const encryptedSeed = CustodialWallet.encryptWithPIN(recoveredSeed, newPin);
+            const encryptedSeed =
+                await CustodialWallet.encryptSeedWithPIN(recoveredSeed, newPin);
 
-            // Update stored PIN and encrypted seed
-            localStorage.setItem('moonbite_pin', newPin);
+            localStorage.removeItem('moonbite_pin');
             localStorage.setItem('moonbite_seed_encrypted', encryptedSeed);
 
             /* Recovering on a new device: derive the address from the seed the
@@ -3581,7 +3607,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
         }
 
         // PIN verification for returning users (fallback option)
-        function verifyPINAndLogin() {
+        async function verifyPINAndLogin() {
             const enteredPIN = document.getElementById('verifyPin0').value +
                               document.getElementById('verifyPin1').value +
                               document.getElementById('verifyPin2').value +
@@ -3594,24 +3620,20 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 return;
             }
 
-            // Get stored PIN from localStorage
-            const storedPIN = localStorage.getItem('moonbite_pin');
+            /* The PIN is verified by decrypting the seed with it. There is no
+               stored PIN to compare against — the previous build kept one in
+               localStorage in the clear, beside the seed it guarded. */
+            const encryptedSeed = localStorage.getItem('moonbite_seed_encrypted');
+            const seed = await CustodialWallet.decryptSeedWithPIN(encryptedSeed, enteredPIN);
 
-            if (enteredPIN === storedPIN) {
-                // PIN is correct - show dashboard
+            if (seed) {
                 document.getElementById('pinVerifyError').style.display = 'none';
 
                 /* Unlock is the only moment the plaintext seed is available on
                    a returning visit, so it is where a wallet still carrying
                    the old placeholder address gets its real one. */
-                const encryptedSeed = localStorage.getItem('moonbite_seed_encrypted');
-                if (encryptedSeed) {
-                    const seed = CustodialWallet.decryptWithPIN(encryptedSeed, enteredPIN);
-                    if (seed) {
-                        CustodialWallet.ensureRealAddress(seed)
-                            .then(() => CustodialWallet.refreshBalance());
-                    }
-                }
+                CustodialWallet.ensureRealAddress(seed)
+                    .then(() => CustodialWallet.refreshBalance());
 
                 showScreen('dashboardScreen');
                 setActiveNav(document.querySelectorAll('.nav-item')[0]);
