@@ -1,71 +1,15 @@
-# Byte-compiled / cache
+blockchain_monitor.log
+blockchain_node.log
+
+.git-rewrite/
 __pycache__/
 *.pyc
 
-# Test / tooling caches
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-
-# Build artifacts
-build/
-dist/
-*.egg-info/
-moonbite-site/moonbite-site.zip
-
-# Reactor app packaging intermediates (keep source + released zip only)
-reactor-app/build/
-reactor-app/dist/
-reactor-app/pkg/
-reactor-app/*.spec
-
-# Notify capture (ephemeral, may contain emails)
-notify_signups.jsonl
-
-# Virtual environments
-.venv/
-venv/
-
-# Databases
-*.sqlite
-*.sqlite-wal
-*.sqlite-shm
+# Runtime SQLite databases. These are per-deployment state, not source: when
+# they were committed, every deploy overwrote whatever users had written with
+# a stale local snapshot. Each module recreates its schema on startup, so an
+# absent file is the normal cold-start case, not an error.
 *.db
+*.db-journal
 *.db-wal
 *.db-shm
-
-# Coverage
-.coverage
-
-# --- Secrets / wallet key material (NEVER commit) ---
-walletdata/
-*.key
-*.dat
-.env
-.env.*
-!.env.example
-
-# --- Runtime state / chain data ---
-chaindata/
-*.log
-
-# --- Compiled binaries (32MB+, rebuildable) ---
-release/bin/
-
-# --- OS / editor cruft ---
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
-
-# --- Local tooling config ---
-.claude/
-
-# --- Machine-specific / local-only (contain local paths, live URLs, LAN setup) ---
-_start_roproxy.sh
-_start_tunnel.sh
-install-autostart.sh
-build_mining_estimate.py
-moonbite_lan_setup.ps1
-CURRENT_TUNNEL_URL.txt
-BigCoin_Mining_Estimate.xlsx

@@ -33,7 +33,7 @@ Three hard truths shape this decision:
 
 3. **Grants funded from a common pool need an honest, tamper-evident source and a
    transparent decision process**, or the program becomes a slush fund and a
-   reputational liability for a project whose entire brand (ADR-005/006/007) is
+   reputational liability for a project whose entire brand (ADR-006/007) is
    "every rule is fixed in code and public."
 
 Four parameters were left open in earlier discussion and are decided here:
@@ -100,7 +100,7 @@ Until every box is checked, the program is documentation only. No grants issue.
   publicly named (by pseudonym) at activation.
 - Every approved grant is **logged publicly** (grant id, amount, recipient address,
   date, and the on-chain txid) so the whole program is verifiable, matching the
-  transparency standard of ADR-005/006/007.
+  transparency standard of ADR-006/007.
 - Denials require no justification beyond "cycle exhausted" or "failed the
   published eligibility rules"; the process is not adversarial.
 

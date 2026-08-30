@@ -25,7 +25,9 @@ import time
 import uuid
 from typing import Optional
 
-_DB_PATH = os.environ.get("MOONBITE_WALLET_HISTORY_DB", "").strip() or "wallet_history.db"
+from storage import data_path
+
+_DB_PATH = data_path("wallet_history.db", "MOONBITE_WALLET_HISTORY_DB")
 
 
 def get_connection() -> sqlite3.Connection:

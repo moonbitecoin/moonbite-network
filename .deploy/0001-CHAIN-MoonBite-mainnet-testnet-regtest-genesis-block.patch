@@ -1,0 +1,390 @@
+From 5cc47932014dde1359f5bdb79ff5277d4256fe4d Mon Sep 17 00:00:00 2001
+From: MoonBite Coin <moonbitecoin@users.noreply.github.com>
+Date: Sat, 29 Aug 2026 19:30:38 +0300
+Subject: [PATCH] CHAIN: MoonBite mainnet, testnet, regtest genesis blocks
+ baked; branding to MoonBite Core
+
+- Genesis: MAIN nonce 2744921, TESTNET 284742, REGTEST 8 (all RandomX-verified)
+- Consensus: 50 MBITE subsidy, 330,000-block halving, 600s target, ~33M cap
+- Treasury: zeroed on all 3 networks (ADR-007: no protocol revenue)
+- Branding: configure.ac updated; seed nodes cleared for production setup
+- Binary names: moonbited, moonbite-cli, moonbite-qt, etc.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+---
+ configure.ac                  | 14 +++---
+ contrib/seeds/nodes_main.txt  | 83 +------------------------------
+ src/chainparams.cpp           | 65 ++++++++++++++----------
+ src/miner.cpp                 |  5 +-
+ src/test/validation_tests.cpp | 94 ++++++++++++++++++-----------------
+ 5 files changed, 101 insertions(+), 160 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index f7609339b..ccfb505ad 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -7,8 +7,8 @@ define(_CLIENT_VERSION_RC, 0)
+ define(_CLIENT_VERSION_IS_RELEASE, true)
+ define(_COPYRIGHT_YEAR, 2026)
+ define(_COPYRIGHT_HOLDERS,[The %s developers])
+-define(_COPYRIGHT_HOLDERS_SUBSTITUTION,[[BigCoin Core]])
+-AC_INIT([BigCoin Core],m4_join([.], _CLIENT_VERSION_MAJOR, _CLIENT_VERSION_MINOR, _CLIENT_VERSION_REVISION, m4_if(_CLIENT_VERSION_BUILD, [0], [], _CLIENT_VERSION_BUILD))m4_if(_CLIENT_VERSION_RC, [0], [], [rc]_CLIENT_VERSION_RC),[https://github.com/bigcoin-project/bigcoin/issues],[bigcoin],[https://bigcoin.org/])
++define(_COPYRIGHT_HOLDERS_SUBSTITUTION,[[MoonBite Core]])
++AC_INIT([MoonBite Core],m4_join([.], _CLIENT_VERSION_MAJOR, _CLIENT_VERSION_MINOR, _CLIENT_VERSION_REVISION, m4_if(_CLIENT_VERSION_BUILD, [0], [], _CLIENT_VERSION_BUILD))m4_if(_CLIENT_VERSION_RC, [0], [], [rc]_CLIENT_VERSION_RC),[https://github.com/moonbitecoin/moonbite-core/issues],[moonbite],[https://moonbite.org/])
+ AC_CONFIG_SRCDIR([src/validation.cpp])
+ AC_CONFIG_HEADERS([src/config/bitcoin-config.h])
+ AC_CONFIG_AUX_DIR([build-aux])
+@@ -20,11 +20,11 @@ if test "x$PKG_CONFIG" = x; then
+   AC_MSG_ERROR([pkg-config not found])
+ fi
+ 
+-BITCOIN_DAEMON_NAME=bigcoind
+-BITCOIN_GUI_NAME=bigcoin-qt
+-BITCOIN_CLI_NAME=bigcoin-cli
+-BITCOIN_TX_NAME=bigcoin-tx
+-BITCOIN_WALLET_TOOL_NAME=bigcoin-wallet
++BITCOIN_DAEMON_NAME=moonbited
++BITCOIN_GUI_NAME=moonbite-qt
++BITCOIN_CLI_NAME=moonbite-cli
++BITCOIN_TX_NAME=moonbite-tx
++BITCOIN_WALLET_TOOL_NAME=moonbite-wallet
+ 
+ dnl Unless the user specified ARFLAGS, force it to be cr
+ AC_ARG_VAR(ARFLAGS, [Flags for the archiver, defaults to <cr> if not set])
+diff --git a/contrib/seeds/nodes_main.txt b/contrib/seeds/nodes_main.txt
+index 6a33acda1..494a7e352 100644
+--- a/contrib/seeds/nodes_main.txt
++++ b/contrib/seeds/nodes_main.txt
+@@ -1,81 +1,2 @@
+-3.68.34.196:9333
+-5.100.250.140:9333
+-5.133.65.82:9333
+-5.149.250.76:9333
+-5.199.168.101:9333
+-15.204.183.3:9333
+-18.193.218.8:9333
+-34.206.199.154:9333
+-37.187.29.140:9333
+-45.77.162.206:9333
+-45.135.92.41:9333
+-46.19.67.66:9333
+-46.4.35.198:9333
+-51.210.217.144:9333
+-54.37.80.7:9333
+-54.37.80.214:9333
+-54.211.175.39:9333
+-64.227.105.219:9333
+-67.21.93.74:9333
+-69.165.205.142:9933
+-70.181.13.143:9333
+-72.68.211.215:9333
+-75.119.135.155:9333
+-77.221.211.137:9333
+-77.247.178.158:9333
+-80.111.142.213:9333
+-81.78.192.98:9333
+-84.201.173.23:9333
+-85.15.179.171:9333
+-85.214.61.209:9333
+-86.71.47.11:9333
+-89.19.26.211:9333
+-90.127.109.104:9333
+-91.193.181.3:9333
+-91.228.147.153:9333
+-93.183.72.195:9333
+-94.130.49.164:9333
+-95.43.97.84:9333
+-95.211.210.38:9333
+-97.115.248.110:9333
+-136.244.65.212:9333
+-142.132.218.251:9333
+-144.91.104.184:9333
+-146.59.69.245:9333
+-149.7.16.137:9333
+-157.161.128.57:9333
+-165.227.148.108:9333
+-173.208.172.165:9333
+-173.212.242.5:9333
+-174.60.186.254:9333
+-178.10.236.205:9333
+-178.41.11.254:9333
+-178.196.21.241:9333
+-185.26.30.134:7203
+-188.143.140.154:9333
+-190.2.130.27:9333
+-195.154.187.6:9333
+-206.189.195.1:9333
+-207.246.96.81:9333
+-207.255.193.47:9333
+-212.7.202.120:9333
+-212.92.101.189:9333
+-213.129.124.50:9333
+-217.182.200.177:9333
+-221.216.141.193:2321
+-[2001:4060:4419:1::57]:9333
+-[2001:67c:2b0:db32:0:1:564:fa8c]:9333
+-[2001:67c:2b0:db32:0:1:a5e3:54c8]:9333
+-[2001:b07:5d2b:d187:3583:a807:a44b:a5ce]:9333
+-[240b:11:d140:cfe1:974:745e:fc8b:362a]:9333
+-[240d:1b:64:6202:1f7a:a402:916:dc86]:9333
+-[2600:1700:539e:b00f:5054:ff:fe1b:2913]:9333
+-[2a01:4f8:161:10b2::2]:9333
+-[2a01:4f9:1a:b20f::2]:9333
+-[2a01:5f0:beef:5:0:3:0:1]:52109
+-[2a02:842a:1df:8a01:1e1b:dff:fe0b:236d]:9333
+-[2a03:6f00:5:1::23f1]:9333
+-[2a07:e00::348a:1aff:fe80:aeae]:9333
+-loshanri3c7zlkk2r2eobuhwrsvklxvjhry5l3b7elhuczwm2zu3t3yd.onion:9333
+-yqnzm3izcldork54p63k3brezoh5rnixewgqiowyv5vvog2smn3sbnyd.onion:9333
+-mjx5vzletczsow6yvyge4femnukrod4sm36s2ywyj3nwyamgjeoyaead.onion:9333
+\ No newline at end of file
++# MoonBite mainnet fixed seed(s). Cleared inherited Litecoin nodes.
++67.205.154.64:9444
+diff --git a/src/chainparams.cpp b/src/chainparams.cpp
+index f087aad55..09921162b 100644
+--- a/src/chainparams.cpp
++++ b/src/chainparams.cpp
+@@ -53,7 +53,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
+  */
+ static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
+ {
+-    const char* pszTimestamp = "BigCoin genesis 11/Jul/2026 a new mineable chain forked from Litecoin";
++    const char* pszTimestamp = "MoonBite 29/Aug/2026 fifty coins a block and no one was given any";
+     const CScript genesisOutputScript = CScript() << ParseHex("040184710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9") << OP_CHECKSIG;
+     return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
+ }
+@@ -75,11 +75,15 @@ public:
+         consensus.signet_blocks = false;
+         consensus.signet_challenge.clear();
+         consensus.nSubsidyHalvingInterval = 330000;
+-        // MoonBite community treasury (ADR-005): 10% split to sunset. PLACEHOLDER script
+-        // pending the real 4-of-7 multisig frozen at the genesis-tag ceremony.
+-        consensus.nTreasuryRateBps = 1000;
+-        consensus.nTreasurySunsetHeight = 660000; // halving 2 (block 660,000)
+-        consensus.treasuryScript = {0x00, 0x14, 0x4d, 0x42, 0x49, 0x54, 0x45, 0x54, 0x52, 0x45, 0x41, 0x53, 0x55, 0x52, 0x59, 0x50, 0x4c, 0x41, 0x43, 0x45, 0x00, 0x01};
++        // MoonBite takes NO protocol revenue. There is no treasury, no dev
++        // tail, no fee split and no team allocation: 100% of every block
++        // subsidy plus 100% of every transaction fee goes to the miner who
++        // found the block. The mechanism below is left inert (rate 0, empty
++        // script) rather than ripped out, so the zero is explicit and
++        // auditable in consensus code rather than merely absent.
++        consensus.nTreasuryRateBps = 0;
++        consensus.nTreasurySunsetHeight = 0;
++        consensus.treasuryScript.clear();
+ 
+         // MoonBite launches in 2026 from a fresh genesis, so every soft fork is
+         // active from block 1. The inherited Litecoin heights left P2SH unenforced
+@@ -137,10 +141,11 @@ public:
+ 
+         // MoonBite (ADR-001): mainnet genesis re-mined for RandomX PoW (fixed
+         // MBITE-RX-1 cache key). Coinbase/merkle unchanged; only nNonce moved.
+-        genesis = CreateGenesisBlock(1752192000, 1535826, 0x1e0ffff0, 1, 50 * COIN);
++        genesis = CreateGenesisBlock(1756479600, 2744921, 0x1e0ffff0, 1, 50 * COIN);
+         consensus.hashGenesisBlock = genesis.GetHash();
+-        assert(consensus.hashGenesisBlock == uint256S("0xb44e6b79c968f8ca759622934fccad66a829c8074c24f7c480469ce7415c4bd4"));
+-        assert(genesis.hashMerkleRoot == uint256S("0xc89ed48280189cd6bf1c25c77b9a21824eb2a373002dfd76a9ea239741bcfa18"));
++    consensus.hashGenesisBlock = genesis.GetHash();
++        assert(consensus.hashGenesisBlock == uint256S("0xcabdebc6cb45fc7aad25ab0a94cfa462b7d65e1b819932c4124dd27e3ff6a836"));
++        assert(genesis.hashMerkleRoot == uint256S("0x1d303268efc35249cc022b782f87977e458e6251c3851549e01d3b50f8d29481"));
+ 
+         // Note that of those which support the service bits prefix, most only support a subset of
+         // possible options.
+@@ -195,11 +200,15 @@ public:
+         consensus.signet_blocks = false;
+         consensus.signet_challenge.clear();
+         consensus.nSubsidyHalvingInterval = 330000;
+-        // MoonBite community treasury (ADR-005): 10% split to sunset. PLACEHOLDER script
+-        // pending the real 4-of-7 multisig frozen at the genesis-tag ceremony.
+-        consensus.nTreasuryRateBps = 1000;
+-        consensus.nTreasurySunsetHeight = 660000; // halving 2 (testnet)
+-        consensus.treasuryScript = {0x00, 0x14, 0x4d, 0x42, 0x49, 0x54, 0x45, 0x54, 0x52, 0x45, 0x41, 0x53, 0x55, 0x52, 0x59, 0x50, 0x4c, 0x41, 0x43, 0x45, 0x00, 0x01};
++        // MoonBite takes NO protocol revenue. There is no treasury, no dev
++        // tail, no fee split and no team allocation: 100% of every block
++        // subsidy plus 100% of every transaction fee goes to the miner who
++        // found the block. The mechanism below is left inert (rate 0, empty
++        // script) rather than ripped out, so the zero is explicit and
++        // auditable in consensus code rather than merely absent.
++        consensus.nTreasuryRateBps = 0;
++        consensus.nTreasurySunsetHeight = 0;
++        consensus.treasuryScript.clear();
+         consensus.BIP16Height = 0; // always enforce P2SH BIP16 on testnet
+         consensus.BIP34Height = 1;
+         consensus.BIP34Hash = uint256();
+@@ -247,10 +256,11 @@ public:
+ 
+         // MoonBite (ADR-001): testnet genesis re-mined for RandomX PoW (fixed
+         // MBITE-RX-1 cache key). Coinbase/merkle unchanged; only nNonce moved.
+-        genesis = CreateGenesisBlock(1486949366, 680478, 0x1e0ffff0, 1, 50 * COIN);
++        genesis = CreateGenesisBlock(1756479660, 284742, 0x1e0ffff0, 1, 50 * COIN);
+         consensus.hashGenesisBlock = genesis.GetHash();
+-        assert(consensus.hashGenesisBlock == uint256S("0xe8a8399f2c65635d1594a846200c11329f715c773eaa9a36d4e82df007a23ecb"));
+-        assert(genesis.hashMerkleRoot == uint256S("0xc89ed48280189cd6bf1c25c77b9a21824eb2a373002dfd76a9ea239741bcfa18"));
++    consensus.hashGenesisBlock = genesis.GetHash();
++        assert(consensus.hashGenesisBlock == uint256S("0x6ec31319b6e9b5cadfd6e65216d9073d324cdeb149eb134ed7fdb93e36f41469"));
++        assert(genesis.hashMerkleRoot == uint256S("0x1d303268efc35249cc022b782f87977e458e6251c3851549e01d3b50f8d29481"));
+ 
+         vSeeds.clear();
+         // MoonBite testnet: the inherited Litecoin DNS seeds
+@@ -311,11 +321,15 @@ public:
+         // check (ADR-005). The halving/treasury-sunset transition maths itself is
+         // still covered directly by validation_tests (330000/660000 params).
+         consensus.nSubsidyHalvingInterval = 330000;
+-        // MoonBite community treasury (ADR-005): 10% split to sunset. PLACEHOLDER script
+-        // pending the real 4-of-7 multisig frozen at the genesis-tag ceremony.
+-        consensus.nTreasuryRateBps = 1000;
+-        consensus.nTreasurySunsetHeight = 660000; // halving 2 (2 * 330000)
+-        consensus.treasuryScript = {0x00, 0x14, 0x4d, 0x42, 0x49, 0x54, 0x45, 0x54, 0x52, 0x45, 0x41, 0x53, 0x55, 0x52, 0x59, 0x50, 0x4c, 0x41, 0x43, 0x45, 0x00, 0x01};
++        // MoonBite takes NO protocol revenue. There is no treasury, no dev
++        // tail, no fee split and no team allocation: 100% of every block
++        // subsidy plus 100% of every transaction fee goes to the miner who
++        // found the block. The mechanism below is left inert (rate 0, empty
++        // script) rather than ripped out, so the zero is explicit and
++        // auditable in consensus code rather than merely absent.
++        consensus.nTreasuryRateBps = 0;
++        consensus.nTreasurySunsetHeight = 0;
++        consensus.treasuryScript.clear();
+ 
+         consensus.BIP16Height = 0;
+         consensus.BIP34Height = 500; // BIP34 activated on regtest (Used in functional tests)
+@@ -364,10 +378,11 @@ public:
+         // ground so RandomX(header) < the 0x207fffff target; merkle root (and
+         // thus the coinbase) is unchanged, only nNonce and the resulting block
+         // hash differ from the Scrypt-era genesis.
+-        genesis = CreateGenesisBlock(1296688602, 3, 0x207fffff, 1, 50 * COIN);
++        genesis = CreateGenesisBlock(1756479720, 8, 0x207fffff, 1, 50 * COIN);
+         consensus.hashGenesisBlock = genesis.GetHash();
+-        assert(consensus.hashGenesisBlock == uint256S("0x99b9b87b3b0193734f812095e31822977caca7c49f11917fd893d10e2951fd3e"));
+-        assert(genesis.hashMerkleRoot == uint256S("0xc89ed48280189cd6bf1c25c77b9a21824eb2a373002dfd76a9ea239741bcfa18"));
++    consensus.hashGenesisBlock = genesis.GetHash();
++        assert(consensus.hashGenesisBlock == uint256S("0xb8f3782378fcf04fa23d516024320f199a2ed92c116db39f7cc3ec0327167170"));
++        assert(genesis.hashMerkleRoot == uint256S("0x1d303268efc35249cc022b782f87977e458e6251c3851549e01d3b50f8d29481"));
+ 
+         vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.
+         vSeeds.clear();      //!< Regtest mode doesn't have any DNS seeds.
+diff --git a/src/miner.cpp b/src/miner.cpp
+index 04a3485f8..5b014eb62 100644
+--- a/src/miner.cpp
++++ b/src/miner.cpp
+@@ -174,8 +174,9 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
+     coinbaseTx.vin[0].prevout.SetNull();
+     coinbaseTx.vout.resize(1);
+     coinbaseTx.vout[0].scriptPubKey = scriptPubKeyIn;
+-    // MoonBite community treasury (ADR-005): split the subsidy - miner keeps 90% + fees,
+-    // the treasury slice is paid to the consensus-frozen treasury script until sunset.
++    // MoonBite takes no protocol revenue: the miner receives the entire
++    // subsidy plus all fees. GetTreasuryAmount() is hardwired to zero by
++    // chainparams, so the branch below never fires on any MoonBite network.
+     const CAmount coinbaseSubsidy = GetBlockSubsidy(nHeight, chainparams.GetConsensus());
+     const CAmount coinbaseTreasury = GetTreasuryAmount(nHeight, chainparams.GetConsensus());
+     coinbaseTx.vout[0].nValue = nFees + coinbaseSubsidy - coinbaseTreasury;
+diff --git a/src/test/validation_tests.cpp b/src/test/validation_tests.cpp
+index 7d1e599f8..acb93c437 100644
+--- a/src/test/validation_tests.cpp
++++ b/src/test/validation_tests.cpp
+@@ -60,54 +60,58 @@ BOOST_AUTO_TEST_CASE(subsidy_limit_test)
+     BOOST_CHECK_EQUAL(nSum, CAmount{3299999996370000});
+ }
+ 
+-// MoonBite (ADR-005/007): the treasury is a *split* of the block subsidy —
+-// 5% (500 bps) carved from the miner reward, halving with the subsidy, and
+-// hard-sunsetting at halving 2. No coins are created or destroyed by the split.
+-BOOST_AUTO_TEST_CASE(treasury_split_test)
++// MoonBite takes no protocol revenue. This test pins that: on every real
++// network the treasury slice must be exactly zero at every height, so 100% of
++// the subsidy reaches the miner. It also pins the guards themselves, so a
++// future change cannot quietly re-enable a dev tail without failing here.
++BOOST_AUTO_TEST_CASE(no_treasury_test)
+ {
+-    Consensus::Params params;
+-    params.nSubsidyHalvingInterval = 330000;
+-    params.nTreasuryRateBps = 500;             // 5%
+-    params.nTreasurySunsetHeight = 660000;     // halving 2
+-    params.treasuryScript = {0x00, 0x14};      // non-empty => treasury active
+-
+-    // Era 0: subsidy 50 MBITE -> 2.5 treasury / 47.5 miner (exact to the satoshi).
+-    const CAmount sub0 = GetBlockSubsidy(1, params);
+-    const CAmount tre0 = GetTreasuryAmount(1, params);
+-    BOOST_CHECK_EQUAL(sub0, 50 * COIN);
+-    BOOST_CHECK_EQUAL(tre0, sub0 * 500 / 10000);
+-    BOOST_CHECK_EQUAL(tre0, CAmount{250000000});         // 2.5 MBITE
+-    BOOST_CHECK_EQUAL(sub0 - tre0, CAmount{4750000000}); // 47.5 MBITE
+-
+-    // Era 1: after the first halving, subsidy 5 -> 0.25 treasury / 4.75 miner.
+-    const CAmount sub1 = GetBlockSubsidy(330000, params);
+-    const CAmount tre1 = GetTreasuryAmount(330000, params);
+-    BOOST_CHECK_EQUAL(sub1, 25 * COIN);
+-    BOOST_CHECK_EQUAL(tre1, CAmount{125000000});         // 1.25 MBITE
+-    BOOST_CHECK_EQUAL(sub1 - tre1, CAmount{2375000000}); // 23.75 MBITE
+-
+-    // Conservation: miner + treasury == subsidy at every height (nothing minted).
+-    for (int h : {1, 100, 329999, 330000, 659999}) {
+-        BOOST_CHECK_EQUAL(GetTreasuryAmount(h, params)
+-                              + (GetBlockSubsidy(h, params) - GetTreasuryAmount(h, params)),
+-                          GetBlockSubsidy(h, params));
++    for (const auto& net : {CBaseChainParams::MAIN,
++                            CBaseChainParams::TESTNET,
++                            CBaseChainParams::REGTEST}) {
++        const auto chain = CreateChainParams(*m_node.args, net);
++        const Consensus::Params& p = chain->GetConsensus();
++
++        // Parameters are zeroed, not merely unused.
++        BOOST_CHECK_EQUAL(p.nTreasuryRateBps, 0);
++        BOOST_CHECK(p.treasuryScript.empty());
++
++        // And the derived amount is zero everywhere it could possibly apply.
++        for (int h : {0, 1, 100, 329999, 330000, 660000, 1000000}) {
++            BOOST_CHECK_EQUAL(GetTreasuryAmount(h, p), CAmount{0});
++            // The miner therefore receives the entire subsidy.
++            BOOST_CHECK_EQUAL(GetBlockSubsidy(h, p) - GetTreasuryAmount(h, p),
++                              GetBlockSubsidy(h, p));
++        }
+     }
++}
+ 
+-    // Hard sunset: at and after halving 2 the treasury is exactly zero.
+-    BOOST_CHECK_EQUAL(GetTreasuryAmount(660000, params), 0);
+-    BOOST_CHECK_EQUAL(GetTreasuryAmount(660001, params), 0);
+-    BOOST_CHECK_EQUAL(GetTreasuryAmount(2000000, params), 0);
+-
+-    // Pre-genesis pays nothing.
+-    BOOST_CHECK_EQUAL(GetTreasuryAmount(0, params), 0);
+-
+-    // A disabled treasury (empty script or zero rate) pays nothing even pre-sunset.
+-    Consensus::Params off = params;
+-    off.treasuryScript.clear();
+-    BOOST_CHECK_EQUAL(GetTreasuryAmount(1, off), 0);
+-    Consensus::Params offbps = params;
+-    offbps.nTreasuryRateBps = 0;
+-    BOOST_CHECK_EQUAL(GetTreasuryAmount(1, offbps), 0);
++// The guard logic still has to behave if a rate is ever supplied, so exercise
++// it with explicit local params rather than deleting the coverage entirely.
++BOOST_AUTO_TEST_CASE(treasury_guards_test)
++{
++    Consensus::Params params;
++    params.nSubsidyHalvingInterval = 330000;
++    params.nTreasuryRateBps = 500;
++    params.nTreasurySunsetHeight = 660000;
++
++    // An empty script disables the slice even when a rate is set - this is what
++    // keeps a misconfiguration from paying coins to nowhere.
++    params.treasuryScript.clear();
++    BOOST_CHECK_EQUAL(GetTreasuryAmount(1, params), CAmount{0});
++
++    // With a script present the split is exact, and conserves the subsidy.
++    params.treasuryScript = {0x00, 0x14};
++    const CAmount sub = GetBlockSubsidy(1, params);
++    const CAmount tre = GetTreasuryAmount(1, params);
++    BOOST_CHECK_EQUAL(sub, 50 * COIN);
++    BOOST_CHECK_EQUAL(tre, sub * 500 / 10000);
++    BOOST_CHECK_EQUAL(tre + (sub - tre), sub);
++
++    // Genesis pays nothing, and the sunset is hard.
++    BOOST_CHECK_EQUAL(GetTreasuryAmount(0, params), CAmount{0});
++    BOOST_CHECK_EQUAL(GetTreasuryAmount(660000, params), CAmount{0});
++    BOOST_CHECK_EQUAL(GetTreasuryAmount(660001, params), CAmount{0});
+ }
+ 
+ BOOST_AUTO_TEST_SUITE_END()
+-- 
+2.34.1
+

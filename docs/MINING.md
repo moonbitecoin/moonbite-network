@@ -1,6 +1,6 @@
-# Mining BigCoin (BIG)
+# Mining MoonBite (MBITE)
 
-BigCoin is a scrypt proof-of-work coin (a Litecoin/Bitcoin Core fork). This guide
+MoonBite is a RandomX proof-of-work coin (a Litecoin/Bitcoin Core fork). This guide
 covers testing your setup on regtest, solo mining, mining, and joining a
 pool.
 
@@ -8,19 +8,19 @@ pool.
 
 | Parameter              | Value                         |
 |------------------------|-------------------------------|
-| PoW algorithm          | scrypt                        |
-| Target block time      | 2.5 minutes (150 s)           |
-| Initial block reward   | 10 BIG                        |
-| Halving interval       | every 1,000,000 blocks        |
-| Max supply             | 19,999,999.87 BIG             |
+| PoW algorithm          | RandomX (CPU-optimised)       |
+| Target block time      | 10 minutes (600 s)            |
+| Initial block reward   | 50 MBITE                      |
+| Halving interval       | every 330,000 blocks          |
+| Max supply             | 32,999,999.96 MBITE           |
 | Mainnet P2P port       | 9444                          |
 | Testnet P2P port       | 19555                         |
 | RPC default port       | 9445                          |
 
-> BigCoin uses **scrypt** — the same proof-of-work Litecoin has run since 2011.
-> Scrypt is a mature algorithm with an established hardware ecosystem: it can be
-> mined on a CPU or GPU, and dedicated **scrypt ASICs** exist (the same ones used
-> for Litecoin/Dogecoin). It is **not** ASIC-resistant.
+> MoonBite uses **RandomX** — the CPU-optimised proof-of-work Monero has run
+> since 2019. RandomX is deliberately hostile to GPUs and ASICs: the fastest
+> practical miner is an ordinary desktop CPU, which keeps mining open to anyone
+> with a computer rather than concentrating it in hardware farms.
 
 ---
 
@@ -63,7 +63,7 @@ use `getblocktemplate` to fetch work, then submit solved blocks with
 bigcoin-cli -regtest getblocktemplate '{"rules": ["segwit"]}'
 
 # ... your miner builds the block header, finds a nonce whose
-#     scrypt hash meets the target, serializes the block ...
+#     RandomX hash meets the target, serializes the block ...
 
 bigcoin-cli -regtest submitblock <hex-encoded-block>
 ```
@@ -77,53 +77,53 @@ For local testing you almost always just use `generatetoaddress`. Use
 
 ---
 
-## 2. Mining with a scrypt miner
+## 2. Mining with an external RandomX miner
 
-Scrypt is mined with a scrypt-capable miner speaking the stratum protocol to a
-pool. Because scrypt is the Litecoin algorithm, the existing tooling works:
-CPU/GPU miners such as **cpuminer** (`cpuminer-multi`) and **cgminer/bfgminer**
-(scrypt builds), and dedicated **scrypt ASICs** for serious hashrate.
+RandomX is mined with a RandomX-capable miner speaking the stratum protocol to a
+pool. Because RandomX is the Monero algorithm, the existing CPU tooling works:
+CPU miners such as **XMRig**. There are no viable RandomX ASICs — a CPU is
+the hardware.
 
-Build/obtain a scrypt miner:
+Build/obtain a RandomX miner:
 
 ```bash
-# TODO: exact scrypt miner + build steps for BigCoin TBD
-# (e.g. a cpuminer-multi / cgminer scrypt build pointed at a BigCoin stratum pool)
+# TODO: exact RandomX miner + build steps for MoonBite TBD
+# (e.g. an XMRig build pointed at a MoonBite stratum pool)
 ```
 
 ### Mining against a pool (stratum)
 
 ```bash
-# TODO: exact scrypt miner command line for BigCoin TBD
-# Point your scrypt miner at the pool's stratum endpoint:
-#   --algo=scrypt
+# TODO: exact RandomX miner command line for MoonBite TBD
+# Point your RandomX miner at the pool's stratum endpoint:
+#   --algo=rx/0
 #   --url=stratum+tcp://POOL_HOST:POOL_PORT
-#   --user=YOUR_BIG_ADDRESS.workername
+#   --user=YOUR_MBITE_ADDRESS.workername
 #   --pass=x
 ```
 
 Replace `POOL_HOST:POOL_PORT` with your pool's stratum endpoint, and
-`YOUR_BIG_ADDRESS` with a BigCoin address (starts with `B`, or a bech32
-`big1...` address). Many pools use `address.worker` as the username and `x` as
+`YOUR_MBITE_ADDRESS` with a MoonBite address (a bech32
+`moon1...` address). Many pools use `address.worker` as the username and `x` as
 the password.
 
 ### CPU "solo" mining via a local stratum bridge
 
-The core daemon speaks JSON-RPC (`getblocktemplate`), **not** stratum. Scrypt
+The core daemon speaks JSON-RPC (`getblocktemplate`), **not** stratum. RandomX
 miners speak stratum. To solo mine you need a small stratum bridge/proxy
 that translates between the two — for example a lightweight solo pool or a
-`getblocktemplate` proxy that supports scrypt. Point the bridge at your
-`bigcoind` RPC (port 9445) and point your scrypt miner at the bridge:
+`getblocktemplate` proxy that supports RandomX. Point the bridge at your
+`bigcoind` RPC (port 9445) and point your RandomX miner at the bridge:
 
 ```bash
 # 1) run bigcoind with RPC enabled (see NODE_SETUP.md)
-# 2) run a getblocktemplate->stratum bridge (scrypt) pointed at 127.0.0.1:9445
-# 3) point your scrypt miner at the bridge:
-# TODO: exact scrypt miner command + a getblocktemplate/stratum
-#       bridge for BigCoin TBD
-#   --algo=scrypt
+# 2) run a getblocktemplate->stratum bridge (RandomX) pointed at 127.0.0.1:9445
+# 3) point your RandomX miner at the bridge:
+# TODO: exact RandomX miner command + a getblocktemplate/stratum
+#       bridge for MoonBite TBD
+#   --algo=rx/0
 #   --url=stratum+tcp://127.0.0.1:3333
-#   --user=YOUR_BIG_ADDRESS
+#   --user=YOUR_MBITE_ADDRESS
 #   --pass=x
 ```
 
@@ -132,7 +132,7 @@ that translates between the two — for example a lightweight solo pool or a
 ## 3. Joining a mining pool
 
 A pool aggregates many miners' hash power and pays out proportionally, smoothing
-your rewards. To join, you point any scrypt miner at the pool's stratum URL.
+your rewards. To join, you point any RandomX miner at the pool's stratum URL.
 
 Stratum URL format (placeholder — use your pool's real values):
 
@@ -144,23 +144,23 @@ Typical worker credentials:
 
 | Field    | Value                                            |
 |----------|--------------------------------------------------|
-| Username | `YOUR_BIG_ADDRESS.workername`                    |
+| Username | `YOUR_MBITE_ADDRESS.workername`                    |
 | Password | `x` (or whatever the pool specifies)             |
-| Algo     | `scrypt`                                          |
+| Algo     | `rx/0` (RandomX)                                          |
 
 Example:
 
 ```bash
-# TODO: exact scrypt miner command line for BigCoin TBD
-# Point your scrypt miner at the pool:
-#   --algo=scrypt
-#   --url=stratum+tcp://big-pool.example.com:3333
-#   --user=BqExampleAddressXXXXXXXXXXXXXXXXXXXX.rig1
+# TODO: exact RandomX miner command line for MoonBite TBD
+# Point your RandomX miner at the pool:
+#   --algo=rx/0
+#   --url=stratum+tcp://pool.example.com:3333
+#   --user=moon1exampleaddressxxxxxxxxxxxxxxxxxxxx.rig1
 #   --pass=x
 ```
 
-Because BigCoin is new, there may be no public pools yet. Early on you may need
-to run your own solo pool (scrypt-capable) as described in section 2.
+Because MoonBite is new, there may be no public pools yet. Early on you may need
+to run your own solo pool (RandomX-capable) as described in section 2.
 
 ---
 
@@ -171,7 +171,7 @@ depends entirely on:
 
 - **Network difficulty** — rises as more hash power joins; your share of blocks
   falls accordingly.
-- **BIG's market price** — which may be zero, illiquid, or nonexistent for a new
+- **MBITE's market price** — which may be zero, illiquid, or nonexistent for a new
   coin.
 - **Your electricity cost and hardware efficiency.**
 
@@ -183,5 +183,5 @@ What is true of new networks:
 - Do not spend money on hardware or electricity expecting a return. Treat early
   mining as experimentation and network bootstrapping, not investment.
 
-BigCoin is experimental software. Mine it to help secure and bootstrap the
+MoonBite is experimental software. Mine it to help secure and bootstrap the
 network and to learn — not because you are promised a payout.

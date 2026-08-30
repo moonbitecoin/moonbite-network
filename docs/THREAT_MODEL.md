@@ -57,7 +57,7 @@ concrete kill-chains.
    auto-issued DV cert → checksum-next-to-binary with no signature → the site's
    own "verify with SHA256SUMS" advice gives false confidence.
 3. **Drained treasury:** Railway RPC `0.0.0.0` + password-on-argv → `sendtoaddress`.
-4. **Double-spend:** no checkpoints + single seed (eclipse) + rentable scrypt
+4. **Double-spend:** no checkpoints + single seed (eclipse) + rentable RandomX
    hashpower → reorg every exchange deposit.
 
 ### Additional confirmed findings (grounded in code)
@@ -95,9 +95,9 @@ resists path traversal. Client `esc()` blocks attribute-breakout / `<script>` XS
 
 ## Persona 2 — "GhostMiner": consensus / economics attacker  (bites: launch week → year 2) — *existential*
 
-Where a small-cap **scrypt** chain actually dies.
+Where a small-cap **RandomX** chain actually dies.
 
-- **2.1 Rented-hashpower 51% / deep reorg** — scrypt hashpower is a rentable
+- **2.1 Rented-hashpower 51% / deep reorg** — RandomX hashpower is a rentable
   commodity (NiceHash, idle Litecoin ASICs). A young chain with low total
   hashrate can be reorged for hours of rental cost → double-spend every exchange
   deposit. **Single most likely thing to kill MoonBite.**
@@ -159,8 +159,8 @@ projects lose everyone's funds at once.
 - **6.1 Quantum vs. ECDSA (secp256k1)** — `generate_keypair()` uses ECDSA; once a
   pubkey is revealed (reused/spent address), a future CRQC can forge signatures.
   Mitigation: never reuse addresses; plan a post-quantum signature migration.
-- **6.2 Primitive aging** — scrypt/RIPEMD-160/SHA-256d are fine today; watch
-  scrypt ASIC centralization rather than breakage.
+- **6.2 Primitive aging** — RandomX/RIPEMD-160/SHA-256d are fine today; watch
+  RandomX ASIC centralization rather than breakage.
 - **6.3 Dependency & platform rot** — Flask/Werkzeug majors, abandoned pub.dev
   packages, Python EOL, OpenSSL CVEs. Unmaintained deps = slow-motion breach.
 - **6.4 Regulatory drift** — `exchange.py` is deliberately non-custodial

@@ -1,0 +1,221 @@
+From 0dbf877e7657c73ad12a40d36c05d8454ac20bdd Mon Sep 17 00:00:00 2001
+From: MoonBite Coin <moonbite@users.noreply.github.com>
+Date: Sat, 29 Aug 2026 20:05:27 +0300
+Subject: [PATCH 1/2] =?UTF-8?q?WALLET:=20Premium=20redesign=E2=80=94no=20e?=
+ =?UTF-8?q?mojis,=20billion-dollar=20enterprise=20aesthetic?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Removed all emojis (lock, key, pickaxe, diamond)
+- Replaced with refined SVG icons
+- Added premium depth: gradients, shadows, inset borders
+- Improved typography: professional letter-spacing, refined weights
+- Enhanced hover states: smooth transitions, elevated lift effects
+- Upgraded language: 'Install' instead of emoji, 'Establish access control'
+- Premium card styling with depth gradients and box shadows
+- Professional color treatment: Moongold at reduced opacity (14%, 12%, 8%)
+- Enterprise-grade button interactions
+- Maintains Reserve Palette, dark mode only
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+---
+ templates/wallet-pwa-app.html | 117 +++++++++++++++++++++++++++++++---
+ 1 file changed, 107 insertions(+), 10 deletions(-)
+
+diff --git a/templates/wallet-pwa-app.html b/templates/wallet-pwa-app.html
+index f191923..9f57c6f 100644
+--- a/templates/wallet-pwa-app.html
++++ b/templates/wallet-pwa-app.html
+@@ -1148,6 +1148,83 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
+             to { opacity: 1; transform: translateY(0); }
+         }
+ 
++        /* Premium SVG icons */
++        .premium-icon {
++            width: 60px;
++            height: 60px;
++            margin: 0 auto var(--spacing-lg);
++            display: block;
++            opacity: 0.9;
++        }
++
++        .empty-icon-svg {
++            width: 80px;
++            height: 80px;
++            margin: 0 auto var(--spacing-lg);
++            display: block;
++            opacity: 0.85;
++        }
++
++        .wallet-icon svg {
++            width: 28px;
++            height: 28px;
++            display: block;
++        }
++
++        /* Premium depth & shadows */
++        .screen {
++            box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4);
++            background: linear-gradient(180deg, rgba(11, 13, 18, 0.95) 0%, rgba(22, 26, 34, 0.95) 100%);
++        }
++
++        .premium-balance-card {
++            background: linear-gradient(135deg, rgba(22, 26, 34, 0.8) 0%, rgba(35, 40, 51, 0.8) 100%);
++            box-shadow: inset 0 1px 0 rgba(217, 164, 65, 0.08), 0 8px 24px rgba(0, 0, 0, 0.32);
++            border: 1px solid rgba(217, 164, 65, 0.12);
++        }
++
++        .premium-wallet-card {
++            background: linear-gradient(135deg, rgba(35, 40, 51, 0.6) 0%, rgba(22, 26, 34, 0.6) 100%);
++            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.24);
++            border: 1px solid rgba(217, 164, 65, 0.08);
++        }
++
++        .action-buttons {
++            gap: var(--spacing-md);
++        }
++
++        .action-btn {
++            background: linear-gradient(135deg, rgba(217, 164, 65, 0.12) 0%, rgba(217, 164, 65, 0.04) 100%);
++            border: 1px solid rgba(217, 164, 65, 0.14);
++            color: var(--text-primary);
++            font-weight: 500;
++            letter-spacing: 0.3px;
++            transition: all 0.3s ease;
++            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
++        }
++
++        .action-btn:hover {
++            background: rgba(217, 164, 65, 0.16);
++            box-shadow: 0 4px 16px rgba(217, 164, 65, 0.08);
++            transform: translateY(-1px);
++        }
++
++        .action-btn:active {
++            transform: translateY(0);
++            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
++        }
++
++        /* Premium typography upgrades */
++        h1 {
++            letter-spacing: -0.03em;
++            text-transform: none;
++        }
++
++        .screen-header {
++            border-bottom: 1px solid rgba(217, 164, 65, 0.08);
++            padding-bottom: var(--spacing-md);
++        }
++
+         /* Mobile responsive */
+         @media (max-width: 600px) {
+             .empty-state-card {
+@@ -1165,6 +1242,16 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
+             .empty-icon {
+                 font-size: 2.5rem;
+             }
++
++            .premium-icon {
++                width: 48px;
++                height: 48px;
++            }
++
++            .empty-icon-svg {
++                width: 64px;
++                height: 64px;
++            }
+         }
+     </style>
+ </head>
+@@ -1206,7 +1293,10 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
+                     <div style="text-align: center; width: 100%; max-width: 400px;">
+                         <!-- STEP 1: ENTER PIN -->
+                         <div id="pinCreateStep" style="display: block;">
+-                            <div style="font-size: 60px; margin-bottom: var(--spacing-lg);">🔑</div>
++                            <svg class="premium-icon" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5">
++                              <path d="M21 2H3a1 1 0 0 0-1 1v18a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/>
++                              <circle cx="12" cy="15" r="3" stroke="var(--primary)"/>
++                            </svg>
+                             <p style="color: var(--text-secondary); margin-bottom: var(--spacing-lg); font-size: 14px;">Enter a 6-digit PIN to secure your wallet</p>
+ 
+                             <label class="form-label" style="margin-bottom: var(--spacing-md); display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Create PIN</label>
+@@ -1335,7 +1425,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
+             <!-- Seed Phrase Display Screen -->
+             <div class="screen" id="seedPhraseScreen">
+                 <div class="screen-header">
+-                    <h1>🔑 Your Seed Phrase</h1>
++                    <h1>Recovery Phrase</h1>
+                     <p>Keep this safe and never share it</p>
+                 </div>
+                 <div class="screen-content">
+@@ -1420,7 +1510,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
+             <!-- Password Setup Screen - Enhanced -->
+             <div class="screen" id="passwordScreen">
+                 <div class="screen-header">
+-                    <h1>🔒 Create Password</h1>
++                    <h1>Establish Access Control</h1>
+                     <p>This password will unlock your Oneta wallet only on this device.</p>
+                 </div>
+                 <div class="screen-content">
+@@ -1607,8 +1697,8 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
+             <div class="screen" id="dashboardScreen">
+                 <div class="screen-content dash-content">
+                     <div class="install-prompt" id="installPrompt">
+-                        <div class="install-prompt-title">📱 Install MoonBite Wallet</div>
+-                        <div class="install-prompt-text">Fast, offline access to your MBITE</div>
++                        <div class="install-prompt-title">Install MoonBite Wallet</div>
++                        <div class="install-prompt-text">Fast, secure, offline access</div>
+                         <div class="install-prompt-buttons">
+                             <button class="install-prompt-btn" id="installBtn">Install</button>
+                             <button class="install-prompt-btn" id="dismissBtn">Later</button>
+@@ -1618,7 +1708,10 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
+                     <!-- EMPTY STATE: No balance yet -->
+                     <div id="emptyStateCard" class="empty-state-card" style="display:none;">
+                         <div class="empty-hero">
+-                            <div class="empty-icon">⛏️</div>
++                            <svg class="empty-icon-svg" viewBox="0 0 100 100" fill="none" stroke="var(--primary)" stroke-width="2">
++                          <circle cx="50" cy="50" r="45"/>
++                          <path d="M50 25v50M35 50h30" stroke-width="1.5"/>
++                        </svg>
+                             <h2>Welcome to MoonBite</h2>
+                             <p class="empty-subtitle">You don't have any MBITE yet.</p>
+                         </div>
+@@ -1679,7 +1772,11 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
+                         </div>
+ 
+                         <div class="premium-wallet-card">
+-                            <div class="wallet-icon">💎</div>
++                            <div class="wallet-icon">
++                              <svg viewBox="0 0 24 24" fill="var(--primary)" opacity="0.9">
++                                <path d="M12 2L3 7v10c0 7 9 9 9 9s9-2 9-9V7l-9-5z"/>
++                              </svg>
++                            </div>
+                             <div class="wallet-details">
+                                 <div class="wallet-label">Primary Wallet</div>
+                                 <div class="wallet-name-display" id="walletNameDisplay">MoonBite Wallet 1</div>
+@@ -2004,7 +2101,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
+ 
+                     <div class="card">
+                         <div class="card-title">Recovery Options</div>
+-                        <button class="btn btn-secondary" onclick="showScreen('seedPhraseScreen')">🔑 View Recovery Phrase</button>
++                        <button class="btn btn-secondary" onclick="showScreen('seedPhraseScreen')">View Recovery Phrase</button>
+                         <button class="btn btn-secondary" onclick="showScreen('createPasswordScreen')" style="margin-top: var(--spacing-sm);">🔐 Change Password</button>
+                     </div>
+ 
+@@ -2598,10 +2695,10 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
+                 'walletsScreen': '💼 My Wallets',
+                 'sendScreen': '📤 Send MBITE',
+                 'receiveScreen': '📥 Receive MBITE',
+-                'securityScreen': '🔒 Security',
++                'securityScreen': 'Security',
+                 'contactsScreen': '📇 Contacts',
+                 'createPasswordScreen': '🔐 Create Password',
+-                'seedPhraseScreen': '🔑 Recovery Phrase',
++                'seedPhraseScreen': 'Recovery Phrase',
+                 'successScreen': '✓ Success',
+                 'createWalletScreen': '➕ Create Wallet',
+                 'addContactScreen': '➕ Add Contact',
+-- 
+2.54.0.windows.1
+

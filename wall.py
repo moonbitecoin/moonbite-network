@@ -25,7 +25,11 @@ import sqlite3
 import time
 from typing import Callable, Optional
 
-_DB_PATH = os.environ.get("MOONBITE_WALL_DB", "").strip() or "wall.db"
+from storage import data_path
+
+# Lands on the mounted volume when there is one, beside the code when
+# there is not. MOONBITE_WALL_DB still overrides both.
+_DB_PATH = data_path("wall.db", "MOONBITE_WALL_DB")
 
 MAX_HANDLE = 24
 MAX_ADDRESS = 128

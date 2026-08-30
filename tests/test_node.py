@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pow as powmod  # noqa: E402
 from block import CENTS_PER_COIN, block_subsidy  # noqa: E402
+from params import HALVING_INTERVAL  # noqa: E402
 from network import Network  # noqa: E402
 from node import ACCEPTED_REORG, ORPHAN, Node  # noqa: E402
 from transaction import Transaction, TxInput, TxOutput  # noqa: E402
@@ -33,16 +34,19 @@ def test_mined_block_meets_target():
 
 
 def test_subsidy_halving():
+    # MoonBite halves every 330,000 blocks, not Bitcoin's 210,000.
     assert block_subsidy(0) == 50 * CENTS_PER_COIN
-    assert block_subsidy(210_000) == 25 * CENTS_PER_COIN
-    assert block_subsidy(420_000) == 12 * CENTS_PER_COIN + 50_000_000  # 12.5 coins
-    assert block_subsidy(210_000 * 64) == 0
+    assert block_subsidy(HALVING_INTERVAL) == 25 * CENTS_PER_COIN
+    assert block_subsidy(2 * HALVING_INTERVAL) == 12 * CENTS_PER_COIN + 50_000_000  # 12.5
+    assert block_subsidy(HALVING_INTERVAL * 64) == 0
 
 
 def test_difficulty_retarget_directions():
     # Too fast -> harder (more bits); too slow -> easier (fewer bits).
-    assert powmod.calculate_next_bits(16, actual_timespan=1, expected_timespan=1000) == 17
-    assert powmod.calculate_next_bits(16, actual_timespan=10_000, expected_timespan=1000) == 15
+    # Bitcoin clamps the timespan ratio to [1/4, 4x], so a single retarget can
+    # move the target by at most two bits in either direction.
+    assert powmod.calculate_next_bits(16, actual_timespan=1, expected_timespan=1000) == 18
+    assert powmod.calculate_next_bits(16, actual_timespan=10_000, expected_timespan=1000) == 14
     assert powmod.calculate_next_bits(16, actual_timespan=1000, expected_timespan=1000) == 16
 
 

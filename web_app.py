@@ -40,28 +40,35 @@ from flask import (
 )
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-import exchange
-import forum
-import merchants
 import price_feed
-import swap_verifier
+import storage
 import wall
 import wallet_history
-import worldcup
+
 from node import Node
 from store import BlockStore
-from transaction import generate_keypair, pubkey_hash
-from wallet import address_from_pubkey_hash, is_valid_address, pubkey_hash_from_address, HDWallet
+from transaction import Transaction, generate_keypair, pubkey_hash
+from wallet import (HDWallet, address_from_pubkey_hash, is_valid_address,
+                    pubkey_hash_from_address)
 
 # Pragmatic email validation for the listing-notify capture.
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
-# Optional durable block store. When MOONBITE_CHAIN_DB points at a path, the demo
-# node persists every mined block and replays them on startup so the chain
-# survives restarts (e.g. a droplet redeploy). Unset (the default, and in tests)
-# keeps the node purely in-memory. Persistence never changes consensus: reload
-# replays each block through full validation.
+# Durable block store. The node persists every mined block and replays them on
+# startup, so the chain survives a restart or redeploy. Persistence never
+# changes consensus: reload replays each block through full validation.
+#
+# On a host with a volume this defaults on, because the alternative is a coin
+# whose entire history is deleted by its next deploy — every block, every
+# balance, back to height 0. Without a volume it stays off, so local runs and
+# tests still get a clean in-memory chain unless MOONBITE_CHAIN_DB says
+# otherwise.
 _CHAIN_DB = os.environ.get("MOONBITE_CHAIN_DB", "").strip() or None
+if _CHAIN_DB is None and storage.is_persistent():
+    _CHAIN_DB = storage.data_path("chain.db")
+elif _CHAIN_DB is not None:
+    # Honour an explicit path, but make sure its directory exists first.
+    _CHAIN_DB = storage.data_path(_CHAIN_DB, "MOONBITE_CHAIN_DB")
 _chain_store: Optional["BlockStore"] = None
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
@@ -124,6 +131,11 @@ app.mining_state = {
     "job_queue": queue.Queue(),  # Queue of pending mining jobs
     "total_blocks_mined": 0,  # Total blocks mined across all jobs
 }
+
+# How long a finished mining job stays readable in /api/mining/status before it
+# is dropped. Long enough that a UI polling every few seconds still sees the
+# final block count, short enough that the job dict cannot grow without bound.
+_FINISHED_JOB_RETENTION_SEC = 60
 
 # Global node instance (initialized once per app instance)
 app.node: Optional[Node] = None
@@ -527,6 +539,10 @@ def mining_worker(job_id: str, blocks_to_mine: int, miner_address: str) -> None:
             break
 
     job_state["is_mining"] = False
+    # Stamped so /api/mining/status can retire the job once a poller has had a
+    # chance to read its final counts.
+    job_state["finished_at"] = time.time()
+    job_state["hashrate"] = 0.0
     with app.mining_lock:
         app.mining_state["active_jobs"][job_id] = job_state
 
@@ -922,11 +938,25 @@ def wallet_manifest():
 
 @app.route("/wallet-sw.js")
 def wallet_service_worker():
-    """Serve the service worker for offline support."""
-    import os
-    sw_path = os.path.join(os.path.dirname(__file__), "wallet-sw.js")
+    """Serve the service worker for offline support.
+
+    Served from the site root, not /static, because a worker's scope is capped
+    by the path it is served from — at /static/ it could not intercept /wallet.
+
+    This looked in the repo root and 404'd, so no new worker could ever
+    install and browsers kept running whatever version they had cached. Any
+    stale worker's caches are purged by the activate handler in wallet-sw.js
+    once a current copy finally installs.
+    """
+    sw_path = os.path.join(os.path.dirname(__file__), "static", "wallet-sw.js")
     if os.path.exists(sw_path):
-        return send_file(sw_path, mimetype="application/javascript")
+        response = send_file(sw_path, mimetype="application/javascript")
+        # Never let a proxy or the browser pin an old worker: this is the one
+        # file that must always be revalidated, or an install can never be
+        # superseded.
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Service-Worker-Allowed"] = "/"
+        return response
     return jsonify({"error": "Service worker not found"}), 404
 
 
@@ -2068,6 +2098,61 @@ def api_wallet_balance():
             }
         ), 200
     except Exception as e:
+        return json_error(
+            "NETWORK_CONNECTION_ERROR",
+            debug_message=str(e),
+            suggested_action="Please wait and try again",
+        )
+
+
+@app.route("/api/address/<address>/balance", methods=["GET"])
+@rate_limit(60, 60)
+def api_address_balance(address: str):
+    """Public balance lookup for any address on the chain.
+
+    /api/wallet/balance only reports addresses held in the caller's Flask
+    session, which is useless to the wallet PWA: it derives its address
+    client-side from the user's own seed phrase, so the server has never seen
+    that address and would always answer zero.
+
+    Balances on a public chain are public — every block explorer exposes this
+    and the UTXO set is broadcast to every node — so there is nothing to
+    protect here by requiring ownership proof. Spending still requires the
+    private key; this endpoint is read-only.
+    """
+    try:
+        if not is_valid_address(address):
+            return json_error(
+                "VALIDATION_INVALID_ADDRESS",
+                suggested_action="Check the address and try again",
+            )
+
+        pkh = pubkey_hash_from_address(address)
+
+        node = get_node()
+        total = 0
+        utxos = []
+        for txid, idx, out in node.chain.utxo.items():
+            if out.pubkey_hash == pkh:
+                total += out.amount
+                utxos.append({"txid": txid, "vout": idx, "amount_units": out.amount})
+
+        from params import CENTS_PER_COIN
+
+        balance_coins = total / CENTS_PER_COIN
+        return jsonify(
+            {
+                "status": "success",
+                "address": address,
+                "balance_coins": balance_coins,
+                "balance_units": total,
+                "balance_display": f"{balance_coins:.8f}".rstrip("0").rstrip(".") or "0",
+                "utxo_count": len(utxos),
+                "utxos": utxos,
+                "height": node.chain.height,
+            }
+        ), 200
+    except Exception as e:  # noqa: BLE001
         return json_error(
             "NETWORK_CONNECTION_ERROR",
             debug_message=str(e),
@@ -3339,31 +3424,51 @@ def api_mining_status():
         next_height = chain.height + 1
         block_reward = block_subsidy(next_height)
 
+        now = time.time()
         with app.mining_lock:
-            active_jobs = app.mining_state["active_jobs"].copy()
+            jobs = app.mining_state["active_jobs"]
+            # Finished jobs stay briefly so a poller can read the final counts,
+            # then go. Keeping them forever both pinned the status at "mining"
+            # and grew this dict without bound, one entry per job for the life
+            # of the process.
+            for job_id in [
+                jid for jid, j in jobs.items()
+                if not j.get("is_mining")
+                and now - j.get("finished_at", now) > _FINISHED_JOB_RETENTION_SEC
+            ]:
+                del jobs[job_id]
+            active_jobs = jobs.copy()
 
-        # Aggregate stats from all active jobs
-        total_blocks_mined = 0
-        total_blocks_target = 0
-        total_hashes_tried = 0
-        combined_hashrate = 0.0
-        is_mining = len(active_jobs) > 0
+        running = {jid: j for jid, j in active_jobs.items() if j.get("is_mining")}
+        # Only a job that is actually running means we are mining. This counted
+        # every retained job, so the endpoint reported "mining" forever after
+        # the first one and no caller could ever see it finish.
+        is_mining = len(running) > 0
 
-        for job in active_jobs.values():
-            if job.get("is_mining"):
-                total_blocks_mined += job.get("blocks_mined", 0)
-                total_blocks_target += job.get("blocks_to_mine", 0)
-                total_hashes_tried += job.get("hashes_tried", 0)
-                combined_hashrate += job.get("hashrate", 0.0)
+        # Counters cover finished jobs too: a caller that polls after the last
+        # block lands should still see how many were mined, not a sudden zero.
+        total_blocks_mined = sum(j.get("blocks_mined", 0) for j in active_jobs.values())
+        total_blocks_target = sum(j.get("blocks_to_mine", 0) for j in active_jobs.values())
+        total_hashes_tried = sum(j.get("hashes_tried", 0) for j in active_jobs.values())
+        # Hashrate is an instantaneous rate, so only running jobs contribute.
+        combined_hashrate = sum(j.get("hashrate", 0.0) for j in running.values())
 
         # Estimated seconds to the next block at combined hashrate
         eta_seconds = (difficulty / combined_hashrate) if combined_hashrate > 0 else None
 
         response = {
             "status": "mining" if is_mining else "idle",
-            "active_jobs": len(active_jobs),
+            # Explicit boolean so a caller does not have to string-compare
+            # "mining"/"idle"/"error" to answer "is it still going?".
+            "mining": is_mining,
+            "active_jobs": len(running),
+            "retained_jobs": len(active_jobs),
             "blocks_mined": total_blocks_mined,
             "total_blocks_target": total_blocks_target,
+            # mining.html reads total_blocks, so its progress bar sat at 0%.
+            # Kept as an alias rather than renamed, so existing callers of
+            # total_blocks_target keep working.
+            "total_blocks": total_blocks_target,
             "current_height": chain.height,
             "tip_hash": chain.tip,
             "bits": next_bits,
@@ -4078,29 +4183,83 @@ def restore_backup():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/tx/broadcast", methods=["POST"])
+@rate_limit(30, 60)
+def api_tx_broadcast():
+    """Accept a transaction signed in the browser and put it on the chain.
+
+    The wallet holds the only copy of the key, so it builds and signs the
+    transaction itself and this endpoint never sees a private key or a seed.
+    What arrives is already authorized; the node re-verifies it against the
+    UTXO set exactly as it would a transaction from any peer, and rejects it
+    otherwise. A malformed or unauthorized submission can only waste its
+    sender's time.
+    """
+    data = request.get_json(silent=True) or {}
+    try:
+        raw = data.get("transaction")
+        if not isinstance(raw, dict):
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="A signed transaction is required",
+            )
+
+        try:
+            tx = Transaction.from_dict(raw)
+        except (KeyError, TypeError, ValueError) as e:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="Transaction is malformed",
+                debug_message=str(e),
+            )
+
+        node = get_node()
+        # submit_transaction validates signatures, ownership, maturity and
+        # value conservation before it will touch the mempool.
+        if not node.submit_transaction(tx):
+            return json_error(
+                "VALIDATION_INSUFFICIENT_BALANCE",
+                user_message=(
+                    "The network rejected this transaction. Its inputs may "
+                    "already be spent, or the balance may have changed."
+                ),
+                suggested_action="Refresh your balance and try again",
+            )
+
+        return jsonify(
+            {
+                "status": "success",
+                "txid": tx.txid,
+                "accepted": True,
+                "mempool_size": len(node.chain.mempool),
+            }
+        ), 200
+    except Exception as e:  # noqa: BLE001
+        return json_error(
+            "NETWORK_CONNECTION_ERROR",
+            debug_message=str(e),
+            suggested_action="Please wait and try again",
+        )
+
+
 @app.route("/api/wallet/send", methods=["POST"])
 def wallet_send():
-    """Send transaction (simplified for wallet UI)"""
-    try:
-        data = request.get_json() or {}
-        address = data.get("address")
-        amount = data.get("amount", 0)
+    """Refuse to fake a send.
 
-        if not address or amount <= 0:
-            return jsonify({"error": "Invalid address or amount"}), 400
-
-        # Simulate transaction (in production, use actual blockchain)
-        txid = secrets.token_hex(16)
-
-        return jsonify({
-            "success": True,
-            "txid": txid,
-            "address": address,
-            "amount": amount,
-            "timestamp": time.time()
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    This used to mint a random hex string, call it a txid and report success,
+    so a user could believe coins had moved when nothing had touched the
+    chain. Spending now happens through /api/tx/broadcast with a transaction
+    the wallet signed itself; there is no server-side path that can send on a
+    user's behalf, because the server has no key to sign with.
+    """
+    return json_error(
+        "VALIDATION_MISSING_FIELD",
+        user_message=(
+            "This endpoint no longer sends coins. Sign the transaction in the "
+            "wallet and submit it to /api/tx/broadcast."
+        ),
+        status_code=410,
+    )
 
 @app.route("/api/achievements", methods=["GET"])
 def get_achievements():

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import threading
 
 import node
 from block import Block, genesis_block
@@ -26,9 +27,17 @@ class BlockStore:
 
     def __init__(self, db_path: str) -> None:
         self.db_path = db_path
-        # `check_same_thread=False` keeps the store usable if a caller hands it
-        # to another thread; access here is otherwise single-threaded.
-        self._conn = sqlite3.connect(db_path)
+        # The store is opened on whichever thread first builds the node, but
+        # written from the mining worker threads, so sqlite's same-thread guard
+        # has to be lifted. It was documented as lifted here and was not, which
+        # made every persist from a mining thread raise: blocks were mined,
+        # never stored, and the chain silently reloaded empty.
+        #
+        # check_same_thread=False permits cross-thread use but does not make a
+        # connection safe for concurrent use, so every statement below runs
+        # under _lock.
+        self._lock = threading.Lock()
+        self._conn = sqlite3.connect(db_path, check_same_thread=False)
         # WAL mode improves durability/concurrency for the write-then-read
         # patterns this store sees (persist a chain, then reload it).
         self._conn.execute("PRAGMA journal_mode=WAL")
@@ -55,25 +64,28 @@ class BlockStore:
     def save_block(self, block: Block, height: int) -> None:
         """Upsert a block. INSERT OR REPLACE makes re-saving idempotent."""
         body = json.dumps(block.to_dict())
-        self._conn.execute(
-            "INSERT OR REPLACE INTO blocks (hash, prev_hash, height, body) "
-            "VALUES (?, ?, ?, ?)",
-            (block.hash, block.header.prev_hash, height, body),
-        )
-        self._conn.commit()
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO blocks (hash, prev_hash, height, body) "
+                "VALUES (?, ?, ?, ?)",
+                (block.hash, block.header.prev_hash, height, body),
+            )
+            self._conn.commit()
 
     # ----- reads ----------------------------------------------------------- #
     def has_block(self, block_hash: str) -> bool:
-        cur = self._conn.execute(
-            "SELECT 1 FROM blocks WHERE hash = ? LIMIT 1", (block_hash,)
-        )
-        return cur.fetchone() is not None
+        with self._lock:
+            cur = self._conn.execute(
+                "SELECT 1 FROM blocks WHERE hash = ? LIMIT 1", (block_hash,)
+            )
+            return cur.fetchone() is not None
 
     def get_block(self, block_hash: str) -> Block | None:
-        cur = self._conn.execute(
-            "SELECT body FROM blocks WHERE hash = ?", (block_hash,)
-        )
-        row = cur.fetchone()
+        with self._lock:
+            cur = self._conn.execute(
+                "SELECT body FROM blocks WHERE hash = ?", (block_hash,)
+            )
+            row = cur.fetchone()
         if row is None:
             return None
         return Block.from_dict(json.loads(row[0]))
@@ -81,17 +93,21 @@ class BlockStore:
     def load_blocks_in_height_order(self) -> list[Block]:
         """All stored blocks ordered by height ascending, so a parent always
         precedes its children (required for a clean replay)."""
-        cur = self._conn.execute(
-            "SELECT body FROM blocks ORDER BY height ASC, hash ASC"
-        )
-        return [Block.from_dict(json.loads(row[0])) for row in cur.fetchall()]
+        with self._lock:
+            cur = self._conn.execute(
+                "SELECT body FROM blocks ORDER BY height ASC, hash ASC"
+            )
+            rows = cur.fetchall()
+        return [Block.from_dict(json.loads(row[0])) for row in rows]
 
     def count(self) -> int:
-        cur = self._conn.execute("SELECT COUNT(*) FROM blocks")
-        return int(cur.fetchone()[0])
+        with self._lock:
+            cur = self._conn.execute("SELECT COUNT(*) FROM blocks")
+            return int(cur.fetchone()[0])
 
     def close(self) -> None:
-        self._conn.close()
+        with self._lock:
+            self._conn.close()
 
 
 def save_chain(chain, store: BlockStore) -> int:

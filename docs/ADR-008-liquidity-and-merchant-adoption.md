@@ -4,14 +4,14 @@
 - **Date:** 2026-07-22
 - **Supersedes:** —
 - **Superseded by:** —
-- **Related:** ADR-005 (treasury sunset), ADR-006 (founder allocation / burn),
+- **Related:** ADR-007 (no protocol revenue), ADR-006 (founder allocation / burn),
   ADR-007 (long-term sustainability — fees 100% to miner, governance freeze).
   A future **ADR-009** will cover the relief-grant program, which is
   intentionally deferred by this decision.
 
 ## Context
 
-MoonBite (**MBITE**) is a scrypt PoW Litecoin-family chain. It is **pre-mainnet,
+MoonBite (**MBITE**) is a RandomX PoW Litecoin-family chain. It is **pre-mainnet,
 not listed on any exchange, and has recorded zero trades** — so it has **no
 established market value**. A coin with no way to be traded and nowhere to be
 spent has no reason for anyone to hold it, and no honest basis for any grant,
