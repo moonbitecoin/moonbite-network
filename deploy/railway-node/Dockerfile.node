@@ -1,0 +1,51 @@
+# MoonBite seed node (C++ daemon) for Railway.
+#
+# This is the image DEPLOY.md describes: it runs `moonbited`, speaks P2P on
+# 9444, and serves RPC on 9445 over Railway's private network.
+#
+# It exists because the file next to it, `Dockerfile`, builds the *Flask web
+# app* despite living in a directory called `railway-node` — so a node service
+# pointed at that path silently got a web server with no daemon in it. Point
+# the node service's "Dockerfile Path" at THIS file.
+#
+# Base is Ubuntu 22.04 to match the build host: the shipped binary needs
+# glibc >= 2.34 and Boost 1.74, which is exactly what 22.04 provides. A
+# newer base (24.04 ships Boost 1.83) cannot load it without patchelf games.
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Runtime libraries the stripped binary links against. Derived from `ldd` on
+# release/bin/moonbited; keep this list in step with the build host's Boost
+# version or the container dies at exec with "cannot open shared object file".
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libboost-filesystem1.74.0 \
+        libboost-thread1.74.0 \
+        libdb5.3++ \
+        libevent-2.1-7 \
+        libevent-core-2.1-7 \
+        libevent-pthreads-2.1-7 \
+        libfmt8 \
+        libsodium23 \
+        libsqlite3-0 \
+        libzmq5 \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Build context is the repo root (Railway: Root Directory = /).
+COPY release/bin/moonbited   /usr/local/bin/moonbited
+COPY release/bin/moonbite-cli /usr/local/bin/moonbite-cli
+COPY deploy/railway-node/entrypoint.sh /entrypoint.sh
+RUN chmod +x /usr/local/bin/moonbited /usr/local/bin/moonbite-cli /entrypoint.sh
+
+# Fail the build, not the deploy, if the binary cannot run in this image.
+RUN moonbited -version | head -1
+
+# Chain data. Mount a Railway Volume here or every redeploy starts from genesis.
+VOLUME /data
+
+# 9444 = P2P, the only port that may be publicly proxied.
+# 9445 = RPC, private network only. Never attach a public domain to it.
+EXPOSE 9444 9445
+
+ENTRYPOINT ["/entrypoint.sh"]

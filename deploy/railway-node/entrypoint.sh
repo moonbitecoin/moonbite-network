@@ -13,8 +13,30 @@ set -euo pipefail
 DATADIR=/data
 mkdir -p "$DATADIR"
 
-: "${MOONBITE_RPC_USER:?set MOONBITE_RPC_USER in Railway Variables}"
-: "${MOONBITE_RPC_PASSWORD:?set MOONBITE_RPC_PASSWORD in Railway Variables}"
+# Credentials. DEPLOY.md told you to set BIGCOIN_RPC_USER/PASSWORD while this
+# script demanded MOONBITE_RPC_USER/PASSWORD and hard-failed without them, so a
+# service configured from the docs exited on the first line it reached. Accept
+# either spelling rather than making the name the thing that breaks the deploy.
+MOONBITE_RPC_USER="${MOONBITE_RPC_USER:-${BIGCOIN_RPC_USER:-}}"
+MOONBITE_RPC_PASSWORD="${MOONBITE_RPC_PASSWORD:-${BIGCOIN_RPC_PASSWORD:-}}"
+: "${MOONBITE_RPC_USER:?set MOONBITE_RPC_USER (or BIGCOIN_RPC_USER) in Railway Variables}"
+: "${MOONBITE_RPC_PASSWORD:?set MOONBITE_RPC_PASSWORD (or BIGCOIN_RPC_PASSWORD) in Railway Variables}"
+
+# The chain this binary considers valid. A /data Volume survives redeploys, so
+# after a consensus change (the 10 -> 50 MBITE subsidy, which moved genesis) the
+# volume still holds the OLD chain and the node sits on a fork nothing else
+# recognises: it handshakes with peers, then never answers getheaders. Stamp the
+# expected genesis alongside the data and wipe chain state when it disagrees.
+# Set RESET_CHAIN=1 to force the wipe. Wallets are left alone.
+EXPECTED_GENESIS=cabdebc6cb45fc7aad25ab0a94cfa462b7d65e1b819932c4124dd27e3ff6a836
+STAMP="$DATADIR/.genesis"
+if [[ "${RESET_CHAIN:-0}" == "1" ]] || { [[ -e "$DATADIR/blocks" ]] && [[ "$(cat "$STAMP" 2>/dev/null || echo none)" != "$EXPECTED_GENESIS" ]]; }; then
+  echo "Chain data does not match genesis $EXPECTED_GENESIS - resetting to genesis."
+  rm -rf "$DATADIR"/blocks "$DATADIR"/chainstate "$DATADIR"/indexes "$DATADIR"/mweb
+  rm -f  "$DATADIR"/leaf*.dat "$DATADIR"/mempool.dat "$DATADIR"/peers.dat          "$DATADIR"/banlist.dat "$DATADIR"/anchors.dat "$DATADIR"/fee_estimates.dat
+  rm -rf "$DATADIR"/probe
+fi
+echo "$EXPECTED_GENESIS" > "$STAMP"
 
 # P2P is public (via Railway TCP Proxy on 9444).
 # RPC (9445) is bound so the internal explorer service can reach it over

@@ -1,4 +1,9 @@
-# MoonBite Dashboard — Flask web app with bulletproof wallet
+# MoonBite Dashboard - the Flask WEB APP. This is NOT the seed node.
+#
+# Despite living in a directory named `railway-node`, this file builds a
+# Python web server with no moonbited in it. A node service pointed here
+# comes up as a web app that never speaks P2P. The daemon image is
+# `Dockerfile.node` in this same directory.
 # Fresh build: 2026-08-07T23:00:00Z - Complete rebuild to bypass cache
 # Serves templates/wallet-pwa-app.html (PBKDF2 + AES-256-GCM seed storage)
 FROM python:3.11-slim
