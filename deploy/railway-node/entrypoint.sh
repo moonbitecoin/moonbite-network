@@ -66,6 +66,22 @@ ARGS=(
   -maxconnections="${MAXCONNECTIONS:-40}"
 )
 
+# Outbound peers. Without at least one, this node only ever sees INBOUND
+# connections (everything arriving through the TCP proxy is inbound), and a
+# node in initial block download refuses to fetch block bodies from inbound
+# peers - so it accepted headers from the network and sat at height 0 forever.
+# Dialling the seed makes that link outbound from our side, which block
+# download trusts. Comma-separated host:port list, overridable.
+IFS=',' read -ra _PEERS <<< "${ADDNODES:-67.205.154.64:9444}"
+for _peer in "${_PEERS[@]}"; do
+  [[ -n "$_peer" ]] && ARGS+=( -addnode="$_peer" )
+done
+
+# chainparams still carries Litecoin's nMinimumChainWork - accumulated PoW a
+# young chain will not reach for years, below which Core downloads nothing.
+# Override until the constant is rebased into the binary itself.
+ARGS+=( -minimumchainwork="${MINIMUMCHAINWORK:-0x0000000000000000000000000000000000000000000000000000000000100001}" )
+
 # Optional: advertise the public P2P address so peers can dial back in.
 if [[ -n "${EXTERNAL_IP:-}" ]]; then
   ARGS+=( -externalip="$EXTERNAL_IP" -discover=0 )
