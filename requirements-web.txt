@@ -1,6 +1,22 @@
 # Runtime dependencies for the MoonBite marketing site / dashboard (web_app:app).
 # Served in production by gunicorn behind nginx (see deploy/setup-dashboard.sh).
+#
+# Kept in step with requirements.txt, minus the test-only packages. Drifting
+# from it is how a host ends up missing a dependency the app needs.
 Flask>=3.0
 gunicorn>=21.2
+werkzeug>=2.0.0
+jinja2>=3.0.0
 ecdsa>=0.19
-mnemonic>=0.20
+
+# BIP39 seed phrases; wallet.py imports this at module scope, so the app will
+# not start without it.
+mnemonic>=0.21
+
+# Password hashing. wallet_history.py imports it lazily and silently falls back
+# to a bare SHA-256 digest when it is missing, so leaving it out does not crash
+# anything — it quietly weakens password storage instead.
+argon2-cffi>=23.1.0
+
+# Imported lazily by the receive-address QR endpoint.
+qrcode>=7.4

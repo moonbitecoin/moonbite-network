@@ -1,6 +1,6 @@
 # MoonBite Dashboard — Flask web app with bulletproof wallet
 # Fresh build: 2026-08-07T23:00:00Z - Complete rebuild to bypass cache
-# Uses wallet-pwa.html with AES-256-GCM encryption
+# Serves templates/wallet-pwa-app.html (PBKDF2 + AES-256-GCM seed storage)
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -20,12 +20,15 @@ RUN chmod +x /entrypoint.sh
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements-web.txt
 
-# Verify wallet-pwa.html exists (bulletproof security wallet)
-RUN if [ ! -f "/app/templates/wallet-pwa.html" ]; then \
-    echo "ERROR: wallet-pwa.html not found!"; \
+# Verify the wallet template ships. This guarded the old wallet-pwa file, one of
+# the duplicate wallet variants deleted when the wallet was consolidated
+# onto one surface, so the check failed the build on a file that no
+# longer exists. It now guards the wallet that is actually served.
+RUN if [ ! -f "/app/templates/wallet-pwa-app.html" ]; then \
+    echo "ERROR: wallet-pwa-app.html not found!"; \
     exit 1; \
     fi && \
-    echo "✓ wallet-pwa.html found and verified"
+    echo "✓ wallet-pwa-app.html found and verified"
 
 # Expose port 5000 (Railway default PORT env var)
 EXPOSE 5000
