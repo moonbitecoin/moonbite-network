@@ -77,10 +77,12 @@ for _peer in "${_PEERS[@]}"; do
   [[ -n "$_peer" ]] && ARGS+=( -addnode="$_peer" )
 done
 
-# chainparams still carries Litecoin's nMinimumChainWork - accumulated PoW a
-# young chain will not reach for years, below which Core downloads nothing.
-# Override until the constant is rebased into the binary itself.
-ARGS+=( -minimumchainwork="${MINIMUMCHAINWORK:-0x0000000000000000000000000000000000000000000000000000000000100001}" )
+# nMinimumChainWork is already zero in this binary's chainparams (verified in
+# source and in the shipped binary), so no override is needed. The variable
+# stays as an escape hatch only.
+if [[ -n "${MINIMUMCHAINWORK:-}" ]]; then
+  ARGS+=( -minimumchainwork="$MINIMUMCHAINWORK" )
+fi
 
 # Optional: advertise the public P2P address so peers can dial back in.
 if [[ -n "${EXTERNAL_IP:-}" ]]; then
