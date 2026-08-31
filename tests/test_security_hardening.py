@@ -213,3 +213,21 @@ def test_every_page_serves_a_strict_csp(route):
     assert script_src, f"{route} has no script-src"
     assert "unsafe-inline" not in script_src[0], f"{route} allows inline script"
     assert "nonce-" in script_src[0], f"{route} carries no nonce"
+
+
+# --------------------------------------------------------------------------- #
+# The returning-user login must actually authenticate
+# --------------------------------------------------------------------------- #
+def test_no_fake_biometric_login():
+    """'Use Fingerprint/Face ID' called no WebAuthn API - it showed the
+    dashboard unauthenticated, bypassing the PIN for anyone holding the
+    device. Until a real passkey flow exists, no biometric claim may appear
+    and no login path may reach the dashboard without verification."""
+    src = (Path(__file__).resolve().parent.parent
+           / "templates" / "wallet-pwa-app.html").read_text(encoding="utf-8")
+    assert "Use Fingerprint/Face ID" not in src
+    body = src[src.index("function tryBiometricLogin"):]
+    body = body[:body.index("\n        }")]
+    assert "dashboardScreen" not in body, (
+        "tryBiometricLogin routes to the dashboard without authenticating"
+    )
