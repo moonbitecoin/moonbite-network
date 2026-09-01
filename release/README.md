@@ -8,19 +8,19 @@ These are Linux x86-64 binaries built on Ubuntu 22.04 (glibc 2.35).
 | Parameter        | Value                        |
 |------------------|------------------------------|
 | Ticker           | MBITE                          |
-| PoW algorithm    | scrypt                       |
-| Max supply       | 19,999,999.87 MBITE            |
-| Block time       | 2.5 minutes                  |
-| Initial reward   | 10 MBITE                       |
-| Halving interval | 1,000,000 blocks (~4.75 years) |
-| Address prefix   | bech32 `big1…`               |
-| P2P port         | 9444 (mainnet) / 19555 (testnet) |
-| RPC port         | 9445 (mainnet) / 19555 (testnet) |
+| PoW algorithm    | RandomX (CPU-friendly, ASIC-resistant) |
+| Max supply       | just under 33,000,000 MBITE  |
+| Block time       | 10 minutes                   |
+| Initial reward   | 50 MBITE                     |
+| Halving interval | 330,000 blocks (~6.27 years) |
+| Address prefix   | bech32 `moon1…` (testnet `tmoon1…`, regtest `rmoon1…`); legacy P2PKH `M`, P2SH `3` |
+| P2P port         | 9444 (mainnet) / 19555 (testnet) / 19444 (regtest) |
+| RPC port         | 9445 via `moonbite.conf.example` (compiled defaults: 9332 mainnet / 19332 testnet / 19443 regtest) |
 
 ### Genesis blocks (baked in)
-- **mainnet** `4deaa9d06e7a01728cbe3816a8176ea452ccf3e446cee5d02f56e8e5be46d662` (nonce 531891)
-- **testnet** `6cd25461e9837bb87af4a1f775b67580f8be6762c5f988f4b95ae2ab365895ef` (nonce 210032)
-- **regtest** `66c4bfe925b1af8ea1ae34cd1b1570737de340cab162b1d2fbedfb53ed92074c` (nonce 1)
+- **mainnet** `cabdebc6cb45fc7aad25ab0a94cfa462b7d65e1b819932c4124dd27e3ff6a836` (nonce 2744921)
+- **testnet** `6ec31319b6e9b5cadfd6e65216d9073d324cdeb149eb134ed7fdb93e36f41469` (nonce 284742)
+- **regtest** `b8f3782378fcf04fa23d516024320f199a2ed92c116db39f7cc3ec0327167170` (nonce 8)
 
 ## Contents (`bin/`)
 - `moonbited` — full node daemon
@@ -62,7 +62,7 @@ $CLI stop
 3. See the repo `docs/` for mining, wallet, node-setup, and exchange-listing guides.
 
 ## Verified working
-- **Mining:** scrypt PoW, regtest mined 101 blocks → 10 MBITE coinbase matured.
+- **Mining:** RandomX PoW, regtest mined 101 blocks → 50 MBITE coinbase matured.
 - **Transactions:** send/receive confirmed (12.5 MBITE between two wallets, mempool → block).
 - **P2P networking:** two nodes connect and sync a 10-block chain (identical tips).
 - **Wallet security:** AES-256 encryption, passphrase-locked spending, HD seed, backup — all verified.
