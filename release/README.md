@@ -15,7 +15,7 @@ These are Linux x86-64 binaries built on Ubuntu 22.04 (glibc 2.35).
 | Halving interval | 330,000 blocks (~6.27 years) |
 | Address prefix   | bech32 `moon1…` (testnet `tmoon1…`, regtest `rmoon1…`); legacy P2PKH `M`, P2SH `3` |
 | P2P port         | 9444 (mainnet) / 19555 (testnet) / 19444 (regtest) |
-| RPC port         | 9332 (mainnet) / 19332 (testnet) / 19443 (regtest) |
+| RPC port         | 9445 (mainnet) / 19445 (testnet) / 19443 (regtest) |
 
 ### Genesis blocks (baked in)
 - **mainnet** `cabdebc6cb45fc7aad25ab0a94cfa462b7d65e1b819932c4124dd27e3ff6a836` (nonce 2744921)
