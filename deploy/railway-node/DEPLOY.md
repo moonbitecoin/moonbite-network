@@ -15,7 +15,7 @@ order — the explorer needs the node to exist first.
 > - **Persistence:** attach a Railway **Volume** mounted at `/data`, or the chain
 >   is wiped on every redeploy.
 > - **Binary identity:** the shipped `release/bin/moonbited` is the 50 MBITE build
->   (subsidy 50, halving 330,000, genesis `cabdebc6cb45fc7a…`). A node still
+>   (subsidy 50, halving 330,000, genesis `2a5ae28180448a88…`). A node still
 >   running the older 10 MBITE build is on a different chain and will not sync.
 > - **Railway is not the ideal home for a P2P node** (built for HTTP). A small
 >   $4–6/mo VPS is more robust for a long-lived seed. This Docker path works as a
