@@ -1,0 +1,184 @@
+# Build MoonBite node binaries for Linux, Windows and macOS on every version
+# tag, and publish them as a GitHub Release.
+#
+# Why this exists: the RandomX proof-of-work library is vendored into the tree
+# as a prebuilt Linux .a, so a plain checkout can only build for Linux. This
+# workflow rebuilds RandomX from source (pinned to the version whose hash was
+# verified byte-identical to the vendored library) for each target, then builds
+# litecoind/litecoin-cli with the depends system. macOS in particular cannot be
+# cross-built from Linux (Apple SDK licensing); GitHub's macOS runners build it
+# natively.
+#
+# Place this file at .github/workflows/release.yml in the moonbite-core repo.
+
+name: Release binaries
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: {}
+
+env:
+  # RandomX pinned to the version whose hash matches the vendored librandomx.a
+  # (verified: the SHA-256 seed test produced byte-identical output). Bumping
+  # this is a consensus change - do not do it casually.
+  RANDOMX_TAG: "v1.2.1"
+  # Repo holding the miner scripts (mine.sh / mine.ps1 / README) shipped with
+  # the binaries, so there is one source of truth for them.
+  MINER_SCRIPTS_REPO: "moonbitecoin/MoonBite-Coin"
+
+jobs:
+  build:
+    name: "build (${{ matrix.name }})"
+    runs-on: "${{ matrix.runs-on }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x86_64
+            runs-on: ubuntu-22.04
+            host: x86_64-pc-linux-gnu
+            exe: ""
+            archive: tar.gz
+          - name: windows-x86_64
+            runs-on: ubuntu-22.04
+            host: x86_64-w64-mingw32
+            exe: ".exe"
+            archive: zip
+          - name: macos-x86_64
+            runs-on: macos-13
+            host: x86_64-apple-darwin
+            exe: ""
+            archive: tar.gz
+          - name: macos-arm64
+            runs-on: macos-14
+            host: arm64-apple-darwin
+            exe: ""
+            archive: tar.gz
+    steps:
+      - name: Checkout node source
+        uses: actions/checkout@v4
+
+      - name: Install build tooling (Linux and Windows-cross)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libtool autotools-dev automake \
+            pkg-config bsdmainutils curl git ca-certificates cmake python3
+          if [ "${{ matrix.host }}" = "x86_64-w64-mingw32" ]; then
+            sudo apt-get install -y g++-mingw-w64-x86-64
+            # Litecoin requires the POSIX threading variant of the mingw toolchain.
+            sudo update-alternatives --set x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix
+            sudo update-alternatives --set x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix
+          fi
+
+      - name: Install build tooling (macOS)
+        if: runner.os == 'macOS'
+        run: brew install automake libtool pkg-config cmake
+
+      - name: "Build RandomX for ${{ matrix.host }}"
+        run: |
+          set -e
+          git clone --depth 1 --branch "$RANDOMX_TAG" https://github.com/tevador/RandomX rx
+          mkdir rx/build && cd rx/build
+          case "${{ matrix.host }}" in
+            x86_64-w64-mingw32)
+              cmake -DCMAKE_SYSTEM_NAME=Windows \
+                    -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
+                    -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
+                    -DCMAKE_RC_COMPILER=x86_64-w64-mingw32-windres \
+                    -DCMAKE_BUILD_TYPE=Release .. ;;
+            arm64-apple-darwin)
+              cmake -DCMAKE_OSX_ARCHITECTURES=arm64 -DARCH=default \
+                    -DCMAKE_BUILD_TYPE=Release .. ;;
+            x86_64-apple-darwin)
+              cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 -DARCH=default \
+                    -DCMAKE_BUILD_TYPE=Release .. ;;
+            *)
+              cmake -DARCH=default -DCMAKE_BUILD_TYPE=Release .. ;;
+          esac
+          make -j"$(getconf _NPROCESSORS_ONLN)" randomx
+          cp librandomx.a "$GITHUB_WORKSPACE/src/crypto/randomx/librandomx.a"
+
+      - name: Cache depends
+        uses: actions/cache@v4
+        with:
+          path: "depends/${{ matrix.host }}"
+          key: "depends-${{ matrix.host }}-${{ hashFiles('depends/packages/*.mk', 'depends/*.mk') }}"
+
+      - name: Build depends (NO_QT)
+        run: |
+          make -C depends HOST=${{ matrix.host }} NO_QT=1 \
+            -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || sysctl -n hw.ncpu)"
+
+      - name: Configure and build node
+        run: |
+          set -e
+          ./autogen.sh
+          CONFIG_SITE="$PWD/depends/${{ matrix.host }}/share/config.site" \
+            ./configure --prefix=/ --disable-tests --disable-bench --with-gui=no
+          make -C src \
+            -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || sysctl -n hw.ncpu)" \
+            "litecoind${{ matrix.exe }}" "litecoin-cli${{ matrix.exe }}"
+
+      - name: Assemble bundle
+        run: |
+          set -e
+          D=moonbite-miner
+          mkdir -p "$D"
+          cp "src/litecoind${{ matrix.exe }}"    "$D/moonbited${{ matrix.exe }}"
+          cp "src/litecoin-cli${{ matrix.exe }}" "$D/moonbite-cli${{ matrix.exe }}"
+          if [ "${{ matrix.host }}" = "x86_64-w64-mingw32" ]; then
+            x86_64-w64-mingw32-strip "$D"/moonbited.exe "$D"/moonbite-cli.exe || true
+          elif [ "${{ runner.os }}" = "Linux" ]; then
+            strip "$D"/moonbited "$D"/moonbite-cli || true
+          fi
+          git clone --depth 1 "https://github.com/${MINER_SCRIPTS_REPO}.git" webrepo
+          cp webrepo/release/miner/mine.sh webrepo/release/miner/mine.ps1 \
+             webrepo/release/miner/README.md "$D/"
+          chmod +x "$D"/mine.sh || true
+          [ -f "$D/moonbited" ] && chmod +x "$D"/moonbited "$D"/moonbite-cli || true
+          if [ "${{ matrix.archive }}" = "zip" ]; then
+            zip -r "moonbite-miner-${{ matrix.name }}.zip" "$D"
+          else
+            tar -czf "moonbite-miner-${{ matrix.name }}.tar.gz" "$D"
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: "moonbite-miner-${{ matrix.name }}"
+          path: "moonbite-miner-${{ matrix.name }}.*"
+
+  release:
+    name: Publish release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Checksums
+        run: |
+          cd dist
+          sha256sum moonbite-miner-* > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+          body: |
+            MoonBite node and solo miner, all platforms.
+
+            Every binary embeds RandomX ${{ env.RANDOMX_TAG }} and the MoonBite
+            32-byte proof-of-work seed. Verify downloads against SHA256SUMS.txt.
+
+            Mining is solo and pool-free: unzip, then run mine.sh (Linux/macOS)
+            or mine.ps1 (Windows) and the node mines to your own wallet. See the
+            bundled README.
