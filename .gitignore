@@ -18,3 +18,6 @@ __pycache__/
 # committed here, so every deploy overwrote the live list with the copy from
 # git, in a public repository.
 notify_signups.jsonl
+release/miner/downloads/
+*.tar.gz
+*.zip

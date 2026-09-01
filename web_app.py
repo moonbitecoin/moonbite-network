@@ -1167,6 +1167,48 @@ def halving_page():
     return render_template("halving.html")
 
 
+# Where prepared miner bundles live if built. Kept off the deploy tree so the
+# 200MB+ binaries never enter git; a bundle is dropped here at release time.
+_MINER_DOWNLOAD_DIR = storage.data_path("downloads", "MOONBITE_DOWNLOAD_DIR")
+_MINER_BUNDLES = {
+    "linux": "moonbite-miner-linux-x86_64.tar.gz",
+    "macos": "moonbite-miner-macos.tar.gz",
+    "windows": "moonbite-miner-windows-x86_64.zip",
+}
+
+
+@app.route("/download/<os_name>")
+def download_miner(os_name):
+    """Serve a prepared miner bundle, or say plainly it is not built yet.
+
+    Never a dead link: an OS whose bundle has not been produced returns an
+    honest 'not ready, build from source' page rather than a 404 or a broken
+    download.
+    """
+    fname = _MINER_BUNDLES.get(os_name)
+    if fname is None:
+        return render_template("mine.html"), 404
+    path = os.path.join(_MINER_DOWNLOAD_DIR, fname)
+    if os.path.isfile(path):
+        return send_from_directory(_MINER_DOWNLOAD_DIR, fname, as_attachment=True)
+    # Bundle not staged for this OS yet — tell the truth.
+    msg = (
+        f"The {os_name} miner bundle is not published yet. "
+        "You can build it from source at https://github.com/moonbitecoin, "
+        "or use another platform's bundle for now."
+    )
+    return (
+        render_template("mine.html") if False else
+        (f"<!doctype html><meta charset=utf-8>"
+         f"<title>Not ready — MoonBite</title>"
+         f"<body style='background:#0B0D12;color:#F5F2EA;font-family:system-ui;"
+         f"max-width:560px;margin:16vh auto;padding:0 20px;line-height:1.6'>"
+         f"<h1 style='color:#D9A441'>Not published yet</h1><p>{msg}</p>"
+         f"<p><a style='color:#D9A441' href='/mine'>&larr; Back to mining guide</a></p>"),
+        503,
+    )
+
+
 @app.route("/start")
 def start_page():
     """Render the one-screen path from visitor to first mined block."""
