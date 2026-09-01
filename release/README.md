@@ -29,6 +29,15 @@ These are Linux x86-64 binaries built on Ubuntu 22.04 (glibc 2.35).
 - `moonbite-tx` — raw transaction utility
 - `moonbite-wallet` — offline wallet tool
 
+### Windows x86-64 (`bin/*.exe`)
+- `moonbited.exe`, `moonbite-cli.exe`, `moonbite-tx.exe`, `moonbite-wallet.exe`
+- Cross-built with mingw-w64 (POSIX threads, static libstdc++/winpthread). Depend only on
+  system DLLs (kernel32, ws2_32, advapi32, shell32, iphlpapi, msvcrt) — no runtime installer needed.
+- Headless build: no `moonbite-qt.exe` yet.
+- Verified on Windows 11: daemon starts, mines RandomX regtest blocks, shuts down cleanly.
+- `miner/mine.ps1` expects `moonbited.exe` and `moonbite-cli.exe` next to it; copy them in or
+  point the script at `bin/`.
+
 Verify downloads against `SHA256SUMS.txt`.
 
 ## Desktop wallet
