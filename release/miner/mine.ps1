@@ -22,7 +22,10 @@ $datadir = if ($env:MOONBITE_DATADIR) { $env:MOONBITE_DATADIR } else { Join-Path
 $conf    = Join-Path $datadir "moonbite.conf"
 $wallet  = "wallet"
 
-function Cli { & $clibin "-datadir=$datadir" "-conf=$conf" @args }
+# NOTE: do not name this "Cli" - PowerShell ships a built-in alias cli -> Clear-Item
+# and aliases take precedence over functions, so "Cli getblockcount" would run
+# Clear-Item and throw "Cannot find path ...\getblockcount".
+function Invoke-Cli { & $clibin "-datadir=$datadir" "-conf=$conf" @args }
 
 function Write-Conf {
   New-Item -ItemType Directory -Force -Path $datadir | Out-Null
@@ -40,10 +43,10 @@ addnode=hayabusa.proxy.rlwy.net:14389
 "@ | Set-Content -Encoding ascii $conf
 }
 
-function Wait-Rpc { for ($i=0; $i -lt 90; $i++) { try { Cli getblockcount | Out-Null; return } catch { Start-Sleep 2 } } throw "node did not start" }
+function Wait-Rpc { for ($i=0; $i -lt 90; $i++) { try { Invoke-Cli getblockcount | Out-Null; return } catch { Start-Sleep 2 } } throw "node did not start" }
 
 function Start-Node {
-  try { Cli getblockcount | Out-Null; return } catch {}
+  try { Invoke-Cli getblockcount | Out-Null; return } catch {}
   Write-Conf
   # Windows Core has no fork(), so -daemon is unsupported. Launch the node as a
   # detached, hidden background process instead; Wait-Rpc blocks until it's up.
@@ -56,9 +59,9 @@ function Ensure-Wallet {
   # createwallet/loadwallet can transiently fail. Keep trying until "wallet" is
   # in listwallets. Pass load_on_startup=true so it survives a node restart.
   for ($i=0; $i -lt 30; $i++) {
-    try { if ((Cli listwallets) -match "`"$wallet`"") { return } } catch {}
-    try { Cli createwallet $wallet false false "" false false true | Out-Null; Start-Sleep 1; continue } catch {}
-    try { Cli loadwallet $wallet true | Out-Null; Start-Sleep 1; continue } catch {}
+    try { if ((Invoke-Cli listwallets) -match "`"$wallet`"") { return } } catch {}
+    try { Invoke-Cli createwallet $wallet false false "" false false true | Out-Null; Start-Sleep 1; continue } catch {}
+    try { Invoke-Cli loadwallet $wallet true | Out-Null; Start-Sleep 1; continue } catch {}
     Start-Sleep 2
   }
   throw "could not create or load wallet '$wallet' (see $datadir\debug.log)"
@@ -68,14 +71,14 @@ function Mining-Address {
   $f = Join-Path $datadir "mining-address.txt"
   if (Test-Path $f) { $cached = (Get-Content $f -Raw).Trim(); if ($cached) { return $cached } }
   for ($i=0; $i -lt 20; $i++) {
-    try { $a = Cli "-rpcwallet=$wallet" getnewaddress "mining"; if ($a) { Set-Content -Encoding ascii $f $a; return $a } } catch { Start-Sleep 2 }
+    try { $a = Invoke-Cli "-rpcwallet=$wallet" getnewaddress "mining"; if ($a) { Set-Content -Encoding ascii $f $a; return $a } } catch { Start-Sleep 2 }
   }
   throw "could not get a mining address from wallet '$wallet'"
 }
 
 switch ($cmd) {
   "address" { Start-Node; Ensure-Wallet; Write-Host "Your mining address: $(Mining-Address)" }
-  "stop"    { try { Cli stop } catch {}; Write-Host "stopped." }
+  "stop"    { try { Invoke-Cli stop } catch {}; Write-Host "stopped." }
   "mine"    {
     Start-Node; Ensure-Wallet
     $addr = Mining-Address
@@ -87,11 +90,17 @@ switch ($cmd) {
     Write-Host "======================================================================"
     $found = 0
     while ($true) {
-      $h0 = [int](Cli getblockcount)
-      $tries = if ($env:MAXTRIES) { $env:MAXTRIES } else { "100000" }
-      try { Cli "-rpcwallet=$wallet" generatetoaddress 1 $addr $tries | Out-Null } catch {}
-      $h1 = [int](Cli getblockcount)
-      if ($h1 -gt $h0) { $found++; Write-Host "  BLOCK FOUND!  height $h1   (found $found this session)   peers $(Cli getconnectioncount)" }
+      try {
+        $h0 = [int](Invoke-Cli getblockcount)
+        $tries = if ($env:MAXTRIES) { $env:MAXTRIES } else { "100000" }
+        try { Invoke-Cli "-rpcwallet=$wallet" generatetoaddress 1 $addr $tries | Out-Null } catch {}
+        $h1 = [int](Invoke-Cli getblockcount)
+        if ($h1 -gt $h0) { $found++; Write-Host "  BLOCK FOUND!  height $h1   (found $found this session)   peers $(Invoke-Cli getconnectioncount)" }
+      } catch {
+        # node busy/restarting: log and keep going rather than exiting the miner
+        Write-Host "  (rpc hiccup: $($_.Exception.Message.Split([char]10)[0])) retrying..."
+        Start-Sleep 5
+      }
       Start-Sleep 1
     }
   }
