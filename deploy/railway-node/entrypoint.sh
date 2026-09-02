@@ -28,7 +28,7 @@ MOONBITE_RPC_PASSWORD="${MOONBITE_RPC_PASSWORD:-${BIGCOIN_RPC_PASSWORD:-}}"
 # recognises: it handshakes with peers, then never answers getheaders. Stamp the
 # expected genesis alongside the data and wipe chain state when it disagrees.
 # Set RESET_CHAIN=1 to force the wipe. Wallets are left alone.
-EXPECTED_GENESIS=2a5ae28180448a88bdd89f2cca926ce6e82d5e8eda787ede03ee244aa0aad4ea
+EXPECTED_GENESIS=3d053c590c9dcaa972d12f20793cde15e060f6cbcd1ea7bd05f4c80724f39573
 STAMP="$DATADIR/.genesis"
 if [[ "${RESET_CHAIN:-0}" == "1" ]] || { [[ -e "$DATADIR/blocks" ]] && [[ "$(cat "$STAMP" 2>/dev/null || echo none)" != "$EXPECTED_GENESIS" ]]; }; then
   echo "Chain data does not match genesis $EXPECTED_GENESIS - resetting to genesis."

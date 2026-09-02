@@ -14,9 +14,10 @@ order — the explorer needs the node to exist first.
 >   network (`*.railway.internal`). Never expose 9445 publicly.
 > - **Persistence:** attach a Railway **Volume** mounted at `/data`, or the chain
 >   is wiped on every redeploy.
-> - **Binary identity:** the shipped `release/bin/moonbited` is the 50 MBITE build
->   (subsidy 50, halving 330,000, genesis `2a5ae28180448a88…`). A node still
->   running the older 10 MBITE build is on a different chain and will not sync.
+> - **Binary identity:** the shipped `release/bin/moonbited` must be the ADR-010
+>   build (2-minute blocks, subsidy 10 MBITE, halving 1,650,000, 60-block retarget;
+>   genesis hashes re-mined at re-genesis). A node still running the older
+>   10-minute / 50 MBITE build is on a different chain and will not sync.
 > - **Railway is not the ideal home for a P2P node** (built for HTTP). A small
 >   $4–6/mo VPS is more robust for a long-lived seed. This Docker path works as a
 >   bootstrap seed; see `deploy/RUNBOOK.md` for the VPS route.

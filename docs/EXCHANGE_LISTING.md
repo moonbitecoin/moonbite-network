@@ -19,13 +19,13 @@ checklist, not a promise that any exchange will list BIG.
 - A **live, stable mainnet** that has run without consensus-breaking issues for a
   meaningful period.
 - Exchanges credit deposits only after **N confirmations** for probabilistic
-  finality. With a 2.5-minute block time:
+  finality. With a 2-minute block time:
 
   | Confirmations | Approx. wall-clock time |
   |---------------|-------------------------|
-  | 6             | ~15 minutes             |
-  | 12            | ~30 minutes             |
-  | 20            | ~50 minutes             |
+  | 6             | ~12 minutes             |
+  | 12            | ~24 minutes             |
+  | 20            | ~40 minutes             |
 
   **Recommended deposit confirmations: at least 12** for BIG (adjust upward if
   the network has low total hash power and is thus cheaper to reorg — see
@@ -100,12 +100,13 @@ Provide a single authoritative info sheet. Fill in the bracketed launch values.
 |---------------------|---------------------------------------------------|
 | Name                | BigCoin                                           |
 | Ticker              | BIG                                               |
-| Algorithm           | scrypt (PoW)                                       |
-| Block time          | 2.5 minutes                                        |
-| Initial reward      | 10 BIG                                             |
-| Halving             | every 1,000,000 blocks                            |
-| Max supply          | 19,999,999.87 BIG                                 |
-| Address prefix      | `B` (base58) / `big1...` (bech32)                 |
+| Algorithm           | RandomX (PoW, CPU-optimised)                       |
+| Block time          | 2 minutes (120 s)                                  |
+| Difficulty retarget | every 60 blocks (~2 h), 4x clamp                   |
+| Initial reward      | 10 MBITE                                           |
+| Halving             | every 1,650,000 blocks (~6.27 years)              |
+| Max supply          | 32,999,999.96 MBITE                               |
+| Address prefix      | `M` (base58) / `moon1...` (bech32)                |
 | P2P port            | 9444 (mainnet) / 19555 (testnet)                  |
 | RPC port            | 9445                                              |
 | Genesis block       | `<genesis hash / date>` (to be filled at launch)  |

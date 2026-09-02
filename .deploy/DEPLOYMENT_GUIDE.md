@@ -65,9 +65,9 @@ git push -u origin master
 
 ### C++ Chain Patch
 - **Genesis blocks (all RandomX-verified):**
-  - MAIN: nonce 2744921, hash 2a5ae28180448a88bdd89f2cca926ce6e82d5e8eda787ede03ee244aa0aad4ea
-  - TESTNET: nonce 284742, hash 67afe8001e52e947b27d201dd2768839dd79b6cf6d259f123172f4f428a3cd5d
-  - REGTEST: nonce 8, hash e5e666e9b7813a408f078a6dd8fb1457c3aed176493b99b2278d85031b259f7d
+  - MAIN: nonce 2744921, hash 3d053c590c9dcaa972d12f20793cde15e060f6cbcd1ea7bd05f4c80724f39573
+  - TESTNET: nonce 284742, hash 53cc208e3f994c5c2521b8aa89220c3a3347ac2756d404522c0b77ef8f16c4e3
+  - REGTEST: nonce 8, hash c02a0ccfd0cbcea730f27bdf94b048ab2463ef9a43021ca890701fb42bc84cdb
 - Treasury: 0% on all 3 networks (nTreasuryRateBps=0)
 - Consensus: 50 MBITE subsidy, 330,000-block halving, 600s target block time
 - Binary names: moonbited, moonbite-cli, moonbite-qt, moonbite-tx, moonbite-wallet

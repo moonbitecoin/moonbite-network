@@ -9,9 +9,10 @@ pool.
 | Parameter              | Value                         |
 |------------------------|-------------------------------|
 | PoW algorithm          | RandomX (CPU-optimised)       |
-| Target block time      | 10 minutes (600 s)            |
-| Initial block reward   | 50 MBITE                      |
-| Halving interval       | every 330,000 blocks          |
+| Target block time      | 2 minutes (120 s)             |
+| Initial block reward   | 10 MBITE                      |
+| Difficulty retarget    | every 60 blocks (~2 h), 4x clamp |
+| Halving interval       | every 1,650,000 blocks (~6.27 years) |
 | Max supply             | 32,999,999.96 MBITE           |
 | Mainnet P2P port       | 9444                          |
 | Testnet P2P port       | 19555                         |
@@ -45,7 +46,7 @@ Create an address to receive the coinbase reward and mine to it:
 ADDR=$(bigcoin-cli -regtest getnewaddress)
 
 # mine 101 blocks to that address
-# (coinbase outputs need 100 confirmations before they are spendable)
+# (coinbase outputs need 100 confirmations — ~200 minutes on mainnet — before they are spendable)
 bigcoin-cli -regtest generatetoaddress 101 "$ADDR"
 
 # check that the reward is now spendable

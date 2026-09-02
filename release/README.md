@@ -10,17 +10,18 @@ These are Linux x86-64 binaries built on Ubuntu 22.04 (glibc 2.35).
 | Ticker           | MBITE                          |
 | PoW algorithm    | RandomX (CPU-friendly, ASIC-resistant) |
 | Max supply       | just under 33,000,000 MBITE  |
-| Block time       | 10 minutes                   |
-| Initial reward   | 50 MBITE                     |
-| Halving interval | 330,000 blocks (~6.27 years) |
+| Block time       | 2 minutes (120 s)            |
+| Difficulty retarget | every 60 blocks (~2 h), 4x clamp |
+| Initial reward   | 10 MBITE                     |
+| Halving interval | 1,650,000 blocks (~6.27 years) |
 | Address prefix   | bech32 `moon1…` (testnet `tmoon1…`, regtest `rmoon1…`); legacy P2PKH `M`, P2SH `3` |
 | P2P port         | 9444 (mainnet) / 19555 (testnet) / 19444 (regtest) |
 | RPC port         | 9445 (mainnet) / 19445 (testnet) / 19443 (regtest) |
 
 ### Genesis blocks (baked in)
-- **mainnet** `2a5ae28180448a88bdd89f2cca926ce6e82d5e8eda787ede03ee244aa0aad4ea` (nonce 287032)
-- **testnet** `67afe8001e52e947b27d201dd2768839dd79b6cf6d259f123172f4f428a3cd5d` (nonce 217889)
-- **regtest** `e5e666e9b7813a408f078a6dd8fb1457c3aed176493b99b2278d85031b259f7d` (nonce 2)
+- **mainnet** `3d053c590c9dcaa972d12f20793cde15e060f6cbcd1ea7bd05f4c80724f39573` (nonce 10407)
+- **testnet** `53cc208e3f994c5c2521b8aa89220c3a3347ac2756d404522c0b77ef8f16c4e3` (nonce 1890)
+- **regtest** `c02a0ccfd0cbcea730f27bdf94b048ab2463ef9a43021ca890701fb42bc84cdb` (nonce 5)
 
 ## Contents (`bin/`)
 - `moonbited` — full node daemon
@@ -50,9 +51,9 @@ It runs an integrated node and reports client name `MoonBiteCore` on the network
 CLI="./bin/moonbite-cli -regtest -rpcuser=big -rpcpassword=big"
 $CLI createwallet "wallet"
 ADDR=$($CLI getnewaddress)
-$CLI generatetoaddress 101 "$ADDR"   # mine 101 blocks (coinbase matures at 100)
-$CLI getbalance                      # -> 50.00000000
-$CLI sendtoaddress <dest_addr> 12.5  # send MBITE
+$CLI generatetoaddress 101 "$ADDR"   # mine 101 blocks (coinbase matures at 100 blocks, ~200 min on mainnet)
+$CLI getbalance                      # -> 10.00000000
+$CLI sendtoaddress <dest_addr> 2.5  # send MBITE
 $CLI stop
 ```
 
@@ -62,8 +63,8 @@ $CLI stop
 3. See the repo `docs/` for mining, wallet, node-setup, and exchange-listing guides.
 
 ## Verified working
-- **Mining:** RandomX PoW, regtest mined 101 blocks → 50 MBITE coinbase matured.
-- **Transactions:** send/receive confirmed (12.5 MBITE between two wallets, mempool → block).
+- **Mining:** RandomX PoW, regtest mined 101 blocks → 10 MBITE coinbase matured.
+- **Transactions:** send/receive confirmed (2.5 MBITE between two wallets, mempool → block).
 - **P2P networking:** two nodes connect and sync a 10-block chain (identical tips).
 - **Wallet security:** AES-256 encryption, passphrase-locked spending, HD seed, backup — all verified.
 - **Block explorer:** wired to a live node, serves real block/tx data (no demo mode).

@@ -16,11 +16,11 @@ BigCoin supports two address styles:
 
 | Type              | Looks like                    | Notes                          |
 |-------------------|-------------------------------|--------------------------------|
-| Base58 (legacy/P2SH) | starts with `B` (e.g. `B7f...`) | address prefix is `B`       |
-| Bech32 (native SegWit) | `big1...`                  | bech32 HRP is `big`, lowercase |
+| Base58 (legacy/P2SH) | starts with `M` (e.g. `M7f...`) | address prefix is `M`       |
+| Bech32 (native SegWit) | `moon1...`                 | bech32 HRP is `moon`, lowercase |
 
-Prefer `big1...` (bech32) addresses where supported — they are cheaper to spend
-and have better error detection. Legacy `B...` addresses remain valid.
+Prefer `moon1...` (bech32) addresses where supported — they are cheaper to spend
+and have better error detection. Legacy `M...` addresses remain valid.
 
 ---
 
@@ -59,14 +59,14 @@ bigcoin-cli getblockchaininfo
 
 ```bash
 bigcoin-cli getnewaddress
-# -> big1qexampleaddressxxxxxxxxxxxxxxxxxxxxx
+# -> moon1qexampleaddressxxxxxxxxxxxxxxxxxxxx
 ```
 
 You can label addresses and request a specific type:
 
 ```bash
 bigcoin-cli getnewaddress "savings"            # labeled
-bigcoin-cli getnewaddress "" "bech32"          # force bech32 (big1...)
+bigcoin-cli getnewaddress "" "bech32"          # force bech32 (moon1...)
 bigcoin-cli getnewaddress "" "legacy"          # force legacy (B...)
 ```
 
@@ -97,7 +97,7 @@ bigcoin-cli sendtoaddress "<address>" <amount>
 Example:
 
 ```bash
-bigcoin-cli sendtoaddress "big1qrecipientxxxxxxxxxxxxxxxxxxxxxxxxxx" 12.5
+bigcoin-cli sendtoaddress "moon1qrecipientxxxxxxxxxxxxxxxxxxxxxxxxx" 12.5
 ```
 
 Useful options:
