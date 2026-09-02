@@ -47,6 +47,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 import exchange
 import forum
 import merchants
+import live_explorer
 import price_feed
 import storage
 import swap_verifier
@@ -3301,6 +3302,9 @@ def api_biometric_audit():
 @rate_limit(60, 60)  # Public info endpoint
 def api_blockchain_info():
     """Get blockchain state: height, tip hash, total money, tx count."""
+    if _merchant_use_rpc():
+        payload, code = live_explorer.blockchain_info(_get_merchant_rpc())
+        return jsonify(payload), code
     try:
         node = get_node()
         chain = node.chain
@@ -3949,6 +3953,9 @@ def api_mempool():
     Shape matches the wallet page's mempool panel: each entry carries the txid,
     input/output counts, and the total output value in cents.
     """
+    if _merchant_use_rpc():
+        payload, code = live_explorer.mempool(_get_merchant_rpc())
+        return jsonify(payload), code
     try:
         node = get_node()
         transactions = []
@@ -4034,9 +4041,6 @@ def _tx_summary(tx) -> dict:
 def api_explorer_blocks():
     """Return a paginated list of blocks, newest first."""
     try:
-        node = get_node()
-        chain = node.chain
-
         try:
             limit = int(request.args.get("limit", 15))
         except (TypeError, ValueError):
@@ -4049,6 +4053,12 @@ def api_explorer_blocks():
         limit = max(1, min(limit, 50))
         offset = max(0, offset)
 
+        if _merchant_use_rpc():
+            payload, code = live_explorer.blocks(_get_merchant_rpc(), limit, offset)
+            return jsonify(payload), code
+
+        node = get_node()
+        chain = node.chain
         active = chain.active_chain()  # genesis -> tip
         newest_first = list(reversed(active))
         page = newest_first[offset : offset + limit]
@@ -4071,6 +4081,9 @@ def api_explorer_blocks():
 @app.route("/api/explorer/block/<identifier>", methods=["GET"])
 def api_explorer_block(identifier: str):
     """Return a block by height or hash, including its transactions."""
+    if _merchant_use_rpc():
+        payload, code = live_explorer.block(_get_merchant_rpc(), identifier)
+        return jsonify(payload), code
     try:
         node = get_node()
         chain = node.chain
@@ -4103,6 +4116,9 @@ def api_explorer_block(identifier: str):
 @app.route("/api/explorer/tx/<txid>", methods=["GET"])
 def api_explorer_tx(txid: str):
     """Return a transaction by txid from the active chain or mempool."""
+    if _merchant_use_rpc():
+        payload, code = live_explorer.tx(_get_merchant_rpc(), txid)
+        return jsonify(payload), code
     try:
         node = get_node()
         chain = node.chain
@@ -4136,6 +4152,9 @@ def api_explorer_tx(txid: str):
 @app.route("/api/explorer/search", methods=["GET"])
 def api_explorer_search():
     """Resolve a query to a block (by height/hash) or a transaction (by txid)."""
+    if _merchant_use_rpc():
+        payload, code = live_explorer.search(_get_merchant_rpc(), request.args.get("q") or "")
+        return jsonify(payload), code
     try:
         node = get_node()
         chain = node.chain

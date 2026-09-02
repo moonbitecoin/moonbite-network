@@ -111,8 +111,11 @@
         return h.length > 20 ? `${h.substring(0, 10)}…${h.substring(h.length - 8)}` : h;
     }
 
+    // Base units per coin: 100 on the educational chain, 1e8 on MoonBite Core.
+    // /api/blockchain/info reports it; every payload also carries units_per_coin.
+    let UNITS_PER_COIN = 100;
     function fmtCoins(sats) {
-        const coins = Math.floor(sats / 100);
+        const coins = Math.floor(sats / UNITS_PER_COIN);
         return `${coins.toLocaleString()} MBITE`;
     }
 
@@ -127,6 +130,7 @@
             const r = await fetch('/api/blockchain/info');
             const d = await r.json();
             if (d.status === 'success') {
+                if (d.units_per_coin) { UNITS_PER_COIN = d.units_per_coin; }
                 document.getElementById('statHeight').textContent = d.height;
                 document.getElementById('statMempool').textContent = d.mempool_size;
             }
