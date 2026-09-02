@@ -16,6 +16,7 @@
 hayabusa.proxy.rlwy.net:14389
 
 # Permanent VPS seeds (append one line per host as you provision them):
+67.205.154.64:9444
 # 203.0.113.10:9444
 # 203.0.113.11:9444
 # 203.0.113.12:9444
