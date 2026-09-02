@@ -34,10 +34,10 @@ def test_mined_block_meets_target():
 
 
 def test_subsidy_halving():
-    # MoonBite halves every 330,000 blocks, not Bitcoin's 210,000.
-    assert block_subsidy(0) == 50 * CENTS_PER_COIN
-    assert block_subsidy(HALVING_INTERVAL) == 25 * CENTS_PER_COIN
-    assert block_subsidy(2 * HALVING_INTERVAL) == 12 * CENTS_PER_COIN + 50_000_000  # 12.5
+    # MoonBite halves every 1,650,000 blocks (ADR-010), not Bitcoin's 210,000.
+    assert block_subsidy(0) == 10 * CENTS_PER_COIN
+    assert block_subsidy(HALVING_INTERVAL) == 5 * CENTS_PER_COIN
+    assert block_subsidy(2 * HALVING_INTERVAL) == 2 * CENTS_PER_COIN + 50_000_000  # 2.5
     assert block_subsidy(HALVING_INTERVAL * 64) == 0
 
 

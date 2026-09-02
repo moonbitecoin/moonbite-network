@@ -50,7 +50,7 @@ def test_definition_of_done():
 
     # --- Alice pays Bob via her wallet; tx gossips; n2 mines it ----------- #
     bob_addr = bob.new_key()
-    amount = 30 * CENTS_PER_COIN
+    amount = 6 * CENTS_PER_COIN  # fits inside one 10-MBITE coinbase (ADR-010)
     fee = 1_000
     pay = alice.create_transaction(utxos, bob_addr, amount, fee=fee)
     assert n1.submit_transaction(pay) is True

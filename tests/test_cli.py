@@ -13,20 +13,20 @@ def test_newkey_prints_valid_address(capsys):
     assert wallet.is_valid_address(out)
 
 
-def test_subsidy_height_0_is_50(capsys):
+def test_subsidy_height_0_is_10(capsys):
     rc = cli.main(["subsidy", "--height", "0"])
     assert rc == 0
     out = capsys.readouterr().out
-    assert "50 coins" in out
+    assert "10 coins" in out
 
 
-def test_subsidy_first_halving_is_25(capsys):
-    # MoonBite halves every 330,000 blocks; this asserted Bitcoin's 210,000.
+def test_subsidy_first_halving_is_5(capsys):
+    # MoonBite halves every 1,650,000 blocks (ADR-010); this asserted Bitcoin's 210,000.
     from params import HALVING_INTERVAL
     rc = cli.main(["subsidy", "--height", str(HALVING_INTERVAL)])
     assert rc == 0
     out = capsys.readouterr().out
-    assert "25 coins" in out
+    assert "5 coins" in out
 
 
 def test_mine_two_blocks(capsys):

@@ -20,8 +20,8 @@ CENTS_PER_COIN = 100_000_000          # smallest unit; 1 coin = 100,000,000 cent
 MIN_RELAY_FEE = 10                    # nominal floor: spam costs something, zero-fee is refused
 MAX_MEMPOOL_TXS = 5_000               # hard ceiling on queued transactions
 
-INITIAL_SUBSIDY = 50 * CENTS_PER_COIN  # block reward at height 0 — generous start, then only down
-HALVING_INTERVAL = 330_000            # halve the subsidy every N blocks (~6.27 yr at 10-min blocks)
+INITIAL_SUBSIDY = 10 * CENTS_PER_COIN  # block reward at height 0 (ADR-010: 10 MBITE per 2-minute block)
+HALVING_INTERVAL = 1_650_000          # halve the subsidy every N blocks (~6.27 yr at 2-min blocks)
 
 
 def _total_emission() -> int:
@@ -42,7 +42,7 @@ MAX_SUPPLY = _total_emission()        # 32,999,999.96 MBITE — just under 33M
 MAX_MONEY = MAX_SUPPLY                 # no single value may exceed the cap
 
 # --- proof-of-work / timing ------------------------------------------------ #
-TARGET_BLOCK_TIME = 600               # seconds between blocks (10 minutes)
+TARGET_BLOCK_TIME = 120               # seconds between blocks (2 minutes, ADR-010)
 RETARGET_INTERVAL = 2016              # recompute difficulty every N blocks
 MIN_BITS = 1
 MAX_BITS = 240                        # keep below 256 so a target always exists
