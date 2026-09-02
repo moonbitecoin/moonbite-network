@@ -40,7 +40,7 @@ addnode=hayabusa.proxy.rlwy.net:14389
 "@ | Set-Content -Encoding ascii $conf
 }
 
-function Wait-Rpc { for ($i=0; $i -lt 60; $i++) { try { Cli getblockcount | Out-Null; return } catch { Start-Sleep 2 } } throw "node did not start" }
+function Wait-Rpc { for ($i=0; $i -lt 90; $i++) { try { Cli getblockcount | Out-Null; return } catch { Start-Sleep 2 } } throw "node did not start" }
 
 function Start-Node {
   try { Cli getblockcount | Out-Null; return } catch {}
@@ -51,13 +51,26 @@ function Start-Node {
   Wait-Rpc
 }
 
-function Ensure-Wallet { try { Cli createwallet $wallet | Out-Null } catch { try { Cli loadwallet $wallet | Out-Null } catch {} } }
+function Ensure-Wallet {
+  # Retry: right after startup the wallet subsystem may not be ready yet, and
+  # createwallet/loadwallet can transiently fail. Keep trying until "wallet" is
+  # in listwallets. Pass load_on_startup=true so it survives a node restart.
+  for ($i=0; $i -lt 30; $i++) {
+    try { if ((Cli listwallets) -match "`"$wallet`"") { return } } catch {}
+    try { Cli createwallet $wallet false false "" false false true | Out-Null; Start-Sleep 1; continue } catch {}
+    try { Cli loadwallet $wallet true | Out-Null; Start-Sleep 1; continue } catch {}
+    Start-Sleep 2
+  }
+  throw "could not create or load wallet '$wallet' (see $datadir\debug.log)"
+}
 
 function Mining-Address {
   $f = Join-Path $datadir "mining-address.txt"
-  if (Test-Path $f) { return (Get-Content $f -Raw).Trim() }
-  $a = Cli "-rpcwallet=$wallet" getnewaddress "mining"
-  Set-Content -Encoding ascii $f $a; return $a
+  if (Test-Path $f) { $cached = (Get-Content $f -Raw).Trim(); if ($cached) { return $cached } }
+  for ($i=0; $i -lt 20; $i++) {
+    try { $a = Cli "-rpcwallet=$wallet" getnewaddress "mining"; if ($a) { Set-Content -Encoding ascii $f $a; return $a } } catch { Start-Sleep 2 }
+  }
+  throw "could not get a mining address from wallet '$wallet'"
 }
 
 switch ($cmd) {
