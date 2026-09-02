@@ -153,7 +153,7 @@
                         <div class="tx-id"><strong>#${b.height}</strong> &nbsp; <code>${esc(shortHash(b.hash))}</code></div>
                         <div class="tx-meta">
                             <span class="tx-status confirmed">${b.confirmations} conf</span>
-                            <span class="tx-detail">${b.tx_count} tx · ${b.size} bytes · nonce ${b.nonce}</span>
+                            <span class="tx-detail">${b.tx_count} tx${b.size ? ' · ' + b.size + ' bytes' : ''} · nonce ${b.nonce}</span>
                         </div>
                     </div>
                     <div class="tx-detail">${esc(fmtTime(b.timestamp))}</div>
