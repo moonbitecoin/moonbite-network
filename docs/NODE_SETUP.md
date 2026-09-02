@@ -46,10 +46,7 @@ txindex=1          # required for explorers / full tx lookups
 dbcache=512        # MB of DB cache; raise for faster sync if you have RAM
 
 # ---- peers to connect to at startup ----
-addnode=seed1.bigcoin.example.com
-addnode=seed2.bigcoin.example.com
-addnode=203.0.113.10:9444
-addnode=198.51.100.20:9444
+addnode=67.205.154.64:9444
 ```
 
 > **Security:** Use a long, random `rpcpassword`. Prefer `rpcauth` (hashed
