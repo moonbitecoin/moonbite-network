@@ -66,12 +66,13 @@ apt-get install -y -qq libboost-system1.74.0 libboost-filesystem1.74.0 \
 # The droplet runs Ubuntu 24.04 while the binaries are built on 22.04; the
 # 22.04 runtime libraries live in /opt/moonbite/lib (shipped once by
 # ship_libs.sh). Point the new binaries at them via rpath.
-if ldd /root/moonbited.new | grep -q 'not found' && [ -d /opt/moonbite/lib ]; then
+# (no grep -q here: under pipefail it SIGPIPEs ldd and reads as "false")
+if [ -n "$(ldd /root/moonbited.new | grep 'not found')" ] && [ -d /opt/moonbite/lib ]; then
   command -v patchelf >/dev/null || apt-get install -y -qq patchelf >/dev/null 2>&1
   patchelf --set-rpath /opt/moonbite/lib /root/moonbited.new
   patchelf --set-rpath /opt/moonbite/lib /root/moonbite-cli.new
 fi
-if ldd /root/moonbited.new | grep -q 'not found'; then
+if [ -n "$(ldd /root/moonbited.new | grep 'not found')" ]; then
   echo "missing shared libraries:"; ldd /root/moonbited.new | grep 'not found'; exit 1
 fi
 
