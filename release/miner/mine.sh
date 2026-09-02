@@ -40,7 +40,6 @@ rpcuser=moonminer
 rpcpassword=$pw
 # Live MoonBite seed nodes - how your miner finds the network.
 addnode=67.205.154.64:9444
-addnode=hayabusa.proxy.rlwy.net:14389
 CONF
   chmod 600 "$CONF"
 }

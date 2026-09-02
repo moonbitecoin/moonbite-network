@@ -21,7 +21,7 @@ set -euo pipefail
 SRC="${MOONBITE_SRC:-/root/bigcoin-core/src}"
 DATADIR="${MOONBITE_DATADIR:-/root/.moonbite}"
 CONF="$DATADIR/moonbite.conf"
-SEEDS="${MOONBITE_SEEDS:-67.205.154.64:9444,hayabusa.proxy.rlwy.net:14389}"
+SEEDS="${MOONBITE_SEEDS:-67.205.154.64:9444}"
 WALLET=miner
 
 DAEMON="$SRC/litecoind"

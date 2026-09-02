@@ -39,7 +39,6 @@ dbcache=512
 rpcuser=moonminer
 rpcpassword=$pw
 addnode=67.205.154.64:9444
-addnode=hayabusa.proxy.rlwy.net:14389
 "@ | Set-Content -Encoding ascii $conf
 }
 

@@ -1,3 +1,6 @@
+> **Retired (2026-09-03).** The Railway seed was dropped; the DigitalOcean droplet
+> (`deploy/seeds.txt`) is the network's seed. Kept for reference only.
+
 # Deploy MoonBite live on Railway (node + explorer)
 
 This directory ships the **MoonBite seed node** as a Docker service for Railway,

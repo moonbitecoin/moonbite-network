@@ -8,12 +8,8 @@
 # and commit — that is how the seed set grows. Keep at least 3 live for
 # redundancy so no single host is a point of failure.
 #
-# Default P2P port is 9444. The Railway bootstrap uses a rotating proxy port.
+# Default P2P port is 9444.
 # ---------------------------------------------------------------------------
-
-# Live bootstrap seed (Railway TCP proxy -> internal :9444).
-# Non-standard rotating port; update if Railway reassigns the proxy.
-hayabusa.proxy.rlwy.net:14389
 
 # Permanent VPS seeds (append one line per host as you provision them):
 67.205.154.64:9444
