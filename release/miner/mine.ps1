@@ -50,7 +50,11 @@ function Start-Node {
   Write-Conf
   # Windows Core has no fork(), so -daemon is unsupported. Launch the node as a
   # detached, hidden background process instead; Wait-Rpc blocks until it's up.
-  Start-Process -FilePath $daemon -ArgumentList "-datadir=$datadir","-conf=$conf" -WindowStyle Hidden | Out-Null
+  # One RandomX thread per PHYSICAL core: each VM needs 2 MB of L3, so running a
+  # thread per hyper-thread thrashes the cache and is measurably slower.
+  $cores = (Get-CimInstance Win32_Processor | Measure-Object -Property NumberOfCores -Sum).Sum
+  if (-not $cores -or $cores -lt 1) { $cores = 1 }
+  Start-Process -FilePath $daemon -ArgumentList "-datadir=$datadir","-conf=$conf","-miningthreads=$cores" -WindowStyle Hidden | Out-Null
   Wait-Rpc
 }
 
