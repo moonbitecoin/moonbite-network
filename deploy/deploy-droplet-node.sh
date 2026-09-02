@@ -42,7 +42,10 @@ sleep 2
 [ -n "${G:-}" ] || { echo "could not read genesis from the binary" >&2; exit 1; }
 echo "    genesis: $G"
 
-ADDNODES=$(grep -vE '^\s*(#|$)' "$SEEDS" | sed 's/^/addnode=/')
+# Every seed except this host itself (a node dialling its own address just logs
+# "connected to self" once a minute).
+VPS_HOST="${VPS#*@}"
+ADDNODES=$(grep -vE '^\s*(#|$)' "$SEEDS" | grep -v "^${VPS_HOST}:" | sed 's/^/addnode=/')
 
 echo "==> Uploading binaries"
 scp -q -i "$SSH_KEY" "$DAEMON" "$VPS:/root/moonbited.new"
