@@ -45,7 +45,9 @@ function Wait-Rpc { for ($i=0; $i -lt 60; $i++) { try { Cli getblockcount | Out-
 function Start-Node {
   try { Cli getblockcount | Out-Null; return } catch {}
   Write-Conf
-  & $daemon "-datadir=$datadir" "-conf=$conf" "-daemon" | Out-Null
+  # Windows Core has no fork(), so -daemon is unsupported. Launch the node as a
+  # detached, hidden background process instead; Wait-Rpc blocks until it's up.
+  Start-Process -FilePath $daemon -ArgumentList "-datadir=$datadir","-conf=$conf" -WindowStyle Hidden | Out-Null
   Wait-Rpc
 }
 
