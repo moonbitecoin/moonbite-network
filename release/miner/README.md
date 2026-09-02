@@ -42,9 +42,9 @@ running; each block it finds is printed.
 
 ## Speed
 
-The node mines with one CPU thread. That is deliberate for a fair launch -
-nobody starts with an unfair edge. A faster multi-core miner may be released
-later; it is not required to mine today.
+The node mines with one RandomX thread per physical CPU core, so a normal
+desktop is competitive. Difficulty retargets every 60 blocks (about two hours)
+toward a 2-minute block time, and each block pays 10 MBITE.
 
 ## Commands
 

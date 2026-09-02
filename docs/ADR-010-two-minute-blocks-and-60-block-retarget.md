@@ -5,7 +5,7 @@
 - **Supersedes:** the 10-minute / 50 MBITE / 330,000-block / 2016-block-retarget
   parameters previously baked into chainparams and documented across the site.
 - **Superseded by:** —
-- **Related:** ADR-001 (RandomX proof-of-work), ADR-006 (founder allocation /
+- **Related:** ADR-001 (RandomX proof-of-work), ADR-006 (fair launch and founder
   early-mining disclosure), ADR-007 (no protocol revenue, governance freeze).
 
 ## Context

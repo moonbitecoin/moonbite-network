@@ -1,33 +1,29 @@
-MoonBite miners — quick start
-=============================
+MoonBite miner downloads
+========================
 
-Three ways to mine the live MoonBite (MBITE) chain. All of them mine to an
-address you choose; the node does the real proof-of-work.
+Mining is solo and pool-free: you run a full MoonBite node on your own
+machine and it mines straight to your own wallet. No pool, no account, no
+third party ever touches your coins.
 
-1) BROWSER MINER (nothing to install)
-   Open:  https://moonbite.org/spark.html
-   Paste your address, click "Mine a block". Done.
+Downloads (current chain: 2-minute blocks, 10 MBITE per block)
 
-2) INSTANT MINER (one-click desktop)
-   - Windows:      double-click  Mine-MoonBite.bat
-   - macOS/Linux:  run           ./mine-moonbite.sh   (chmod +x it first)
-   Paste your address when asked. Keep moonbite-miner.py in the same folder.
+  Windows   https://moonbite.org/download/windows
+  Linux     https://moonbite.org/download/linux
+  macOS     not built yet - build from source at
+            https://github.com/moonbitecoin/moonbite-core
 
-3) DESKTOP MINER (command line, full control)
-   python moonbite-miner.py --address YOUR_ADDRESS
-   Options:
-     --address   MoonBite address to receive rewards (required)
-     --explorer  explorer URL (defaults to the live chain)
-     --rounds    stop after N blocks (default 0 = forever)
-     --sleep     seconds between rounds (default 0)
+Each bundle contains moonbited (the node), moonbite-cli, the mine script and a
+README. Unzip, then run:
 
-Requirements: Python 3 for options 2 and 3. Nothing for the browser miner.
+  Windows (PowerShell)   .\mine.ps1
+  Linux                  ./mine.sh
 
-Notes
------
-- You need a MoonBite address (moon1... or M...). Create one with your wallet
-  or a node:  moonbite-cli getnewaddress
-- The mining endpoint must be enabled on the explorer (operator sets
-  MINING_ENABLED=1). If you see "mining endpoint is disabled", the operator
-  has not turned it on yet.
-- No coins have market value pre-mainnet. This is for testing the network.
+That starts the node, connects to the seed, creates a wallet and mines to your
+own address. Back up the wallet folder in your data directory
+(%USERPROFILE%\.moonbite on Windows, ~/.moonbite on Linux).
+
+Verify what you downloaded against the checksums published with each GitHub
+release: https://github.com/moonbitecoin/MoonBite-Coin/releases
+
+Binaries built before 3 September 2026 belong to an earlier chain and will
+not connect to the current network.
