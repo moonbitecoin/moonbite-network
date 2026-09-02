@@ -42,22 +42,34 @@ def _to_units(value) -> int:
     return int((Decimal(str(value)) * UNITS_PER_COIN).to_integral_value())
 
 
-def _block_summary(block: dict, tip_height: int) -> dict:
-    height = int(block["height"])
+def _block_summary(header: dict, stats: dict | None, tip_height: int) -> dict:
+    """Summary from getblockheader (+ getblockstats). Both are served from the
+    block index and never touch the block files: `getblock` re-verifies the
+    RandomX proof of work on read, which costs seconds on a small seed box."""
+    height = int(header["height"])
+    stats = stats or {}
     return {
         "height": height,
-        "hash": block["hash"],
+        "hash": header["hash"],
         "confirmations": tip_height - height + 1,
-        "timestamp": block["time"],
-        "tx_count": len(block.get("tx", [])),
-        "size": block.get("size", 0),
-        "nonce": block.get("nonce", 0),
-        "bits": block.get("bits"),
-        "prev_hash": block.get("previousblockhash"),
-        "merkle_root": block.get("merkleroot"),
-        "difficulty": block.get("difficulty"),
+        "timestamp": header["time"],
+        "tx_count": int(header.get("nTx", stats.get("txs", 0)) or 0),
+        "size": int(stats.get("total_size", 0) or 0),
+        "nonce": header.get("nonce", 0),
+        "bits": header.get("bits"),
+        "prev_hash": header.get("previousblockhash"),
+        "merkle_root": header.get("merkleroot"),
+        "difficulty": header.get("difficulty"),
+        "subsidy": stats.get("subsidy"),
         "units_per_coin": UNITS_PER_COIN,
     }
+
+
+def _stats(rpc, height: int) -> dict | None:
+    try:
+        return rpc.call("getblockstats", height, ["total_size", "txs", "subsidy"])
+    except Exception:  # noqa: BLE001 — decorative fields only
+        return None
 
 
 def _tx_summary(tx: dict) -> dict:
@@ -124,7 +136,7 @@ def blockchain_info(rpc) -> tuple[dict, int]:
     except Exception:  # noqa: BLE001 — stats are decorative
         tx_count = 0
     issued = issued_supply_units(height)
-    tip = rpc.getblock(info["bestblockhash"], 1)
+    tip = rpc.call("getblockheader", info["bestblockhash"])
     return (
         {
             "status": "success",
@@ -154,7 +166,7 @@ def blocks(rpc, limit: int, offset: int) -> tuple[dict, int]:
     out = []
     h = start
     while h >= 0 and len(out) < limit:
-        out.append(_block_summary(rpc.getblock(rpc.getblockhash(h), 1), tip))
+        out.append(_block_summary(rpc.call("getblockheader", rpc.getblockhash(h)), _stats(rpc, h), tip))
         h -= 1
     return (
         {"status": "success", "blocks": out, "total": total, "offset": offset, "limit": limit},
@@ -172,12 +184,19 @@ def block(rpc, identifier: str) -> tuple[dict, int]:
             block_hash = identifier.lower()
         else:
             return {"status": "error", "message": "Block not found"}, 404
-        raw = rpc.getblock(block_hash, 2)
+        header = rpc.call("getblockheader", block_hash)
     except RPCError:
         return {"status": "error", "message": "Block not found"}, 404
     tip = int(rpc.getblockcount())
-    summary = _block_summary(raw, tip)
-    summary["transactions"] = [_tx_summary(t) for t in raw.get("tx", [])]
+    summary = _block_summary(header, _stats(rpc, int(header["height"])), tip)
+    # The one place a full block read is unavoidable: the transaction list.
+    try:
+        raw = rpc.getblock(block_hash, 2)
+        summary["transactions"] = [_tx_summary(t) for t in raw.get("tx", [])]
+        summary["size"] = raw.get("size", summary["size"])
+    except Exception as exc:  # noqa: BLE001 — slow/loaded node: still show the header
+        summary["transactions"] = []
+        summary["transactions_error"] = str(exc)
     return {"status": "success", "block": summary}, 200
 
 
