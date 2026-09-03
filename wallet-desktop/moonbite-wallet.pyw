@@ -44,6 +44,67 @@ WALLET = "wallet"
 START_SCRIPT = os.path.join(DATADIR, "start-mining.ps1")
 CREATE_NO_WINDOW = 0x08000000
 
+RADIUS = 10  # brand corner radius
+
+
+def _round_pts(x1, y1, x2, y2, r):
+    return [
+        x1 + r, y1, x2 - r, y1, x2, y1, x2, y1 + r, x2, y2 - r, x2, y2,
+        x2 - r, y2, x1 + r, y2, x1, y2, x1, y2 - r, x1, y1 + r, x1, y1,
+    ]
+
+
+def round_rect(cv, x1, y1, x2, y2, r, **kw):
+    return cv.create_polygon(_round_pts(x1, y1, x2, y2, r), smooth=True,
+                             **kw)
+
+
+def tracked(text, em=0.16):
+    """Fake CSS letter-spacing for uppercase labels (Tk has no tracking)."""
+    gap = "\u2009" if em < 0.2 else "\u2009\u200a"
+    return gap.join(text)
+
+
+class RoundButton(tk.Canvas):
+    """A rounded, flat button in the brand style (gold solid or ghost)."""
+
+    def __init__(self, parent, text, command, ghost=False, bg=SLATE):
+        self.fill = SLATE if ghost else GOLD
+        self.hover = TERT if ghost else GOLD_L
+        self.fg = GOLD if ghost else VOID
+        self.ghost = ghost
+        f = tkfont.Font(family=F_SEMI, size=10)
+        w = f.measure(text) + 36
+        h = 34
+        super().__init__(parent, width=w, height=h, bg=bg,
+                         highlightthickness=0, cursor="hand2")
+        self._text = text
+        self._cmd = command
+        self._font = f
+        self._draw(self.fill)
+        self.bind("<Enter>", lambda e: self._draw(self.hover))
+        self.bind("<Leave>", lambda e: self._draw(self.fill))
+        self.bind("<Button-1>", lambda e: command())
+
+    def _draw(self, fill):
+        self.delete("all")
+        w = int(self["width"])
+        h = int(self["height"])
+        outline = GOLD_D if self.ghost else ""
+        round_rect(self, 1, 1, w - 1, h - 1, RADIUS, fill=fill,
+                   outline=outline, width=1)
+        self.create_text(w / 2, h / 2, text=self._text, fill=self.fg,
+                         font=self._font)
+
+    def configure(self, **kw):
+        if "text" in kw:
+            self._text = kw.pop("text")
+            self.config(width=self._font.measure(self._text) + 36)
+            self._draw(self.fill)
+        if kw:
+            super().configure(**kw)
+    config = configure
+
 
 def _read_conf():
     user = pw = None
@@ -85,6 +146,28 @@ class Rpc:
         if data.get("error"):
             raise RuntimeError(data["error"].get("message", str(data["error"])))
         return data.get("result")
+
+
+class RoundedFrame(tk.Canvas):
+    """A rounded card: draws a rounded rect and hosts normal widgets on an
+    inset inner frame so the rounded corners stay visible."""
+
+    def __init__(self, parent, fill=SLATE, radius=RADIUS, **kw):
+        super().__init__(parent, bg=VOID, highlightthickness=0, **kw)
+        self.fill = fill
+        self.radius = radius
+        self.inner = tk.Frame(self, bg=fill)
+        self._win = self.create_window(radius, radius, anchor="nw",
+                                       window=self.inner)
+        self.bind("<Configure>", self._redraw)
+
+    def _redraw(self, e):
+        self.delete("bg")
+        round_rect(self, 1, 1, e.width - 1, e.height - 1, self.radius,
+                   fill=self.fill, outline="", tags="bg")
+        self.tag_lower("bg")
+        self.itemconfig(self._win, width=e.width - 2 * self.radius,
+                        height=e.height - 2 * self.radius)
 
 
 class Wallet(tk.Tk):
@@ -136,28 +219,29 @@ class Wallet(tk.Tk):
                                font=(F_MONO, 9))
         self.status.pack(side="right", pady=(6, 0))
 
-        bal = tk.Frame(self, bg=CARD)
-        bal.pack(fill="x", padx=22, pady=8)
-        tk.Label(bal, text="AVAILABLE BALANCE", bg=CARD, fg=ASH,
-                 font=(F_BODY, 8)).pack(anchor="w", padx=18, pady=(16, 2))
-        row = tk.Frame(bal, bg=CARD)
-        row.pack(anchor="w", padx=18)
-        self.bal_lbl = tk.Label(row, text="\u2014", bg=CARD, fg=BONE,
-                                font=(F_DISPLAY, 27))
+        card = RoundedFrame(self, height=196)
+        card.pack(fill="x", padx=22, pady=(4, 8))
+        bal = card.inner
+        tk.Label(bal, text=tracked("AVAILABLE BALANCE"), bg=SLATE, fg=ASH,
+                 font=(F_BODY, 8)).pack(anchor="w", padx=20, pady=(18, 2))
+        row = tk.Frame(bal, bg=SLATE)
+        row.pack(anchor="w", padx=20)
+        self.bal_lbl = tk.Label(row, text="\u2014", bg=SLATE, fg=BONE,
+                                font=(F_DISPLAY, 30))
         self.bal_lbl.pack(side="left")
-        tk.Label(row, text="MBITE", bg=CARD, fg=GOLD,
-                 font=(F_SEMI, 11)).pack(side="left", anchor="s", pady=(0, 8),
-                                         padx=(8, 0))
-        self.sub_lbl = tk.Label(bal, text="", bg=CARD, fg=ASH,
+        tk.Label(row, text="MBITE", bg=SLATE, fg=GOLD,
+                 font=(F_SEMI, 11)).pack(side="left", anchor="s", pady=(0, 9),
+                                         padx=(9, 0))
+        self.sub_lbl = tk.Label(bal, text="", bg=SLATE, fg=ASH,
                                 font=(F_BODY, 9))
-        self.sub_lbl.pack(anchor="w", padx=18, pady=(0, 6))
+        self.sub_lbl.pack(anchor="w", padx=20, pady=(0, 8))
 
         # Security row: encryption status + Encrypt / Unlock button.
-        sec = tk.Frame(bal, bg=CARD)
-        sec.pack(fill="x", padx=16, pady=(0, 12))
-        self.sec_lbl = tk.Label(sec, text="\U0001F513 not encrypted", bg=CARD,
+        sec = tk.Frame(bal, bg=SLATE)
+        sec.pack(fill="x", padx=20, pady=(2, 14))
+        self.sec_lbl = tk.Label(sec, text="\U0001F513 not encrypted", bg=SLATE,
                                 fg=ASH, font=(F_BODY, 9))
-        self.sec_lbl.pack(side="left", pady=(4,0))
+        self.sec_lbl.pack(side="left", pady=(6, 0))
         self.sec_btn = self._btn(sec, "Encrypt wallet", self.encrypt_dialog)
         self.sec_btn.pack(side="right")
 
@@ -181,14 +265,13 @@ class Wallet(tk.Tk):
         self._build_send(nb)
         self._build_history(nb)
 
-    def _card(self, parent):
-        f = tk.Frame(parent, bg=CARD)
-        f.pack(fill="both", expand=True)
-        return f
+    def _card(self, nb, title):
+        rf = RoundedFrame(nb, fill=SLATE)
+        nb.add(rf, text=title)
+        return rf.inner
 
     def _build_receive(self, nb):
-        f = self._card(nb)
-        nb.add(f, text="Receive")
+        f = self._card(nb, "Receive")
         tk.Label(f, text="Your address — share it to receive MBITE", bg=CARD,
                  fg=ASH).pack(anchor="w", padx=16, pady=(16, 6))
         self.addr_var = tk.StringVar(value="\u2014")
@@ -203,8 +286,7 @@ class Wallet(tk.Tk):
             side="left", padx=8)
 
     def _build_send(self, nb):
-        f = self._card(nb)
-        nb.add(f, text="Send")
+        f = self._card(nb, "Send")
         tk.Label(f, text="Recipient address", bg=CARD, fg=ASH).pack(
             anchor="w", padx=16, pady=(16, 2))
         self.to_var = tk.StringVar()
@@ -222,21 +304,15 @@ class Wallet(tk.Tk):
         self.send_msg.pack(anchor="w", padx=16)
 
     def _build_history(self, nb):
-        f = self._card(nb)
-        nb.add(f, text="History")
+        f = self._card(nb, "History")
         self.hist = tk.Text(f, bg=TERT, fg=BONE, relief="flat", height=12,
                             font=(F_MONO, 9), wrap="none", padx=10, pady=8)
         self.hist.pack(fill="both", expand=True, padx=16, pady=16)
         self.hist.configure(state="disabled")
 
     def _btn(self, parent, text, cmd, ghost=False):
-        return tk.Button(parent, text=text, command=cmd,
-                         bg=(SLATE if ghost else GOLD),
-                         fg=(GOLD if ghost else VOID),
-                         activebackground=(CARD if ghost else "#E7B85A"),
-                         activeforeground=(GOLD if ghost else VOID),
-                         relief="flat", font=("Segoe UI Semibold", 10),
-                         padx=16, pady=6, cursor="hand2", borderwidth=0)
+        bg = parent["bg"] if isinstance(parent["bg"], str) else SLATE
+        return RoundButton(parent, text, cmd, ghost=ghost, bg=bg)
 
     # ---- security ------------------------------------------------------------
     def encrypt_dialog(self):
