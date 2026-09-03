@@ -21,3 +21,4 @@ notify_signups.jsonl
 release/miner/downloads/
 *.tar.gz
 *.zip
+CURRENT_TUNNEL_URL.txt
