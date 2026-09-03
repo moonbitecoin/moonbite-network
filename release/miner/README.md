@@ -39,7 +39,7 @@ the script to put them somewhere else.
 
 ## The wallet app (Windows)
 
- is the MoonBite desktop wallet — the same wallet as
+`moonbite-wallet.exe` is the MoonBite desktop wallet — the same wallet as
 moonbite.org/wallet, in its own window. It is self-custody: it creates a
 standard 12-word recovery phrase on your device, holds your keys locally, and
 shows your balance, a receive address, and lets you send. Double-click it to
