@@ -1,155 +1,93 @@
-/* MoonBite transaction building and signing — browser side.
+/* MoonBite transaction building and signing — real Bitcoin-family segwit.
  *
- * The wallet holds the only copy of the key, so a spend is assembled and
- * signed here and only the finished, already-authorized transaction is sent to
- * the server. Nothing in this file transmits a seed or a private key.
+ * Builds a standard P2WPKH (native segwit) transaction and signs each input
+ * with BIP143, exactly as MoonBite Core validates. The private key never
+ * leaves the browser; only the finished raw transaction is broadcast.
  *
- * The signature covers a canonical JSON serialization that has to match
- * transaction.py's signing_bytes() byte for byte — a single differing space
- * would produce a signature the network rejects. tests/test_tx_signing.py runs
- * this file under node and checks both the exact bytes and that Python
- * accepts the resulting signatures.
+ * Single-key wallet: every UTXO is on the wallet's own key (m/84'/2'/0'/0/0),
+ * so one key signs all inputs.
  */
 import { getPublicKey, signAsync } from './vendor/noble-secp256k1.js';
-import { deriveFromSeedPhrase } from './moonbite-address.js';
+import { hash160, bytesToHex, hexToBytes } from './moonbite-hd.js';
+import { pubkeyHashFromAddress, privkeyFromSeedPhrase } from './moonbite-address.js';
 
-function bytesToHex(bytes) {
-    let out = '';
-    for (const b of bytes) out += b.toString(16).padStart(2, '0');
-    return out;
+const enc = new TextEncoder();
+function concat(...a){let n=0;for(const x of a)n+=x.length;const o=new Uint8Array(n);let i=0;for(const x of a){o.set(x,i);i+=x.length;}return o;}
+function u32le(n){return new Uint8Array([n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]);}
+function u64le(v){const o=new Uint8Array(8);let n=BigInt(v);for(let i=0;i<8;i++){o[i]=Number(n&255n);n>>=8n;}return o;}
+function varint(n){if(n<0xfd)return new Uint8Array([n]);if(n<=0xffff)return concat(new Uint8Array([0xfd]),new Uint8Array([n&255,(n>>8)&255]));return concat(new Uint8Array([0xfe]),u32le(n));}
+function revHex(h){return hexToBytes(h).reverse();}
+async function sha256(b){return new Uint8Array(await crypto.subtle.digest('SHA-256',b));}
+async function dsha256(b){return sha256(await sha256(b));}
+
+/* scriptPubKey for a P2WPKH address (moon1…): OP_0 <20-byte hash>. */
+function spkFromPubkeyHash(pkhHex){return concat(new Uint8Array([0x00,0x14]),hexToBytes(pkhHex));}
+/* scriptCode for signing a P2WPKH input: the classic P2PKH script. */
+function scriptCode(pkhHex){return concat(new Uint8Array([0x19,0x76,0xa9,0x14]),hexToBytes(pkhHex),new Uint8Array([0x88,0xac]));}
+
+function bigToMinimal(x){
+    let h=x.toString(16); if(h.length%2)h='0'+h;
+    let b=hexToBytes(h);
+    if(b.length && (b[0]&0x80)) b=concat(new Uint8Array([0]),b);
+    return b;
+}
+function derSig(r,s){
+    const R=bigToMinimal(r), S=bigToMinimal(s);
+    const body=concat(new Uint8Array([0x02,R.length]),R,new Uint8Array([0x02,S.length]),S);
+    return concat(new Uint8Array([0x30,body.length]),body);
 }
 
-function hexToBytes(hex) {
-    const out = new Uint8Array(hex.length / 2);
-    for (let i = 0; i < out.length; i++) {
-        out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
-    }
-    return out;
+export function selectUTXOs(utxos,target){
+    const sorted=[...utxos].sort((a,b)=>b.value-a.value);
+    const chosen=[]; let total=0;
+    for(const u of sorted){chosen.push(u);total+=u.value;if(total>=target)break;}
+    return {chosen,total};
 }
 
-/* Python's json.dumps(..., sort_keys=True, separators=(',', ':')).
- *
- * Not JSON.stringify: that preserves insertion order and would only agree by
- * luck. Keys are emitted in sorted order explicitly, and every value here is
- * an integer or a hex string, so no float or unicode escaping is involved. */
-function canonicalJSON(value) {
-    if (Array.isArray(value)) {
-        return '[' + value.map(canonicalJSON).join(',') + ']';
-    }
-    if (value !== null && typeof value === 'object') {
-        const keys = Object.keys(value).sort();
-        return '{' + keys.map(k =>
-            JSON.stringify(k) + ':' + canonicalJSON(value[k])).join(',') + '}';
-    }
-    if (typeof value === 'number' && !Number.isInteger(value)) {
-        // Amounts are integer cents. A float here means a bug upstream, and
-        // Python and JS do not agree on how to print one.
-        throw new Error('non-integer number in transaction: ' + value);
-    }
-    return JSON.stringify(value);
-}
+/* Build + sign. Returns { rawHex, txid, fee, change }. Amounts in base units. */
+export async function buildSignedTransaction({toAddress,toPubkeyHash,amountUnits,feeUnits,privkeyHex,seedPhrase,utxos,dustUnits=546}){
+    if(!privkeyHex && seedPhrase) privkeyHex = await privkeyFromSeedPhrase(seedPhrase);
+    const priv=hexToBytes(privkeyHex);
+    const pub=getPublicKey(priv,true);
+    const myPkh=bytesToHex(await hash160(pub));
+    const toPkh=toPubkeyHash||pubkeyHashFromAddress(toAddress);
 
-/* The message every input signs (SIGHASH_ALL): the transaction with all
-   signatures and pubkeys stripped, so a signature cannot be lifted onto a
-   different transaction. */
-export function signingBytes(tx) {
-    const stripped = {
-        inputs: tx.inputs.map(i => ({
-            output_index: i.output_index,
-            prev_txid: i.prev_txid
-        })),
-        outputs: tx.outputs.map(o => ({
-            amount: o.amount,
-            pubkey_hash: o.pubkey_hash
-        }))
-    };
-    return new TextEncoder().encode(canonicalJSON(stripped));
-}
+    const target=amountUnits+feeUnits;
+    const {chosen,total}=selectUTXOs(utxos,target);
+    if(total<target) throw new Error('Not enough balance (need '+(target)+', have '+total+')');
 
-async function sha256(bytes) {
-    return new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
-}
+    const outputs=[{value:amountUnits,pkh:toPkh}];
+    const change=total-target;
+    if(change>=dustUnits) outputs.push({value:change,pkh:myPkh});
 
-/* Choose which coins to spend.
- *
- * Largest-first, which keeps the input count (and so the signing work and the
- * transaction size) down. It leaks a little privacy by preferring big UTXOs,
- * but this chain has no fee market to optimize against and a wallet that
- * cannot build a spend at all is worse. */
-export function selectUTXOs(utxos, target) {
-    const sorted = [...utxos].sort((a, b) => b.amount_units - a.amount_units);
-    const chosen = [];
-    let total = 0;
-    for (const u of sorted) {
-        chosen.push(u);
-        total += u.amount_units;
-        if (total >= target) break;
-    }
-    if (total < target) {
-        throw new Error('insufficient funds');
-    }
-    return { chosen, total };
-}
+    // --- BIP143 shared hashes ---
+    const prevouts=concat(...chosen.map(u=>concat(revHex(u.txid),u32le(u.vout))));
+    const sequences=concat(...chosen.map(()=>u32le(0xffffffff)));
+    const outsSer=concat(...outputs.map(o=>concat(u64le(o.value),varint(spkFromPubkeyHash(o.pkh).length),spkFromPubkeyHash(o.pkh))));
+    const hashPrevouts=await dsha256(prevouts);
+    const hashSequence=await dsha256(sequences);
+    const hashOutputs=await dsha256(outsSer);
+    const version=u32le(2), locktime=u32le(0), sighashType=u32le(1);
+    const sc=scriptCode(myPkh);
 
-/* Build and sign a spend.
- *
- * amountUnits and feeUnits are integer cents; change returns to the sender.
- * Change below dustUnits is dropped into the fee rather than creating an
- * output too small to be worth spending later. */
-export async function buildSignedTransaction({
-    seedPhrase,
-    toPubkeyHash,
-    amountUnits,
-    feeUnits = 0,
-    utxos,
-    dustUnits = 1000
-}) {
-    if (!Number.isSafeInteger(amountUnits) || amountUnits <= 0) {
-        throw new Error('amount must be a positive whole number of units');
-    }
-    if (!Number.isSafeInteger(feeUnits) || feeUnits < 0) {
-        throw new Error('fee must be a non-negative whole number of units');
+    const witnesses=[];
+    for(const u of chosen){
+        const outpoint=concat(revHex(u.txid),u32le(u.vout));
+        const preimage=concat(version,hashPrevouts,hashSequence,outpoint,
+            sc,u64le(u.value),u32le(0xffffffff),hashOutputs,locktime,sighashType);
+        const sighash=await dsha256(preimage);
+        let sig=await signAsync(sighash,priv); sig=sig.normalizeS();
+        const der=concat(derSig(sig.r,sig.s),new Uint8Array([0x01]));
+        witnesses.push([der,pub]);
     }
 
-    const key = await deriveFromSeedPhrase(seedPhrase);
-    const { chosen, total } = selectUTXOs(utxos, amountUnits + feeUnits);
-
-    const outputs = [{ amount: amountUnits, pubkey_hash: toPubkeyHash }];
-    const change = total - amountUnits - feeUnits;
-    if (change >= dustUnits) {
-        outputs.push({ amount: change, pubkey_hash: key.pubkey_hash });
-    }
-
-    const tx = {
-        inputs: chosen.map(u => ({
-            prev_txid: u.txid,
-            output_index: u.vout,
-            pubkey: '',
-            signature: ''
-        })),
-        outputs
-    };
-
-    // Every input commits to the same message, so hash it once.
-    const digest = await sha256(signingBytes(tx));
-    const privkey = hexToBytes(key.private_key);
-    const pubkeyHex = bytesToHex(getPublicKey(privkey, false).slice(1));
-
-    for (const input of tx.inputs) {
-        const sig = await signAsync(digest, privkey);
-        // Raw r||s, which is what python-ecdsa's verify() expects.
-        input.signature = sig.toCompactHex();
-        input.pubkey = pubkeyHex;
-    }
-
-    return {
-        transaction: tx,
-        // Reported so the UI can show what was actually spent rather than
-        // what was requested — change and dust make those differ.
-        inputsSpent: chosen.length,
-        totalInputUnits: total,
-        changeUnits: change >= dustUnits ? change : 0,
-        feeUnits: change >= dustUnits ? feeUnits : feeUnits + change,
-        fromAddress: key.address
-    };
+    // --- serialize (segwit) ---
+    const vin=concat(...chosen.map(u=>concat(revHex(u.txid),u32le(u.vout),new Uint8Array([0x00]),u32le(0xffffffff))));
+    const vout=concat(varint(outputs.length),outsSer);
+    const witSer=concat(...witnesses.map(w=>concat(varint(w.length),...w.map(item=>concat(varint(item.length),item)))));
+    const raw=concat(version,new Uint8Array([0x00,0x01]),varint(chosen.length),vin,vout,witSer,locktime);
+    // txid = dsha256 of the non-witness serialization, reversed
+    const nonwit=concat(version,varint(chosen.length),vin,vout,locktime);
+    const txid=bytesToHex((await dsha256(nonwit)).reverse());
+    return {rawHex:bytesToHex(raw),txid,fee:feeUnits,change};
 }

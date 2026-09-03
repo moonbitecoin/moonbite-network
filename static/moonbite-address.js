@@ -1,67 +1,37 @@
-/* MoonBite address derivation — browser side.
+/* MoonBite address derivation — standard native segwit (P2WPKH), matching
+ * MoonBite Core exactly: address = bech32("moon", 0, RIPEMD160(SHA256(pubkey)))
+ * with the COMPRESSED public key. Verified against the node's wpkh descriptor.
  *
- * A direct port of wallet.py's derive_from_seed_phrase(). The user's seed
- * phrase never leaves the device: the private key, public key and address are
- * all computed here, and only the finished address is ever sent to the server
- * (to read a public balance).
- *
- * Both implementations must agree byte-for-byte or a user's funds would land
- * at an address their other device cannot see, so
- * tests/test_address_derivation.py runs this file under node and asserts the
- * addresses match Python's for a spread of phrases. Change the scheme here and
- * that test fails.
+ * New wallets use BIP39 (12 words) -> BIP84 m/84'/2'/0'/0/0. A phrase that is
+ * not valid BIP39 (an older imported phrase) still yields a real P2WPKH
+ * address via a legacy scalar derivation, so nothing is stranded.
  */
 import { getPublicKey } from './vendor/noble-secp256k1.js';
+import { mnemonicToSeed, validateMnemonic } from './moonbite-bip39.js';
+import { deriveKey, hash160, bytesToHex, hexToBytes } from './moonbite-hd.js';
 
 const SEED_DERIVATION_PREFIX = 'moonbite-seed-v1:';
 const BECH32_CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
 const MOONBITE_HRP = 'moon';
-
-// secp256k1 group order — a raw SHA-256 digest can exceed it, and anything
-// >= n is not a valid private scalar.
+const WITVER = 0;
 const CURVE_ORDER =
-    0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141n;
+    BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141');
 
-/* Case and whitespace runs carry no meaning in a written phrase, and a user
-   retyping their seed on a second device will not reproduce them exactly.
-   Normalize formatting only — never content. */
 export function normalizeSeedPhrase(phrase) {
-    return String(phrase).trim().toLowerCase().split(/\s+/).join(' ');
+    return (phrase || '').normalize('NFKD').trim().replace(/\s+/g, ' ').toLowerCase();
 }
-
-function bytesToHex(bytes) {
-    let out = '';
-    for (const b of bytes) out += b.toString(16).padStart(2, '0');
-    return out;
-}
-
-function hexToBytes(hex) {
-    const out = new Uint8Array(hex.length / 2);
-    for (let i = 0; i < out.length; i++) {
-        out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
-    }
-    return out;
-}
-
-async function sha256(bytes) {
-    const digest = await crypto.subtle.digest('SHA-256', bytes);
-    return new Uint8Array(digest);
-}
+async function sha256(bytes) { return new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)); }
 
 function bech32Polymod(values) {
-    const generator = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3];
+    const GEN = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3];
     let chk = 1;
-    for (const value of values) {
-        const top = chk >>> 25;
-        chk = ((chk & 0x1ffffff) << 5) ^ value;
-        for (let i = 0; i < 5; i++) {
-            if ((top >>> i) & 1) chk ^= generator[i];
-        }
+    for (const v of values) {
+        const b = chk >> 25;
+        chk = ((chk & 0x1ffffff) << 5) ^ v;
+        for (let i = 0; i < 5; i++) if ((b >> i) & 1) chk ^= GEN[i];
     }
-    // Force unsigned: the shifts above can push the sign bit in 32-bit ints.
-    return chk >>> 0;
+    return chk;
 }
-
 function bech32HrpExpand(hrp) {
     const out = [];
     for (const c of hrp) out.push(c.charCodeAt(0) >> 5);
@@ -69,92 +39,73 @@ function bech32HrpExpand(hrp) {
     for (const c of hrp) out.push(c.charCodeAt(0) & 31);
     return out;
 }
-
 function bech32CreateChecksum(hrp, data) {
     const values = bech32HrpExpand(hrp).concat(data, [0, 0, 0, 0, 0, 0]);
     const polymod = bech32Polymod(values) ^ 1;
     const out = [];
-    for (let i = 0; i < 6; i++) out.push((polymod >>> (5 * (5 - i))) & 31);
+    for (let i = 0; i < 6; i++) out.push((polymod >> (5 * (5 - i))) & 31);
     return out;
 }
-
 function bech32Encode(hrp, data) {
     const combined = data.concat(bech32CreateChecksum(hrp, data));
-    let out = hrp + '1';
-    for (const d of combined) out += BECH32_CHARSET[d];
+    let s = hrp + '1';
+    for (const d of combined) s += BECH32_CHARSET[d];
+    return s;
+}
+function bech32Decode(addr) {
+    addr = addr.toLowerCase();
+    const pos = addr.lastIndexOf('1');
+    const hrp = addr.slice(0, pos);
+    const data = [];
+    for (const c of addr.slice(pos + 1)) {
+        const d = BECH32_CHARSET.indexOf(c);
+        if (d < 0) throw new Error('invalid bech32 char');
+        data.push(d);
+    }
+    if (bech32Polymod(bech32HrpExpand(hrp).concat(data)) !== 1) throw new Error('bad checksum');
+    return { hrp, data: data.slice(0, -6) };
+}
+function convertBits(data, fromBits, toBits, pad) {
+    let acc = 0, bits = 0;
+    const out = [];
+    const maxv = (1 << toBits) - 1;
+    for (const value of data) {
+        acc = (acc << fromBits) | value;
+        bits += fromBits;
+        while (bits >= toBits) { bits -= toBits; out.push((acc >> bits) & maxv); }
+    }
+    if (pad) { if (bits) out.push((acc << (toBits - bits)) & maxv); }
+    else if (bits >= fromBits || ((acc << (toBits - bits)) & maxv)) return null;
     return out;
 }
 
-/* Regroup a bit-stream between 8-bit bytes and 5-bit bech32 symbols. */
-function convertBits(data, fromBits, toBits, pad) {
-    let acc = 0;
-    let bits = 0;
-    const ret = [];
-    const maxv = (1 << toBits) - 1;
-    for (const value of data) {
-        if (value < 0 || value >> fromBits !== 0) return null;
-        acc = (acc << fromBits) | value;
-        bits += fromBits;
-        while (bits >= toBits) {
-            bits -= toBits;
-            ret.push((acc >> bits) & maxv);
-        }
-    }
-    if (pad) {
-        if (bits > 0) ret.push((acc << (toBits - bits)) & maxv);
-    } else if (bits >= fromBits || ((acc << (toBits - bits)) & maxv)) {
-        return null;
-    }
-    return ret;
-}
-
-function bech32VerifyChecksum(hrp, data) {
-    return bech32Polymod(bech32HrpExpand(hrp).concat(data)) === 1;
-}
-
-/* Decode an address back to the public-key hash it locks coins to.
- *
- * The checksum is what makes a mistyped recipient address fail here instead of
- * silently sending coins somewhere unspendable, so a failed check must throw
- * rather than return something usable. */
-export function pubkeyHashFromAddress(addr) {
-    const address = String(addr).trim().toLowerCase();
-    const pos = address.lastIndexOf('1');
-    if (pos < 1 || pos + 7 > address.length) throw new Error('invalid address');
-
-    const hrp = address.slice(0, pos);
-    const chars = address.slice(pos + 1);
-    const data = [];
-    for (const c of chars) {
-        const v = BECH32_CHARSET.indexOf(c);
-        if (v === -1) throw new Error('invalid address');
-        data.push(v);
-    }
-    if (!bech32VerifyChecksum(hrp, data)) throw new Error('invalid address checksum');
-
-    const decoded = convertBits(data.slice(0, -6), 5, 8, false);
-    if (decoded === null) throw new Error('invalid address payload');
-    return bytesToHex(Uint8Array.from(decoded));
-}
-
-export function isValidAddress(addr) {
-    try {
-        pubkeyHashFromAddress(addr);
-        return true;
-    } catch (e) {
-        return false;
-    }
-}
-
+/* 20-byte pubkey-hash (hex) -> moon1 P2WPKH address. */
 export function addressFromPubkeyHash(pkhHex, hrp = MOONBITE_HRP) {
-    const data = convertBits(hexToBytes(pkhHex), 8, 5, true);
-    if (data === null) throw new Error('cannot encode pubkey hash');
-    return bech32Encode(hrp, data);
+    const prog = convertBits(hexToBytes(pkhHex), 8, 5, true);
+    if (prog === null) throw new Error('cannot encode pubkey hash');
+    return bech32Encode(hrp, [WITVER].concat(prog));
+}
+/* moon1 address -> 20-byte pubkey-hash (hex). */
+export function pubkeyHashFromAddress(addr) {
+    const { hrp, data } = bech32Decode(addr);
+    if (hrp !== MOONBITE_HRP) throw new Error('not a MoonBite address');
+    if (data[0] !== WITVER) throw new Error('unsupported witness version');
+    const prog = convertBits(data.slice(1), 5, 8, false);
+    if (prog === null || prog.length !== 20) throw new Error('bad program length');
+    return bytesToHex(new Uint8Array(prog));
+}
+export function isValidAddress(addr) {
+    try { pubkeyHashFromAddress(addr); return true; } catch (e) { return false; }
 }
 
+/* Private key (hex) for a phrase: BIP84 for valid BIP39, else legacy scalar. */
 export async function privkeyFromSeedPhrase(phrase) {
     const normalized = normalizeSeedPhrase(phrase);
     if (!normalized) throw new Error('seed phrase is empty');
+    if (await validateMnemonic(normalized)) {
+        const seed = await mnemonicToSeed(normalized);
+        return (await deriveKey(seed, 0)).privkey;
+    }
     const material = new TextEncoder().encode(SEED_DERIVATION_PREFIX + normalized);
     const digest = await sha256(material);
     const scalar = BigInt('0x' + bytesToHex(digest)) % CURVE_ORDER;
@@ -162,18 +113,16 @@ export async function privkeyFromSeedPhrase(phrase) {
     return scalar.toString(16).padStart(64, '0');
 }
 
-/* Full derivation: seed phrase -> private key, public key, hash, address. */
+/* Full derivation -> { private_key, public_key(compressed), pubkey_hash, address }. */
 export async function deriveFromSeedPhrase(phrase) {
     const privkeyHex = await privkeyFromSeedPhrase(phrase);
-    // Uncompressed gives 65 bytes with a leading 0x04 tag; the chain hashes
-    // the raw X||Y that python-ecdsa's to_string() produces, so drop the tag.
-    const uncompressed = getPublicKey(hexToBytes(privkeyHex), false);
-    const pubkeyHex = bytesToHex(uncompressed.slice(1));
-    const pkhHex = bytesToHex(await sha256(hexToBytes(pubkeyHex)));
+    const compressed = getPublicKey(hexToBytes(privkeyHex), true);
+    const pubkeyHex = bytesToHex(compressed);
+    const pkhHex = bytesToHex(await hash160(compressed));
     return {
         private_key: privkeyHex,
         public_key: pubkeyHex,
         pubkey_hash: pkhHex,
-        address: addressFromPubkeyHash(pkhHex)
+        address: addressFromPubkeyHash(pkhHex),
     };
 }

@@ -3340,6 +3340,62 @@ def api_biometric_audit():
 # ============================================================================= #
 
 
+@app.route("/api/chain/address/<address>", methods=["GET"])
+@rate_limit(60, 60)
+def api_chain_address(address):
+    """Real balance + spendable UTXOs for an address, straight from the node
+    (scantxoutset). Powers the self-custody wallet. Amounts in base units (1e8).
+    """
+    if not _merchant_use_rpc():
+        return jsonify({"status": "error", "message": "node not configured"}), 503
+    try:
+        from explorer.address import is_valid_address as _iv  # optional
+    except Exception:  # noqa: BLE001
+        _iv = None
+    try:
+        rpc = _get_merchant_rpc()
+        res = rpc.scantxoutset("start", [{"desc": f"addr({address})"}])
+        if not isinstance(res, dict) or not res.get("success", False):
+            return jsonify({"status": "error", "message": "scan failed"}), 502
+        from decimal import Decimal
+        utxos = []
+        total = 0
+        for u in res.get("unspents", []):
+            units = int((Decimal(str(u["amount"])) * 100000000).to_integral_value())
+            total += units
+            utxos.append({"txid": u["txid"], "vout": int(u["vout"]), "value": units})
+        try:
+            height = int(rpc.getblockcount())
+        except Exception:  # noqa: BLE001
+            height = res.get("height", 0)
+        return jsonify({
+            "status": "success",
+            "address": address,
+            "balance_units": total,
+            "utxos": utxos,
+            "height": height,
+        }), 200
+    except Exception as e:  # noqa: BLE001
+        return jsonify({"status": "error", "message": str(e)[:120]}), 502
+
+
+@app.route("/api/chain/broadcast", methods=["POST"])
+@rate_limit(30, 60)
+def api_chain_broadcast():
+    """Broadcast a raw, already-signed transaction to the network."""
+    if not _merchant_use_rpc():
+        return jsonify({"status": "error", "message": "node not configured"}), 503
+    data = request.get_json(silent=True) or {}
+    rawtx = str(data.get("rawtx") or data.get("transaction") or "").strip()
+    if not rawtx or any(c not in "0123456789abcdefABCDEF" for c in rawtx):
+        return jsonify({"status": "error", "message": "no raw transaction"}), 400
+    try:
+        txid = _get_merchant_rpc().sendrawtransaction(rawtx)
+        return jsonify({"status": "success", "txid": txid}), 200
+    except Exception as e:  # noqa: BLE001
+        return jsonify({"status": "error", "message": str(e)[:200]}), 400
+
+
 @app.route("/api/blockchain/info", methods=["GET"])
 @rate_limit(60, 60)  # Public info endpoint
 def api_blockchain_info():

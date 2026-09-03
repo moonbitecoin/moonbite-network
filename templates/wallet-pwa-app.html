@@ -1414,7 +1414,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             <div class="screen" id="createWalletScreen">
                 <div class="screen-header">
                     <h1>Your Recovery Phrase</h1>
-                    <p>Write these 9 words down, in order, and keep them somewhere safe.</p>
+                    <p>Write these 12 words down, in order, and keep them somewhere safe.</p>
                 </div>
                 <div class="screen-content">
                     <div class="card" style="background: rgba(192,57,67,0.08); border-color: var(--danger, #C0392B); margin-bottom: var(--spacing-md);">
@@ -1441,13 +1441,13 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             <div class="screen" id="seedPhraseScreen">
                 <div class="screen-header">
                     <h1>Enter Your Seed Phrase</h1>
-                    <p>Paste or type your 9 words</p>
+                    <p>Paste or type your 12 words</p>
                 </div>
                 <div class="screen-content">
                     <div class="card" style="background: rgba(184, 134, 59, 0.1); border-color: rgba(184, 134, 59, 0.3); margin-bottom: var(--spacing-lg);">
                         <div style="display: flex; align-items: flex-start; gap: var(--spacing-md);">
                             <div style="color: var(--fire-orange); font-weight: 600;">Critical</div>
-                            <div style="color: var(--text-secondary); font-size: 13px;">Enter the 9-word seed phrase you generated yourself. This is your access key—never share it with anyone.</div>
+                            <div style="color: var(--text-secondary); font-size: 13px;">Enter your 12-word recovery phrase. This is your access key — never share it with anyone.</div>
                         </div>
                     </div>
 
@@ -1456,7 +1456,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                         <textarea id="seedPhraseInput" class="form-input" placeholder="word1 word2 word3 word4 word5 word6 word7 word8 word9"
                               style="height: 80px; resize: none; font-family: var(--font-data);"
                               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
-                        <div style="color: var(--text-secondary); font-size: 12px; margin-top: var(--spacing-sm);">Enter exactly 9 words separated by spaces</div>
+                        <div style="color: var(--text-secondary); font-size: 12px; margin-top: var(--spacing-sm);">Enter your 12 words separated by spaces</div>
                     </div>
 
                     <div id="seedError" style="color: var(--danger); font-size: 13px; margin-top: var(--spacing-md); display: none;"></div>
@@ -1499,7 +1499,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 </div>
                 <div class="screen-content">
                     <div class="card" style="background: rgba(184, 134, 59, 0.1); border-color: rgba(184, 134, 59, 0.3); margin-bottom: var(--spacing-lg);">
-                        <div style="color: var(--text-secondary); font-size: 13px;">Enter the 9-word seed phrase you provided during setup to reset your PIN.</div>
+                        <div style="color: var(--text-secondary); font-size: 13px;">Enter your 12-word recovery phrase to reset your PIN.</div>
                     </div>
 
                     <div class="form-group">
@@ -1507,7 +1507,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                         <textarea id="recoveryPhraseInput" class="form-input" placeholder="word1 word2 word3 word4 word5 word6 word7 word8 word9"
                               style="height: 80px; resize: none; font-family: var(--font-data);"
                               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
-                        <div style="color: var(--text-secondary); font-size: 12px; margin-top: var(--spacing-sm);">Enter exactly 9 words separated by spaces</div>
+                        <div style="color: var(--text-secondary); font-size: 12px; margin-top: var(--spacing-sm);">Enter your 12 words separated by spaces</div>
                     </div>
 
                     <div id="recoveryError" style="color: var(--danger); font-size: 13px; margin-top: var(--spacing-md); display: none;"></div>
@@ -2368,9 +2368,9 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
         window.MoonBiteTx = { buildSignedTransaction };
         window.MoonBiteCrypto = { encryptSeed, decryptSeed, readSeed, isNewFormat };
 
-        const { generatePhrase, wordlistSize } =
+        const { generatePhrase, wordlistSize, validateMnemonic } =
             await import('{{ url_for('static', filename='moonbite-phrase.js') }}');
-        window.MoonBitePhrase = { generatePhrase, wordlistSize };
+        window.MoonBitePhrase = { generatePhrase, wordlistSize, validateMnemonic };
 
         window.MoonBiteReady = true;
         window.dispatchEvent(new Event('moonbite-address-ready'));
@@ -2679,7 +2679,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 if (!wallet || !wallet.address) return null;
                 try {
                     const res = await fetch(
-                        '/api/address/' + encodeURIComponent(wallet.address) + '/balance',
+                        '/api/chain/address/' + encodeURIComponent(wallet.address),
                         { headers: { 'Accept': 'application/json' } }
                     );
                     if (!res.ok) return null;
@@ -3544,7 +3544,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 /* Spend against what the chain says is unspent right now, not
                    a cached balance that may already be stale. */
                 const balRes = await fetch(
-                    '/api/address/' + encodeURIComponent(wallet.address) + '/balance');
+                    '/api/chain/address/' + encodeURIComponent(wallet.address));
                 if (!balRes.ok) return fail('Could not reach the network. Try again.');
                 const bal = await balRes.json();
                 if (amountUnits + feeUnits > bal.balance_units) {
@@ -3560,10 +3560,10 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 });
 
                 if (btn) btn.textContent = 'Broadcasting...';
-                const res = await fetch('/api/tx/broadcast', {
+                const res = await fetch('/api/chain/broadcast', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ transaction: built.transaction })
+                    body: JSON.stringify({ rawtx: built.rawHex })
                 });
                 const result = await res.json();
                 if (!res.ok || result.status !== 'success') {
@@ -3951,23 +3951,23 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
         }
 
         // Verify user-provided seed phrase
-        function verifySeedPhrase() {
+        async function verifySeedPhrase() {
             const seedInput = document.getElementById('seedPhraseInput').value.trim();
             const errorDiv = document.getElementById('seedError');
 
             // Parse words
             const words = seedInput.split(/\s+/).filter(w => w.length > 0);
 
-            // Validate: exactly 9 words
-            if (words.length !== 9) {
-                errorDiv.textContent = `Enter exactly 9 words (you entered ${words.length})`;
+            // Standard BIP39: 12/15/18/21/24 words with a valid checksum.
+            if (![12, 15, 18, 21, 24].includes(words.length)) {
+                errorDiv.textContent = `A recovery phrase is 12 words (you entered ${words.length}).`;
                 errorDiv.style.display = 'block';
                 return;
             }
-
-            // Validate: each word is at least 3 chars (basic check)
-            if (words.some(w => w.length < 3)) {
-                errorDiv.textContent = 'Each word must be at least 3 characters';
+            const okPhrase = window.MoonBitePhrase &&
+                await window.MoonBitePhrase.validateMnemonic(seedInput);
+            if (!okPhrase) {
+                errorDiv.textContent = 'That is not a valid recovery phrase — check the words and their order.';
                 errorDiv.style.display = 'block';
                 return;
             }
@@ -3998,13 +3998,13 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
         /* --- New-wallet creation (the "Create a New Wallet" fork) --- */
         let _generatedPhrase = '';
 
-        function createNewWallet() {
+        async function createNewWallet() {
             if (!window.MoonBitePhrase) {
                 alert('Wallet is still loading — please try again in a moment.');
                 return;
             }
             // A freshly generated, high-entropy phrase for the user's one wallet.
-            _generatedPhrase = window.MoonBitePhrase.generatePhrase(9);
+            _generatedPhrase = await window.MoonBitePhrase.generatePhrase();
             const disp = document.getElementById('generatedPhraseDisplay');
             if (disp) disp.textContent = _generatedPhrase;
             const cb = document.getElementById('phraseBackedUp');
@@ -4030,7 +4030,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
         function confirmGeneratedPhrase() {
             if (!_generatedPhrase) { showScreen('walletSetupScreen'); return; }
             // Prove the phrase was actually written down before it becomes the
-            // only key to the wallet: ask for three of the nine words by
+            // only key to the wallet: ask for three of the twelve words by
             // position. A checkbox alone let people skip the backup and lose
             // their funds.
             const words = _generatedPhrase.split(/\s+/);
@@ -4113,7 +4113,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
         }
 
         // Verify recovery seed phrase for PIN reset
-        function verifyRecoverySeed() {
+        async function verifyRecoverySeed() {
             const seedInput = document.getElementById('recoveryPhraseInput').value.trim();
             const errorDiv = document.getElementById('recoveryError');
             const encryptedSeed = localStorage.getItem('moonbite_seed_encrypted');
@@ -4127,9 +4127,14 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             // Parse words
             const words = seedInput.split(/\s+/).filter(w => w.length > 0);
 
-            // Validate: exactly 9 words
-            if (words.length !== 9) {
-                errorDiv.textContent = `Enter exactly 9 words (you entered ${words.length})`;
+            // Standard BIP39 phrase (12 words) with a valid checksum.
+            if (![12, 15, 18, 21, 24].includes(words.length)) {
+                errorDiv.textContent = `A recovery phrase is 12 words (you entered ${words.length}).`;
+                errorDiv.style.display = 'block';
+                return;
+            }
+            if (!(window.MoonBitePhrase && await window.MoonBitePhrase.validateMnemonic(seedInput))) {
+                errorDiv.textContent = 'That is not a valid recovery phrase.';
                 errorDiv.style.display = 'block';
                 return;
             }
