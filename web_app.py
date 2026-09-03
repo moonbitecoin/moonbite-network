@@ -1006,10 +1006,11 @@ def wallet_page():
 
     The old in-browser PWA held its own keys, separate from the node and the
     coins a miner actually holds — two wallets that only looked alike. There is
-    now a single wallet surface, the desktop app that connects to your own node,
-    so /wallet sends people to the download page for it.
+    the production PWA (self-custody, recovery phrase created on-device). The
+    desktop app is this same wallet wrapped in a native window, so the two are
+    identical.
     """
-    return redirect(url_for("get_wallet_page"))
+    return render_template("wallet-pwa-app.html")
 
 
 # Superseded wallet builds. Kept as permanent redirects rather than deleted
