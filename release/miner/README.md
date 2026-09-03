@@ -39,10 +39,13 @@ the script to put them somewhere else.
 
 ## The wallet app (Windows)
 
-`moonbite-wallet.exe` in this folder is the MoonBite desktop wallet — a
-window showing your balance, a receive address, a send form, and your
-history. Double-click it while the node is running (after `mine.ps1`).
-It reads the same wallet the node uses, so your mined coins appear there.
+ is the MoonBite desktop wallet — the same wallet as
+moonbite.org/wallet, in its own window. It is self-custody: it creates a
+standard 12-word recovery phrase on your device, holds your keys locally, and
+shows your balance, a receive address, and lets you send. Double-click it to
+open. (Your mined coins live in the node wallet; the desktop wallet is your
+personal spending wallet — send between them using addresses.)
+
 
 ## Your coins and your wallet
 
