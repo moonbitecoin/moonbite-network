@@ -452,6 +452,48 @@ def _merchant_use_rpc() -> bool:
     )
 
 
+# --------------------------------------------------------------------------- #
+# Retire the pre-launch educational (toy) chain routes once the site is backed
+# by the real MoonBite Core node. These routes mined fake coins and reported
+# toy-chain balances/leaderboards as if real; when _merchant_use_rpc() is true
+# they are retired so a visitor can never be misled. The honest live set
+# (/api/blockchain/info, /api/explorer/*, /api/mempool, /api/consensus, the
+# explorer/halving/worldcup pages, downloads, static) is untouched.
+# --------------------------------------------------------------------------- #
+_RETIRED_PAGE_REDIRECTS = {"/start": "/mine", "/mining": "/mine", "/leaderboard": "/mine"}
+_RETIRED_API_PREFIXES = (
+    "/api/mining/", "/api/mine", "/api/wallet/new", "/api/wallet/balance",
+    "/api/wallet/backup", "/api/wallet/transaction", "/api/transactions",
+    "/api/blockchain/status", "/api/tx/broadcast",
+)
+
+
+def _is_retired_api(path: str) -> bool:
+    if path == "/api/mine" or any(path.startswith(pfx) for pfx in _RETIRED_API_PREFIXES):
+        return True
+    if path.startswith("/api/address/") and path.endswith("/balance"):
+        return True
+    return False
+
+
+@app.before_request
+def retire_demo_chain_routes():
+    # Only when the site is live on the real node; dev/demo keeps the toy chain.
+    if not _merchant_use_rpc():
+        return
+    path = request.path
+    p = path[:-1] if (len(path) > 1 and path.endswith("/")) else path
+    if p in _RETIRED_PAGE_REDIRECTS:
+        return redirect(_RETIRED_PAGE_REDIRECTS[p], code=302)
+    if _is_retired_api(p):
+        return jsonify({
+            "status": "error",
+            "message": ("This endpoint ran on the pre-launch demo chain and has "
+                        "been retired. MoonBite is live - mine with the real node: "
+                        "https://moonbite.org/mine"),
+        }), 410
+
+
 def _get_merchant_rpc():
     """Lazily build the explorer RPC client. explorer/rpc.py uses a bare
     ``import config``, so the explorer dir must be on sys.path (mirrors the
