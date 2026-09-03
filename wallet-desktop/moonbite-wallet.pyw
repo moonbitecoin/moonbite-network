@@ -334,8 +334,8 @@ class Wallet(tk.Tk):
                 self.rpc.call("encryptwallet", [passphrase])
             except Exception:  # noqa: BLE001 — node shuts down right after
                 pass
-            self.status.configure(text="encrypting, node restarting…",
-                                  fg=GOLD)
+            self._ui(lambda: self.status.configure(
+                text="encrypting, node restarting…", fg=GOLD))
             self._restart_node()
             for _ in range(60):
                 try:
@@ -387,9 +387,11 @@ class Wallet(tk.Tk):
             try:
                 a = self.rpc.call("getnewaddress", ["desktop"])
                 self._addr = a
-                self.addr_var.set(a)
+                self._ui(self.addr_var.set, a)
+                self._ui(lambda: self.status.configure(text="new address",
+                                                       fg=GREEN))
             except Exception as e:  # noqa: BLE001
-                messagebox.showerror("MoonBite", str(e))
+                self._ui(lambda: messagebox.showerror("MoonBite", str(e)))
         threading.Thread(target=work, daemon=True).start()
 
     def send(self):
@@ -406,32 +408,41 @@ class Wallet(tk.Tk):
         if not messagebox.askyesno("Confirm send",
                                    f"Send {amt_f} MBITE to\n{to} ?"):
             return
+        # If the wallet is encrypted and locked, unlock on THIS (main) thread
+        # before the send worker starts — Tk dialogs must not run off-thread.
+        if self._encrypted:
+            try:
+                wi = self.rpc.call("getwalletinfo")
+                until = wi.get("unlocked_until", 0)
+            except Exception:  # noqa: BLE001
+                until = 0
+            if not (until and until > time.time()):
+                self.send_msg.configure(text="Unlock to send.", fg=GOLD)
+                if not self.unlock_dialog():
+                    return
 
         def work():
             try:
-                try:
-                    txid = self.rpc.call("sendtoaddress", [to, amt_f])
-                except RuntimeError as e:
-                    if "passphrase" in str(e).lower() or "locked" in str(e).lower():
-                        # Encrypted + locked: ask for the password, unlock, retry.
-                        self.send_msg.configure(
-                            text="Wallet is locked — unlock to send.", fg=GOLD)
-                        pw = self.unlock_dialog()
-                        if not pw:
-                            return
-                        txid = self.rpc.call("sendtoaddress", [to, amt_f])
-                    else:
-                        raise
-                self.send_msg.configure(text=f"Sent. txid {txid[:20]}\u2026",
-                                        fg=GREEN)
-                self.to_var.set("")
-                self.amt_var.set("")
-                self.refresh()
+                txid = self.rpc.call("sendtoaddress", [to, amt_f])
+                self._ui(lambda: self._sent_ok(txid))
             except Exception as e:  # noqa: BLE001
-                self.send_msg.configure(text=str(e), fg=RED)
+                self._ui(lambda: self.send_msg.configure(text=str(e), fg=RED))
         threading.Thread(target=work, daemon=True).start()
 
+    def _sent_ok(self, txid):
+        self.send_msg.configure(text=f"Sent. txid {txid[:20]}…", fg=GREEN)
+        self.to_var.set("")
+        self.amt_var.set("")
+        self.refresh()
+
     # ---- refresh -------------------------------------------------------------
+    def _ui(self, fn, *a):
+        """Run a widget update on the Tk main thread (Tk is not thread-safe)."""
+        try:
+            self.after(0, lambda: fn(*a))
+        except RuntimeError:
+            pass  # app is shutting down
+
     def refresh(self):
         def work():
             try:
@@ -439,29 +450,16 @@ class Wallet(tk.Tk):
                 info = self.rpc.call("getblockchaininfo", wallet=False)
                 mining = self.rpc.call("getmininginfo", wallet=False)
                 wi = self.rpc.call("getwalletinfo")
-                self._update_security(wi)
                 if not self._addr:
                     try:
-                        self._addr = self.rpc.call(
-                            "getnewaddress", ["desktop"])
+                        self._addr = self.rpc.call("getnewaddress", ["desktop"])
                     except Exception:  # noqa: BLE001
                         self._addr = ""
                 txs = self.rpc.call("listtransactions", ["*", 15])
             except Exception as e:  # noqa: BLE001
-                self.status.configure(text="node offline", fg=RED)
-                self.sub_lbl.configure(text=str(e)[:60])
+                msg = str(e)[:60]
+                self._ui(self._show_offline, msg)
                 return
-            trusted = bals.get("trusted", 0)
-            immature = bals.get("immature", 0)
-            pending = bals.get("untrusted_pending", 0)
-            self.bal_lbl.configure(text=f"{trusted:,.2f}")
-            self.sub_lbl.configure(
-                text=f"{immature:,.0f} maturing  \u00b7  {pending:,.2f} pending")
-            self.status.configure(
-                text=f"height {info['blocks']} \u00b7 "
-                     f"{mining.get('networkhashps', 0):,.0f} H/s", fg=GREEN)
-            if self._addr:
-                self.addr_var.set(self._addr)
             lines = []
             for t in reversed(txs or []):
                 cat = t.get("category", "")
@@ -474,11 +472,36 @@ class Wallet(tk.Tk):
                        "receive": "recv", "send": "sent"}.get(cat, cat)
                 lines.append(f"{when}  {tag:<11} {sign}{amt:>12,.2f}  "
                              f"{conf} conf")
-            self.hist.configure(state="normal")
-            self.hist.delete("1.0", "end")
-            self.hist.insert("1.0", "\n".join(lines) or "no transactions yet")
-            self.hist.configure(state="disabled")
+            data = {
+                "trusted": bals.get("trusted", 0),
+                "immature": bals.get("immature", 0),
+                "pending": bals.get("untrusted_pending", 0),
+                "blocks": info["blocks"],
+                "hps": mining.get("networkhashps", 0),
+                "hist": "\n".join(lines) or "no transactions yet",
+                "wi": wi,
+            }
+            self._ui(self._apply_refresh, data)
         threading.Thread(target=work, daemon=True).start()
+
+    def _show_offline(self, msg):
+        self.status.configure(text="node offline", fg=RED)
+        self.sub_lbl.configure(text=msg)
+
+    def _apply_refresh(self, d):
+        self.bal_lbl.configure(text=f"{d['trusted']:,.2f}")
+        self.sub_lbl.configure(
+            text=f"{d['immature']:,.0f} maturing  \u00b7  "
+                 f"{d['pending']:,.2f} pending")
+        self.status.configure(
+            text=f"height {d['blocks']} \u00b7 {d['hps']:,.0f} H/s", fg=GREEN)
+        if self._addr:
+            self.addr_var.set(self._addr)
+        self.hist.configure(state="normal")
+        self.hist.delete("1.0", "end")
+        self.hist.insert("1.0", d["hist"])
+        self.hist.configure(state="disabled")
+        self._update_security(d["wi"])
 
     def _update_security(self, wi):
         # 'unlocked_until' only exists on an encrypted wallet: 0 = locked,
