@@ -185,22 +185,24 @@ class Wallet(tk.Tk):
         self._tick()
 
     # ---- ui ------------------------------------------------------------------
-    def _logo(self, parent, size=34):
-        """The MoonBite mark: a bone moon with a bite, crossed by two gold bars.
-        Replicates the brand SVG (viewBox -140..140) on a canvas."""
-        c = tk.Canvas(parent, width=size, height=int(size * 0.9), bg=VOID,
+    def _logo(self, parent, badge=44):
+        """The MoonBite mark in a rounded badge, like the web wallet header:
+        a bone moon with a bite, crossed by two Moongold bars."""
+        c = tk.Canvas(parent, width=badge, height=badge, bg=VOID,
                       highlightthickness=0)
-        s = size / 280.0
+        round_rect(c, 1, 1, badge - 1, badge - 1, 12, fill=TERT, outline="")
+        # moon geometry drawn inside the badge (SVG viewBox -140..140), inset
+        pad = badge * 0.20
+        span = badge - 2 * pad
+        s = span / 280.0
 
         def X(x):
-            return (x + 140) * s
+            return pad + (x + 140) * s
 
         def Y(y):
-            return (y + 125) * s
-        # bone moon (circle r=100) with a void bite (circle r=62, upper-right)
+            return pad + (y + 125) * s
         c.create_oval(X(-100), Y(-100), X(100), Y(100), fill=BONE, outline="")
-        c.create_oval(X(8), Y(-132), X(132), Y(-8), fill=VOID, outline="")
-        # two moongold bars, wider than the moon
+        c.create_oval(X(8), Y(-132), X(132), Y(-8), fill=TERT, outline="")
         c.create_rectangle(X(-127), Y(-34), X(127), Y(-21), fill=GOLD,
                            outline="")
         c.create_rectangle(X(-127), Y(18), X(127), Y(31), fill=GOLD,
@@ -212,9 +214,9 @@ class Wallet(tk.Tk):
         base.configure(family=F_BODY, size=10)
         head = tk.Frame(self, bg=VOID)
         head.pack(fill="x", padx=22, pady=(18, 8))
-        self._logo(head, 40).pack(side="left", pady=(2,0))
+        self._logo(head, 42).pack(side="left")
         tk.Label(head, text="MoonBite", bg=VOID, fg=BONE,
-                 font=(F_DISPLAY, 15)).pack(side="left", padx=(9, 0))
+                 font=(F_DISPLAY, 15)).pack(side="left", padx=(11, 0))
         self.status = tk.Label(head, text="connecting\u2026", bg=VOID, fg=ASH,
                                font=(F_MONO, 9))
         self.status.pack(side="right", pady=(6, 0))
