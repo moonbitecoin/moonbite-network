@@ -38,7 +38,9 @@ F_BODY = "Segoe UI"
 F_SEMI = "Segoe UI Semibold"
 F_MONO = "Consolas"
 
-DATADIR = os.environ.get("MOONBITE_DATADIR", r"D:\MoonBite")
+DATADIR = os.environ.get(
+    "MOONBITE_DATADIR",
+    os.path.join(os.path.expanduser("~"), ".moonbite"))
 CONF = os.path.join(DATADIR, "moonbite.conf")
 WALLET = "wallet"
 START_SCRIPT = os.path.join(DATADIR, "start-mining.ps1")

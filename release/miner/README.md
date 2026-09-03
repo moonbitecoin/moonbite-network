@@ -37,6 +37,13 @@ Your node and wallet live in `~/.moonbite` (Linux/macOS) or
 `%USERPROFILE%\.moonbite` (Windows). Set `MOONBITE_DATADIR` before running
 the script to put them somewhere else.
 
+## The wallet app (Windows)
+
+`moonbite-wallet.exe` in this folder is the MoonBite desktop wallet — a
+window showing your balance, a receive address, a send form, and your
+history. Double-click it while the node is running (after `mine.ps1`).
+It reads the same wallet the node uses, so your mined coins appear there.
+
 ## Your coins and your wallet
 
 - Your wallet is stored in your MoonBite data directory (`~/.moonbite` on
