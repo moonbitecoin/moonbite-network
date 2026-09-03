@@ -31,6 +31,12 @@ That is the whole thing. The script starts your node, connects to the MoonBite
 network, creates a wallet, and begins mining to your own address. Leave it
 running; each block it finds is printed.
 
+## Data directory
+
+Your node and wallet live in `~/.moonbite` (Linux/macOS) or
+`%USERPROFILE%\.moonbite` (Windows). Set `MOONBITE_DATADIR` before running
+the script to put them somewhere else.
+
 ## Your coins and your wallet
 
 - Your wallet is stored in your MoonBite data directory (`~/.moonbite` on

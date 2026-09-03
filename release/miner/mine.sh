@@ -73,9 +73,14 @@ case "${1:-mine}" in
     start_node; ensure_wallet; echo "Your mining address: $(mining_address)"
     ;;
   stop)
+    # A generatetoaddress call in flight keeps the daemon busy so `cli stop`
+    # appears to hang; kill the miner call first, then ask the node to stop.
+    pkill -f "moonbite-cli.*generatetoaddress" 2>/dev/null || true
     cli stop 2>/dev/null || true
     for _ in $(seq 1 20); do [ -z "$(node_pid)" ] && break; sleep 2; done
     p=$(node_pid); [ -n "$p" ] && kill "$p" 2>/dev/null || true
+    for _ in $(seq 1 10); do [ -z "$(node_pid)" ] && break; sleep 1; done
+    p=$(node_pid); [ -n "$p" ] && kill -9 "$p" 2>/dev/null || true
     echo "stopped."
     ;;
   mine)
@@ -88,15 +93,27 @@ case "${1:-mine}" in
     echo " Ctrl-C to stop. Coins are spendable 100 blocks after they are mined."
     echo "======================================================================"
     trap 'echo; echo "Miner stopped. Node still running - ./mine.sh stop to shut it down."; exit 0' INT
+    # Do not mine until the node has caught up to the network tip. Mining on a
+    # stale tip only produces blocks the network rejects (bad-cb-height) and
+    # burns CPU. Wait for headers to be reached and IBD to finish.
+    echo " Syncing with the network before mining..."
+    while :; do
+      ibd=$(cli getblockchaininfo 2>/dev/null | sed -n 's/.*"initialblockdownload": *\(true\|false\).*/\1/p' | head -1)
+      bl=$(cli getblockcount 2>/dev/null || echo 0)
+      hd=$(cli getblockchaininfo 2>/dev/null | sed -n 's/.*"headers": *\([0-9]*\).*/\1/p' | head -1)
+      [ "$ibd" = "false" ] && [ -n "$hd" ] && [ "$bl" -ge "$hd" ] && break
+      echo "   ...$bl / ${hd:-?} blocks"; sleep 3
+    done
+    echo " Synced at height $(cli getblockcount). Mining now."
     FOUND=0
     while :; do
-      H0=$(cli getblockcount)
-      # Bounded per-call try budget: one long call would lock the node's RPC.
-      cli generatetoaddress 1 "$ADDR" "${MAXTRIES:-100000}" >/dev/null 2>&1 || true
-      H1=$(cli getblockcount)
-      if [ "$H1" -gt "$H0" ]; then
+      # generatetoaddress returns a JSON array of the hashes it actually found;
+      # trust that, not a height delta (the height also moves when a peer's
+      # block arrives, which is not a block you mined).
+      OUT=$(cli generatetoaddress 1 "$ADDR" "${MAXTRIES:-100000}" 2>/dev/null || true)
+      if printf '%s' "$OUT" | grep -q '"[0-9a-f]\{64\}"'; then
         FOUND=$((FOUND+1))
-        echo "  BLOCK FOUND!  height $H1   (you have found $FOUND this session)   peers $(cli getconnectioncount)"
+        echo "  BLOCK FOUND!  height $(cli getblockcount)   (you have found $FOUND this session)   peers $(cli getconnectioncount)"
       fi
       sleep 1
     done

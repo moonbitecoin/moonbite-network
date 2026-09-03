@@ -22,8 +22,9 @@ That starts the node, connects to the seed, creates a wallet and mines to your
 own address. Back up the wallet folder in your data directory
 (%USERPROFILE%\.moonbite on Windows, ~/.moonbite on Linux).
 
-Verify what you downloaded against the checksums published with each GitHub
-release: https://github.com/moonbitecoin/MoonBite-Coin/releases
+Verify what you downloaded (sha256):
+  moonbite-miner-windows-x86_64.zip   9de9ce468c378f30c66fe97728adb95f9046c5ef88c8f570cb2711cac27046ad
+  moonbite-miner-linux-x86_64.tar.gz  a9f97af63dac2892ed0601f1864b71c4d75f27a2f36e8d291176924f19ff2eb0
 
 Binaries built before 3 September 2026 belong to an earlier chain and will
 not connect to the current network.

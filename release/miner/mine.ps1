@@ -81,7 +81,15 @@ function Mining-Address {
 
 switch ($cmd) {
   "address" { Start-Node; Ensure-Wallet; Write-Host "Your mining address: $(Mining-Address)" }
-  "stop"    { try { Invoke-Cli stop } catch {}; Write-Host "stopped." }
+  "stop"    {
+    # Kill an in-flight generatetoaddress first, else the busy daemon makes
+    # `cli stop` look like it hangs.
+    Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like "*moonbite-cli*generatetoaddress*" } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+    try { Invoke-Cli stop } catch {}
+    for ($i=0; $i -lt 20; $i++) { if (-not (Get-Process moonbited -ErrorAction SilentlyContinue)) { break }; Start-Sleep 2 }
+    Get-Process moonbited -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Write-Host "stopped."
+  }
   "mine"    {
     Start-Node; Ensure-Wallet
     $addr = Mining-Address
@@ -91,14 +99,27 @@ switch ($cmd) {
     Write-Host " Wallet:    $datadir\$wallet   (back this up)"
     Write-Host " Ctrl-C to stop. Coins are spendable 100 blocks after being mined."
     Write-Host "======================================================================"
+    # Wait until the node is caught up to the network before mining; mining on a
+    # stale tip only makes blocks the network rejects (bad-cb-height).
+    Write-Host " Syncing with the network before mining..."
+    while ($true) {
+      try {
+        $info = Invoke-Cli getblockchaininfo | Out-String | ConvertFrom-Json
+        if (-not $info.initialblockdownload -and $info.blocks -ge $info.headers) { break }
+        Write-Host "   ...$($info.blocks) / $($info.headers) blocks"
+      } catch {}
+      Start-Sleep 3
+    }
+    Write-Host " Synced at height $(Invoke-Cli getblockcount). Mining now."
     $found = 0
     while ($true) {
       try {
-        $h0 = [int](Invoke-Cli getblockcount)
         $tries = if ($env:MAXTRIES) { $env:MAXTRIES } else { "100000" }
-        try { Invoke-Cli "-rpcwallet=$wallet" generatetoaddress 1 $addr $tries | Out-Null } catch {}
-        $h1 = [int](Invoke-Cli getblockcount)
-        if ($h1 -gt $h0) { $found++; Write-Host "  BLOCK FOUND!  height $h1   (found $found this session)   peers $(Invoke-Cli getconnectioncount)" }
+        # generatetoaddress returns the hashes it actually mined; trust that,
+        # not a height delta (height also moves when a peer's block arrives).
+        $out = ""
+        try { $out = (Invoke-Cli "-rpcwallet=$wallet" generatetoaddress 1 $addr $tries | Out-String) } catch {}
+        if ($out -match '[0-9a-f]{64}') { $found++; Write-Host "  BLOCK FOUND!  height $(Invoke-Cli getblockcount)   (found $found this session)   peers $(Invoke-Cli getconnectioncount)" }
       } catch {
         # node busy/restarting: log and keep going rather than exiting the miner
         Write-Host "  (rpc hiccup: $($_.Exception.Message.Split([char]10)[0])) retrying..."
