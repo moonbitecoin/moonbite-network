@@ -1,7 +1,7 @@
 /* Bump on every wallet release: activate() deletes caches whose name does not
    match, so changing this string is what flushes stale assets from installed
    PWAs. */
-const CACHE_VERSION = 'moonbite-wallet-v3-bip39';
+const CACHE_VERSION = 'moonbite-wallet-v4-bip39';
 const CACHE_URLS = [
   '/wallet',
   '/static/wallet-pwa.html',
@@ -98,18 +98,22 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // For static assets, use cache-first strategy
+  // Static assets, esp. the wallet's JS crypto modules: NETWORK FIRST.
+  //
+  // Cache-first froze the code — a returning wallet kept running whatever
+  // modules it first cached, so a fix to key derivation or signing could
+  // never reach it. For a wallet that is unacceptable. Always try the network
+  // and fall back to cache only when offline.
   event.respondWith(
-    caches.match(request).then(cached => {
-      return cached || fetch(request).then(response => {
+    fetch(request)
+      .then(response => {
         if (response.ok) {
-          caches.open(CACHE_VERSION).then(cache => {
-            cache.put(request, response.clone());
-          });
+          const copy = response.clone();
+          caches.open(CACHE_VERSION).then(cache => cache.put(request, copy));
         }
         return response;
-      });
-    })
+      })
+      .catch(() => caches.match(request))
   );
 });
 
