@@ -1002,15 +1002,14 @@ def why_page():
 
 @app.route("/wallet")
 def wallet_page():
-    """The MoonBite wallet.
+    """One wallet: the MoonBite desktop app.
 
-    One wallet, not five. This serves the production PWA (28 screens,
-    AES-256-GCM + PBKDF2, biometric unlock, per-user custodial addresses) —
-    by a wide margin the most complete of the variants that used to compete
-    for this URL. The others now redirect here so there is a single surface
-    holding keys, and a single place to audit.
+    The old in-browser PWA held its own keys, separate from the node and the
+    coins a miner actually holds — two wallets that only looked alike. There is
+    now a single wallet surface, the desktop app that connects to your own node,
+    so /wallet sends people to the download page for it.
     """
-    return render_template("wallet-pwa-app.html")
+    return redirect(url_for("get_wallet_page"))
 
 
 # Superseded wallet builds. Kept as permanent redirects rather than deleted
