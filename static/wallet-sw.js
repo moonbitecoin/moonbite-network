@@ -1,7 +1,7 @@
 /* Bump on every wallet release: activate() deletes caches whose name does not
    match, so changing this string is what flushes stale assets from installed
    PWAs. */
-const CACHE_VERSION = 'moonbite-wallet-v2';
+const CACHE_VERSION = 'moonbite-wallet-v3-bip39';
 const CACHE_URLS = [
   '/wallet',
   '/static/wallet-pwa.html',
