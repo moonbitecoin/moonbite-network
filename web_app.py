@@ -711,6 +711,12 @@ def home_page():
     return render_template("moon.html")
 
 
+@app.route("/next")
+def home_flagship_page():
+    """Candidate flagship homepage (quiet-confidence redesign)."""
+    return render_template("flagship.html")
+
+
 @app.route("/home-zeldman")
 def home_zeldman_page():
     """Previous marketing homepage (Zeldman-style elegant minimalism)."""
