@@ -1235,6 +1235,17 @@ def download_miner(os_name):
         return render_template("mine.html"), 404
     path = os.path.join(_MINER_DOWNLOAD_DIR, fname)
     if os.path.isfile(path):
+        # Hand the large file to nginx (sendfile) instead of streaming it
+        # through the single gunicorn worker, which is slow and blocks the site
+        # for the whole download. nginx serves it from an internal location.
+        if os.environ.get("MOONBITE_XACCEL"):
+            mt = ("application/zip" if fname.endswith(".zip")
+                  else "application/gzip")
+            resp = app.response_class()
+            resp.headers["X-Accel-Redirect"] = "/dl-internal/" + fname
+            resp.headers["Content-Type"] = mt
+            resp.headers["Content-Disposition"] = f'attachment; filename="{fname}"'
+            return resp
         return send_from_directory(_MINER_DOWNLOAD_DIR, fname, as_attachment=True)
     # Bundle not staged for this OS yet — tell the truth.
     msg = (
