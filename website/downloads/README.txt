@@ -23,8 +23,8 @@ own address. Back up the wallet folder in your data directory
 (%USERPROFILE%\.moonbite on Windows, ~/.moonbite on Linux).
 
 Verify what you downloaded (sha256):
-  moonbite-miner-windows-x86_64.zip   accec8d4d512b57f2a9abaf1004d27e49a1a5f046e4e015d810cd2a96b21dbaa
-  moonbite-miner-linux-x86_64.tar.gz  ba9433cf738a9eec34f6056230721d782f8b2e9acd5f2419a6eaf25b31ada29d
+  moonbite-miner-windows-x86_64.zip   6491437a0a31d664118cd58e513226b0bef8850a25605c7945701cde71f2a503
+  moonbite-miner-linux-x86_64.tar.gz  c28fd28d39965afd28b1e2b7b8403947d066afd37b0a5fc6333317acac1e4a21
 
 Binaries built before 3 September 2026 belong to an earlier chain and will
 not connect to the current network.

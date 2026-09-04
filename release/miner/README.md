@@ -42,14 +42,13 @@ Your node and wallet live in `~/.moonbite` (Linux/macOS) or
 `%USERPROFILE%\.moonbite` (Windows). Set `MOONBITE_DATADIR` before running
 the script to put them somewhere else.
 
-## The wallet app (Windows)
+## The wallet app
 
-`moonbite-wallet.exe` is the MoonBite desktop wallet — the same wallet as
-moonbite.org/wallet, in its own window. It is self-custody: it creates a
-standard 12-word recovery phrase on your device, holds your keys locally, and
-shows your balance, a receive address, and lets you send. Double-click it to
-open. (Your mined coins live in the node wallet; the desktop wallet is your
-personal spending wallet — send between them using addresses.)
+The MoonBite desktop wallet is a separate download - it is the same wallet as
+moonbite.org/wallet, in its own window (self-custody, 12-word recovery phrase).
+Get it from moonbite.org/wallet (Download) or moonbite.org/download/wallet.
+You don't need it to mine: create a wallet there, copy your address, and pass
+it to this miner.
 
 
 ## Your coins and your wallet

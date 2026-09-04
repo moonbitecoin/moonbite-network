@@ -1219,6 +1219,9 @@ _MINER_BUNDLES = {
     "linux": "moonbite-miner-linux-x86_64.tar.gz",
     "macos": "moonbite-miner-macos.tar.gz",
     "windows": "moonbite-miner-windows-x86_64.zip",
+    # The desktop wallet app is a separate download (kept out of the miner
+    # bundle so the miner stays small and quick to fetch).
+    "wallet": "moonbite-wallet.exe",
 }
 
 
@@ -1240,6 +1243,7 @@ def download_miner(os_name):
         # for the whole download. nginx serves it from an internal location.
         if os.environ.get("MOONBITE_XACCEL"):
             mt = ("application/zip" if fname.endswith(".zip")
+                  else "application/octet-stream" if fname.endswith(".exe")
                   else "application/gzip")
             resp = app.response_class()
             resp.headers["X-Accel-Redirect"] = "/dl-internal/" + fname
