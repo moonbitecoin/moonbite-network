@@ -6,9 +6,9 @@
  * not valid BIP39 (an older imported phrase) still yields a real P2WPKH
  * address via a legacy scalar derivation, so nothing is stranded.
  */
-import { getPublicKey } from './vendor/noble-secp256k1.js';
-import { mnemonicToSeed, validateMnemonic } from './moonbite-bip39.js';
-import { deriveKey, hash160, bytesToHex, hexToBytes } from './moonbite-hd.js';
+import { getPublicKey } from './vendor/noble-secp256k1.js?v=20260904a';
+import { mnemonicToSeed, validateMnemonic } from './moonbite-bip39.js?v=20260904a';
+import { deriveKey, hash160, bytesToHex, hexToBytes } from './moonbite-hd.js?v=20260904a';
 
 const SEED_DERIVATION_PREFIX = 'moonbite-seed-v1:';
 const BECH32_CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';

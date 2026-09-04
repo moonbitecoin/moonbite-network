@@ -2356,11 +2356,11 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
     <script type="module" nonce="{{ csp_nonce }}">
         import { deriveFromSeedPhrase, normalizeSeedPhrase,
                  pubkeyHashFromAddress, isValidAddress }
-            from '{{ url_for('static', filename='moonbite-address.js') }}';
+            from '{{ url_for('static', filename='moonbite-address.js') }}?v=20260904a';
         import { buildSignedTransaction }
-            from '{{ url_for('static', filename='moonbite-tx.js') }}';
+            from '{{ url_for('static', filename='moonbite-tx.js') }}?v=20260904a';
         import { encryptSeed, decryptSeed, readSeed, isNewFormat }
-            from '{{ url_for('static', filename='moonbite-crypto.js') }}';
+            from '{{ url_for('static', filename='moonbite-crypto.js') }}?v=20260904a';
         window.MoonBiteAddress = {
             deriveFromSeedPhrase, normalizeSeedPhrase,
             pubkeyHashFromAddress, isValidAddress
@@ -2369,7 +2369,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
         window.MoonBiteCrypto = { encryptSeed, decryptSeed, readSeed, isNewFormat };
 
         const { generatePhrase, wordlistSize, validateMnemonic } =
-            await import('{{ url_for('static', filename='moonbite-phrase.js') }}');
+            await import('{{ url_for('static', filename='moonbite-phrase.js') }}?v=20260904a');
         window.MoonBitePhrase = { generatePhrase, wordlistSize, validateMnemonic };
 
         window.MoonBiteReady = true;

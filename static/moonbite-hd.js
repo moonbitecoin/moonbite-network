@@ -5,7 +5,7 @@
  * secp256k1 point math comes from the vendored noble library; SHA-512/HMAC/
  * SHA-256 from WebCrypto; RIPEMD160 is implemented here (WebCrypto lacks it).
  */
-import { getPublicKey } from './vendor/noble-secp256k1.js';
+import { getPublicKey } from './vendor/noble-secp256k1.js?v=20260904a';
 
 const N = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141');
 const enc = new TextEncoder();

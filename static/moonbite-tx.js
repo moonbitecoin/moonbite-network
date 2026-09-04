@@ -7,9 +7,9 @@
  * Single-key wallet: every UTXO is on the wallet's own key (m/84'/2'/0'/0/0),
  * so one key signs all inputs.
  */
-import { getPublicKey, signAsync } from './vendor/noble-secp256k1.js';
-import { hash160, bytesToHex, hexToBytes } from './moonbite-hd.js';
-import { pubkeyHashFromAddress, privkeyFromSeedPhrase } from './moonbite-address.js';
+import { getPublicKey, signAsync } from './vendor/noble-secp256k1.js?v=20260904a';
+import { hash160, bytesToHex, hexToBytes } from './moonbite-hd.js?v=20260904a';
+import { pubkeyHashFromAddress, privkeyFromSeedPhrase } from './moonbite-address.js?v=20260904a';
 
 const enc = new TextEncoder();
 function concat(...a){let n=0;for(const x of a)n+=x.length;const o=new Uint8Array(n);let i=0;for(const x of a){o.set(x,i);i+=x.length;}return o;}
