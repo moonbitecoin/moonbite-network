@@ -17,19 +17,24 @@ find pays you, and only you.
 
 ## Run it
 
+First get your address: open the MoonBite wallet (the app, or
+moonbite.org/wallet), create a wallet, go to **Receive**, and copy your
+`moon1...` address. Then point the miner at it so rewards land in your wallet:
+
 **Linux / macOS**
 ```bash
-./mine.sh
+./mine.sh moon1youraddress
 ```
 
 **Windows (PowerShell)**
 ```powershell
-.\mine.ps1
+.\mine.ps1 moon1youraddress
 ```
 
-That is the whole thing. The script starts your node, connects to the MoonBite
-network, creates a wallet, and begins mining to your own address. Leave it
-running; each block it finds is printed.
+The script starts your node, connects to the network, waits until it is fully
+synced, then mines to that address. Run it again later without the address and
+it reuses the one you saved. Leave it running; each block it finds is printed,
+and the reward appears in your wallet after it matures.
 
 ## Data directory
 

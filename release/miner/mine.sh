@@ -1,19 +1,18 @@
 #!/usr/bin/env bash
 # MoonBite solo miner - Linux & macOS.
 #
-# Mining is solo and pool-free: this runs a full MoonBite node on your machine
-# and mines directly to your own wallet. No pool, no middleman, no account.
-# Every block you find pays you, and only you.
+# Solo and pool-free: this runs a full MoonBite node on your machine and mines
+# straight to YOUR wallet address. No pool, no account, no middleman.
 #
-#   ./mine.sh            start the node and mine
-#   ./mine.sh address    just print your mining address
-#   ./mine.sh stop       stop the node
+#   ./mine.sh moon1yourwalletaddress   mine rewards to your wallet
+#   ./mine.sh                          use the saved address (or ask you for one)
+#   ./mine.sh address                  print the reward address in use
+#   ./mine.sh stop                     stop the node
 #
-# Your wallet lives in the data directory below. BACK IT UP - lose it and you
-# lose the coins.
+# Get your address from the MoonBite wallet app (or moonbite.org/wallet):
+# create a wallet, open Receive, and copy the moon1... address.
 set -euo pipefail
 
-# --- locate the binaries (next to this script, or on PATH) ---
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DAEMON="$HERE/moonbited";     [ -x "$DAEMON" ] || DAEMON="$(command -v moonbited || true)"
 CLIBIN="$HERE/moonbite-cli";  [ -x "$CLIBIN" ] || CLIBIN="$(command -v moonbite-cli || true)"
@@ -21,12 +20,11 @@ CLIBIN="$HERE/moonbite-cli";  [ -x "$CLIBIN" ] || CLIBIN="$(command -v moonbite-
 
 DATADIR="${MOONBITE_DATADIR:-$HOME/.moonbite}"
 CONF="$DATADIR/moonbite.conf"
-WALLET=wallet
+REWARD_FILE="$DATADIR/reward-address.txt"
 cli() { "$CLIBIN" -datadir="$DATADIR" -conf="$CONF" "$@"; }
-
-# Find the running daemon by command line: Core renames its thread on shutdown,
-# so a name match misses a process that is still alive.
 node_pid() { pgrep -f "moonbited -datadir=$DATADIR" 2>/dev/null | head -1; }
+
+is_addr() { case "$1" in moon1[0-9a-z]*) [ ${#1} -ge 26 ] && [ ${#1} -le 90 ];; *) return 1;; esac; }
 
 write_conf() {
   mkdir -p "$DATADIR"
@@ -38,7 +36,7 @@ listen=1
 dbcache=512
 rpcuser=moonminer
 rpcpassword=$pw
-# Live MoonBite seed nodes - how your miner finds the network.
+# Live MoonBite seed node - how your miner finds the network.
 addnode=67.205.154.64:9444
 CONF
   chmod 600 "$CONF"
@@ -48,33 +46,38 @@ wait_rpc() {
   local i; for i in $(seq 1 60); do cli getblockcount >/dev/null 2>&1 && return 0; sleep 2; done
   echo "node did not start (check $DATADIR/debug.log)" >&2; return 1
 }
-
 start_node() {
-  [ -x "$DAEMON" ] || exit 1
-  if cli getblockcount >/dev/null 2>&1; then return 0; fi
+  cli getblockcount >/dev/null 2>&1 && return 0
   write_conf
   "$DAEMON" -datadir="$DATADIR" -conf="$CONF" -daemon >/dev/null
   wait_rpc
 }
 
-ensure_wallet() {
-  cli createwallet "$WALLET" >/dev/null 2>&1 || cli loadwallet "$WALLET" >/dev/null 2>&1 || true
-}
-
-mining_address() {
-  local f="$DATADIR/mining-address.txt"
-  if [ -s "$f" ]; then cat "$f"; return; fi
-  local a; a=$(cli -rpcwallet="$WALLET" getnewaddress "mining")
-  printf '%s' "$a" > "$f"; echo "$a"
+# Where mining rewards go. Priority: CLI arg, env, saved file, prompt, then a
+# local node wallet as a last resort (with a clear warning).
+resolve_reward_address() {
+  local cand="${1:-}"
+  if [ -n "$cand" ] && is_addr "$cand"; then printf '%s' "$cand" > "$REWARD_FILE"; echo "$cand"; return; fi
+  if [ -n "${MOONBITE_ADDRESS:-}" ] && is_addr "$MOONBITE_ADDRESS"; then printf '%s' "$MOONBITE_ADDRESS" > "$REWARD_FILE"; echo "$MOONBITE_ADDRESS"; return; fi
+  if [ -s "$REWARD_FILE" ]; then local a; a=$(cat "$REWARD_FILE"); if is_addr "$a"; then echo "$a"; return; fi; fi
+  if [ -t 0 ]; then
+    echo "Paste the MoonBite wallet address to receive your mining rewards" >&2
+    echo "(from the wallet app / moonbite.org/wallet - Receive tab, moon1...):" >&2
+    local a; read -r a
+    if is_addr "$a"; then printf '%s' "$a" > "$REWARD_FILE"; echo "$a"; return; fi
+    echo "That did not look like a moon1 address." >&2; exit 1
+  fi
+  # Non-interactive, no address: fall back to a local node wallet.
+  cli createwallet wallet >/dev/null 2>&1 || cli loadwallet wallet >/dev/null 2>&1 || true
+  local a; a=$(cli -rpcwallet=wallet getnewaddress "mining"); printf '%s' "$a" > "$REWARD_FILE"
+  echo "$a"
 }
 
 case "${1:-mine}" in
   address)
-    start_node; ensure_wallet; echo "Your mining address: $(mining_address)"
+    start_node; echo "Rewards go to: $(resolve_reward_address)"
     ;;
   stop)
-    # A generatetoaddress call in flight keeps the daemon busy so `cli stop`
-    # appears to hang; kill the miner call first, then ask the node to stop.
     pkill -f "moonbite-cli.*generatetoaddress" 2>/dev/null || true
     cli stop 2>/dev/null || true
     for _ in $(seq 1 20); do [ -z "$(node_pid)" ] && break; sleep 2; done
@@ -83,19 +86,16 @@ case "${1:-mine}" in
     p=$(node_pid); [ -n "$p" ] && kill -9 "$p" 2>/dev/null || true
     echo "stopped."
     ;;
-  mine)
-    start_node; ensure_wallet
-    ADDR=$(mining_address)
+  mine|*)
+    ARG=""; case "${1:-}" in moon1*) ARG="$1";; esac
+    start_node
+    ADDR=$(resolve_reward_address "$ARG")
     echo "======================================================================"
     echo " MoonBite solo miner"
-    echo " Mining to: $ADDR"
-    echo " Wallet:    $DATADIR/$WALLET   (back this up)"
+    echo " Rewards to: $ADDR"
     echo " Ctrl-C to stop. Coins are spendable 100 blocks after they are mined."
     echo "======================================================================"
     trap 'echo; echo "Miner stopped. Node still running - ./mine.sh stop to shut it down."; exit 0' INT
-    # Do not mine until the node has caught up to the network tip. Mining on a
-    # stale tip only produces blocks the network rejects (bad-cb-height) and
-    # burns CPU. Wait for headers to be reached and IBD to finish.
     echo " Syncing with the network before mining..."
     while :; do
       ibd=$(cli getblockchaininfo 2>/dev/null | sed -n 's/.*"initialblockdownload": *\(true\|false\).*/\1/p' | head -1)
@@ -107,9 +107,6 @@ case "${1:-mine}" in
     echo " Synced at height $(cli getblockcount). Mining now."
     FOUND=0
     while :; do
-      # generatetoaddress returns a JSON array of the hashes it actually found;
-      # trust that, not a height delta (the height also moves when a peer's
-      # block arrives, which is not a block you mined).
       OUT=$(cli generatetoaddress 1 "$ADDR" "${MAXTRIES:-100000}" 2>/dev/null || true)
       if printf '%s' "$OUT" | grep -q '"[0-9a-f]\{64\}"'; then
         FOUND=$((FOUND+1))
@@ -118,5 +115,4 @@ case "${1:-mine}" in
       sleep 1
     done
     ;;
-  *) sed -n '3,12p' "$0"; exit 1 ;;
 esac
