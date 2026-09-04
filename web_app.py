@@ -82,6 +82,8 @@ elif _CHAIN_DB is not None:
 _chain_store: Optional["BlockStore"] = None
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
+# Wallet code must not be frozen in caches; serve static assets fresh.
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
 
 # Disable template caching to ensure updates are served immediately
 app.config['TEMPLATES_AUTO_RELOAD'] = True

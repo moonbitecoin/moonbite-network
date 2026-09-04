@@ -1,7 +1,7 @@
 /* Bump on every wallet release: activate() deletes caches whose name does not
    match, so changing this string is what flushes stale assets from installed
    PWAs. */
-const CACHE_VERSION = 'moonbite-wallet-v5-onboarding';
+const CACHE_VERSION = 'moonbite-wallet-v6-fresh';
 const CACHE_URLS = [
   '/wallet',
   '/static/wallet-pwa.html',
@@ -83,7 +83,7 @@ self.addEventListener('fetch', event => {
     (request.headers.get('accept') || '').includes('text/html');
   if (wantsHTML) {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: 'no-store' })
         .then(response => {
           if (response.ok) {
             const copy = response.clone();
@@ -105,7 +105,7 @@ self.addEventListener('fetch', event => {
   // never reach it. For a wallet that is unacceptable. Always try the network
   // and fall back to cache only when offline.
   event.respondWith(
-    fetch(request)
+    fetch(request, { cache: 'no-store' })
       .then(response => {
         if (response.ok) {
           const copy = response.clone();
