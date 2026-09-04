@@ -711,6 +711,12 @@ def home_page():
     return render_template("moon.html")
 
 
+@app.route("/film")
+def film_page():
+    """Scroll-driven cinematic homepage candidate."""
+    return render_template("film.html")
+
+
 @app.route("/the-case")
 def the_case_page():
     """Long-form Ogilvy copy: the full argument for readers who want it."""

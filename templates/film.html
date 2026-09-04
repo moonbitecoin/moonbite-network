@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MoonBite — We have nothing to sell you.</title>
+<meta name="description" content="MoonBite can't be bought, at any price, from anyone. You make it yourself with the computer you already have. No company, no presale, no premine.">
+<link rel="icon" type="image/svg+xml" href="/static/moonbite-logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,400&family=Inter:wght@400;500;600;700&display=swap">
+<style nonce="{{ csp_nonce }}">
+:root{
+  --ink:#06070A; --gold:#D9A441; --gold-2:#EBCB86;
+  --bone:#F4F1E9; --mist:#CFCABF; --ash:#8E8981; --faint:#5E5A53;
+  --rule:rgba(244,241,233,.14); --rule-2:rgba(244,241,233,.07);
+  --serif:'Newsreader',Georgia,serif;
+  --display:'Instrument Serif',Georgia,serif;
+  --ui:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--ink);color:var(--bone);font-family:var(--serif);
+  line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--gold);color:var(--ink)}
+a{color:inherit}
+img{display:block;max-width:100%}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* ---------- masthead ---------- */
+header.mast{position:fixed;top:0;left:0;right:0;z-index:40;
+  padding:16px clamp(20px,4vw,40px);display:flex;align-items:center;gap:16px;
+  background:linear-gradient(180deg,rgba(6,7,10,.8),rgba(6,7,10,0))}
+.mark{display:flex;align-items:center;gap:10px;font-family:var(--display);
+  font-size:1.22rem;letter-spacing:.02em;text-decoration:none}
+.mark img{width:23px;height:23px}
+.dateline{margin-left:auto;font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ash);display:flex;align-items:center;gap:8px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex:none;animation:pulse 2.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(217,164,65,.5)}70%{box-shadow:0 0 0 7px rgba(217,164,65,0)}100%{box-shadow:0 0 0 0 rgba(217,164,65,0)}}
+@media(max-width:560px){.dateline .hide{display:none}}
+
+/* ---------- the film ---------- */
+#film{position:relative;height:760vh}
+#stage{position:sticky;top:0;height:100svh;overflow:hidden}
+#scene{position:absolute;inset:0;width:100%;height:100%}
+.vig{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 50%,rgba(6,7,10,0) 42%,rgba(6,7,10,.86) 100%)}
+.grain{position:absolute;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* acts */
+.act{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
+  padding:0 clamp(22px,6vw,90px);pointer-events:none;will-change:opacity,transform}
+.act .in{max-width:min(1000px,92vw);margin:0 auto;width:100%}
+.act.mid .in{text-align:center}
+
+.kicker{font-family:var(--mono);font-size:.66rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold)}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(3rem,10.5vw,7.6rem);
+  line-height:.94;letter-spacing:-.02em;margin-top:20px;max-width:14ch}
+h1 em{font-style:italic;color:var(--gold)}
+.deck{font-family:var(--serif);font-weight:300;font-size:clamp(1.4rem,4.4vw,2.6rem);
+  line-height:1.36;color:var(--mist);max-width:22ch;margin:0 auto}
+.deck b{color:var(--bone);font-weight:400}
+.scrollcue{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--faint);display:flex;flex-direction:column;align-items:center;gap:10px}
+.scrollcue i{display:block;width:1px;height:34px;background:linear-gradient(180deg,var(--gold),transparent);
+  animation:drop 2.2s ease-in-out infinite}
+@keyframes drop{0%,100%{opacity:.25;transform:scaleY(.5)}50%{opacity:1;transform:scaleY(1)}}
+
+/* three facts */
+.facts{display:grid;gap:clamp(18px,3vw,34px)}
+@media(min-width:880px){.facts{grid-template-columns:repeat(3,1fr)}}
+.f .n{font-family:var(--mono);font-size:.64rem;letter-spacing:.2em;color:var(--gold)}
+.f h2{font-family:var(--display);font-weight:400;font-size:clamp(1.5rem,3.6vw,2.15rem);
+  line-height:1.1;margin:12px 0 9px}
+.f p{color:var(--mist);font-size:clamp(.95rem,1.7vw,1.05rem);line-height:1.55}
+.f p b{color:var(--bone);font-weight:500}
+
+/* quote */
+.quote{font-family:var(--display);font-weight:400;font-style:italic;
+  font-size:clamp(1.9rem,6.2vw,4rem);line-height:1.12;letter-spacing:-.015em;
+  max-width:16ch;margin:0 auto}
+.attr{font-family:var(--mono);font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ash);margin-top:26px}
+
+/* steps */
+.slug{font-family:var(--mono);font-size:.64rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ash)}
+.act h3.big{font-family:var(--display);font-weight:400;font-size:clamp(1.9rem,5.2vw,3rem);
+  line-height:1.08;margin-top:14px;max-width:20ch}
+.steps{display:grid;gap:clamp(16px,2.6vw,30px);margin-top:clamp(26px,4vh,44px)}
+@media(min-width:880px){.steps{grid-template-columns:repeat(3,1fr)}}
+.st{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:baseline}
+.st .sn{font-family:var(--mono);font-size:.68rem;color:var(--gold)}
+.st h4{font-family:var(--display);font-weight:400;font-size:clamp(1.2rem,2.6vw,1.5rem);line-height:1.14}
+.st p{color:var(--mist);font-size:clamp(.9rem,1.6vw,1rem);line-height:1.5;margin-top:6px}
+
+/* final */
+.btns{display:flex;gap:13px;flex-wrap:wrap;margin-top:32px;justify-content:center}
+.btn{font-family:var(--ui);font-size:.97rem;font-weight:600;padding:15px 30px;border-radius:4px;
+  text-decoration:none;border:1px solid transparent;
+  transition:transform .15s,box-shadow .2s,background .2s,border-color .2s}
+.btn-gold{color:var(--ink);background:linear-gradient(180deg,var(--gold-2),var(--gold));
+  box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 10px 30px rgba(217,164,65,.28)}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 18px 44px rgba(217,164,65,.4)}
+.btn-line{color:var(--bone);border-color:var(--rule)}
+.btn-line:hover{border-color:rgba(217,164,65,.6);background:rgba(217,164,65,.06)}
+.proof{margin-top:26px;font-family:var(--mono);font-size:.66rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ash)}
+.proof b{color:var(--mist);font-weight:400}
+.fine{font-family:var(--ui);font-size:.84rem;color:var(--ash);margin:22px auto 0;max-width:52ch;line-height:1.6}
+.more{display:inline-block;margin-top:20px;font-family:var(--ui);font-size:.92rem;font-weight:600;
+  color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(217,164,65,.4);padding-bottom:3px}
+
+/* progress rail */
+#rail{position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:35;
+  display:flex;flex-direction:column;gap:9px}
+#rail span{width:5px;height:5px;border-radius:50%;background:rgba(244,241,233,.2);transition:background .3s,transform .3s}
+#rail span.on{background:var(--gold);transform:scale(1.5)}
+@media(max-width:720px){ #rail{right:9px} }
+
+/* footer after the film */
+footer{border-top:1px solid var(--rule);padding:52px 0 40px;position:relative;z-index:2;background:var(--ink)}
+.page{max-width:1080px;margin:0 auto;padding:0 clamp(22px,4vw,30px)}
+.fgrid{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:34px}
+@media(max-width:760px){.fgrid{grid-template-columns:1fr 1fr;gap:26px}}
+.fgrid p{font-family:var(--ui);font-size:.86rem;color:var(--ash);max-width:32ch;margin-top:12px;line-height:1.56}
+.fcol h5{font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ash);margin-bottom:12px}
+.fcol a{display:block;font-family:var(--ui);font-size:.89rem;color:var(--mist);padding:6px 0;text-decoration:none}
+.fcol a:hover{color:var(--gold)}
+.fbase{margin-top:38px;padding-top:22px;border-top:1px solid var(--rule-2);display:flex;
+  justify-content:space-between;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:.66rem;color:var(--faint)}
+
+/* ---------- flat fallback (reduced motion / no JS) ---------- */
+.flat #film{height:auto}
+.flat #stage{position:static;height:auto;overflow:visible}
+.flat #scene,.flat .vig,.flat .scrollcue,.flat #rail{display:none}
+.flat .act{position:static;inset:auto;opacity:1!important;transform:none!important;
+  padding-top:12vh;padding-bottom:12vh;min-height:0}
+.flat .act+.act{border-top:1px solid var(--rule-2)}
+noscript .act{opacity:1}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <a class="mark" href="/"><img src="/static/moonbite-logo.svg" alt=""><span>MoonBite</span></a>
+  <div class="dateline"><span class="dot"></span><span class="hide">Block</span>
+    <span class="mono" id="dBlock">—</span><span class="hide">· mining now</span></div>
+</header>
+
+<div id="rail" aria-hidden="true">
+  <span class="on"></span><span></span><span></span><span></span><span></span><span></span>
+</div>
+
+<section id="film">
+  <div id="stage">
+    <canvas id="scene"></canvas>
+    <div class="vig"></div>
+    <div class="grain"></div>
+
+    <!-- ACT 1 -->
+    <div class="act" data-a="0">
+      <div class="in">
+        <div class="kicker">A new kind of money · Est. {{ consensus.launch_year }}</div>
+        <h1>We have <em>nothing</em> to sell you.</h1>
+      </div>
+      <div class="scrollcue">Scroll<i></i></div>
+    </div>
+
+    <!-- ACT 2 -->
+    <div class="act mid" data-a="1">
+      <div class="in">
+        <p class="deck">MoonBite can't be bought — at any price, from anyone.
+          <b>You make it yourself</b>, with the computer you already have.</p>
+      </div>
+    </div>
+
+    <!-- ACT 3 -->
+    <div class="act" data-a="2">
+      <div class="in facts">
+        <div class="f"><div class="n">01</div><h2>Nobody owns it.</h2>
+          <p>No company, no investors, no founder's stack. If we vanished tonight it would keep running.</p></div>
+        <div class="f"><div class="n">02</div><h2>{{ consensus.initial_subsidy_coins }} coins, every {{ consensus.block_time_min }} minutes.</h2>
+          <p>Paid to whoever's computer did the work. <b>We take nothing</b> — not a fee, not a cut.</p></div>
+        <div class="f"><div class="n">03</div><h2>It has no price.</h2>
+          <p>Not listed anywhere, and it may never be worth a penny. <b>Anyone selling you MBITE is lying.</b></p></div>
+      </div>
+    </div>
+
+    <!-- ACT 4 -->
+    <div class="act mid" data-a="3">
+      <div class="in">
+        <p class="quote">The loudest thing about this new money is the fan on your laptop.</p>
+        <div class="attr">So far, the only cost of entry</div>
+      </div>
+    </div>
+
+    <!-- ACT 5 -->
+    <div class="act" data-a="4">
+      <div class="in">
+        <div class="slug">How to begin</div>
+        <h3 class="big">Four minutes, and it costs nothing.</h3>
+        <div class="steps">
+          <div class="st"><div class="sn">01</div><div><h4>Make a wallet</h4>
+            <p>Write your twelve words on paper. Don't rush this part.</p></div></div>
+          <div class="st"><div class="sn">02</div><div><h4>Point the miner at it</h4>
+            <p>Paste your address, press start. Your computer joins the network.</p></div></div>
+          <div class="st"><div class="sn">03</div><div><h4>Leave it running</h4>
+            <p>Win a block and {{ consensus.initial_subsidy_coins }} MBITE are yours. Nobody can take them.</p></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACT 6 -->
+    <div class="act mid" data-a="5">
+      <div class="in">
+        <h3 class="big" style="margin:0 auto;max-width:17ch">Half of every MoonBite that will ever exist is being mined right now.</h3>
+        <div class="btns">
+          <a class="btn btn-gold" href="/start">Mine your first block</a>
+          <a class="btn btn-line" href="/the-case">Why it works</a>
+        </div>
+        <div class="proof">No company · No presale · No premine ·
+          <b class="mono" id="pBlocks">—</b> blocks mined so far</div>
+        <p class="fine">A word of caution, since nobody else in this industry offers one: mining uses
+          electricity, which is a real cost, and MoonBite may never be worth anything. Treat it as an
+          experiment you find interesting, not as a plan for your money.</p>
+        <a class="more" href="/the-case">Read the full case, in eleven facts →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="page">
+    <div class="fgrid">
+      <div>
+        <a class="mark" href="/"><img src="/static/moonbite-logo.svg" alt=""><span>MoonBite</span></a>
+        <p>Made, not sold. {{ consensus.initial_subsidy_coins }} MBITE every
+          {{ consensus.block_time_min }} minutes, to whoever does the work.</p>
+      </div>
+      <div class="fcol"><h5>Begin</h5>
+        <a href="/start">Mine</a><a href="/get-wallet">Wallet</a><a href="/how-it-works">How it works</a></div>
+      <div class="fcol"><h5>Verify</h5>
+        <a href="/explorer">Explorer</a><a href="/whitepaper">Whitepaper</a><a href="/full-node">Run a node</a></div>
+      <div class="fcol"><h5>Understand</h5>
+        <a href="/the-case">The case</a><a href="/scams">Avoid scams</a><a href="/support">Support</a></div>
+    </div>
+    <div class="fbase">
+      <span>© {{ consensus.launch_year }} MoonBite · no company, no owner</span>
+      <span>You mine it, or it isn't yours.</span>
+    </div>
+  </div>
+</footer>
+
+<script nonce="{{ csp_nonce }}">
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  /* honour the OS setting, but allow ?motion=1 to force the film on for review */
+  var force=/[?&]motion=1/.test(location.search);
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches && !force;
+  var acts=[].slice.call(document.querySelectorAll('.act'));
+  var dots=[].slice.call(document.querySelectorAll('#rail span'));
+  var film=$('film'), stage=$('stage'), cv=$('scene');
+
+  /* ---- live chain (works in both modes) ---- */
+  function fmt(n){return (n||0).toLocaleString('en-US')}
+  function poll(){
+    fetch('/api/blockchain/info').then(function(r){return r.json()}).then(function(j){
+      var h=j.height||j.blocks||0;
+      $('dBlock').textContent=fmt(h);
+      var pb=$('pBlocks'); if(pb) pb.textContent=fmt(h);
+    }).catch(function(){});
+  }
+  poll(); setInterval(poll,15000);
+
+  if(reduce){ document.body.classList.add('flat'); return; }
+
+  /* ---- easing helpers ---- */
+  function clamp(v,a,b){return v<a?a:(v>b?b:v)}
+  function smooth(e0,e1,x){var t=clamp((x-e0)/(e1-e0),0,1);return t*t*(3-2*t)}
+  function lerp(a,b,t){return a+(b-a)*t}
+
+  /* ---- scroll progress, smoothed ---- */
+  var target=0, cur=0;
+  function measure(){
+    var r=film.getBoundingClientRect();
+    var total=film.offsetHeight-stage.offsetHeight;
+    target=clamp(-r.top/(total||1),0,1);
+  }
+  addEventListener('scroll',measure,{passive:true});
+  addEventListener('resize',function(){measure();resize()});
+  measure();
+
+  /* ---- act choreography: [fadeInStart, fullFrom, fullTo, fadeOutEnd] ---- */
+  var SEQ=[
+    [0.00,0.00,0.10,0.16],
+    [0.17,0.22,0.30,0.36],
+    [0.37,0.43,0.52,0.58],
+    [0.59,0.64,0.71,0.76],
+    [0.77,0.82,0.88,0.92],
+    [0.93,0.97,1.00,1.01]
+  ];
+  /* how much dark scrim each act needs behind it to stay readable */
+  var SCRIM=[0.16,0.34,0.60,0.58,0.62,0.66];
+  var ops=[0,0,0,0,0,0];
+
+  function computeOps(p){
+    for(var i=0;i<SEQ.length;i++){
+      var s=SEQ[i];
+      ops[i]=smooth(s[0],s[1],p)*(1-smooth(s[2],s[3],p));
+    }
+  }
+  function paintActs(p){
+    for(var i=0;i<acts.length;i++){
+      var s=SEQ[i], o=ops[i], el=acts[i];
+      el.style.opacity=o;
+      el.style.transform='translateY('+((1-smooth(s[0],s[1],p))*38 - smooth(s[2],s[3],p)*38)
+        +'px) scale('+lerp(.985,1,smooth(s[0],s[1],p))+')';
+      el.style.pointerEvents=(o>0.6?'auto':'none');
+      if(dots[i]) dots[i].classList.toggle('on', o>0.5);
+    }
+  }
+
+  /* ---- the scene ---- */
+  var x=cv.getContext('2d'), W=0,H=0,DPR=1, stars=[], dust=[];
+  function resize(){
+    DPR=Math.min(devicePixelRatio||1,2);
+    W=cv.width=Math.floor(innerWidth*DPR);
+    H=cv.height=Math.floor(innerHeight*DPR);
+    cv.style.width=innerWidth+'px'; cv.style.height=innerHeight+'px';
+    var n=Math.round(clamp(innerWidth*innerHeight/9000,90,260));
+    stars=[];
+    for(var i=0;i<n;i++) stars.push({
+      x:Math.random(), y:Math.random(), z:Math.random()*0.9+0.1,
+      r:Math.random()*1.25+0.25, t:Math.random()*6.283
+    });
+    dust=[];
+    for(var j=0;j<44;j++) dust.push({a:Math.random()*6.283, d:Math.random()*0.55+0.45,
+      s:Math.random()*0.5+0.5, r:Math.random()*1.5+0.6});
+  }
+  resize();
+
+  /* keyframed camera: the moon is placed so it never sits under dense copy.
+     [progress, centreX (0-1 of W), centreY (0-1 of H), radius (fraction of min side)] */
+  var CAM=[
+    [0.00, 0.78, 0.28, 0.030],
+    [0.12, 0.75, 0.32, 0.062],
+    [0.24, 0.68, 0.44, 0.150],
+    [0.36, 0.82, 0.56, 0.300],
+    [0.47, 0.94, 0.66, 0.430],
+    [0.58, 0.55, 0.50, 0.800],
+    [0.68, 0.50, 0.50, 0.960],
+    [0.80, 0.06, 0.88, 0.260],
+    [0.88, 0.10, 0.92, 0.240],
+    [0.94, 0.50, 0.54, 0.260],
+    [1.00, 0.50, 0.50, 0.300]
+  ];
+  function camAt(p){
+    var i=0;
+    while(i<CAM.length-2 && p>CAM[i+1][0]) i++;
+    var a=CAM[i], b=CAM[i+1];
+    var t=smooth(a[0],b[0],p);
+    var m=Math.min(W,H);
+    return {x:W*lerp(a[1],b[1],t), y:H*lerp(a[2],b[2],t), r:m*lerp(a[3],b[3],t)};
+  }
+
+  function drawMoon(cx,cy,R,rot,dim){
+    var g=x.createRadialGradient(cx-R*0.36,cy-R*0.42,R*0.05,cx,cy,R*1.06);
+    g.addColorStop(0,'#F6E3B4'); g.addColorStop(.42,'#D9A441');
+    g.addColorStop(.84,'#8A6524'); g.addColorStop(1,'#2E220C');
+    x.beginPath(); x.arc(cx,cy,R,0,6.283); x.fillStyle=g; x.fill();
+
+    var cr=[[.30,-.26,.15],[-.30,.16,.20],[.12,.36,.11],[-.13,-.36,.09],
+            [.40,.13,.08],[-.44,-.08,.07],[.02,-.10,.13],[.22,.08,.06]];
+    for(var i=0;i<cr.length;i++){
+      var a=rot*(0.35+i*0.03), ox=cr[i][0], oy=cr[i][1];
+      var rx=ox*Math.cos(a)-oy*Math.sin(a), ry=ox*Math.sin(a)+oy*Math.cos(a);
+      x.beginPath(); x.arc(cx+rx*R, cy+ry*R, cr[i][2]*R, 0, 6.283);
+      x.fillStyle='rgba(46,34,12,0.26)'; x.fill();
+    }
+    var t=x.createLinearGradient(cx-R,cy-R,cx+R,cy+R);
+    t.addColorStop(0,'rgba(255,255,255,0.10)'); t.addColorStop(.5,'rgba(0,0,0,0)');
+    t.addColorStop(1,'rgba(4,4,6,0.55)');
+    x.beginPath(); x.arc(cx,cy,R,0,6.283); x.fillStyle=t; x.fill();
+
+    x.beginPath(); x.arc(cx,cy,R,0,6.283);
+    x.strokeStyle='rgba(244,241,233,0.16)';
+    x.lineWidth=Math.max(1,R*0.006); x.stroke();
+
+    var hg=x.createRadialGradient(cx,cy,R*0.96,cx,cy,R*1.9);
+    hg.addColorStop(0,'rgba(217,164,65,'+(0.16*(1-dim*0.6))+')');
+    hg.addColorStop(1,'rgba(217,164,65,0)');
+    x.beginPath(); x.arc(cx,cy,R*1.9,0,6.283); x.fillStyle=hg; x.fill();
+  }
+
+  var rot=0, last=performance.now();
+
+  function render(p){
+    x.clearRect(0,0,W,H);
+
+    var neb=x.createRadialGradient(W*0.5,H*0.46,0,W*0.5,H*0.46,Math.max(W,H)*0.72);
+    var warm=smooth(0.15,0.55,p)*(1-smooth(0.80,1,p));
+    neb.addColorStop(0,'rgba('+Math.round(28+40*warm)+','+Math.round(24+26*warm)+','+Math.round(38+8*warm)+',0.55)');
+    neb.addColorStop(1,'rgba(6,7,10,0)');
+    x.fillStyle=neb; x.fillRect(0,0,W,H);
+
+    var warp=smooth(0.10,0.30,p)*(1-smooth(0.34,0.46,p));
+    for(var i=0;i<stars.length;i++){
+      var s=stars[i]; s.t+=0.012;
+      var sx=s.x*W, sy=((s.y - p*0.55*s.z)%1+1)%1*H;
+      var tw=0.30+0.34*Math.sin(s.t);
+      var al=tw*s.z;
+      if(warp>0.02){
+        var len=warp*s.z*150*DPR;
+        var dx=(sx-W/2)/(W/2), dy=(sy-H/2)/(H/2);
+        x.beginPath(); x.moveTo(sx,sy); x.lineTo(sx+dx*len, sy+dy*len);
+        x.strokeStyle='rgba(236,230,214,'+al*0.85+')';
+        x.lineWidth=s.r*DPR*0.8; x.stroke();
+      } else {
+        x.beginPath(); x.arc(sx,sy,s.r*DPR,0,6.283);
+        x.fillStyle='rgba(236,230,214,'+al+')'; x.fill();
+      }
+    }
+
+    /* how dark the frame needs to be for this act's copy */
+    var dim=0; for(var q=0;q<ops.length;q++) dim=Math.max(dim, ops[q]*SCRIM[q]);
+
+    var M=camAt(p);
+    drawMoon(M.x,M.y,M.r,rot,dim);
+
+    var motes=smooth(0.74,0.86,p);
+    if(motes>0.01){
+      for(var k=0;k<dust.length;k++){
+        var d=dust[k], ang=d.a + rot*d.s*2.2;
+        var rr=M.r*(1.35+d.d*0.9);
+        var mx=M.x+Math.cos(ang)*rr, my=M.y+Math.sin(ang)*rr*0.42;
+        x.beginPath(); x.arc(mx,my,d.r*DPR*0.8,0,6.283);
+        x.fillStyle='rgba(217,164,65,'+(motes*0.5*d.s)+')'; x.fill();
+      }
+    }
+
+    /* scrim: flat wash + a soft pool behind the copy, so type always reads */
+    if(dim>0.01){
+      x.fillStyle='rgba(6,7,10,'+(dim*0.72)+')';
+      x.fillRect(0,0,W,H);
+      var pool=x.createRadialGradient(W*0.5,H*0.5,0,W*0.5,H*0.5,Math.max(W,H)*0.55);
+      pool.addColorStop(0,'rgba(6,7,10,'+(dim*0.42)+')');
+      pool.addColorStop(1,'rgba(6,7,10,0)');
+      x.fillStyle=pool; x.fillRect(0,0,W,H);
+    }
+
+  }
+
+  function frame(now){
+    var dt=Math.min(64,now-last); last=now;
+    cur += (target-cur)*0.085;
+    rot += dt*0.00018;
+    computeOps(cur);
+    render(cur);
+    paintActs(cur);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  computeOps(0); paintActs(0);
+  if(force){ window.__p=function(v){ target=cur=v; computeOps(v); render(v); paintActs(v); return v; }; }
+})();
+</script>
+<noscript><style>.act{position:static!important;opacity:1!important;padding:10vh 0}
+#film{height:auto}#stage{position:static;height:auto}#scene,.vig{display:none}</style></noscript>
+</body>
+</html>
