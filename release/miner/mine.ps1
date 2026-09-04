@@ -30,13 +30,15 @@ function Write-Conf {
   $pw = $null
   if (Test-Path $conf) { $pw = (Select-String -Path $conf -Pattern '^rpcpassword=(.*)$').Matches.Groups[1].Value }
   if (-not $pw) { $pw = -join ((1..48) | ForEach-Object { '{0:x}' -f (Get-Random -Max 16) }) }
+  $p2p = if ($env:MOONBITE_P2P_PORT) { "port=$($env:MOONBITE_P2P_PORT)`n" } else { "" }
+  $rpcp = if ($env:MOONBITE_RPC_PORT) { "rpcport=$($env:MOONBITE_RPC_PORT)`n" } else { "" }
   @"
 server=1
 listen=1
 dbcache=512
 rpcuser=moonminer
 rpcpassword=$pw
-addnode=67.205.154.64:9444
+$p2p$rpcp addnode=67.205.154.64:9444
 "@ | Set-Content -Encoding ascii $conf
 }
 function Wait-Rpc { for ($i=0; $i -lt 90; $i++) { try { Invoke-Cli getblockcount | Out-Null; return } catch { Start-Sleep 2 } } throw "node did not start" }
