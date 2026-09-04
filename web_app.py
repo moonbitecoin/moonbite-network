@@ -711,6 +711,12 @@ def home_page():
     return render_template("moon.html")
 
 
+@app.route("/2026")
+def home_ogilvy_page():
+    """Ogilvy-style editorial homepage candidate."""
+    return render_template("ogilvy.html")
+
+
 @app.route("/next")
 def home_flagship_page():
     """Candidate flagship homepage (quiet-confidence redesign)."""
