@@ -280,7 +280,7 @@ noscript .act{opacity:1}
 
   /* ---- easing helpers ---- */
   function clamp(v,a,b){return v<a?a:(v>b?b:v)}
-  function smooth(e0,e1,x){var t=clamp((x-e0)/(e1-e0),0,1);return t*t*(3-2*t)}
+  function smooth(e0,e1,x){if(e1===e0)return x<e0?0:1;var t=clamp((x-e0)/(e1-e0),0,1);return t*t*(3-2*t)}
   function lerp(a,b,t){return a+(b-a)*t}
 
   /* ---- scroll progress, smoothed ---- */

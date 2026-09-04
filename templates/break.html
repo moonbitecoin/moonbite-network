@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MoonBite — Break</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="/static/moonbite-logo.svg">
+<style nonce="{{ csp_nonce }}">
+:root{
+  --gold:#D9A441; --faint:#5E5A53;
+  --mono:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  --ease:cubic-bezier(0.22,1,0.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:#000;overflow-x:hidden}
+#run{position:relative;height:260vh}
+#stage{position:sticky;top:0;height:100svh;overflow:hidden;background:#000}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#flash{position:absolute;inset:0;background:#FFF6DE;opacity:0;pointer-events:none;mix-blend-mode:screen}
+.cue{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);z-index:5;
+  font-family:var(--mono);font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--faint);opacity:0;transition:opacity 600ms var(--ease);
+  display:flex;flex-direction:column;align-items:center;gap:9px}
+body.ready .cue{opacity:1}
+body.blown .cue{opacity:0}
+.cue i{display:block;width:1px;height:30px;
+  background:linear-gradient(180deg,var(--gold),transparent);
+  animation:drop 2.2s ease-in-out infinite}
+@keyframes drop{0%,100%{opacity:.25;transform:scaleY(.5)}50%{opacity:1;transform:scaleY(1)}}
+@media(prefers-reduced-motion:reduce){ .cue i{animation:none} }
+</style>
+</head>
+<body>
+<section id="run">
+  <div id="stage">
+    <canvas id="view"></canvas>
+    <div id="flash"></div>
+    <div class="cue">Scroll<i></i></div>
+  </div>
+</section>
+
+<script nonce="{{ csp_nonce }}">
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches
+             && !/[?&]motion=1/.test(location.search);
+  var run=$('run'), stage=$('stage'), view=$('view'), flash=$('flash'), body=document.body;
+  var ctx=view.getContext('2d');
+
+  function clamp(v,a,b){return v<a?a:(v>b?b:v)}
+  function smooth(a,b,x){if(b===a)return x<a?0:1;var t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)}
+  function lerp(a,b,t){return a+(b-a)*t}
+
+  var W,H,DPR,CX,CY,SC,BT,B1,B2,BW_GLYPH;
+  var src=document.createElement('canvas'), sctx=src.getContext('2d');
+  var mk=document.createElement('canvas'), mctx=mk.getContext('2d');
+  var stars=[], shards=[], blown=false, t0=0, barW=0, intro=0;
+
+  function size(){
+    DPR=Math.min(devicePixelRatio||1,2);
+    W=view.width=src.width=mk.width=Math.floor(innerWidth*DPR);
+    H=view.height=src.height=mk.height=Math.floor(innerHeight*DPR);
+    CX=W/2; CY=H/2;
+    var mkSize=Math.min(innerWidth*0.38,260)*DPR; /* rendered size of the 300u viewBox */
+    SC=mkSize/300;                                /* units -> px */
+    BT=Math.max(3*DPR,13*SC);                    /* bar thickness 0.13R */
+    BW_GLYPH=255*SC;                             /* bar width 2.55R */
+    B1=CY-34*SC; B2=CY+18*SC;                    /* bar centres -0.34R / +0.18R */
+    barW=barW||BW_GLYPH;
+    stars=[];
+    var n=Math.round(clamp(innerWidth*innerHeight/9000,80,240));
+    for(var i=0;i<n;i++) stars.push({x:Math.random()*W,y:Math.random()*H,
+      r:(Math.random()*1.2+0.25)*DPR,z:Math.random()*0.9+0.1,t:Math.random()*6.28});
+    makeShards();
+  }
+
+  /* ---------- the intact screen, drawn once to an offscreen canvas ---------- */
+  function paintSrc(bw,glow){
+    sctx.clearRect(0,0,W,H);
+    var g=sctx.createRadialGradient(CX,CY*0.92,0,CX,CY,Math.max(W,H)*0.72);
+    g.addColorStop(0,'#12141C'); g.addColorStop(.62,'#06070A'); g.addColorStop(1,'#000');
+    sctx.fillStyle=g; sctx.fillRect(0,0,W,H);
+    for(var i=0;i<stars.length;i++){
+      var s=stars[i];
+      sctx.beginPath(); sctx.arc(s.x,s.y,s.r,0,6.283);
+      sctx.fillStyle='rgba(236,230,214,'+(0.16*s.z)+')'; sctx.fill();
+    }
+    /* the mark: one disc, one bite (0.62R at 0.95R on the 45 deg axis).
+       Drawn on its own layer so the bite cuts the disc, not the sky. */
+    mctx.clearRect(0,0,W,H);
+    mctx.beginPath(); mctx.arc(CX,CY,100*SC,0,6.283);
+    mctx.fillStyle='#F5F2EA'; mctx.fill();
+    mctx.save();
+    mctx.globalCompositeOperation='destination-out';
+    mctx.beginPath(); mctx.arc(CX+67.18*SC,CY-67.18*SC,62*SC,0,6.283);
+    mctx.fill();
+    mctx.restore();
+    sctx.drawImage(mk,0,0);
+    /* the two bars */
+    sctx.save();
+    if(glow>0){ sctx.shadowColor='rgba(217,164,65,.9)'; sctx.shadowBlur=BT*(1.2+glow*3); }
+    sctx.fillStyle='#D9A441';
+    [B1,B2].forEach(function(y){
+      var r=BT/2;
+      sctx.beginPath();
+      if(sctx.roundRect) sctx.roundRect(CX-bw/2,y-BT/2,bw,BT,r);
+      else sctx.rect(CX-bw/2,y-BT/2,bw,BT);
+      sctx.fill();
+    });
+    sctx.restore();
+  }
+
+  /* ---------- glass: radial shards from the impact ---------- */
+  function makeShards(){
+    shards=[];
+    var RINGS=[0,0.10,0.22,0.38,0.58,0.82,1.25];
+    var RMAX=Math.sqrt(W*W+H*H)*0.62, SEG=14;
+    var jit=[]; for(var a=0;a<=SEG;a++) jit.push((Math.random()-0.5)*0.16);
+    for(var r=0;r<RINGS.length-1;r++){
+      for(var a2=0;a2<SEG;a2++){
+        var a0=(a2/SEG)*6.283+jit[a2], a1=((a2+1)/SEG)*6.283+jit[a2+1];
+        var r0=RINGS[r]*RMAX*(0.9+Math.random()*0.2);
+        var r1=RINGS[r+1]*RMAX*(0.9+Math.random()*0.2);
+        var pts=[[CX+Math.cos(a0)*r0,CY+Math.sin(a0)*r0],
+                 [CX+Math.cos(a1)*r0,CY+Math.sin(a1)*r0],
+                 [CX+Math.cos(a1)*r1,CY+Math.sin(a1)*r1],
+                 [CX+Math.cos(a0)*r1,CY+Math.sin(a0)*r1]];
+        var mxp=(pts[0][0]+pts[1][0]+pts[2][0]+pts[3][0])/4;
+        var myp=(pts[0][1]+pts[1][1]+pts[2][1]+pts[3][1])/4;
+        var dx=mxp-CX, dy=myp-CY, d=Math.sqrt(dx*dx+dy*dy)||1;
+        shards.push({p:pts,cx:mxp,cy:myp,
+          vx:dx/d*(1.6+Math.random()*2.4)*DPR*(1-r*0.09),
+          vy:dy/d*(1.6+Math.random()*2.4)*DPR*(1-r*0.09)-Math.random()*1.2*DPR,
+          vr:(Math.random()-0.5)*0.05, rot:0,
+          vs:0.0012+Math.random()*0.0022, s:1,
+          delay:d/RMAX*90});
+      }
+    }
+  }
+
+  function drawStars(){
+    ctx.save();
+    for(var i=0;i<stars.length;i++){
+      var s=stars[i]; s.t+=0.012;
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,6.283);
+      ctx.fillStyle='rgba(236,230,214,'+((0.3+0.35*Math.sin(s.t))*s.z)+')';
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function detonate(){
+    if(blown) return;
+    blown=true; t0=performance.now(); body.classList.add('blown');
+    paintSrc(barW,1);                       /* freeze the frame that shatters */
+    flash.style.transition='none'; flash.style.opacity='0.92';
+    setTimeout(function(){
+      flash.style.transition='opacity 260ms var(--ease)'; flash.style.opacity='0';
+    },40);
+  }
+
+  function render(now){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+
+    if(!blown){
+      intro=Math.min(1,intro+0.02);
+      paintSrc(barW, smooth(0.55,1,barTension));
+      ctx.drawImage(src,0,0);
+      return;
+    }
+
+    var el=now-t0;
+    drawStars();
+
+    /* light pouring through the break */
+    var open=clamp(el/900,0,1);
+    var fade=clamp(1-(el-500)/1100,0,1);          /* the light dies away */
+    if(fade>0.002){
+      [B1,B2].forEach(function(y){
+        var h=Math.max(2,open*220*DPR);
+        var g=ctx.createLinearGradient(0,y-h,0,y+h);
+        g.addColorStop(0,'rgba(217,164,65,0)');
+        g.addColorStop(.5,'rgba(255,244,214,'+(0.5*(1-open*0.5)*fade).toFixed(4)+')');
+        g.addColorStop(1,'rgba(217,164,65,0)');
+        ctx.fillStyle=g; ctx.fillRect(0,y-h,W,h*2);
+      });
+    }
+
+    /* the shards of the old screen, flying at you */
+    for(var i=0;i<shards.length;i++){
+      var s=shards[i];
+      var t=(el-s.delay)/16.7;
+      if(t<=0){
+        ctx.save(); pathOf(s); ctx.clip(); ctx.drawImage(src,0,0); ctx.restore();
+        continue;
+      }
+      var ox=s.vx*t, oy=s.vy*t+0.055*DPR*t*t, rot=s.vr*t*0.06, sc=1+s.vs*t;
+      var al=clamp(1-(t-46)/58,0,1);
+      if(al<=0) continue;
+      ctx.save();
+      ctx.globalAlpha=al;
+      ctx.translate(s.cx+ox,s.cy+oy);
+      ctx.rotate(rot); ctx.scale(sc,sc);
+      ctx.translate(-s.cx,-s.cy);
+      pathOf(s); ctx.clip();
+      ctx.drawImage(src,0,0);
+      ctx.restore();
+    }
+
+    /* camera shake on impact */
+    var sh=Math.max(0,1-el/380);
+    stage.style.transform = sh>0
+      ? 'translate('+((Math.random()-0.5)*16*sh)+'px,'+((Math.random()-0.5)*16*sh)+'px)'
+      : '';
+  }
+
+  var barTension=0;
+  var target=0,cur=0;
+  function measure(){
+    var r=run.getBoundingClientRect();
+    var total=run.offsetHeight-stage.offsetHeight;
+    target=clamp(-r.top/(total||1),0,1);
+  }
+
+  function frame(now){
+    cur+=(target-cur)*0.12;
+    if(!blown){
+      /* scroll a little: the bars run out to full width and tighten */
+      barTension=smooth(0.008,0.10,cur);
+      barW=lerp(BW_GLYPH, innerWidth*DPR*1.35, barTension);
+      if(barTension>=0.999) detonate();
+    }
+    render(now);
+    requestAnimationFrame(frame);
+  }
+
+  function pathOf(s){
+    ctx.beginPath();
+    ctx.moveTo(s.p[0][0],s.p[0][1]);
+    for(var k=1;k<s.p.length;k++) ctx.lineTo(s.p[k][0],s.p[k][1]);
+    ctx.closePath();
+  }
+
+  addEventListener('scroll',measure,{passive:true});
+  addEventListener('resize',function(){ size(); measure(); });
+  size(); measure();
+  setTimeout(function(){ body.classList.add('ready') },900);
+
+  if(reduce){ paintSrc(BW_GLYPH,0); ctx.drawImage(src,0,0); }
+  else requestAnimationFrame(frame);
+
+  if(/[?&]motion=1/.test(location.search)){
+    window.__b=function(v){ target=cur=v; return v; };
+    window.__boom=function(){ barW=innerWidth*DPR*1.35; detonate(); return 'boom' };
+  }
+})();
+</script>
+</body>
+</html>

@@ -711,6 +711,12 @@ def home_page():
     return render_template("moon.html")
 
 
+@app.route("/break")
+def break_page():
+    """Standalone shatter experiment: the glyph bars break the screen."""
+    return render_template("break.html")
+
+
 @app.route("/film")
 def film_page():
     """Scroll-driven cinematic homepage candidate."""
