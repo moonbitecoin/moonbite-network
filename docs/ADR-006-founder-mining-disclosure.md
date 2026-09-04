@@ -22,7 +22,7 @@ to take it on trust.
 |---|---|
 | Chain | mainnet genesis `3d053c590c9dcaa972d12f20793cde15e060f6cbcd1ea7bd05f4c80724f39573` |
 | Go-live | 2026-09-02 21:40 UTC (block 1) |
-| Founder mining address | `REDACTED-ADDRESS` |
+| Founder mining address | not published at this time |
 | Hardware | one desktop PC, 6 CPU cores, the published Windows build |
 | Blocks mined by the founder | every block from 1 up to the moment other miners join (196 at the time of writing) |
 | Reward per block | 10 MBITE (ADR-010) |
