@@ -1079,6 +1079,13 @@ def _adr_list():
     return items
 
 
+@app.route("/giveaway")
+def giveaway_page():
+    return render_template("giveaway.html",
+                           giveaway_addr="REDACTED-ADDRESS",
+                           reserve_addr="REDACTED-ADDRESS")
+
+
 @app.route("/governance")
 def governance_page():
     return render_template("governance.html", adrs=_adr_list())
