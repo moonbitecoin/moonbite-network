@@ -3409,12 +3409,12 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             localStorage.setItem('moonbite_onboarding_complete', 'true');
 
             /* Derive the real chain address now, while the plaintext seed is
-               still in hand — afterwards it exists only PIN-encrypted. Then
-               ask the chain what that address holds. */
-            CustodialWallet.deriveAddressFromSeed(seedPhrase)
-                .then(() => CustodialWallet.refreshBalance());
-
+               still in hand — afterwards it exists only PIN-encrypted. Await it
+               so the dashboard opens with the address ready. */
+            try { await CustodialWallet.deriveAddressFromSeed(seedPhrase); }
+            catch (e) { /* address derives again on next refresh */ }
             sessionStorage.removeItem('pendingSeedPhrase');
+            CustodialWallet.refreshBalance();
 
             // Show success feedback
             const btn = document.querySelector('[data-act="call"][data-fn="saveSetupPINAndContinue"]');
@@ -3423,9 +3423,10 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 btn.style.background = 'linear-gradient(135deg, #2E9E6B, #2E9E6B)';
             }
 
-            // Proceed to next screen
+            // Onboarding complete -> open the wallet (was looping back to the
+            // 'Set Up Your Wallet' screen, which looked stuck).
             setTimeout(() => {
-                showScreen('walletSetupScreen');
+                showScreen('dashboardScreen');
             }, 500);
         }
 
@@ -3450,10 +3451,9 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
         }
 
         function copySeedPhrase() {
-            const seedWords = 'mineral swift option stale harbor pearl space bench payment bomb hail motes';
-            navigator.clipboard.writeText(seedWords).then(() => {
-                alert('Seed phrase copied to clipboard!');
-            });
+            // Delegate to the real generated-phrase copy; never copy a fixed
+            // phrase (the old body pasted a hardcoded seed).
+            if (typeof copyGeneratedPhrase === 'function') return copyGeneratedPhrase();
         }
 
         // Password visibility toggle
