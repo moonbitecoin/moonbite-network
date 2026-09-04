@@ -6,23 +6,25 @@
 <title>MoonBite — We have nothing to sell you.</title>
 <meta name="description" content="MoonBite can't be bought, at any price, from anyone. You make it yourself with the computer you already have. No company, no presale, no premine.">
 <link rel="icon" type="image/svg+xml" href="/static/moonbite-logo.svg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,400&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/static/fonts/moonbite-fonts.css">
 <style nonce="{{ csp_nonce }}">
 :root{
   --ink:#06070A; --gold:#D9A441; --gold-2:#EBCB86;
   --bone:#F4F1E9; --mist:#CFCABF; --ash:#8E8981; --faint:#5E5A53;
   --rule:rgba(244,241,233,.14); --rule-2:rgba(244,241,233,.07);
-  --serif:'Newsreader',Georgia,serif;
-  --display:'Instrument Serif',Georgia,serif;
-  --ui:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  /* Typography System: heavy grotesque for display, quiet sans for reading,
+     monospace for anything that is a number. */
+  --display:'Archivo Black','Helvetica Neue','Arial Black',sans-serif;
+  --ui:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   --mono:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  /* Motion Language: one easing curve, three durations */
+  --ease:cubic-bezier(0.22,1,0.36,1);
+  --t-feedback:120ms; --t-transition:240ms; --t-narrative:600ms;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{background:var(--ink);color:var(--bone);font-family:var(--serif);
-  line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body{background:var(--ink);color:var(--bone);font-family:var(--ui);
+  font-size:16px;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 ::selection{background:var(--gold);color:var(--ink)}
 a{color:inherit}
 img{display:block;max-width:100%}
@@ -33,10 +35,10 @@ header.mast{position:fixed;top:0;left:0;right:0;z-index:40;
   padding:16px clamp(20px,4vw,40px);display:flex;align-items:center;gap:16px;
   background:linear-gradient(180deg,rgba(6,7,10,.8),rgba(6,7,10,0))}
 .mark{display:flex;align-items:center;gap:10px;font-family:var(--display);
-  font-size:1.22rem;letter-spacing:.02em;text-decoration:none}
+  font-size:1.16rem;letter-spacing:-.02em;text-transform:uppercase;text-decoration:none}
 .mark img{width:23px;height:23px}
-.dateline{margin-left:auto;font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--ash);display:flex;align-items:center;gap:8px}
+.dateline{margin-left:auto;font-family:var(--mono);font-size:.72rem;
+  color:var(--ash);display:flex;align-items:center;gap:8px}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex:none;animation:pulse 2.4s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(217,164,65,.5)}70%{box-shadow:0 0 0 7px rgba(217,164,65,0)}100%{box-shadow:0 0 0 0 rgba(217,164,65,0)}}
 @media(max-width:560px){.dateline .hide{display:none}}
@@ -57,12 +59,12 @@ header.mast{position:fixed;top:0;left:0;right:0;z-index:40;
 .act.mid .in{text-align:center}
 
 .kicker{font-family:var(--mono);font-size:.66rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold)}
-h1{font-family:var(--display);font-weight:400;font-size:clamp(3rem,10.5vw,7.6rem);
-  line-height:.94;letter-spacing:-.02em;margin-top:20px;max-width:14ch}
-h1 em{font-style:italic;color:var(--gold)}
-.deck{font-family:var(--serif);font-weight:300;font-size:clamp(1.4rem,4.4vw,2.6rem);
-  line-height:1.36;color:var(--mist);max-width:22ch;margin:0 auto}
-.deck b{color:var(--bone);font-weight:400}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(2.6rem,9vw,6.4rem);
+  line-height:.98;letter-spacing:-.02em;margin-top:20px;max-width:13ch}
+h1 em{font-style:normal;color:var(--gold)}
+.deck{font-family:var(--ui);font-weight:400;font-size:clamp(1.25rem,3.6vw,2rem);
+  line-height:1.45;color:var(--mist);max-width:26ch;margin:0 auto}
+.deck b{color:var(--bone);font-weight:600}
 .scrollcue{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);
   font-family:var(--mono);font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;
   color:var(--faint);display:flex;flex-direction:column;align-items:center;gap:10px}
@@ -74,41 +76,39 @@ h1 em{font-style:italic;color:var(--gold)}
 .facts{display:grid;gap:clamp(18px,3vw,34px)}
 @media(min-width:880px){.facts{grid-template-columns:repeat(3,1fr)}}
 .f .n{font-family:var(--mono);font-size:.64rem;letter-spacing:.2em;color:var(--gold)}
-.f h2{font-family:var(--display);font-weight:400;font-size:clamp(1.5rem,3.6vw,2.15rem);
-  line-height:1.1;margin:12px 0 9px}
+.f h2{font-family:var(--ui);font-weight:700;font-size:clamp(1.24rem,2.9vw,1.5rem);
+  line-height:1.22;letter-spacing:-.01em;margin:12px 0 9px}
 .f p{color:var(--mist);font-size:clamp(.95rem,1.7vw,1.05rem);line-height:1.55}
 .f p b{color:var(--bone);font-weight:500}
 
 /* quote */
-.quote{font-family:var(--display);font-weight:400;font-style:italic;
-  font-size:clamp(1.9rem,6.2vw,4rem);line-height:1.12;letter-spacing:-.015em;
-  max-width:16ch;margin:0 auto}
-.attr{font-family:var(--mono);font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;
-  color:var(--ash);margin-top:26px}
+.quote{font-family:var(--ui);font-weight:700;
+  font-size:clamp(1.6rem,5vw,3rem);line-height:1.2;letter-spacing:-.02em;
+  max-width:18ch;margin:0 auto}
+.attr{font-family:var(--ui);font-size:.86rem;color:var(--ash);margin-top:22px}
 
 /* steps */
 .slug{font-family:var(--mono);font-size:.64rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ash)}
-.act h3.big{font-family:var(--display);font-weight:400;font-size:clamp(1.9rem,5.2vw,3rem);
-  line-height:1.08;margin-top:14px;max-width:20ch}
+.act h3.big{font-family:var(--ui);font-weight:800;font-size:clamp(1.6rem,4.2vw,2.15rem);
+  line-height:1.16;letter-spacing:-.01em;margin-top:14px;max-width:22ch}
 .steps{display:grid;gap:clamp(16px,2.6vw,30px);margin-top:clamp(26px,4vh,44px)}
 @media(min-width:880px){.steps{grid-template-columns:repeat(3,1fr)}}
 .st{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:baseline}
 .st .sn{font-family:var(--mono);font-size:.68rem;color:var(--gold)}
-.st h4{font-family:var(--display);font-weight:400;font-size:clamp(1.2rem,2.6vw,1.5rem);line-height:1.14}
+.st h4{font-family:var(--ui);font-weight:700;font-size:clamp(1.05rem,2.1vw,1.2rem);line-height:1.25}
 .st p{color:var(--mist);font-size:clamp(.9rem,1.6vw,1rem);line-height:1.5;margin-top:6px}
 
 /* final */
 .btns{display:flex;gap:13px;flex-wrap:wrap;margin-top:32px;justify-content:center}
 .btn{font-family:var(--ui);font-size:.97rem;font-weight:600;padding:15px 30px;border-radius:4px;
   text-decoration:none;border:1px solid transparent;
-  transition:transform .15s,box-shadow .2s,background .2s,border-color .2s}
+  transition:transform var(--t-feedback) var(--ease),box-shadow var(--t-transition) var(--ease),background var(--t-transition) var(--ease),border-color var(--t-transition) var(--ease)}
 .btn-gold{color:var(--ink);background:linear-gradient(180deg,var(--gold-2),var(--gold));
   box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 10px 30px rgba(217,164,65,.28)}
 .btn-gold:hover{transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 18px 44px rgba(217,164,65,.4)}
 .btn-line{color:var(--bone);border-color:var(--rule)}
 .btn-line:hover{border-color:rgba(217,164,65,.6);background:rgba(217,164,65,.06)}
-.proof{margin-top:26px;font-family:var(--mono);font-size:.66rem;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--ash)}
+.proof{margin-top:26px;font-family:var(--ui);font-size:.88rem;color:var(--ash)}
 .proof b{color:var(--mist);font-weight:400}
 .fine{font-family:var(--ui);font-size:.84rem;color:var(--ash);margin:22px auto 0;max-width:52ch;line-height:1.6}
 .more{display:inline-block;margin-top:20px;font-family:var(--ui);font-size:.92rem;font-weight:600;
@@ -117,7 +117,7 @@ h1 em{font-style:italic;color:var(--gold)}
 /* progress rail */
 #rail{position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:35;
   display:flex;flex-direction:column;gap:9px}
-#rail span{width:5px;height:5px;border-radius:50%;background:rgba(244,241,233,.2);transition:background .3s,transform .3s}
+#rail span{width:5px;height:5px;border-radius:50%;background:rgba(244,241,233,.2);transition:background var(--t-transition) var(--ease),transform var(--t-transition) var(--ease)}
 #rail span.on{background:var(--gold);transform:scale(1.5)}
 @media(max-width:720px){ #rail{right:9px} }
 
@@ -133,6 +133,28 @@ footer{border-top:1px solid var(--rule);padding:52px 0 40px;position:relative;z-
 .fbase{margin-top:38px;padding-top:22px;border-top:1px solid var(--rule-2);display:flex;
   justify-content:space-between;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:.66rem;color:var(--faint)}
 
+
+/* ---------- title sequence: the mark, then the glyph ----------
+   Construction per the Logo & Glyph standards: outer radius R, bite radius
+   0.62R centred at 0.95R on a 45 degree upper-right axis; the two bars are
+   2.55R wide, 0.13R thick, at -0.34R and +0.18R, extending past the disc. */
+#intro{position:fixed;inset:0;z-index:90;background:var(--ink);
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity var(--t-narrative) var(--ease);}
+#intro.done{opacity:0;pointer-events:none}
+#glyph{width:min(38vw,260px);height:auto;overflow:visible}
+#glyph .disc{opacity:0;transform-origin:50% 50%;transform:scale(.94);
+  transition:opacity var(--t-narrative) var(--ease),transform var(--t-narrative) var(--ease)}
+#intro.lit #glyph .disc{opacity:1;transform:scale(1)}
+#glyph .bar{opacity:0;transform:translateY(-190px);
+  transition:opacity var(--t-feedback) linear,transform var(--t-transition) var(--ease)}
+#intro.b1 #glyph .bar1,#intro.b2 #glyph .bar2{opacity:1;transform:translateY(0)}
+#intro.out #glyph{transform:scale(1.5);opacity:0;
+  transition:transform var(--t-narrative) var(--ease),opacity var(--t-narrative) var(--ease)}
+#skip{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:.7rem;color:var(--faint);background:none;border:0;cursor:pointer}
+.flat #intro{display:none}
+
 /* ---------- flat fallback (reduced motion / no JS) ---------- */
 .flat #film{height:auto}
 .flat #stage{position:static;height:auto;overflow:visible}
@@ -144,6 +166,19 @@ noscript .act{opacity:1}
 </style>
 </head>
 <body>
+
+<div id="intro" aria-hidden="true">
+  <svg id="glyph" viewBox="-150 -150 300 300" fill="none">
+    <mask id="bite">
+      <rect x="-150" y="-150" width="300" height="300" fill="#fff"/>
+      <circle cx="67.18" cy="-67.18" r="62" fill="#000"/>
+    </mask>
+    <circle class="disc" cx="0" cy="0" r="100" fill="#F5F2EA" mask="url(#bite)"/>
+    <rect class="bar bar1" x="-127.5" y="-40.5" width="255" height="13" rx="6.5" fill="#D9A441"/>
+    <rect class="bar bar2" x="-127.5" y="11.5"  width="255" height="13" rx="6.5" fill="#D9A441"/>
+  </svg>
+  <button id="skip" type="button">Skip</button>
+</div>
 
 <header class="mast">
   <a class="mark" href="/"><img src="/static/moonbite-logo.svg" alt=""><span>MoonBite</span></a>
@@ -164,7 +199,7 @@ noscript .act{opacity:1}
     <!-- ACT 1 -->
     <div class="act" data-a="0">
       <div class="in">
-        <div class="kicker">A new kind of money · Est. {{ consensus.launch_year }}</div>
+        <div class="kicker">A new kind of money</div>
         <h1>We have <em>nothing</em> to sell you.</h1>
       </div>
       <div class="scrollcue">Scroll<i></i></div>
@@ -264,6 +299,34 @@ noscript .act{opacity:1}
   var acts=[].slice.call(document.querySelectorAll('.act'));
   var dots=[].slice.call(document.querySelectorAll('#rail span'));
   var film=$('film'), stage=$('stage'), cv=$('scene');
+
+
+  /* ---- title sequence: mark, then the two bars drop to strike it ---- */
+  (function(){
+    var el=$('intro'); if(!el) return;
+    if(reduce || sessionStorage.getItem('mb_intro')==='1'){ el.remove(); return; }
+    document.documentElement.style.overflow='hidden';
+    var t=[], ended=false;
+    function end(){
+      if(ended) return; ended=true;
+      t.forEach(clearTimeout);
+      el.classList.add('out');
+      setTimeout(function(){
+        el.classList.add('done');
+        document.documentElement.style.overflow='';
+        setTimeout(function(){ el.remove() },600);
+      },380);
+      try{ sessionStorage.setItem('mb_intro','1') }catch(e){}
+    }
+    t.push(setTimeout(function(){ el.classList.add('lit') },80));       /* mark resolves  */
+    t.push(setTimeout(function(){ el.classList.add('b1') },760));       /* first bar drops */
+    t.push(setTimeout(function(){ el.classList.add('b2') },880));       /* second, offset  */
+    t.push(setTimeout(end,1980));                                        /* hand off to film */
+    $('skip').addEventListener('click',end);
+    addEventListener('keydown',function(e){ if(e.key==='Escape'||e.key===' ') end() });
+    addEventListener('wheel',end,{passive:true,once:true});
+    addEventListener('touchstart',end,{passive:true,once:true});
+  })();
 
   /* ---- live chain (works in both modes) ---- */
   function fmt(n){return (n||0).toLocaleString('en-US')}
