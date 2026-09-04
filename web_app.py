@@ -1002,6 +1002,100 @@ def why_page():
     return render_template("why.html")
 
 
+# --------------------------------------------------------------------------- #
+# Governance / ADRs — publish the decision records (docs/ADR-*.md) as pages.
+# Minimal Markdown -> HTML for the subset the ADRs use (no extra dependency).
+# --------------------------------------------------------------------------- #
+import glob as _glob
+import html as _html
+
+_DOCS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs")
+
+
+def _md_inline(t):
+    t = _html.escape(t)
+    t = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", t)
+    t = re.sub(r"`([^`]+)`", r"<code>\1</code>", t)
+    t = re.sub(r"\[([^\]]+)\]\((https?://[^)\s]+)\)",
+               r'<a href="\2" rel="noopener">\1</a>', t)
+    return t
+
+
+def _md_to_html(text):
+    lines = text.split("\n")
+    out, i, n = [], 0, len(lines)
+    while i < n:
+        ln = lines[i]
+        if not ln.strip():
+            i += 1
+            continue
+        if ln.startswith("### "):
+            out.append("<h3>" + _md_inline(ln[4:]) + "</h3>"); i += 1; continue
+        if ln.startswith("## "):
+            out.append("<h2>" + _md_inline(ln[3:]) + "</h2>"); i += 1; continue
+        if ln.startswith("# "):
+            out.append("<h1>" + _md_inline(ln[2:]) + "</h1>"); i += 1; continue
+        if re.match(r"^---+\s*$", ln):
+            out.append("<hr>"); i += 1; continue
+        # GFM table
+        if ln.lstrip().startswith("|") and i + 1 < n and re.match(r"^\s*\|[\s:|-]+\|\s*$", lines[i + 1]):
+            def cells(r): return [c.strip() for c in r.strip().strip("|").split("|")]
+            head = cells(ln); i += 2
+            rows = []
+            while i < n and lines[i].lstrip().startswith("|"):
+                rows.append(cells(lines[i])); i += 1
+            t = ["<table><thead><tr>"] + ["<th>" + _md_inline(c) + "</th>" for c in head] + ["</tr></thead><tbody>"]
+            for r in rows:
+                t.append("<tr>" + "".join("<td>" + _md_inline(c) + "</td>" for c in r) + "</tr>")
+            t.append("</tbody></table>")
+            out.append("".join(t)); continue
+        # list
+        if re.match(r"^\s*[-*] ", ln):
+            items = []
+            while i < n and re.match(r"^\s*[-*] ", lines[i]):
+                items.append("<li>" + _md_inline(re.sub(r"^\s*[-*] ", "", lines[i])) + "</li>"); i += 1
+            out.append("<ul>" + "".join(items) + "</ul>"); continue
+        # paragraph (join until blank)
+        para = [ln]; i += 1
+        while i < n and lines[i].strip() and not re.match(r"^(#|\||\s*[-*] |---)", lines[i]):
+            para.append(lines[i]); i += 1
+        out.append("<p>" + _md_inline(" ".join(para)) + "</p>")
+    return "\n".join(out)
+
+
+def _adr_list():
+    items = []
+    for path in sorted(_glob.glob(os.path.join(_DOCS_DIR, "ADR-*.md"))):
+        slug = os.path.basename(path)[:-3]
+        title = slug
+        try:
+            with open(path, encoding="utf-8") as fh:
+                for line in fh:
+                    if line.startswith("# "):
+                        title = line[2:].strip(); break
+        except OSError:
+            continue
+        items.append({"slug": slug, "title": title})
+    return items
+
+
+@app.route("/governance")
+def governance_page():
+    return render_template("governance.html", adrs=_adr_list())
+
+
+@app.route("/governance/<slug>")
+def governance_adr(slug):
+    if not re.match(r"^ADR-[0-9A-Za-z-]+$", slug):
+        return render_template("governance.html", adrs=_adr_list()), 404
+    path = os.path.join(_DOCS_DIR, slug + ".md")
+    if not os.path.isfile(path):
+        return render_template("governance.html", adrs=_adr_list()), 404
+    with open(path, encoding="utf-8") as fh:
+        body = _md_to_html(fh.read())
+    return render_template("adr.html", body=body, adrs=_adr_list())
+
+
 @app.route("/wallet")
 def wallet_page():
     """One wallet: the MoonBite desktop app.

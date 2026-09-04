@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block body_class %}mb-v2{% endblock %}
+{% block title %}MoonBite governance record{% endblock %}
+{% block head_extra %}
+<style>
+  .adr{background:#0B0D12;color:#F5F2EA;padding:48px 20px 72px;font-family:'Inter',-apple-system,'Segoe UI',sans-serif;}
+  .adr-wrap{max-width:780px;margin:0 auto;}
+  .adr-back{color:#D9A441;text-decoration:none;font-size:13px;font-weight:600;}
+  .adr-body{margin-top:20px;line-height:1.7;color:#D8D2C4;}
+  .adr-body h1{font-family:'Archivo Black','Arial Black',sans-serif;font-size:30px;color:#F5F2EA;line-height:1.15;margin:8px 0 18px;}
+  .adr-body h2{font-family:'Archivo Black','Arial Black',sans-serif;font-size:20px;color:#F5F2EA;margin:34px 0 10px;}
+  .adr-body h3{font-size:16px;color:#D9A441;margin:24px 0 8px;}
+  .adr-body p{margin:12px 0;}
+  .adr-body ul{margin:12px 0;padding-left:22px;}
+  .adr-body li{margin:6px 0;}
+  .adr-body strong{color:#F5F2EA;}
+  .adr-body code{font-family:ui-monospace,Consolas,monospace;background:#232833;padding:1px 6px;border-radius:4px;font-size:13px;color:#E8C878;}
+  .adr-body a{color:#D9A441;}
+  .adr-body hr{border:0;border-top:1px solid rgba(255,255,255,.08);margin:28px 0;}
+  .adr-body table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;overflow-x:auto;display:block;}
+  .adr-body th,.adr-body td{border:1px solid rgba(255,255,255,.1);padding:9px 12px;text-align:left;}
+  .adr-body th{background:#161A22;color:#D9A441;font-weight:700;}
+  .adr-body td{background:#12151c;}
+</style>
+{% endblock %}
+{% block content %}
+<section class="adr"><div class="adr-wrap">
+  <a class="adr-back" href="/governance">← All decision records</a>
+  <div class="adr-body">{{ body|safe }}</div>
+</div></section>
+{% endblock %}
