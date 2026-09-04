@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MoonBite — The full case, in eleven facts</title>
+<meta name="description" content="No company owns MoonBite. No investor holds a discount. There are no coins for sale at any price. The only way to own one is to make it yourself.">
+<link rel="icon" type="image/svg+xml" href="/static/moonbite-logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@400;500;600;700&display=swap">
+<style nonce="{{ csp_nonce }}">
+:root{
+  --ink:#0A0B0E; --void:#0B0D12; --raise:#11131A;
+  --gold:#D9A441; --gold-2:#EBCB86;
+  --bone:#F4F1E9; --mist:#CFCABF; --ash:#8E8981; --faint:#5E5A53;
+  --rule:rgba(244,241,233,.14); --rule-2:rgba(244,241,233,.07);
+  --serif:'Newsreader',Georgia,'Times New Roman',serif;
+  --display:'Instrument Serif',Georgia,serif;
+  --ui:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  --page:1080px; --col:64ch;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{background:var(--ink);color:var(--bone);font-family:var(--serif);
+  font-size:clamp(1.06rem,1.9vw,1.19rem);line-height:1.72;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--gold);color:var(--ink)}
+a{color:inherit}
+img,svg{display:block;max-width:100%}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.page{max-width:var(--page);margin:0 auto;padding:0 30px}
+@media(max-width:600px){.page{padding:0 22px}}
+.col{max-width:var(--col)}
+
+/* paper grain on ink */
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+main{position:relative;z-index:2}
+
+/* masthead */
+header.mast{border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:40;
+  background:rgba(10,11,14,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.mast-in{max-width:var(--page);margin:0 auto;padding:14px 30px;display:flex;align-items:center;gap:16px}
+.mark{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:1.28rem;letter-spacing:.02em}
+.mark img{width:24px;height:24px}
+.dateline{margin-left:auto;font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ash);display:flex;align-items:center;gap:9px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(217,164,65,.5)}70%{box-shadow:0 0 0 7px rgba(217,164,65,0)}100%{box-shadow:0 0 0 0 rgba(217,164,65,0)}}
+@media(max-width:560px){.dateline span.hide{display:none}}
+
+/* ---- the advertisement ---- */
+.ad{padding-top:clamp(60px,11vh,120px)}
+.kicker{font-family:var(--mono);font-size:.68rem;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--gold);font-weight:500}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(3rem,10.5vw,7.4rem);
+  line-height:.96;letter-spacing:-.018em;margin:26px 0 0;max-width:15ch}
+h1 em{font-style:italic;color:var(--gold)}
+.deck{font-family:var(--serif);font-weight:300;font-size:clamp(1.24rem,3.1vw,1.72rem);
+  line-height:1.5;color:var(--mist);margin-top:32px;max-width:52ch}
+.deck b{color:var(--bone);font-weight:500}
+
+/* plate + caption (Ogilvy: captions get read) */
+.plate{margin:64px 0 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+  padding:44px 0;display:grid;grid-template-columns:auto 1fr;gap:44px;align-items:center}
+@media(max-width:760px){.plate{grid-template-columns:1fr;gap:26px;padding:34px 0}}
+.plate canvas{width:172px;height:172px}
+@media(max-width:760px){.plate canvas{width:128px;height:128px}}
+.cap{font-family:var(--ui);font-size:.9rem;line-height:1.62;color:var(--mist);max-width:52ch}
+.cap b{color:var(--bone);font-weight:600}
+
+/* body copy */
+.body{padding:70px 0 0}
+.body p{margin-top:22px;color:var(--mist)}
+.body p:first-child{margin-top:0}
+.body b{color:var(--bone);font-weight:500}
+.drop::first-letter{float:left;font-family:var(--display);font-size:4.4em;line-height:.78;
+  padding:.06em .1em 0 0;color:var(--gold)}
+
+/* rules + section heads */
+.rule{border:0;border-top:1px solid var(--rule);margin:88px 0 0}
+.shead{font-family:var(--display);font-weight:400;font-size:clamp(2rem,5.6vw,3.3rem);
+  line-height:1.06;letter-spacing:-.015em;margin-top:44px;max-width:20ch}
+.slug{font-family:var(--mono);font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ash);margin-top:52px}
+
+/* the numbered facts — Ogilvy's signature */
+ol.facts{list-style:none;margin-top:44px}
+ol.facts li{display:grid;grid-template-columns:74px 1fr;gap:22px;padding:30px 0;border-top:1px solid var(--rule-2)}
+@media(max-width:640px){ol.facts li{grid-template-columns:44px 1fr;gap:16px;padding:24px 0}}
+ol.facts li:first-child{border-top:1px solid var(--rule)}
+.fnum{font-family:var(--mono);font-size:.82rem;color:var(--gold);letter-spacing:.06em;padding-top:.55em;font-variant-numeric:tabular-nums}
+.fbody h3{font-family:var(--display);font-weight:400;font-size:clamp(1.4rem,3.4vw,1.9rem);
+  line-height:1.16;letter-spacing:-.01em;color:var(--bone)}
+.fbody p{margin-top:11px;color:var(--mist);font-size:clamp(1rem,1.9vw,1.1rem)}
+.fbody p b{color:var(--bone);font-weight:500}
+
+/* pull quote — built to be screenshotted */
+.pull{margin-top:88px;border:1px solid var(--rule);border-radius:4px;padding:clamp(38px,6vw,64px);
+  background:linear-gradient(160deg,rgba(217,164,65,.07),rgba(244,241,233,.012) 60%);position:relative}
+.pull q{quotes:none}
+.pull p{font-family:var(--display);font-weight:400;font-style:italic;
+  font-size:clamp(1.7rem,5vw,3rem);line-height:1.16;letter-spacing:-.015em;color:var(--bone);max-width:19ch}
+.pull .attr{font-family:var(--mono);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ash);margin-top:26px}
+
+/* live ledger strip */
+.ledger{margin-top:88px;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.ledger-h{padding:14px 22px;border-bottom:1px solid var(--rule-2);display:flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ash)}
+.ledger-g{display:grid;grid-template-columns:repeat(3,1fr)}
+@media(max-width:660px){.ledger-g{grid-template-columns:1fr}}
+.lc{padding:26px 22px;border-right:1px solid var(--rule-2)}
+.lc:last-child{border-right:0}
+@media(max-width:660px){.lc{border-right:0;border-bottom:1px solid var(--rule-2)}.lc:last-child{border-bottom:0}}
+.lc .k{font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ash)}
+.lc .v{font-family:var(--display);font-size:clamp(2rem,5.2vw,2.7rem);line-height:1;margin-top:12px;letter-spacing:-.01em}
+.lc .v small{font-family:var(--mono);font-size:.34em;color:var(--gold);letter-spacing:.06em;margin-left:7px}
+.lc .n{font-family:var(--ui);font-size:.82rem;color:var(--faint);margin-top:9px}
+
+/* steps */
+.steps{margin-top:44px;display:grid;gap:1px;background:var(--rule-2);border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+@media(min-width:820px){.steps{grid-template-columns:repeat(3,1fr)}}
+.st{background:var(--ink);padding:34px 28px}
+.st .sn{font-family:var(--mono);font-size:.68rem;letter-spacing:.2em;color:var(--gold)}
+.st h4{font-family:var(--display);font-weight:400;font-size:1.55rem;line-height:1.16;margin:16px 0 10px}
+.st p{color:var(--mist);font-size:1rem;line-height:1.62}
+
+/* coupon / CTA */
+.coupon{margin-top:88px;border:1px dashed rgba(217,164,65,.5);border-radius:6px;
+  padding:clamp(36px,6vw,58px);background:rgba(217,164,65,.035)}
+.coupon .ck{font-family:var(--mono);font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+.coupon h3{font-family:var(--display);font-weight:400;font-size:clamp(1.9rem,5vw,2.9rem);
+  line-height:1.1;margin:18px 0 0;max-width:18ch}
+.coupon p{color:var(--mist);margin-top:18px;max-width:50ch}
+.btns{display:flex;gap:14px;flex-wrap:wrap;margin-top:32px}
+.btn{font-family:var(--ui);font-size:.97rem;font-weight:600;padding:15px 30px;border-radius:4px;
+  text-decoration:none;border:1px solid transparent;transition:transform .15s,box-shadow .2s,background .2s,border-color .2s}
+.btn-gold{color:var(--ink);background:linear-gradient(180deg,var(--gold-2),var(--gold));
+  box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 10px 28px rgba(217,164,65,.2)}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 16px 38px rgba(217,164,65,.32)}
+.btn-line{color:var(--bone);border-color:var(--rule)}
+.btn-line:hover{border-color:rgba(217,164,65,.6);background:rgba(217,164,65,.06)}
+.fine{font-family:var(--ui);font-size:.84rem;color:var(--faint);margin-top:22px;max-width:56ch;line-height:1.6}
+
+/* signature */
+.sig{margin-top:70px;padding-top:32px;border-top:1px solid var(--rule)}
+.sig p{color:var(--ash);font-size:1rem;max-width:52ch}
+.sig .name{font-family:var(--display);font-size:1.5rem;color:var(--bone);margin-top:18px}
+.sig .role{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-top:7px}
+
+/* share */
+.share{margin-top:52px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ash)}
+.share button{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--bone);background:none;border:1px solid var(--rule);border-radius:3px;padding:11px 18px;cursor:pointer;
+  transition:border-color .2s,background .2s}
+.share button:hover{border-color:rgba(217,164,65,.6);background:rgba(217,164,65,.07)}
+
+/* footer */
+footer{margin-top:100px;border-top:1px solid var(--rule);padding:56px 0 44px}
+.fgrid{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:38px}
+@media(max-width:760px){.fgrid{grid-template-columns:1fr 1fr;gap:30px}}
+.fgrid p{font-family:var(--ui);font-size:.88rem;color:var(--ash);max-width:32ch;margin-top:14px;line-height:1.6}
+.fcol h5{font-family:var(--mono);font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ash);margin-bottom:14px}
+.fcol a{display:block;font-family:var(--ui);font-size:.9rem;color:var(--mist);padding:6px 0;text-decoration:none}
+.fcol a:hover{color:var(--gold)}
+.fbase{margin-top:46px;padding-top:24px;border-top:1px solid var(--rule-2);display:flex;justify-content:space-between;
+  gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;color:var(--faint)}
+
+/* reveal */
+.rise{opacity:0;transform:translateY(18px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
+.rise.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.rise{opacity:1;transform:none}.dot{animation:none}}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<header class="mast">
+  <div class="mast-in">
+    <a class="mark" href="/"><img src="/static/moonbite-logo.svg" alt=""><span>MoonBite</span></a>
+    <div class="dateline"><span class="dot"></span><span class="hide">Block</span>
+      <span class="mono" id="dBlock">—</span><span class="hide">· mining now</span></div>
+  </div>
+</header>
+
+<main>
+<article class="ad page">
+
+  <div class="rise">
+    <div class="kicker">A new kind of money · Est. {{ consensus.launch_year }}</div>
+    <h1>We have <em>nothing</em> to sell you.</h1>
+    <p class="deck">No company owns MoonBite. No investor holds an early discount. There are
+      <b>no coins for sale at any price</b>, by us or by anyone. The only way to own one is to
+      make it yourself, with a computer you already have. What follows is everything we know,
+      told plainly.</p>
+  </div>
+
+  <div class="plate rise">
+    <canvas id="orb" width="344" height="344" aria-hidden="true"></canvas>
+    <p class="cap"><b>Above:</b> a MoonBite, magnified. It is not a thing you can hold. It is a line in a
+      ledger that every machine on the network keeps at once, and that none of them can edit alone.
+      {{ consensus.initial_subsidy_coins }} come into existence every {{ consensus.block_time_min }}
+      minutes and go to whichever computer did the most arithmetic. That is the entire ceremony.</p>
+  </div>
+
+  <div class="body col rise">
+    <p class="drop">In 2009, a person nobody has ever met released nine pages of arithmetic and a
+      small program, and money stopped needing a bank. The people who ran that program in the first
+      year did not know what they had. They were not investors. Most of them were curious, and a
+      little bored, and they left it running overnight.</p>
+    <p>Seventeen years later we know exactly what happened next, which is a strange problem. It means
+      nobody can ever again be early to Bitcoin by accident. Every fair beginning since has been
+      bought before it began — sold to funds at a discount, launched with a founder's share already
+      mined, marketed with a price chart before it had a product.</p>
+    <p>MoonBite is our attempt to run the original experiment again, honestly, in {{ consensus.launch_year }}.
+      Same idea: <b>a coin that is made, not sold</b>. Same rule: whoever shows up and does the work
+      gets it. No premine, no presale, no allocation, no treasury, no team tokens. We began at block
+      zero with zero coins, exactly like everybody else.</p>
+    <p>We are not going to tell you it will be worth something. We genuinely do not know, and anyone
+      who claims otherwise is selling you something we are not.</p>
+  </div>
+
+  <hr class="rule">
+  <div class="slug rise">The facts</div>
+  <h2 class="shead rise">Eleven things to know before you mine a single coin.</h2>
+
+  <ol class="facts">
+    <li class="rise"><div class="fnum">01</div><div class="fbody">
+      <h3>Nobody owns it.</h3>
+      <p>There is no company, no foundation, no board, and no head office. MoonBite is a program that
+        thousands of people run on their own machines. If we vanished tonight, it would keep producing
+        a block every {{ consensus.block_time_min }} minutes without noticing.</p></div></li>
+
+    <li class="rise"><div class="fnum">02</div><div class="fbody">
+      <h3>There was no premine.</h3>
+      <p>Not one coin existed before the network opened. No founder's stack, no advisor's allocation,
+        no 20% set aside "for the ecosystem." Every MBITE in existence was mined in public, by
+        somebody's computer, after the first block.</p></div></li>
+
+    <li class="rise"><div class="fnum">03</div><div class="fbody">
+      <h3>{{ consensus.initial_subsidy_coins }} coins are born every {{ consensus.block_time_min }} minutes.</h3>
+      <p>They go to whichever machine on the network solved that block's puzzle first. Not to us. There
+        is no cut, no fee to the developers, no skim. The block reward is the only way coins are
+        created, and it goes entirely to the miner.</p></div></li>
+
+    <li class="rise"><div class="fnum">04</div><div class="fbody">
+      <h3>The reward is cut in half, forever.</h3>
+      <p>Every {{ '{:,}'.format(consensus.halving_interval) }} blocks the reward halves:
+        {{ consensus.initial_subsidy_coins }} becomes {{ consensus.initial_subsidy_coins // 2 }},
+        {{ consensus.initial_subsidy_coins // 2 }} becomes {{ consensus.initial_subsidy_coins // 4 }},
+        and so on until it reaches nothing around the year {{ consensus.final_block_year }}. It never
+        goes back up. This is written into the code and enforced by every machine on the network.
+        Nobody can vote to print more.</p></div></li>
+
+    <li class="rise"><div class="fnum">05</div><div class="fbody">
+      <h3>There will never be more than {{ consensus.max_supply_label }}.</h3>
+      <p>That is the whole supply, for all of time, across every person who will ever hold one. Half of
+        all coins that will ever exist are mined in the first era — the one running right now, as you
+        read this.</p></div></li>
+
+    <li class="rise"><div class="fnum">06</div><div class="fbody">
+      <h3>Your ordinary computer is the machine.</h3>
+      <p>MoonBite uses a puzzle called RandomX, chosen deliberately because it runs best on the plain
+        processor in a normal laptop and badly on the specialised hardware that took over Bitcoin
+        mining. A warehouse of machines has no meaningful advantage over your desk. That is not a
+        happy accident; it is the point.</p></div></li>
+
+    <li class="rise"><div class="fnum">07</div><div class="fbody">
+      <h3>It has no price.</h3>
+      <p>MoonBite is not listed on any exchange. You cannot buy it, sell it, or look up what it is
+        worth, because it is not worth anything yet and may never be. We would rather write that
+        sentence ourselves than have you discover it later. If someone offers to sell you MBITE
+        today, they are lying to you.</p></div></li>
+
+    <li class="rise"><div class="fnum">08</div><div class="fbody">
+      <h3>No one can freeze it or reverse it.</h3>
+      <p>There is no account to suspend and no support desk that can claw a payment back. Coins move
+        when the holder of the key signs for them, and at no other time. This is a feature, and it is
+        also a responsibility we cannot take off your hands.</p></div></li>
+
+    <li class="rise"><div class="fnum">09</div><div class="fbody">
+      <h3>Every rule is public code.</h3>
+      <p>The supply schedule, the halving, the puzzle, the wallet — all of it is published and readable.
+        You do not have to take our word for a single claim on this page. You can read the code that
+        enforces it, and run it yourself.</p></div></li>
+
+    <li class="rise"><div class="fnum">10</div><div class="fbody">
+      <h3>If you lose your recovery phrase, the coins are gone.</h3>
+      <p>Twelve words control your wallet. Written on paper and kept somewhere safe, they survive a
+        dead laptop. Lost, they are unrecoverable — by you, by us, by anyone. We say this plainly
+        because the alternative is you learning it the expensive way.</p></div></li>
+
+    <li class="rise"><div class="fnum">11</div><div class="fbody">
+      <h3>You mine it, or it isn't yours.</h3>
+      <p>That sentence is the entire product. Everything above is just the arithmetic that makes it
+        true.</p></div></li>
+  </ol>
+
+  <div class="pull rise">
+    <p>The loudest thing about this new money is the fan on your laptop.</p>
+    <div class="attr">Which is, so far, the only cost of entry</div>
+  </div>
+
+  <div class="ledger rise">
+    <div class="ledger-h"><span class="dot"></span>The network, right now</div>
+    <div class="ledger-g">
+      <div class="lc"><div class="k">Blocks mined</div>
+        <div class="v mono" id="lHeight">0</div>
+        <div class="n">one every {{ consensus.block_time_min }} minutes, without pause</div></div>
+      <div class="lc"><div class="k">Paid to the miner</div>
+        <div class="v mono">{{ consensus.current_reward_coins|int }}<small>MBITE</small></div>
+        <div class="n">the entire reward — no cut is taken</div></div>
+      <div class="lc"><div class="k">Of all coins, mined</div>
+        <div class="v mono"><span id="lPct">0.000</span><small>%</small></div>
+        <div class="n">the remaining {{ consensus.max_supply_label }} are unclaimed</div></div>
+    </div>
+  </div>
+
+  <hr class="rule">
+  <div class="slug rise">How to begin</div>
+  <h2 class="shead rise">It takes about four minutes, and costs nothing.</h2>
+  <div class="steps">
+    <div class="st rise"><div class="sn">STEP ONE</div><h4>Make a wallet</h4>
+      <p>Download the MoonBite wallet and write your twelve words on paper. This takes two minutes and
+        is the only part you must not rush.</p></div>
+    <div class="st rise"><div class="sn">STEP TWO</div><h4>Point the miner at it</h4>
+      <p>Copy your address into the miner and press start. Your computer joins the network and begins
+        competing for the next block.</p></div>
+    <div class="st rise"><div class="sn">STEP THREE</div><h4>Leave it running</h4>
+      <p>That is all. When your machine wins a block, {{ consensus.initial_subsidy_coins }} MBITE arrive
+        in your wallet and nobody is able to take them.</p></div>
+  </div>
+
+  <div class="coupon rise">
+    <div class="ck">There is nothing to buy</div>
+    <h3>Start your computer mining tonight.</h3>
+    <p>No sign-up, no email, no card, no account. Download it, point it at your own wallet, and let it
+      run while you sleep.</p>
+    <div class="btns">
+      <a class="btn btn-gold" href="/start">Mine your first block</a>
+      <a class="btn btn-line" href="/whitepaper">Read the arithmetic</a>
+    </div>
+    <p class="fine">A word of caution, since nobody else in this industry will offer one: mining uses
+      electricity, which is a real cost, and MoonBite may never be worth a penny. Treat it as an
+      experiment you find interesting, not as a plan for your money.</p>
+  </div>
+
+  <div class="sig rise">
+    <p>We would rather have a thousand people who understand what this is than a million who were
+      told it would make them rich. If that is a slower way to grow, we accept it.</p>
+    <div class="name">The MoonBite contributors</div>
+    <div class="role">Anonymous, by design · {{ consensus.launch_year }}</div>
+  </div>
+
+  <div class="share rise">
+    <span>Pass it on</span>
+    <button id="shareBtn" type="button">Share this page</button>
+    <button id="copyBtn" type="button">Copy the headline</button>
+  </div>
+</article>
+</main>
+
+<footer>
+  <div class="page">
+    <div class="fgrid">
+      <div>
+        <a class="mark" href="/"><img src="/static/moonbite-logo.svg" alt=""><span>MoonBite</span></a>
+        <p>Made, not sold. {{ consensus.initial_subsidy_coins }} MBITE every
+          {{ consensus.block_time_min }} minutes, to whoever does the work.</p>
+      </div>
+      <div class="fcol"><h5>Begin</h5>
+        <a href="/start">Mine</a><a href="/get-wallet">Wallet</a><a href="/how-it-works">How it works</a></div>
+      <div class="fcol"><h5>Verify</h5>
+        <a href="/explorer">Explorer</a><a href="/whitepaper">Whitepaper</a><a href="/full-node">Run a node</a></div>
+      <div class="fcol"><h5>Understand</h5>
+        <a href="/learn">Learn</a><a href="/scams">Avoid scams</a><a href="/support">Support</a></div>
+    </div>
+    <div class="fbase">
+      <span>© {{ consensus.launch_year }} MoonBite · no company, no owner</span>
+      <span>You mine it, or it isn't yours.</span>
+    </div>
+  </div>
+</footer>
+
+<script nonce="{{ csp_nonce }}">
+(function(){
+  var CONS={reward:{{ consensus.current_reward_coins }},cap:{{ consensus.max_supply_coins }},
+            halving:{{ consensus.next_halving_height }}};
+  var $=function(i){return document.getElementById(i)};
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* reveal */
+  if('IntersectionObserver' in window && !reduce){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){
+      if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
+    document.querySelectorAll('.rise').forEach(function(el){io.observe(el)});
+  } else { document.querySelectorAll('.rise').forEach(function(el){el.classList.add('in')}); }
+
+  function fmt(n){return (n||0).toLocaleString('en-US')}
+
+  /* live ledger */
+  var h=0, done=false;
+  function paint(){
+    var mined=Math.min(h,CONS.halving)*CONS.reward;
+    var pct=CONS.cap?100*mined/CONS.cap:0;
+    $('dBlock').textContent=fmt(h);
+    if(!done && h>0 && !reduce){
+      done=true; var t0=performance.now();
+      (function step(t){
+        var p=Math.min(1,(t-t0)/1100), e=1-Math.pow(1-p,3);
+        $('lHeight').textContent=fmt(Math.round(h*e));
+        $('lPct').textContent=(pct*e).toFixed(3);
+        if(p<1) requestAnimationFrame(step);
+      })(t0);
+    } else { $('lHeight').textContent=fmt(h); $('lPct').textContent=pct.toFixed(3); }
+  }
+  function poll(){
+    fetch('/api/blockchain/info').then(function(r){return r.json()}).then(function(j){
+      var v=j.height||j.blocks||0; if(v>=0){h=v;paint();}
+    }).catch(function(){});
+  }
+  poll(); setInterval(poll,15000);
+
+  /* the plate: a slowly turning coin */
+  var c=$('orb');
+  if(c && c.getContext){
+    var x=c.getContext('2d'), W=344, a=0;
+    function draw(){
+      x.clearRect(0,0,W,W);
+      var cx=W/2, cy=W/2, R=W*0.40;
+      var g=x.createRadialGradient(cx-R*.35,cy-R*.4,R*.06,cx,cy,R*1.05);
+      g.addColorStop(0,'#F3DDA8'); g.addColorStop(.45,'#D9A441');
+      g.addColorStop(.85,'#8A6524'); g.addColorStop(1,'#3A2B10');
+      x.beginPath(); x.arc(cx,cy,R,0,6.283); x.fillStyle=g; x.fill();
+      /* rim */
+      x.beginPath(); x.arc(cx,cy,R,0,6.283);
+      x.strokeStyle='rgba(244,241,233,.28)'; x.lineWidth=1.6; x.stroke();
+      /* craters, slowly rotating */
+      var cr=[[.30,-.26,.15],[-.30,.16,.20],[.12,.36,.11],[-.13,-.36,.09],[.40,.13,.08]];
+      for(var i=0;i<cr.length;i++){
+        var ang=a*(0.4+i*0.05), ox=cr[i][0], oy=cr[i][1];
+        var rx=ox*Math.cos(ang)-oy*Math.sin(ang), ry=ox*Math.sin(ang)+oy*Math.cos(ang);
+        x.beginPath(); x.arc(cx+rx*R, cy+ry*R, cr[i][2]*R, 0, 6.283);
+        x.fillStyle='rgba(58,43,16,0.30)'; x.fill();
+      }
+      /* specular */
+      var s=x.createRadialGradient(cx-R*.4,cy-R*.45,0,cx-R*.4,cy-R*.45,R*.8);
+      s.addColorStop(0,'rgba(255,255,255,.30)'); s.addColorStop(1,'rgba(255,255,255,0)');
+      x.beginPath(); x.arc(cx,cy,R,0,6.283); x.fillStyle=s; x.fill();
+      a+=0.0022;
+      if(!reduce) requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  /* share */
+  var LINE='MoonBite: "We have nothing to sell you." A coin that is made, not sold — no premine, no presale, no price.';
+  $('shareBtn').addEventListener('click',function(){
+    var url=location.href;
+    if(navigator.share){ navigator.share({title:'MoonBite',text:LINE,url:url}).catch(function(){}); }
+    else if(navigator.clipboard){ navigator.clipboard.writeText(LINE+' '+url); this.textContent='Link copied'; }
+  });
+  $('copyBtn').addEventListener('click',function(){
+    var b=this;
+    if(navigator.clipboard){ navigator.clipboard.writeText(LINE).then(function(){
+      b.textContent='Copied'; setTimeout(function(){b.textContent='Copy the headline'},1800); }); }
+  });
+})();
+</script>
+</body>
+</html>

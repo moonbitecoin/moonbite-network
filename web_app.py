@@ -711,6 +711,12 @@ def home_page():
     return render_template("moon.html")
 
 
+@app.route("/the-case")
+def the_case_page():
+    """Long-form Ogilvy copy: the full argument for readers who want it."""
+    return render_template("the_case.html")
+
+
 @app.route("/2026")
 def home_ogilvy_page():
     """Ogilvy-style editorial homepage candidate."""
