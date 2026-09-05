@@ -15,10 +15,10 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{background:#000;overflow-x:hidden}
-#run{position:relative;height:260vh}
+#run{position:relative;height:240vh}
 #stage{position:sticky;top:0;height:100svh;overflow:hidden;background:#000}
 canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-#flash{position:absolute;inset:0;background:#FFF6DE;opacity:0;pointer-events:none;mix-blend-mode:screen}
+#flash{position:absolute;inset:0;background:#EAF2FF;opacity:0;pointer-events:none;mix-blend-mode:screen}
 .cue{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);z-index:5;
   font-family:var(--mono);font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;
   color:var(--faint);opacity:0;transition:opacity 600ms var(--ease);
@@ -52,31 +52,36 @@ body.blown .cue{opacity:0}
   function clamp(v,a,b){return v<a?a:(v>b?b:v)}
   function smooth(a,b,x){if(b===a)return x<a?0:1;var t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)}
   function lerp(a,b,t){return a+(b-a)*t}
+  function rnd(a,b){return a+Math.random()*(b-a)}
 
-  var W,H,DPR,CX,CY,SC,BT,B1,B2,BW_GLYPH;
+  var W,H,DPR,CX,CY,SC,BT,B1,B2,BW_GLYPH,IX,IY,RMAX=1;
   var src=document.createElement('canvas'), sctx=src.getContext('2d');
-  var mk=document.createElement('canvas'), mctx=mk.getContext('2d');
-  var stars=[], shards=[], blown=false, t0=0, barW=0, intro=0;
+  var mkc=document.createElement('canvas'), mctx=mkc.getContext('2d');
+  var dmg=document.createElement('canvas'), dctx=dmg.getContext('2d');
+  var stars=[], shards=[], cracks=[], blobs=[], cols=[];
+  var blown=false, t0=0, barW=0, barTension=0, built=false;
 
   function size(){
     DPR=Math.min(devicePixelRatio||1,2);
-    W=view.width=src.width=mk.width=Math.floor(innerWidth*DPR);
-    H=view.height=src.height=mk.height=Math.floor(innerHeight*DPR);
+    W=view.width=src.width=mkc.width=dmg.width=Math.floor(innerWidth*DPR);
+    H=view.height=src.height=mkc.height=dmg.height=Math.floor(innerHeight*DPR);
     CX=W/2; CY=H/2;
-    var mkSize=Math.min(innerWidth*0.38,260)*DPR; /* rendered size of the 300u viewBox */
-    SC=mkSize/300;                                /* units -> px */
-    BT=Math.max(3*DPR,13*SC);                    /* bar thickness 0.13R */
-    BW_GLYPH=255*SC;                             /* bar width 2.55R */
-    B1=CY-34*SC; B2=CY+18*SC;                    /* bar centres -0.34R / +0.18R */
-    barW=barW||BW_GLYPH;
+    var mkSize=Math.min(innerWidth*0.38,260)*DPR;
+    SC=mkSize/300;
+    BT=Math.max(3*DPR,13*SC);
+    BW_GLYPH=255*SC;
+    B1=CY-34*SC; B2=CY+18*SC;
+    IX=CX; IY=(B1+B2)/2;
+    RMAX=Math.sqrt(W*W+H*H)*0.75;
+    if(!blown) barW=BW_GLYPH;
     stars=[];
     var n=Math.round(clamp(innerWidth*innerHeight/9000,80,240));
     for(var i=0;i<n;i++) stars.push({x:Math.random()*W,y:Math.random()*H,
       r:(Math.random()*1.2+0.25)*DPR,z:Math.random()*0.9+0.1,t:Math.random()*6.28});
-    makeShards();
+    buildGlass();
   }
 
-  /* ---------- the intact screen, drawn once to an offscreen canvas ---------- */
+  /* the picture that is about to be destroyed */
   function paintSrc(bw,glow){
     sctx.clearRect(0,0,W,H);
     var g=sctx.createRadialGradient(CX,CY*0.92,0,CX,CY,Math.max(W,H)*0.72);
@@ -87,148 +92,196 @@ body.blown .cue{opacity:0}
       sctx.beginPath(); sctx.arc(s.x,s.y,s.r,0,6.283);
       sctx.fillStyle='rgba(236,230,214,'+(0.16*s.z)+')'; sctx.fill();
     }
-    /* the mark: one disc, one bite (0.62R at 0.95R on the 45 deg axis).
-       Drawn on its own layer so the bite cuts the disc, not the sky. */
     mctx.clearRect(0,0,W,H);
     mctx.beginPath(); mctx.arc(CX,CY,100*SC,0,6.283);
     mctx.fillStyle='#F5F2EA'; mctx.fill();
     mctx.save();
     mctx.globalCompositeOperation='destination-out';
-    mctx.beginPath(); mctx.arc(CX+67.18*SC,CY-67.18*SC,62*SC,0,6.283);
-    mctx.fill();
+    mctx.beginPath(); mctx.arc(CX+67.18*SC,CY-67.18*SC,62*SC,0,6.283); mctx.fill();
     mctx.restore();
-    sctx.drawImage(mk,0,0);
-    /* the two bars */
+    sctx.drawImage(mkc,0,0);
     sctx.save();
     if(glow>0){ sctx.shadowColor='rgba(217,164,65,.9)'; sctx.shadowBlur=BT*(1.2+glow*3); }
     sctx.fillStyle='#D9A441';
     [B1,B2].forEach(function(y){
-      var r=BT/2;
       sctx.beginPath();
-      if(sctx.roundRect) sctx.roundRect(CX-bw/2,y-BT/2,bw,BT,r);
+      if(sctx.roundRect) sctx.roundRect(CX-bw/2,y-BT/2,bw,BT,BT/2);
       else sctx.rect(CX-bw/2,y-BT/2,bw,BT);
       sctx.fill();
     });
     sctx.restore();
   }
 
-  /* ---------- glass: radial shards from the impact ---------- */
-  function makeShards(){
-    shards=[];
-    var RINGS=[0,0.10,0.22,0.38,0.58,0.82,1.25];
-    var RMAX=Math.sqrt(W*W+H*H)*0.62, SEG=14;
-    var jit=[]; for(var a=0;a<=SEG;a++) jit.push((Math.random()-0.5)*0.16);
-    for(var r=0;r<RINGS.length-1;r++){
-      for(var a2=0;a2<SEG;a2++){
-        var a0=(a2/SEG)*6.283+jit[a2], a1=((a2+1)/SEG)*6.283+jit[a2+1];
-        var r0=RINGS[r]*RMAX*(0.9+Math.random()*0.2);
-        var r1=RINGS[r+1]*RMAX*(0.9+Math.random()*0.2);
-        var pts=[[CX+Math.cos(a0)*r0,CY+Math.sin(a0)*r0],
-                 [CX+Math.cos(a1)*r0,CY+Math.sin(a1)*r0],
-                 [CX+Math.cos(a1)*r1,CY+Math.sin(a1)*r1],
-                 [CX+Math.cos(a0)*r1,CY+Math.sin(a0)*r1]];
-        var mxp=(pts[0][0]+pts[1][0]+pts[2][0]+pts[3][0])/4;
-        var myp=(pts[0][1]+pts[1][1]+pts[2][1]+pts[3][1])/4;
-        var dx=mxp-CX, dy=myp-CY, d=Math.sqrt(dx*dx+dy*dy)||1;
-        shards.push({p:pts,cx:mxp,cy:myp,
-          vx:dx/d*(1.6+Math.random()*2.4)*DPR*(1-r*0.09),
-          vy:dy/d*(1.6+Math.random()*2.4)*DPR*(1-r*0.09)-Math.random()*1.2*DPR,
-          vr:(Math.random()-0.5)*0.05, rot:0,
-          vs:0.0012+Math.random()*0.0022, s:1,
-          delay:d/RMAX*90});
+  /* the fracture: radial rays crossed by concentric rings, like real glass */
+  function buildGlass(){
+    shards=[]; cracks=[]; blobs=[]; cols=[];
+    var SEG=18, RINGS=[0.030,0.075,0.135,0.215,0.320,0.450,0.620,0.820,1.05];
+    var ang=[];
+    for(var a=0;a<SEG;a++) ang.push(a/SEG*6.283+rnd(-0.10,0.10));
+    ang.push(ang[0]+6.283);
+    var rr=[];
+    for(var r=0;r<RINGS.length;r++){
+      rr[r]=[];
+      for(var k=0;k<=SEG;k++) rr[r][k]=RINGS[r]*RMAX*rnd(0.86,1.16);
+      rr[r][SEG]=rr[r][0];
+    }
+    function P(r,k){ return [IX+Math.cos(ang[k])*rr[r][k], IY+Math.sin(ang[k])*rr[r][k]]; }
+    for(var r2=0;r2<RINGS.length-1;r2++){
+      for(var k2=0;k2<SEG;k2++){
+        var p=[P(r2,k2),P(r2,k2+1),P(r2+1,k2+1),P(r2+1,k2)];
+        var cx=(p[0][0]+p[1][0]+p[2][0]+p[3][0])/4;
+        var cy=(p[0][1]+p[1][1]+p[2][1]+p[3][1])/4;
+        shards.push({p:p,cx:cx,cy:cy,
+          d:Math.sqrt((cx-IX)*(cx-IX)+(cy-IY)*(cy-IY)),
+          ox:rnd(-1,1)*DPR*(2.0-r2*0.15), oy:rnd(-1,1)*DPR*(2.0-r2*0.15),
+          rot:rnd(-0.006,0.006)*(1.4-r2*0.1), lift:rnd(-0.10,0.16)});
       }
+    }
+    for(var r3=0;r3<RINGS.length;r3++)
+      for(var k3=0;k3<SEG;k3++)
+        cracks.push({a:P(r3,k3),b:P(r3,k3+1),d:RINGS[r3]*RMAX});
+    for(var k4=0;k4<SEG;k4++)
+      for(var r4=0;r4<RINGS.length-1;r4++)
+        cracks.push({a:P(r4,k4),b:P(r4+1,k4),d:RINGS[r4]*RMAX});
+    /* pools sit off to the sides of the impact so the mark survives the damage */
+    var keep=110*SC;                       /* clear radius around the mark */
+    for(var b=0;b<13;b++){
+      var aa=rnd(0,6.283), dd=keep+rnd(0.06,0.34)*RMAX;
+      blobs.push({x:IX+Math.cos(aa)*dd, y:IY+Math.sin(aa)*dd,
+        r:rnd(0.045,0.145)*RMAX, sq:rnd(0.45,1.5), rot:rnd(0,3.14), t:rnd(0.05,0.5)});
+    }
+    for(var c=0;c<10;c++){
+      cols.push({x:IX+rnd(-0.42,0.42)*RMAX, w:rnd(1,4)*DPR, h:rnd(0.25,1.0),
+        hue:Math.random()<0.45?rnd(150,190):rnd(280,330), a:rnd(0.10,0.5)});
     }
   }
 
-  function drawStars(){
-    ctx.save();
-    for(var i=0;i<stars.length;i++){
-      var s=stars[i]; s.t+=0.012;
-      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,6.283);
-      ctx.fillStyle='rgba(236,230,214,'+((0.3+0.35*Math.sin(s.t))*s.z)+')';
-      ctx.fill();
+  /* the damage, painted into its own layer and then left there */
+  function buildDamage(prog){
+    dctx.clearRect(0,0,W,H);
+    var reach=prog*RMAX*1.15;
+
+    /* the picture, still on screen but no longer in one piece */
+    for(var i=0;i<shards.length;i++){
+      var s=shards[i];
+      var on=clamp((reach-s.d)/(0.12*RMAX),0,1);
+      dctx.save();
+      dctx.translate(s.cx+s.ox*on, s.cy+s.oy*on);
+      dctx.rotate(s.rot*on);
+      dctx.translate(-s.cx,-s.cy);
+      dctx.beginPath();
+      dctx.moveTo(s.p[0][0],s.p[0][1]);
+      for(var k=1;k<s.p.length;k++) dctx.lineTo(s.p[k][0],s.p[k][1]);
+      dctx.closePath(); dctx.clip();
+      dctx.drawImage(src,0,0);
+      if(on>0){
+        if(s.lift>0){ dctx.fillStyle='rgba(190,214,255,'+(0.05*on*s.lift)+')'; dctx.fillRect(0,0,W,H); }
+        else { dctx.fillStyle='rgba(0,0,0,'+(0.22*on*-s.lift)+')'; dctx.fillRect(0,0,W,H); }
+      }
+      dctx.restore();
     }
-    ctx.restore();
+
+    /* liquid crystal bleeding out into black pools */
+    for(var b=0;b<blobs.length;b++){
+      var bl=blobs[b], bp=clamp((prog-bl.t)/0.45,0,1);
+      if(bp<=0) continue;
+      dctx.save();
+      dctx.translate(bl.x,bl.y); dctx.rotate(bl.rot); dctx.scale(1,bl.sq);
+      var rg=dctx.createRadialGradient(0,0,0,0,0,bl.r*bp);
+      rg.addColorStop(0,'rgba(0,0,0,0.90)');
+      rg.addColorStop(.55,'rgba(0,0,0,0.66)');
+      rg.addColorStop(.82,'rgba(6,8,16,0.26)');
+      rg.addColorStop(1,'rgba(6,8,16,0)');
+      dctx.fillStyle=rg;
+      dctx.beginPath(); dctx.arc(0,0,bl.r*bp,0,6.283); dctx.fill();
+      dctx.restore();
+    }
+
+    /* dead driver lines, stuck on one colour */
+    for(var c=0;c<cols.length;c++){
+      var cl=cols[c], cp=clamp((prog-0.25)/0.5,0,1);
+      if(cp<=0) continue;
+      var hh=H*cl.h*cp;
+      var lg=dctx.createLinearGradient(0,IY-hh/2,0,IY+hh/2);
+      lg.addColorStop(0,'hsla('+cl.hue+',90%,60%,0)');
+      lg.addColorStop(.5,'hsla('+cl.hue+',90%,60%,'+(cl.a*cp)+')');
+      lg.addColorStop(1,'hsla('+cl.hue+',90%,60%,0)');
+      dctx.fillStyle=lg;
+      dctx.fillRect(cl.x-cl.w/2, IY-hh/2, cl.w, hh);
+    }
+
+    /* the cracks: a dark fissure with a lit edge */
+    for(var q=0;q<cracks.length;q++){
+      var cr=cracks[q];
+      if(cr.d>reach) continue;
+      var near=1-clamp(cr.d/RMAX,0,1);
+      dctx.beginPath(); dctx.moveTo(cr.a[0],cr.a[1]); dctx.lineTo(cr.b[0],cr.b[1]);
+      dctx.strokeStyle='rgba(0,0,0,'+(0.55+0.3*near)+')';
+      dctx.lineWidth=(1.6+2.6*near)*DPR; dctx.stroke();
+      dctx.beginPath(); dctx.moveTo(cr.a[0],cr.a[1]); dctx.lineTo(cr.b[0],cr.b[1]);
+      dctx.strokeStyle='rgba(214,230,255,'+(0.20+0.5*near)+')';
+      dctx.lineWidth=(0.5+0.9*near)*DPR; dctx.stroke();
+    }
+
+    /* pulverised glass at the point of impact */
+    var ip=clamp(prog*2,0,1);
+    var ig=dctx.createRadialGradient(IX,IY,0,IX,IY,0.10*RMAX*ip);
+    ig.addColorStop(0,'rgba(232,240,255,'+(0.5*ip)+')');
+    ig.addColorStop(.5,'rgba(190,214,255,'+(0.14*ip)+')');
+    ig.addColorStop(1,'rgba(190,214,255,0)');
+    dctx.fillStyle=ig;
+    dctx.beginPath(); dctx.arc(IX,IY,0.10*RMAX*ip,0,6.283); dctx.fill();
   }
 
   function detonate(){
     if(blown) return;
     blown=true; t0=performance.now(); body.classList.add('blown');
-    paintSrc(barW,1);                       /* freeze the frame that shatters */
-    flash.style.transition='none'; flash.style.opacity='0.92';
+    paintSrc(barW,1);
+    flash.style.transition='none'; flash.style.opacity='0.85';
     setTimeout(function(){
-      flash.style.transition='opacity 260ms var(--ease)'; flash.style.opacity='0';
+      flash.style.transition='opacity 220ms var(--ease)'; flash.style.opacity='0';
     },40);
   }
 
   function render(now){
-    ctx.clearRect(0,0,W,H);
-    ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
-
     if(!blown){
-      intro=Math.min(1,intro+0.02);
       paintSrc(barW, smooth(0.55,1,barTension));
+      ctx.clearRect(0,0,W,H);
       ctx.drawImage(src,0,0);
       return;
     }
-
     var el=now-t0;
-    drawStars();
+    var prog=clamp(el/620,0,1);
+    if(prog<1 || !built){ buildDamage(prog); if(prog>=1) built=true; }
 
-    /* light pouring through the break */
-    var open=clamp(el/900,0,1);
-    var fade=clamp(1-(el-500)/1100,0,1);          /* the light dies away */
-    if(fade>0.002){
-      [B1,B2].forEach(function(y){
-        var h=Math.max(2,open*220*DPR);
-        var g=ctx.createLinearGradient(0,y-h,0,y+h);
-        g.addColorStop(0,'rgba(217,164,65,0)');
-        g.addColorStop(.5,'rgba(255,244,214,'+(0.5*(1-open*0.5)*fade).toFixed(4)+')');
-        g.addColorStop(1,'rgba(217,164,65,0)');
-        ctx.fillStyle=g; ctx.fillRect(0,y-h,W,h*2);
-      });
-    }
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+    ctx.drawImage(dmg,0,0);
 
-    /* the shards of the old screen, flying at you */
-    for(var i=0;i<shards.length;i++){
-      var s=shards[i];
-      var t=(el-s.delay)/16.7;
-      if(t<=0){
-        ctx.save(); pathOf(s); ctx.clip(); ctx.drawImage(src,0,0); ctx.restore();
-        continue;
+    /* the panel failing: backlight flicker and banding */
+    if(el>260){
+      var f=Math.random();
+      if(f>0.955){
+        ctx.fillStyle='rgba(0,0,0,'+rnd(0.10,0.34)+')';
+        ctx.fillRect(0,Math.random()*H,W,rnd(0.02,0.16)*H);
       }
-      var ox=s.vx*t, oy=s.vy*t+0.055*DPR*t*t, rot=s.vr*t*0.06, sc=1+s.vs*t;
-      var al=clamp(1-(t-46)/58,0,1);
-      if(al<=0) continue;
-      ctx.save();
-      ctx.globalAlpha=al;
-      ctx.translate(s.cx+ox,s.cy+oy);
-      ctx.rotate(rot); ctx.scale(sc,sc);
-      ctx.translate(-s.cx,-s.cy);
-      pathOf(s); ctx.clip();
-      ctx.drawImage(src,0,0);
-      ctx.restore();
+      if(f<0.02){ ctx.fillStyle='rgba(150,190,255,0.05)'; ctx.fillRect(0,0,W,H); }
     }
 
-    /* camera shake on impact */
-    var sh=Math.max(0,1-el/380);
+    var sh=Math.max(0,1-el/300);
     stage.style.transform = sh>0
-      ? 'translate('+((Math.random()-0.5)*16*sh)+'px,'+((Math.random()-0.5)*16*sh)+'px)'
-      : '';
+      ? 'translate('+(rnd(-1,1)*13*sh)+'px,'+(rnd(-1,1)*13*sh)+'px)' : '';
   }
 
-  var barTension=0;
   var target=0,cur=0;
   function measure(){
     var r=run.getBoundingClientRect();
     var total=run.offsetHeight-stage.offsetHeight;
     target=clamp(-r.top/(total||1),0,1);
   }
-
   function frame(now){
     cur+=(target-cur)*0.12;
     if(!blown){
-      /* scroll a little: the bars run out to full width and tighten */
       barTension=smooth(0.008,0.10,cur);
       barW=lerp(BW_GLYPH, innerWidth*DPR*1.35, barTension);
       if(barTension>=0.999) detonate();
@@ -237,15 +290,8 @@ body.blown .cue{opacity:0}
     requestAnimationFrame(frame);
   }
 
-  function pathOf(s){
-    ctx.beginPath();
-    ctx.moveTo(s.p[0][0],s.p[0][1]);
-    for(var k=1;k<s.p.length;k++) ctx.lineTo(s.p[k][0],s.p[k][1]);
-    ctx.closePath();
-  }
-
   addEventListener('scroll',measure,{passive:true});
-  addEventListener('resize',function(){ size(); measure(); });
+  addEventListener('resize',function(){ built=false; size(); measure(); });
   size(); measure();
   setTimeout(function(){ body.classList.add('ready') },900);
 
@@ -253,7 +299,6 @@ body.blown .cue{opacity:0}
   else requestAnimationFrame(frame);
 
   if(/[?&]motion=1/.test(location.search)){
-    window.__b=function(v){ target=cur=v; return v; };
     window.__boom=function(){ barW=innerWidth*DPR*1.35; detonate(); return 'boom' };
   }
 })();
