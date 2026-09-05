@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MoonBite — Every coin had to be found</title>
+<meta name="description" content="MoonBite is a fair-launch proof-of-work coin. No premine, no presale, no allocation: the supply began at nothing and every MBITE was produced by a RandomX block and paid to whoever found it.">
+<link rel="icon" type="image/svg+xml" href="/static/moonbite-logo.svg">
+<link rel="stylesheet" href="/static/fonts/moonbite-fonts.css">
+<style nonce="{{ csp_nonce }}">
+/* ── tokens ───────────────────────────────────────────────────────────── */
+:root{
+  --bg:#0B0D12;          /* Void      */
+  --surface:#12151D;     /* raised    */
+  --ink:#F5F2EA;         /* Bone   15.1:1 on bg  */
+  --ink-2:#8A8580;       /* Ash     5.3:1 on bg  */
+  --accent:#D9A441;      /* Moongold 8.2:1 on bg */
+  --accent-2:#EBCB86;
+  --line:rgba(245,242,234,.12);
+  --line-2:rgba(245,242,234,.055);
+
+  --display:'Archivo Black','Helvetica Neue','Arial Black',sans-serif;
+  --ui:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --mono:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+
+  --s1:4px; --s2:8px; --s3:16px; --s4:24px; --s5:40px; --s6:64px; --s7:104px;
+  --r1:4px; --r2:10px;
+  --bite:cubic-bezier(0.22,1,0.36,1);
+  --d1:120ms; --d2:240ms; --d3:600ms;
+  --page:1240px;
+
+  --fs-display:clamp(3rem,11vw,8.5rem);
+  --fs-h1:clamp(2rem,5.4vw,3.4rem);
+  --fs-h2:clamp(1.5rem,3.4vw,2.1rem);
+  --fs-h3:clamp(1.05rem,2vw,1.25rem);
+  --fs-body:clamp(1rem,1.3vw,1.08rem);
+  --fs-cap:clamp(.72rem,1vw,.8rem);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--ui);
+  font-size:var(--fs-body);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+a{color:inherit}
+img,svg{display:block;max-width:100%}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.wrap{max-width:var(--page);margin:0 auto;padding:0 var(--s4)}
+@media(max-width:600px){.wrap{padding:0 var(--s3)}}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:var(--r1)}
+.skip{position:absolute;left:-9999px;top:0;background:var(--accent);color:var(--bg);
+  padding:12px 18px;z-index:200;font-weight:700;border-radius:0 0 var(--r1) 0}
+.skip:focus{left:0}
+
+/* texture stance: pure flatness + one grain plate. no gradients on surfaces. */
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.045;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+main{position:relative;z-index:2}
+
+.cap{font-family:var(--mono);font-size:var(--fs-cap);letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent)}
+h2{font-family:var(--ui);font-weight:800;font-size:var(--fs-h1);letter-spacing:-.025em;
+  line-height:1.08;margin-top:var(--s3);max-width:16ch}
+.lede{color:var(--ink-2);margin-top:var(--s3);max-width:56ch}
+.lede b{color:var(--ink);font-weight:600}
+
+/* ── signature: the bite ──────────────────────────────────────────────
+   use 1 mark · 2 section wipe · 3 supply gauge · 4 list bullets        */
+.biteline{height:120px;position:relative;overflow:hidden;border:0}
+.biteline svg{position:absolute;inset:0;width:100%;height:100%}
+
+/* ── nav ─────────────────────────────────────────────────────────────── */
+header.top{position:sticky;top:0;z-index:60;background:rgba(11,13,18,.88);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.top-in{max-width:var(--page);margin:0 auto;padding:12px var(--s4);display:flex;align-items:center;gap:var(--s5)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;
+  font-family:var(--display);font-size:1rem;text-transform:uppercase;letter-spacing:-.02em;min-height:44px}
+.brand svg{width:26px;height:26px;flex:none}
+.top nav{display:flex;gap:var(--s4);font-size:.88rem}
+.top nav a{color:var(--ink-2);text-decoration:none;padding:10px 0;transition:color var(--d2) var(--bite)}
+.top nav a:hover,.top nav a:focus-visible{color:var(--ink)}
+@media(max-width:900px){.top nav{display:none}}
+.beat{margin-left:auto;font-family:var(--mono);font-size:.74rem;color:var(--ink-2);
+  display:flex;align-items:center;gap:8px;min-height:44px}
+.beat i{width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none}
+
+/* ── buttons ─────────────────────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;min-height:48px;padding:0 var(--s4);
+  border-radius:var(--r1);font-weight:600;font-size:.96rem;text-decoration:none;border:1px solid transparent;
+  transition:transform var(--d1) var(--bite),background var(--d2) var(--bite),border-color var(--d2) var(--bite)}
+.btn-a{background:var(--accent);color:var(--bg)}
+.btn-a:hover{transform:translateY(-2px);background:var(--accent-2)}
+.btn-b{border-color:var(--line);color:var(--ink)}
+.btn-b:hover{border-color:var(--accent);background:rgba(217,164,65,.07)}
+.btns{display:flex;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s5)}
+
+/* ── hero ────────────────────────────────────────────────────────────── */
+.hero{min-height:calc(100svh - 53px);display:flex;flex-direction:column;justify-content:center;
+  padding:var(--s6) 0}
+.hero .cap{opacity:0;animation:fade var(--d3) var(--bite) 120ms forwards}
+h1{font-family:var(--display);font-weight:400;font-size:var(--fs-display);
+  line-height:.92;letter-spacing:-.035em;margin-top:var(--s3);max-width:11ch}
+h1 .w{display:block;overflow:hidden}
+h1 .w span{display:block;transform:translateY(105%);
+  animation:rise 900ms var(--bite) forwards}
+h1 .w:nth-child(1) span{animation-delay:200ms}
+h1 .w:nth-child(2) span{animation-delay:320ms}
+h1 .w:nth-child(3) span{animation-delay:440ms}
+@keyframes rise{to{transform:translateY(0)}}
+@keyframes fade{to{opacity:1}}
+.hero .sub{color:var(--ink-2);font-size:clamp(1.05rem,2vw,1.25rem);margin-top:var(--s4);
+  max-width:38ch;opacity:0;animation:fade var(--d3) var(--bite) 640ms forwards}
+.hero .sub b{color:var(--ink);font-weight:600}
+.hero .btns{opacity:0;animation:fade var(--d3) var(--bite) 800ms forwards}
+.facts{margin-top:var(--s5);display:flex;gap:var(--s3);flex-wrap:wrap;
+  font-family:var(--mono);font-size:var(--fs-cap);color:var(--ink-2);
+  opacity:0;animation:fade var(--d3) var(--bite) 920ms forwards}
+.facts span{border:1px solid var(--line);border-radius:100px;padding:7px 14px}
+.loop{margin-top:var(--s5);color:var(--ink-2);max-width:46ch;font-size:.98rem;
+  border-top:1px solid var(--line-2);padding-top:var(--s3)}
+.loop b{color:var(--ink);font-weight:600}
+
+section{padding:var(--s7) 0}
+
+/* ── proof: block grid ───────────────────────────────────────────────── */
+.grid-blocks{display:grid;grid-template-columns:repeat(auto-fill,minmax(26px,1fr));
+  gap:5px;margin-top:var(--s5)}
+.blk{aspect-ratio:1;border:1px solid var(--line);border-radius:2px;
+  background:rgba(217,164,65,.07);opacity:0;transform:scale(.7)}
+.blk.on{opacity:1;transform:scale(1);
+  transition:opacity var(--d2) var(--bite),transform var(--d2) var(--bite)}
+.blk.lit{background:var(--accent);border-color:var(--accent)}
+.gridnote{margin-top:var(--s3);font-family:var(--mono);font-size:var(--fs-cap);color:var(--ink-2)}
+
+/* ── sticky-stack mining ─────────────────────────────────────────────── */
+.stack{position:relative;margin-top:var(--s5)}
+.card{position:sticky;top:96px;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r2);padding:var(--s5) var(--s4);margin-bottom:var(--s4)}
+.card:nth-child(1){top:96px}
+.card:nth-child(2){top:120px}
+.card:nth-child(3){top:144px}
+.card .n{font-family:var(--mono);font-size:var(--fs-cap);color:var(--accent);letter-spacing:.16em}
+.card h3{font-family:var(--ui);font-weight:800;font-size:var(--fs-h2);letter-spacing:-.02em;
+  margin:var(--s2) 0 var(--s3);max-width:18ch}
+.card p{color:var(--ink-2);max-width:52ch}
+.card details{margin-top:var(--s3);border-top:1px solid var(--line-2);padding-top:var(--s3)}
+.card summary{font-family:var(--mono);font-size:var(--fs-cap);letter-spacing:.1em;
+  text-transform:uppercase;color:var(--accent);cursor:pointer;list-style:none;min-height:44px;
+  display:flex;align-items:center}
+.card summary::-webkit-details-marker{display:none}
+.card summary::after{content:" +";}
+.card details[open] summary::after{content:" −";}
+.card details p{margin-top:var(--s2);font-size:.94rem}
+
+/* ── live ────────────────────────────────────────────────────────────── */
+.rail{display:grid;gap:1px;background:var(--line-2);border:1px solid var(--line);
+  border-radius:var(--r2);overflow:hidden;margin-top:var(--s5)}
+@media(min-width:760px){.rail{grid-template-columns:repeat(4,1fr)}}
+.cell{background:var(--surface);padding:var(--s4)}
+.cell .k{font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2)}
+.cell .v{font-family:var(--mono);font-size:clamp(1.3rem,2.6vw,1.7rem);margin-top:10px}
+.tipline{margin-top:var(--s2);font-family:var(--mono);font-size:var(--fs-cap);
+  color:var(--ink-2);word-break:break-all}
+.stale{margin-top:var(--s3);color:var(--accent);font-size:.92rem;display:none}
+.stale.on{display:block}
+
+/* ── supply gauge: the bite made literal ─────────────────────────────── */
+.gauge{display:grid;gap:var(--s5);margin-top:var(--s5);align-items:center}
+@media(min-width:880px){.gauge{grid-template-columns:320px 1fr;gap:var(--s6)}}
+.gauge svg{width:100%;height:auto}
+.eras{display:grid;gap:6px}
+.era{display:grid;grid-template-columns:64px 1fr auto;gap:var(--s3);align-items:center;
+  font-family:var(--mono);font-size:var(--fs-cap);color:var(--ink-2)}
+.era .bar{height:8px;border-radius:100px;background:rgba(217,164,65,.14);overflow:hidden}
+.era .bar i{display:block;height:100%;background:var(--accent)}
+.era.now{color:var(--ink)}
+
+/* ── code table ──────────────────────────────────────────────────────── */
+.scroller{overflow-x:auto;margin-top:var(--s5)}
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.84rem;min-width:520px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line-2)}
+th{color:var(--ink-2);font-weight:400;font-size:.64rem;letter-spacing:.14em;text-transform:uppercase}
+td{color:var(--ink-2)}
+td:first-child{color:var(--ink);white-space:nowrap}
+td b{color:var(--accent);font-weight:400}
+
+/* ── shipped / not ───────────────────────────────────────────────────── */
+.cols{display:grid;gap:var(--s5);margin-top:var(--s5)}
+@media(min-width:820px){.cols{grid-template-columns:1fr 1fr;gap:var(--s6)}}
+.cols h3{font-family:var(--mono);font-size:var(--fs-cap);letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink-2);padding-bottom:var(--s2);border-bottom:1px solid var(--line)}
+.cols ul{list-style:none;margin-top:var(--s2)}
+.cols li{padding:12px 0;border-bottom:1px solid var(--line-2);display:flex;gap:12px;align-items:flex-start}
+/* bullets are the bite, at 8px */
+.cols li::before{content:"";flex:none;width:9px;height:9px;margin-top:7px;border-radius:50%;
+  background:var(--accent);
+  -webkit-mask:radial-gradient(circle 5.6px at 78% 22%,transparent 99%,#000 100%);
+  mask:radial-gradient(circle 5.6px at 78% 22%,transparent 99%,#000 100%)}
+.cols .todo li::before{background:var(--ink-2)}
+.cols .todo li{color:var(--ink-2)}
+
+/* ── doors ───────────────────────────────────────────────────────────── */
+.doors{display:grid;gap:var(--s3);margin-top:var(--s5)}
+@media(min-width:760px){.doors{grid-template-columns:1fr 1fr}}
+.door{border:1px solid var(--line);border-radius:var(--r2);padding:var(--s5) var(--s4);
+  text-decoration:none;display:block;background:var(--surface);
+  transition:border-color var(--d2) var(--bite),transform var(--d2) var(--bite)}
+.door:hover{border-color:var(--accent);transform:translateY(-3px)}
+.door h3{font-weight:800;font-size:var(--fs-h3)}
+.door p{color:var(--ink-2);margin-top:var(--s2);font-size:.94rem}
+.door .go{color:var(--accent);font-weight:600;font-size:.9rem;margin-top:var(--s3);display:block}
+.legal{margin-top:var(--s4);border-left:2px solid var(--accent);padding:var(--s3) 0 var(--s3) var(--s3);
+  color:var(--ink-2);max-width:60ch}
+.legal b{color:var(--ink);font-weight:600}
+
+/* ── faq ─────────────────────────────────────────────────────────────── */
+.faq{margin-top:var(--s5);border-top:1px solid var(--line)}
+.faq details{border-bottom:1px solid var(--line-2)}
+.faq summary{padding:var(--s3) 0;font-weight:600;cursor:pointer;list-style:none;
+  min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:var(--s3)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";color:var(--accent);font-family:var(--mono)}
+.faq details[open] summary::after{content:"−"}
+.faq details[open] summary{color:var(--accent)}
+.faq .a{padding:0 0 var(--s4);color:var(--ink-2);max-width:62ch}
+.faq .a b{color:var(--ink);font-weight:600}
+
+/* ── footer ──────────────────────────────────────────────────────────── */
+footer{border-top:1px solid var(--line);padding:var(--s6) 0 var(--s5)}
+.fg{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:var(--s5)}
+@media(max-width:820px){.fg{grid-template-columns:1fr 1fr;gap:var(--s4)}}
+.fg p{color:var(--ink-2);font-size:.9rem;margin-top:var(--s2);max-width:30ch}
+.fcol h4{font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-2);margin-bottom:var(--s2)}
+.fcol a{display:block;color:var(--ink-2);font-size:.9rem;padding:7px 0;text-decoration:none;
+  min-height:34px;transition:color var(--d2) var(--bite)}
+.fcol a:hover{color:var(--accent)}
+.fbase{margin-top:var(--s5);padding-top:var(--s3);border-top:1px solid var(--line-2);
+  font-family:var(--mono);font-size:.7rem;color:var(--ink-2);word-break:break-all}
+
+.rise-in{opacity:0;transform:translateY(16px);
+  transition:opacity var(--d3) var(--bite),transform var(--d3) var(--bite)}
+.rise-in.in{opacity:1;transform:none}
+
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:1ms!important;animation-delay:0ms!important;
+    transition-duration:1ms!important}
+  h1 .w span{transform:none}
+  .hero .cap,.hero .sub,.hero .btns,.facts{opacity:1}
+  .rise-in{opacity:1;transform:none}
+  .blk{opacity:1;transform:none}
+  .card{position:static}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="/">
+      <svg viewBox="-150 -150 300 300" aria-hidden="true">
+        <mask id="nb"><rect x="-150" y="-150" width="300" height="300" fill="#fff"/>
+          <circle cx="67.18" cy="-67.18" r="62" fill="#000"/></mask>
+        <circle cx="0" cy="0" r="100" fill="#F5F2EA" mask="url(#nb)"/>
+      </svg>
+      <span>MoonBite</span>
+    </a>
+    <nav aria-label="Sections">
+      <a href="#proof">Proof</a><a href="#work">Work</a><a href="#live">Network</a>
+      <a href="#supply">Supply</a><a href="#code">Code</a><a href="#ask">Questions</a>
+    </nav>
+    <div class="beat"><i aria-hidden="true"></i>Block <span class="mono" id="beatH">—</span></div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ══ HERO ══ -->
+  <section class="hero wrap">
+    <div class="cap">Fair launch</div>
+    <h1>
+      <span class="w"><span>Every coin</span></span>
+      <span class="w"><span>had to be</span></span>
+      <span class="w"><span>found.</span></span>
+    </h1>
+    <p class="sub">The supply began at nothing. It still contains nothing that was handed to
+      anyone — <b>only what a machine went and got</b>.</p>
+    <div class="btns">
+      <a class="btn btn-a" href="/start">Start mining</a>
+      <a class="btn btn-b" href="#proof">Check the ledger</a>
+    </div>
+    <div class="facts">
+      <span>RandomX</span><span>120 s block</span><span>10 MBITE</span>
+      <span>Cap ~33,000,000</span><span>No premine</span>
+    </div>
+    <p class="loop">Found by whom, and from what? <b>Start at block zero.</b></p>
+  </section>
+
+  <!-- bite wipe -->
+  <div class="biteline" aria-hidden="true">
+    <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+      <path d="M0,60 H1200" stroke="rgba(245,242,234,.12)" fill="none"/>
+      <circle cx="600" cy="60" r="26" fill="#0B0D12" stroke="#D9A441" stroke-width="1.4"/>
+      <circle cx="612" cy="48" r="16" fill="#0B0D12"/>
+    </svg>
+  </div>
+
+  <!-- ══ PROOF ══ -->
+  <section id="proof" class="wrap rise-in">
+    <div class="cap">Ledger</div>
+    <h2>Start at block zero.</h2>
+    <p class="lede">The first block paid nothing to anyone. Every block after it paid exactly ten,
+      and only to the machine that solved it. That is the whole issuance story, and it is public.</p>
+    <div class="grid-blocks" id="blockGrid" aria-hidden="true"></div>
+    <p class="gridnote">One square is 100 blocks. <span class="mono" id="gridH">—</span> blocks
+      mined · <span class="mono" id="gridS">—</span> MBITE issued · the two cannot disagree.</p>
+    <p class="loop">Ten a block sounds arbitrary. What decides who gets it?</p>
+  </section>
+
+  <!-- ══ WORK — sticky stack ══ -->
+  <section id="work" class="wrap">
+    <div class="rise-in">
+      <div class="cap">The work</div>
+      <h2>Nobody decides. A number does.</h2>
+      <p class="lede">Three things happen on your machine, in order, for as long as you leave it on.</p>
+    </div>
+    <div class="stack">
+      <article class="card">
+        <div class="n">01</div>
+        <h3>It gathers what hasn't been written down.</h3>
+        <p>Unsettled payments are collected into a candidate block.</p>
+        <details><summary>For engineers</summary>
+          <p>Mempool assembly. Each transaction is validated against consensus rules — scripts,
+            inputs, signatures — before inclusion, because an invalid one forfeits the block.</p></details>
+      </article>
+      <article class="card">
+        <div class="n">02</div>
+        <h3>It guesses until a guess is small enough.</h3>
+        <p>Billions of attempts. Each is either under the threshold or thrown away.</p>
+        <details><summary>For engineers</summary>
+          <p>RandomX hashes the header against the target implied by <span class="mono">bits</span>.
+            Difficulty <span class="mono" id="wDiff">—</span>, retargeting every 60 blocks toward the
+            120-second interval. Memory-hard and CPU-tuned, so commodity hardware stays viable.</p></details>
+      </article>
+      <article class="card">
+        <div class="n">03</div>
+        <h3>Everyone else checks it instantly.</h3>
+        <p>Slow to find, immediate to confirm. That imbalance is the security.</p>
+        <details><summary>For engineers</summary>
+          <p>The header propagates and each node re-verifies independently. The ten-MBITE subsidy
+            matures after 100 blocks before it can be spent, which is what makes a reorganisation
+            survivable.</p></details>
+      </article>
+    </div>
+    <p class="loop rise-in">Fine — but is anything actually running?</p>
+  </section>
+
+  <!-- ══ LIVE ══ -->
+  <section id="live" class="wrap rise-in">
+    <div class="cap">Live</div>
+    <h2>The chain does not pause.</h2>
+    <p class="lede">Read when you loaded this page, from the node itself. If it goes quiet, this
+      section says so rather than showing you yesterday's number.</p>
+    <div class="rail" aria-live="polite">
+      <div class="cell"><div class="k">Height</div><div class="v" id="lH">—</div></div>
+      <div class="cell"><div class="k">Issued</div><div class="v" id="lS">—</div></div>
+      <div class="cell"><div class="k">Difficulty</div><div class="v" id="lD">—</div></div>
+      <div class="cell"><div class="k">Last block</div><div class="v" id="lA">—</div></div>
+    </div>
+    <p class="tipline">Tip <span id="lT">—</span></p>
+    <p class="stale" id="stale">Nothing for ten minutes. Treat this reading as stale.</p>
+    <p class="loop">Ten every two minutes, forever? No — and that is the point.</p>
+  </section>
+
+  <!-- ══ SUPPLY ══ -->
+  <section id="supply" class="wrap rise-in">
+    <div class="cap">Supply</div>
+    <h2>It halves until there is nothing left to halve.</h2>
+    <p class="lede">Ten becomes five, five becomes two and a half. No vote raises it: a chain that
+      paid more is a chain every node already refuses.</p>
+    <div class="gauge">
+      <svg viewBox="-120 -120 240 240" role="img"
+           aria-label="Gauge: the mined share of the maximum supply, shown as a bite taken out of a disc">
+        <circle cx="0" cy="0" r="96" fill="none" stroke="rgba(245,242,234,.10)" stroke-width="14"/>
+        <circle id="gaugeArc" cx="0" cy="0" r="96" fill="none" stroke="#D9A441" stroke-width="14"
+                stroke-linecap="round" transform="rotate(-90)"
+                stroke-dasharray="603.2" stroke-dashoffset="603.2"/>
+        <text id="gaugePct" x="0" y="-4" text-anchor="middle" fill="#F5F2EA"
+              font-family="ui-monospace,monospace" font-size="26">—</text>
+        <text x="0" y="22" text-anchor="middle" fill="#8A8580"
+              font-family="ui-monospace,monospace" font-size="11">of ~33,000,000 mined</text>
+      </svg>
+      <div class="eras" id="eras"></div>
+    </div>
+    <p class="loop">A coin that stops paying its own miners has a problem. Ours is written down,
+      not hidden: see <a href="/governance" style="color:var(--accent)">ADR-011</a>.</p>
+  </section>
+
+  <!-- ══ WHY ══ -->
+  <section class="wrap rise-in">
+    <div class="cap">Why work</div>
+    <h2>Cost is the only door nobody can be let through.</h2>
+    <p class="lede">Every other way of deciding who gets new money ends up trusting whoever already
+      holds the most of it, or whoever wrote the list of who may vote. <b>Work cannot be granted to
+      a friend.</b></p>
+    <p class="lede">RandomX is memory-hard and built for ordinary processors, which keeps the
+      advantage of purpose-built hardware small. We will not say more than that: resistance to
+      specialised hardware is a position defended over time, never a property finally won.</p>
+    <p class="lede">And it burns electricity. That is the mechanism, stated in the affirmative — a
+      coin that costs nothing to make is worth what it cost to make.</p>
+    <p class="loop">Then the code had better be readable. It is, and most of it isn't ours.</p>
+  </section>
+
+  <!-- ══ CODE ══ -->
+  <section id="code" class="wrap rise-in">
+    <div class="cap">Code</div>
+    <h2>Twelve rows are the whole difference.</h2>
+    <p class="lede"><b>MoonBite Core is a fork of Litecoin Core, itself a fork of Bitcoin Core.</b>
+      We say that first so you don't have to find it. The inherited code carries a decade of
+      review; what deserves attack is the delta below.</p>
+    <div class="scroller">
+      <table>
+        <caption class="sr-only">Consensus parameters that differ from the upstream project</caption>
+        <tr><th scope="col">Parameter</th><th scope="col">MoonBite</th><th scope="col">Upstream</th></tr>
+        <tr><td>Proof of work</td><td>RandomX, CPU, memory-hard</td><td>scrypt</td></tr>
+        <tr><td>Block target</td><td>120 s</td><td>150 s</td></tr>
+        <tr><td>Subsidy</td><td>10 MBITE</td><td>50</td></tr>
+        <tr><td>Halving</td><td>1,650,000 blocks</td><td>840,000</td></tr>
+        <tr><td>Retarget</td><td>60 blocks</td><td>2,016</td></tr>
+        <tr><td>Address</td><td>bech32 moon1…</td><td>ltc1…</td></tr>
+        <tr><td>P2P port</td><td>9444</td><td>9333</td></tr>
+        <tr><td>Derivation</td><td>BIP39 → BIP84 m/84'/2'/0'/0/0</td><td>unchanged</td></tr>
+        <tr><td>Audit</td><td><b>None commissioned</b></td><td>—</td></tr>
+      </table>
+    </div>
+    <div class="btns">
+      <a class="btn btn-b" href="https://github.com/moonbitecoin/moonbite-core" rel="noopener">Node source</a>
+      <a class="btn btn-b" href="/governance">Decisions</a>
+    </div>
+    <p class="loop">No audit, said out loud. What else isn't finished?</p>
+  </section>
+
+  <!-- ══ STATUS ══ -->
+  <section class="wrap rise-in">
+    <div class="cap">Status</div>
+    <h2>Built, and not yet built.</h2>
+    <div class="cols">
+      <div><h3>Running</h3><ul>
+        <li>Mainnet open since 3 September 2026</li>
+        <li>RandomX consensus, 120-second blocks</li>
+        <li>Self-custody wallet, twelve-word recovery</li>
+        <li>Explorer reading the live chain</li>
+        <li>Node source and build instructions</li>
+      </ul></div>
+      <div><h3>Not yet</h3><ul class="todo">
+        <li>More published seeds, and an honest node count</li>
+        <li>A third-party audit</li>
+        <li>Reproducible builds</li>
+        <li>Hashrate reporting</li>
+        <li>Listings — not ours to promise</li>
+      </ul></div>
+    </div>
+    <p class="loop">So how would you hold one?</p>
+  </section>
+
+  <!-- ══ ACCESS ══ -->
+  <section class="wrap rise-in">
+    <div class="cap">Access</div>
+    <h2>Twelve words, and no one else.</h2>
+    <div class="doors">
+      <a class="door" href="/get-wallet">
+        <h3>Take the wallet</h3>
+        <p>Twelve words generated on your machine. Standard BIP39 and BIP84, so any compatible
+          wallet rebuilds the same addresses.</p>
+        <span class="go">Download →</span>
+      </a>
+      <a class="door" href="/start">
+        <h3>Point a miner at it</h3>
+        <p>Your address, one command, then leave it running. Anything you find is spendable a
+          hundred blocks later.</p>
+        <span class="go">Start →</span>
+      </a>
+    </div>
+    <p class="legal"><b>There is no third door.</b> MBITE trades on no exchange and has no market
+      price. Nobody can sell you one today, and anyone offering to is lying.</p>
+    <p class="loop">Still suspicious? Good.</p>
+  </section>
+
+  <!-- ══ FAQ ══ -->
+  <section id="ask" class="wrap rise-in">
+    <div class="cap">Objections</div>
+    <h2>Ask the harder questions.</h2>
+    <div class="faq">
+      <details><summary>Is this a scam?</summary><div class="a">Scams sell. There is nothing here
+        to buy — no round, no allocation, no sale. Weigh that absence, then weigh the code.</div></details>
+      <details><summary>Why mine something worth nothing?</summary><div class="a">Because later
+        there is no route in that doesn't depend on somebody agreeing to sell. <b>If it never has a
+        price, you spent some electricity on a curiosity.</b> That is the full range of outcomes and
+        we won't narrow it.</div></details>
+      <details><summary>Who is behind this?</summary><div class="a">Anonymous contributors, by
+        choice. That costs us your trust in names and buys you code you can read. Any founder
+        mining is disclosed in ADR-006.</div></details>
+      <details><summary>Isn't it just Litecoin renamed?</summary><div class="a">Largely, and on
+        purpose — consensus code is the worst place to be inventive. The table above is every
+        parameter that differs.</div></details>
+      <details><summary>What if you vanish?</summary><div class="a">The chain does not need this
+        site. Source, seeds and build steps are public; it runs as long as anyone mines it.</div></details>
+      <details><summary>Will it get listed?</summary><div class="a">Unknown, and promised nowhere.
+        Exchanges decide that, not us.</div></details>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="fg">
+      <div>
+        <a class="brand" href="/">
+          <svg viewBox="-150 -150 300 300" aria-hidden="true">
+            <mask id="fb"><rect x="-150" y="-150" width="300" height="300" fill="#fff"/>
+              <circle cx="67.18" cy="-67.18" r="62" fill="#000"/></mask>
+            <circle cx="0" cy="0" r="100" fill="#F5F2EA" mask="url(#fb)"/>
+          </svg><span>MoonBite</span>
+        </a>
+        <p>Ten MBITE every two minutes, to whoever does the work.</p>
+      </div>
+      <div class="fcol"><h4>Start</h4><a href="/start">Mine</a><a href="/get-wallet">Wallet</a><a href="/how-it-works">How it works</a></div>
+      <div class="fcol"><h4>Verify</h4><a href="/explorer">Explorer</a><a href="/api/consensus">Consensus</a><a href="/full-node">Run a node</a></div>
+      <div class="fcol"><h4>Read</h4><a href="/whitepaper">Whitepaper</a><a href="/governance">Decisions</a><a href="/scams">Avoid scams</a></div>
+    </div>
+    <div class="fbase">Tip <span id="fT">—</span></div>
+  </div>
+</footer>
+
+<script nonce="{{ csp_nonce }}">
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var CAP=32999999.7855, ERA_BLOCKS=1650000;
+  function fmt(n){return (n||0).toLocaleString('en-US')}
+
+  /* reveal */
+  if('IntersectionObserver' in window && !reduce){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){
+      if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.08});
+    document.querySelectorAll('.rise-in').forEach(function(el){io.observe(el)});
+  } else document.querySelectorAll('.rise-in').forEach(function(el){el.classList.add('in')});
+
+  /* block grid — reveals block by block when scrolled into view */
+  var grid=$('blockGrid'), CELLS=120, cells=[];
+  for(var i=0;i<CELLS;i++){
+    var d=document.createElement('div'); d.className='blk';
+    grid.appendChild(d); cells.push(d);
+  }
+  var gridShown=false;
+  function showGrid(lit){
+    cells.forEach(function(c,i){
+      setTimeout(function(){
+        c.classList.add('on');
+        if(i<lit) c.classList.add('lit');
+      }, reduce?0:i*9);
+    });
+  }
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting && !gridShown){ gridShown=true; showGrid(litCount) } })
+    },{threshold:.2}).observe(grid);
+  } else { gridShown=true; showGrid(0) }
+
+  /* eras list */
+  var eras=$('eras');
+  for(var e=0;e<6;e++){
+    var sub=10/Math.pow(2,e);
+    var row=document.createElement('div');
+    row.className='era'+(e===0?' now':'');
+    row.innerHTML='<span>'+(2026+Math.round(e*6.27))+'</span>'+
+      '<span class="bar"><i style="width:'+(100/Math.pow(2,e))+'%"></i></span>'+
+      '<span>'+(sub>=1?sub:sub.toFixed(2))+' MBITE</span>';
+    eras.appendChild(row);
+  }
+
+  /* signature motion: the bite deepens one increment per block found */
+  var beat=$('beatH'), lastH=null, lastSeen=0, litCount=0, step=0;
+  function pulse(){
+    if(reduce) return;
+    var marks=document.querySelectorAll('.brand svg circle[cx="67.18"]');
+    step=(step+1)%3;
+    marks.forEach(function(m){
+      m.setAttribute('r', 62+6+step*1.5);
+      setTimeout(function(){ m.setAttribute('r', 62+step*1.5) },600);
+    });
+  }
+
+  function paint(j){
+    var h=j.height||j.blocks||0;
+    var supply=(j.total_money_coins!=null)?j.total_money_coins:h*10;
+    if(lastH!==null && h>lastH) pulse();
+    if(h!==lastH){ lastSeen=Date.now(); lastH=h }
+    litCount=Math.max(1,Math.round(h/100));
+    if(gridShown) cells.forEach(function(c,i){ c.classList.toggle('lit', i<litCount) });
+
+    beat.textContent=fmt(h);
+    $('lH').textContent=fmt(h); $('gridH').textContent=fmt(h);
+    $('lS').textContent=fmt(supply); $('gridS').textContent=fmt(supply);
+    if(j.difficulty!=null){
+      var d=j.difficulty<0.001?j.difficulty.toExponential(3):j.difficulty.toFixed(6);
+      $('lD').textContent=d; if($('wDiff')) $('wDiff').textContent=d;
+    }
+    if(j.tip_hash){ $('lT').textContent=j.tip_hash; $('fT').textContent=j.tip_hash }
+
+    var pct=100*supply/CAP;
+    $('gaugePct').textContent=pct.toFixed(4)+'%';
+    var C=2*Math.PI*96;
+    $('gaugeArc').setAttribute('stroke-dashoffset', String(C-C*Math.max(pct/100,0.0015)));
+  }
+
+  setInterval(function(){
+    if(!lastSeen) return;
+    var s=Math.floor((Date.now()-lastSeen)/1000);
+    $('lA').textContent = s<60? s+'s ago' : Math.floor(s/60)+'m ago';
+    $('stale').classList.toggle('on', s>600);
+  },1000);
+
+  function poll(){
+    fetch('/api/blockchain/info').then(function(r){return r.json()}).then(paint)
+      .catch(function(){ $('lH').textContent='unreachable' });
+  }
+  poll(); setInterval(poll,15000);
+})();
+</script>
+</body>
+</html>

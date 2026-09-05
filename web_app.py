@@ -711,6 +711,18 @@ def home_page():
     return render_template("moon.html")
 
 
+@app.route("/a")
+def home_a_page():
+    """A/B test — build A: strategy-led home page."""
+    return render_template("home_brief.html")
+
+
+@app.route("/b")
+def home_b_page():
+    """A/B test — build B: studio-led home page."""
+    return render_template("home_studio.html")
+
+
 @app.route("/break")
 def break_page():
     """Standalone shatter experiment: the glyph bars break the screen."""
