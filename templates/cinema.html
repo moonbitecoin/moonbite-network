@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MoonBite — Go and find one</title>
+<meta name="description" content="Proof of work is a search. Almost every guess is wrong. MoonBite is what happens when one is right — a fair-launch coin nobody was given.">
+<link rel="icon" type="image/svg+xml" href="/static/moonbite-logo.svg">
+<link rel="stylesheet" href="/static/fonts/moonbite-fonts.css">
+<style nonce="{{ csp_nonce }}">
+:root{
+  --void:#0B0D12; --bone:#F5F2EA; --ash:#8A8580; --gold:#D9A441; --gold-2:#EBCB86;
+  --display:'Archivo Black','Helvetica Neue','Arial Black',sans-serif;
+  --ui:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --mono:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  --ease:cubic-bezier(0.22,1,0.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:#000;color:var(--bone);font-family:var(--ui);overflow-x:hidden;
+  -webkit-font-smoothing:antialiased}
+::selection{background:var(--gold);color:var(--void)}
+a{color:inherit}
+canvas{display:block}
+:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+.skip{position:absolute;left:-9999px;background:var(--gold);color:var(--void);padding:12px 18px;z-index:200}
+.skip:focus{left:0;top:0}
+
+#film{position:relative;height:820vh}
+#stage{position:sticky;top:0;height:100svh;overflow:hidden;background:#000}
+#gl{position:absolute;inset:0;width:100%;height:100%}
+.vig{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(130% 95% at 50% 50%,transparent 45%,rgba(0,0,0,.82) 100%)}
+
+/* masthead */
+.top{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;align-items:center;gap:14px;
+  padding:18px clamp(18px,4vw,40px);
+  background:linear-gradient(180deg,rgba(0,0,0,.65),transparent)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;
+  font-family:var(--display);font-size:1rem;text-transform:uppercase;letter-spacing:-.02em}
+.brand svg{width:24px;height:24px}
+.beat{margin-left:auto;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ash);display:flex;align-items:center;gap:8px}
+.beat i{width:6px;height:6px;border-radius:50%;background:var(--gold)}
+
+/* the acts */
+.act{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:0 clamp(20px,6vw,80px);
+  pointer-events:none;will-change:opacity,transform}
+.act::before{content:"";position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);
+  width:min(1100px,120vw);height:min(560px,62vh);pointer-events:none;
+  background:radial-gradient(50% 50% at 50% 50%,rgba(6,7,10,.72),rgba(6,7,10,0) 72%)}
+.act>*{position:relative}
+.act h2,.act h1{font-family:var(--display);font-weight:400;letter-spacing:-.03em;line-height:.98;
+  font-size:clamp(2.1rem,7.4vw,5.6rem);max-width:15ch}
+.act .sm{font-family:var(--ui);font-weight:600;color:var(--ash);
+  font-size:clamp(.95rem,2vw,1.15rem);margin-top:22px;max-width:40ch;line-height:1.5}
+.act .tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:20px}
+.gold{color:var(--gold)}
+.btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:34px;pointer-events:auto}
+.btn{display:inline-flex;align-items:center;min-height:50px;padding:0 30px;border-radius:5px;
+  font-weight:700;font-size:1rem;text-decoration:none;border:1px solid transparent;
+  transition:transform 120ms var(--ease),background 240ms var(--ease),border-color 240ms var(--ease)}
+.btn-a{background:var(--gold);color:var(--void)}
+.btn-a:hover{transform:translateY(-2px);background:var(--gold-2)}
+.btn-b{border-color:rgba(245,242,234,.25);color:var(--bone)}
+.btn-b:hover{border-color:var(--gold);background:rgba(217,164,65,.08)}
+.fine{font-family:var(--ui);font-size:.82rem;color:var(--ash);margin-top:24px;max-width:46ch;line-height:1.6}
+
+/* hash ticker — the guesses, as text */
+.ticker{position:absolute;left:0;right:0;bottom:8vh;text-align:center;pointer-events:none;
+  font-family:var(--mono);font-size:clamp(.6rem,1.5vw,.78rem);color:rgba(245,242,234,.34);
+  letter-spacing:.06em;white-space:nowrap;overflow:hidden}
+.ticker b{color:var(--gold);font-weight:400}
+
+.cue{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;
+  color:rgba(245,242,234,.35);display:flex;flex-direction:column;align-items:center;gap:8px}
+.cue i{width:1px;height:28px;background:linear-gradient(180deg,var(--gold),transparent);
+  animation:d 2.2s ease-in-out infinite}
+@keyframes d{0%,100%{opacity:.25;transform:scaleY(.5)}50%{opacity:1;transform:scaleY(1)}}
+
+#rail{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:35;
+  display:flex;flex-direction:column;gap:9px}
+#rail span{width:5px;height:5px;border-radius:50%;background:rgba(245,242,234,.22);
+  transition:background 240ms var(--ease),transform 240ms var(--ease)}
+#rail span.on{background:var(--gold);transform:scale(1.6)}
+@media(max-width:700px){ #rail{right:8px} }
+
+/* readable fallback for reduced motion / no webgl */
+.flat #film{height:auto}
+.flat #stage{position:static;height:auto;overflow:visible;background:var(--void)}
+.flat #gl,.flat .vig,.flat .cue,.flat #rail,.flat .ticker{display:none}
+.flat .act{position:static;opacity:1!important;transform:none!important;
+  padding-top:14vh;padding-bottom:14vh;min-height:0;border-top:1px solid rgba(245,242,234,.08)}
+@media(prefers-reduced-motion:reduce){ .cue i{animation:none} }
+</style>
+</head>
+<body>
+<a class="skip" href="#end">Skip to the point</a>
+
+<header class="top">
+  <a class="brand" href="/">
+    <svg viewBox="-150 -150 300 300" aria-hidden="true">
+      <mask id="nb"><rect x="-150" y="-150" width="300" height="300" fill="#fff"/>
+        <circle id="biteHole" cx="67.18" cy="-67.18" r="62" fill="#000"/></mask>
+      <circle cx="0" cy="0" r="100" fill="#F5F2EA" mask="url(#nb)"/>
+    </svg>
+    <span>MoonBite</span>
+  </a>
+  <div class="beat"><i aria-hidden="true"></i>Block <span id="beatH">—</span></div>
+</header>
+
+<div id="rail" aria-hidden="true">
+  <span class="on"></span><span></span><span></span><span></span><span></span><span></span>
+</div>
+
+<section id="film">
+  <div id="stage">
+    <canvas id="gl"></canvas>
+    <div class="vig"></div>
+
+    <div class="act" data-a="0">
+      <div class="tag">Proof of work</div>
+      <h1>Somewhere a machine<br>is guessing.</h1>
+      <p class="sm">Right now, without stopping, and without being told what to look for.</p>
+      <div class="cue">Scroll<i></i></div>
+    </div>
+
+    <div class="act" data-a="1">
+      <h2>Almost every guess<br>is <span class="gold">wrong</span>.</h2>
+      <p class="sm">That is not a flaw in the design. That is the design.</p>
+    </div>
+
+    <div class="act" data-a="2">
+      <h2>This one<br>wasn't.</h2>
+      <p class="sm">A number small enough, found by nobody in particular, worth ten MBITE.</p>
+    </div>
+
+    <div class="act" data-a="3">
+      <h2>Every coin<br>arrived this way.</h2>
+      <p class="sm">One block at a time, in public, since the third of September 2026.</p>
+    </div>
+
+    <div class="act" data-a="4">
+      <h2>Nobody<br>was <span class="gold">given</span> one.</h2>
+      <p class="sm">No premine. No presale. No allocation. The supply began at nothing and every
+        unit of it was found.</p>
+    </div>
+
+    <div class="act" data-a="5" id="end">
+      <div class="tag">Fair launch</div>
+      <h2>Go and find one.</h2>
+      <div class="btns">
+        <a class="btn btn-a" href="/start">Start mining</a>
+        <a class="btn btn-b" href="/a">Read how it works</a>
+      </div>
+      <p class="fine">MBITE is on no exchange and has no price. Nobody can sell you one, and anyone
+        offering to is lying. Mining costs electricity, and it may never be worth anything.</p>
+    </div>
+
+    <div class="ticker" id="ticker" aria-hidden="true"></div>
+  </div>
+</section>
+
+<script nonce="{{ csp_nonce }}">
+(function(){
+var $=function(i){return document.getElementById(i)};
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches
+           && !/[?&]motion=1/.test(location.search);
+var film=$('film'), stage=$('stage'), cv=$('gl'), body=document.body;
+var acts=[].slice.call(document.querySelectorAll('.act'));
+var dots=[].slice.call(document.querySelectorAll('#rail span'));
+
+/* a scroll-driven film must always start at frame one */
+if('scrollRestoration' in history) history.scrollRestoration='manual';
+addEventListener('beforeunload',function(){ scrollTo(0,0) });
+
+function clamp(v,a,b){return v<a?a:(v>b?b:v)}
+function smooth(a,b,x){if(b===a)return x<a?0:1;var t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)}
+
+/* ---------- live chain ---------- */
+var height=0, lastSeen=0, pulseAt=-9;
+function fmt(n){return (n||0).toLocaleString('en-US')}
+function poll(){
+  fetch('/api/blockchain/info').then(function(r){return r.json()}).then(function(j){
+    var h=j.height||j.blocks||0;
+    if(h>height && height>0){ pulseAt=performance.now()/1000; biteDeepen(); }
+    if(h!==height){ height=h; lastSeen=Date.now(); }
+    $('beatH').textContent=fmt(h);
+  }).catch(function(){});
+}
+poll(); setInterval(poll,15000);
+
+/* signature: the bite deepens one increment when a block is found */
+var hole=$('biteHole'), bstep=0;
+function biteDeepen(){
+  if(!hole||reduce) return;
+  bstep=(bstep+1)%3;
+  hole.setAttribute('r', 62+6+bstep*1.4);
+  setTimeout(function(){ hole.setAttribute('r', 62+bstep*1.4) },600);
+}
+
+/* ---------- the guesses, as text ---------- */
+var tick=$('ticker'), HEX='0123456789abcdef';
+function rndHash(lead){
+  var s=''; for(var i=0;i<lead;i++) s+='0';
+  for(var j=lead;j<40;j++) s+=HEX[(Math.random()*16)|0];
+  return s;
+}
+var tickAcc=0;
+
+/* ---------- WebGL ---------- */
+var gl=null, prog=null, uni={}, glOK=false, shaderLog='';
+function compile(type,srcTxt){
+  var s=gl.createShader(type); gl.shaderSource(s,srcTxt); gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){ shaderLog+=gl.getShaderInfoLog(s)||''; return null }
+  return s;
+}
+var VERT='attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+var FRAG=[
+'precision highp float;',
+'uniform vec2 uRes; uniform float uT; uniform float uS; uniform float uHit;',
+'float h11(float p){return fract(sin(p*127.1)*43758.5453);}',
+'vec3 h31(float p){return fract(sin(vec3(p*127.1,p*311.7,p*74.7))*43758.5453);}',
+'float seg(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;',
+'  float h=clamp(dot(pa,ba)/max(dot(ba,ba),1e-6),0.,1.);return length(pa-ba*h);}',
+'void main(){',
+'  vec2 uv=(gl_FragCoord.xy-0.5*uRes)/uRes.y;',
+'  vec3 col=vec3(0.);',
+'  float s=uS;',
+    /* speed: slow, then a hard surge, then settle */
+'  float spd=0.06+0.85*smoothstep(0.05,0.42,s)*(1.0-smoothstep(0.52,0.72,s));',
+'  float warp=smoothstep(0.10,0.40,s)*(1.0-smoothstep(0.50,0.68,s));',
+    /* --- the search: a storm of candidate hashes flying past --- */
+'  for(int i=0;i<80;i++){',
+'    float fi=float(i);',
+'    vec3 rp=h31(fi*1.37+3.1);',
+'    float z=fract(rp.z + uT*spd*0.35 + s*1.6);',
+'    float pz=1.0/(z*z*2.6+0.045);',
+'    vec2 pp=(rp.xy-0.5)*pz*0.62;',
+'    vec2 tail=pp*(1.0-0.16*warp);',
+'    float d=seg(uv,pp,tail);',
+'    float sz=0.0013*pz*(0.6+0.7*h11(fi));',
+'    float g=sz/(d+0.0016);',
+'    float fade=(1.0-z)*(1.0-smoothstep(0.62,0.92,s));',
+'    col+=vec3(0.86,0.83,0.78)*g*fade*0.30;',
+'  }',
+    /* --- the winning guess: a flash and a shockwave --- */
+'  float hit=smoothstep(0.455,0.50,s)*(1.0-smoothstep(0.52,0.62,s));',
+'  float rad=length(uv);',
+'  float ring=abs(rad-(s-0.47)*5.0);',
+'  col+=vec3(1.0,0.92,0.74)*hit*(0.030/(ring+0.030));',
+'  col+=vec3(1.0,0.95,0.82)*hit*(0.012/(rad+0.012));',
+    /* --- the chain: a lattice of blocks receding --- */
+'  float lat=smoothstep(0.54,0.68,s)*(1.0-smoothstep(0.80,0.90,s));',
+'  if(lat>0.001){',
+'    float r=max(rad,0.06);',
+'    vec2 gp=vec2(atan(uv.y,uv.x)*1.9, 1.0/r*0.9 - uT*0.16 - s*2.2);',
+'    vec2 f=abs(fract(gp)-0.5);',
+'    float line=1.0-smoothstep(0.02,0.10,min(f.x,f.y));',
+'    float cell=1.0-smoothstep(0.30,0.46,max(f.x,f.y));',
+'    col+=vec3(0.85,0.64,0.26)*line*lat*0.55*smoothstep(1.05,0.15,r);',
+'    col+=vec3(0.85,0.64,0.26)*cell*lat*0.05*smoothstep(1.05,0.15,r);',
+'  }',
+    /* --- the mark: one disc, one bite --- */
+'  float mv=smoothstep(0.76,0.90,s);',
+'  if(mv>0.001){',
+'    float R=0.205;',
+'    vec2 mc=vec2(0.0,0.185);',                  /* sits above the copy, not behind it */
+'    float cta=smoothstep(0.92,0.99,s);',
+'    float disc=length(uv-mc)-R;',
+'    float bite=length(uv-mc-vec2(0.6718,0.6718)*R)-0.62*R;',
+'    float dm=max(disc,-bite);',
+'    float fillm=1.0-smoothstep(0.0,0.004,dm);',
+'    float glow=exp(-max(dm,0.0)*15.0);',
+'    vec3 body=vec3(0.94,0.93,0.90)*(1.0-0.22*cta);',
+'    col=mix(col,body,fillm*mv);',
+'    col+=vec3(0.85,0.64,0.26)*glow*0.46*mv*(1.0-fillm);',
+'  }',
+    /* --- the block-found pulse, driven by the real chain --- */
+'  col+=vec3(0.85,0.64,0.26)*uHit*(0.020/(rad+0.10));',
+    /* --- grade: warm core, cool falloff, grain, vignette --- */
+'  col*=1.0-0.55*smoothstep(0.30,1.15,rad);',
+'  col=col/(col+vec3(0.9));',                 /* rolloff, kept before any lift */
+    /* Void is the floor. only a whisper of atmosphere above it. */
+'  col+=vec3(0.043,0.051,0.071)*(1.0-smoothstep(0.0,1.25,rad))*0.55;',
+'  float gr=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233))+uT*11.0)*43758.5453);',
+'  col+=(gr-0.5)*0.020;',
+'  col=max(col,vec3(0.0));',
+'  gl_FragColor=vec4(col,1.0);',
+'}'].join('\n');
+
+function initGL(){
+  try{ gl=cv.getContext('webgl',{antialias:false,alpha:false,powerPreference:'high-performance'})
+          || cv.getContext('experimental-webgl'); }catch(e){}
+  if(!gl) return false;
+  var vs=compile(gl.VERTEX_SHADER,VERT), fs=compile(gl.FRAGMENT_SHADER,FRAG);
+  if(!vs||!fs) return false;
+  prog=gl.createProgram(); gl.attachShader(prog,vs); gl.attachShader(prog,fs); gl.linkProgram(prog);
+  if(!gl.getProgramParameter(prog,gl.LINK_STATUS)){ shaderLog+=gl.getProgramInfoLog(prog)||''; return false }
+  gl.useProgram(prog);
+  var buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+  var loc=gl.getAttribLocation(prog,'p');
+  gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  uni.res=gl.getUniformLocation(prog,'uRes');
+  uni.t=gl.getUniformLocation(prog,'uT');
+  uni.s=gl.getUniformLocation(prog,'uS');
+  uni.hit=gl.getUniformLocation(prog,'uHit');
+  return true;
+}
+function resize(){
+  var dpr=Math.min(devicePixelRatio||1,1.75);
+  cv.width=Math.floor(innerWidth*dpr); cv.height=Math.floor(innerHeight*dpr);
+  cv.style.width=innerWidth+'px'; cv.style.height=innerHeight+'px';
+  if(gl) gl.viewport(0,0,cv.width,cv.height);
+}
+
+/* ---------- acts ---------- */
+var SEQ=[[0.00,0.02,0.09,0.15],[0.16,0.21,0.30,0.37],[0.43,0.47,0.53,0.59],
+         [0.60,0.65,0.71,0.76],[0.77,0.82,0.87,0.91],[0.92,0.96,1.00,1.01]];
+function paintActs(p){
+  for(var i=0;i<acts.length;i++){
+    var q=SEQ[i], o=smooth(q[0],q[1],p)*(1-smooth(q[2],q[3],p));
+    acts[i].style.opacity=o;
+    acts[i].style.transform='translateY('+((1-smooth(q[0],q[1],p))*26-smooth(q[2],q[3],p)*26)+'px)';
+    acts[i].style.pointerEvents=o>0.6?'auto':'none';
+    if(dots[i]) dots[i].classList.toggle('on',o>0.5);
+  }
+}
+
+/* ---------- run ---------- */
+var target=0,cur=0;
+function measure(){
+  var r=film.getBoundingClientRect();
+  var total=film.offsetHeight-stage.offsetHeight;
+  target=clamp(-r.top/(total||1),0,1);
+}
+addEventListener('scroll',measure,{passive:true});
+addEventListener('resize',function(){resize();measure()});
+
+function frame(now){
+  cur+=(target-cur)*0.075;
+  var t=now/1000;
+  if(glOK){
+    gl.uniform2f(uni.res,cv.width,cv.height);
+    gl.uniform1f(uni.t,t);
+    gl.uniform1f(uni.s,cur);
+    gl.uniform1f(uni.hit,Math.max(0,1-(t-pulseAt)*1.6));
+    gl.drawArrays(gl.TRIANGLES,0,3);
+  }
+  paintActs(cur);
+  /* the ticker: guesses scrolling past, one of them a winner */
+  tickAcc+=1;
+  if(tickAcc%3===0 && cur>0.12 && cur<0.62){
+    var win=cur>0.455&&cur<0.52;
+    tick.innerHTML = win
+      ? '<b>0000000'+rndHash(0).slice(7)+'  ← found</b>'
+      : rndHash(0);
+  } else if(cur<=0.12||cur>=0.62){ tick.innerHTML=''; }
+  requestAnimationFrame(frame);
+}
+
+if(reduce){ body.classList.add('flat'); }
+else {
+  glOK=initGL();
+  window.__shaderLog=shaderLog;
+  if(!glOK){ body.classList.add('flat'); }
+  else { scrollTo(0,0); resize(); measure(); cur=target=0; requestAnimationFrame(frame); }
+}
+if(reduce||!glOK) paintActs(0);
+window.__p=function(v){ target=cur=v; paintActs(v); return v };
+})();
+</script>
+</body>
+</html>

@@ -711,6 +711,12 @@ def home_page():
     return render_template("moon.html")
 
 
+@app.route("/cinema")
+def cinema_page():
+    """WebGL cinematic home page candidate."""
+    return render_template("cinema.html")
+
+
 @app.route("/a")
 def home_a_page():
     """A/B test — build A: strategy-led home page."""
