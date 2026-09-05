@@ -58,7 +58,7 @@ body.blown .cue{opacity:0}
   var src=document.createElement('canvas'), sctx=src.getContext('2d');
   var mkc=document.createElement('canvas'), mctx=mkc.getContext('2d');
   var dmg=document.createElement('canvas'), dctx=dmg.getContext('2d');
-  var stars=[], shards=[], cracks=[], blobs=[], cols=[];
+  var stars=[], impacts=[];
   var blown=false, t0=0, barW=0, barTension=0, built=false;
 
   function size(){
@@ -112,125 +112,161 @@ body.blown .cue{opacity:0}
     sctx.restore();
   }
 
-  /* the fracture: radial rays crossed by concentric rings, like real glass */
-  function buildGlass(){
-    shards=[]; cracks=[]; blobs=[]; cols=[];
-    var SEG=18, RINGS=[0.030,0.075,0.135,0.215,0.320,0.450,0.620,0.820,1.05];
+  /* Two strikes. Each builds its own web of radial rays crossed by concentric
+     rings, plus splinters, ink pools and dead lines. The second lands late. */
+  function buildImpact(x,y,reach,seg,rings,heavy,delay){
+    var im={x:x,y:y,reach:reach,delay:delay,shards:[],cracks:[],splinters:[],blobs:[],cols:[]};
     var ang=[];
-    for(var a=0;a<SEG;a++) ang.push(a/SEG*6.283+rnd(-0.10,0.10));
+    for(var a=0;a<seg;a++) ang.push(a/seg*6.283+rnd(-0.11,0.11));
     ang.push(ang[0]+6.283);
     var rr=[];
-    for(var r=0;r<RINGS.length;r++){
+    for(var r=0;r<rings.length;r++){
       rr[r]=[];
-      for(var k=0;k<=SEG;k++) rr[r][k]=RINGS[r]*RMAX*rnd(0.86,1.16);
-      rr[r][SEG]=rr[r][0];
+      for(var k=0;k<=seg;k++) rr[r][k]=rings[r]*reach*rnd(0.82,1.20);
+      rr[r][seg]=rr[r][0];
     }
-    function P(r,k){ return [IX+Math.cos(ang[k])*rr[r][k], IY+Math.sin(ang[k])*rr[r][k]]; }
-    for(var r2=0;r2<RINGS.length-1;r2++){
-      for(var k2=0;k2<SEG;k2++){
+    function P(r,k){ return [x+Math.cos(ang[k])*rr[r][k], y+Math.sin(ang[k])*rr[r][k]]; }
+
+    for(var r2=0;r2<rings.length-1;r2++){
+      for(var k2=0;k2<seg;k2++){
         var p=[P(r2,k2),P(r2,k2+1),P(r2+1,k2+1),P(r2+1,k2)];
         var cx=(p[0][0]+p[1][0]+p[2][0]+p[3][0])/4;
         var cy=(p[0][1]+p[1][1]+p[2][1]+p[3][1])/4;
-        shards.push({p:p,cx:cx,cy:cy,
-          d:Math.sqrt((cx-IX)*(cx-IX)+(cy-IY)*(cy-IY)),
-          ox:rnd(-1,1)*DPR*(2.0-r2*0.15), oy:rnd(-1,1)*DPR*(2.0-r2*0.15),
-          rot:rnd(-0.006,0.006)*(1.4-r2*0.1), lift:rnd(-0.10,0.16)});
+        im.shards.push({p:p,cx:cx,cy:cy,
+          d:Math.sqrt((cx-x)*(cx-x)+(cy-y)*(cy-y)),
+          ox:rnd(-1,1)*DPR*(3.4-r2*0.20)*heavy, oy:rnd(-1,1)*DPR*(3.4-r2*0.20)*heavy,
+          rot:rnd(-0.011,0.011)*(1.5-r2*0.1)*heavy, lift:rnd(-0.16,0.22)});
       }
     }
-    for(var r3=0;r3<RINGS.length;r3++)
-      for(var k3=0;k3<SEG;k3++)
-        cracks.push({a:P(r3,k3),b:P(r3,k3+1),d:RINGS[r3]*RMAX});
-    for(var k4=0;k4<SEG;k4++)
-      for(var r4=0;r4<RINGS.length-1;r4++)
-        cracks.push({a:P(r4,k4),b:P(r4+1,k4),d:RINGS[r4]*RMAX});
-    /* pools sit off to the sides of the impact so the mark survives the damage */
-    var keep=110*SC;                       /* clear radius around the mark */
-    for(var b=0;b<13;b++){
-      var aa=rnd(0,6.283), dd=keep+rnd(0.06,0.34)*RMAX;
-      blobs.push({x:IX+Math.cos(aa)*dd, y:IY+Math.sin(aa)*dd,
-        r:rnd(0.045,0.145)*RMAX, sq:rnd(0.45,1.5), rot:rnd(0,3.14), t:rnd(0.05,0.5)});
+    for(var r3=0;r3<rings.length;r3++)
+      for(var k3=0;k3<seg;k3++)
+        im.cracks.push({a:P(r3,k3),b:P(r3,k3+1),d:rings[r3]*reach});
+    for(var k4=0;k4<seg;k4++)
+      for(var r4=0;r4<rings.length-1;r4++)
+        im.cracks.push({a:P(r4,k4),b:P(r4+1,k4),d:rings[r4]*reach});
+
+    /* splinters: short hairlines branching off the web */
+    for(var sp=0;sp<Math.round(52*heavy);sp++){
+      var sa=rnd(0,6.283), sd=rnd(0.06,1.0)*reach, ln=rnd(0.02,0.11)*reach;
+      var a2=sa+rnd(-0.6,0.6);
+      im.splinters.push({a:[x+Math.cos(sa)*sd, y+Math.sin(sa)*sd],
+        b:[x+Math.cos(sa)*sd+Math.cos(a2)*ln, y+Math.sin(sa)*sd+Math.sin(a2)*ln], d:sd});
     }
-    for(var c=0;c<10;c++){
-      cols.push({x:IX+rnd(-0.42,0.42)*RMAX, w:rnd(1,4)*DPR, h:rnd(0.25,1.0),
-        hue:Math.random()<0.45?rnd(150,190):rnd(280,330), a:rnd(0.10,0.5)});
+    /* liquid crystal pools, kept off the mark */
+    var keep=110*SC;
+    for(var b=0;b<Math.round(20*heavy);b++){
+      var aa=rnd(0,6.283), dd=keep+rnd(0.04,0.42)*reach;
+      im.blobs.push({x:x+Math.cos(aa)*dd, y:y+Math.sin(aa)*dd,
+        r:rnd(0.06,0.20)*reach, sq:rnd(0.4,1.7), rot:rnd(0,3.14), t:rnd(0.05,0.5)});
     }
+    for(var c=0;c<Math.round(15*heavy);c++){
+      im.cols.push({x:x+rnd(-0.5,0.5)*reach, w:rnd(1,6)*DPR, h:rnd(0.3,1.15),
+        hue:Math.random()<0.45?rnd(150,190):rnd(280,330), a:rnd(0.14,0.62)});
+    }
+    return im;
+  }
+
+  function buildGlass(){
+    impacts=[];
+    /* the strike, where the bars cross the mark */
+    impacts.push(buildImpact(CX,(B1+B2)/2, RMAX, 22,
+      [0.026,0.062,0.110,0.172,0.250,0.348,0.470,0.620,0.800,1.05], 1.0, 0.00));
+    /* the second, lower right, landing a beat later */
+    impacts.push(buildImpact(CX+W*0.27, B2+H*0.19, RMAX*0.60, 18,
+      [0.030,0.075,0.140,0.230,0.350,0.500,0.700,1.02], 0.85, 0.30));
   }
 
   /* the damage, painted into its own layer and then left there */
   function buildDamage(prog){
     dctx.clearRect(0,0,W,H);
-    var reach=prog*RMAX*1.15;
 
     /* the picture, still on screen but no longer in one piece */
-    for(var i=0;i<shards.length;i++){
-      var s=shards[i];
-      var on=clamp((reach-s.d)/(0.12*RMAX),0,1);
-      dctx.save();
-      dctx.translate(s.cx+s.ox*on, s.cy+s.oy*on);
-      dctx.rotate(s.rot*on);
-      dctx.translate(-s.cx,-s.cy);
-      dctx.beginPath();
-      dctx.moveTo(s.p[0][0],s.p[0][1]);
-      for(var k=1;k<s.p.length;k++) dctx.lineTo(s.p[k][0],s.p[k][1]);
-      dctx.closePath(); dctx.clip();
-      dctx.drawImage(src,0,0);
-      if(on>0){
-        if(s.lift>0){ dctx.fillStyle='rgba(190,214,255,'+(0.05*on*s.lift)+')'; dctx.fillRect(0,0,W,H); }
-        else { dctx.fillStyle='rgba(0,0,0,'+(0.22*on*-s.lift)+')'; dctx.fillRect(0,0,W,H); }
+    for(var n=0;n<impacts.length;n++){
+      var im=impacts[n];
+      var lp=clamp((prog-im.delay)/(1-im.delay),0,1);
+      if(lp<=0) { if(n===0) continue; else continue; }
+      var reach=lp*im.reach*1.18;
+      for(var i=0;i<im.shards.length;i++){
+        var s=im.shards[i];
+        var on=clamp((reach-s.d)/(0.12*im.reach),0,1);
+        if(on<=0) continue;
+        dctx.save();
+        dctx.translate(s.cx+s.ox*on, s.cy+s.oy*on);
+        dctx.rotate(s.rot*on);
+        dctx.translate(-s.cx,-s.cy);
+        dctx.beginPath();
+        dctx.moveTo(s.p[0][0],s.p[0][1]);
+        for(var k=1;k<s.p.length;k++) dctx.lineTo(s.p[k][0],s.p[k][1]);
+        dctx.closePath(); dctx.clip();
+        dctx.drawImage(src,0,0);
+        if(s.lift>0){ dctx.fillStyle='rgba(190,214,255,'+(0.07*on*s.lift)+')'; dctx.fillRect(0,0,W,H); }
+        else { dctx.fillStyle='rgba(0,0,0,'+(0.30*on*-s.lift)+')'; dctx.fillRect(0,0,W,H); }
+        dctx.restore();
       }
-      dctx.restore();
     }
 
-    /* liquid crystal bleeding out into black pools */
-    for(var b=0;b<blobs.length;b++){
-      var bl=blobs[b], bp=clamp((prog-bl.t)/0.45,0,1);
-      if(bp<=0) continue;
-      dctx.save();
-      dctx.translate(bl.x,bl.y); dctx.rotate(bl.rot); dctx.scale(1,bl.sq);
-      var rg=dctx.createRadialGradient(0,0,0,0,0,bl.r*bp);
-      rg.addColorStop(0,'rgba(0,0,0,0.90)');
-      rg.addColorStop(.55,'rgba(0,0,0,0.66)');
-      rg.addColorStop(.82,'rgba(6,8,16,0.26)');
-      rg.addColorStop(1,'rgba(6,8,16,0)');
-      dctx.fillStyle=rg;
-      dctx.beginPath(); dctx.arc(0,0,bl.r*bp,0,6.283); dctx.fill();
-      dctx.restore();
-    }
+    for(var n2=0;n2<impacts.length;n2++){
+      var im2=impacts[n2];
+      var lp2=clamp((prog-im2.delay)/(1-im2.delay),0,1);
+      if(lp2<=0) continue;
+      var reach2=lp2*im2.reach*1.18;
 
-    /* dead driver lines, stuck on one colour */
-    for(var c=0;c<cols.length;c++){
-      var cl=cols[c], cp=clamp((prog-0.25)/0.5,0,1);
-      if(cp<=0) continue;
-      var hh=H*cl.h*cp;
-      var lg=dctx.createLinearGradient(0,IY-hh/2,0,IY+hh/2);
-      lg.addColorStop(0,'hsla('+cl.hue+',90%,60%,0)');
-      lg.addColorStop(.5,'hsla('+cl.hue+',90%,60%,'+(cl.a*cp)+')');
-      lg.addColorStop(1,'hsla('+cl.hue+',90%,60%,0)');
-      dctx.fillStyle=lg;
-      dctx.fillRect(cl.x-cl.w/2, IY-hh/2, cl.w, hh);
+      /* liquid crystal bleeding into black pools */
+      for(var b=0;b<im2.blobs.length;b++){
+        var bl=im2.blobs[b], bp=clamp((lp2-bl.t)/0.45,0,1);
+        if(bp<=0) continue;
+        dctx.save();
+        dctx.translate(bl.x,bl.y); dctx.rotate(bl.rot); dctx.scale(1,bl.sq);
+        var rg=dctx.createRadialGradient(0,0,0,0,0,bl.r*bp);
+        rg.addColorStop(0,'rgba(0,0,0,0.95)');
+        rg.addColorStop(.55,'rgba(0,0,0,0.74)');
+        rg.addColorStop(.82,'rgba(6,8,16,0.32)');
+        rg.addColorStop(1,'rgba(6,8,16,0)');
+        dctx.fillStyle=rg;
+        dctx.beginPath(); dctx.arc(0,0,bl.r*bp,0,6.283); dctx.fill();
+        dctx.restore();
+      }
+      /* dead driver lines stuck on one colour */
+      for(var c=0;c<im2.cols.length;c++){
+        var cl=im2.cols[c], cp=clamp((lp2-0.22)/0.5,0,1);
+        if(cp<=0) continue;
+        var hh=H*cl.h*cp;
+        var lg=dctx.createLinearGradient(0,im2.y-hh/2,0,im2.y+hh/2);
+        lg.addColorStop(0,'hsla('+cl.hue+',90%,60%,0)');
+        lg.addColorStop(.5,'hsla('+cl.hue+',90%,60%,'+(cl.a*cp)+')');
+        lg.addColorStop(1,'hsla('+cl.hue+',90%,60%,0)');
+        dctx.fillStyle=lg;
+        dctx.fillRect(cl.x-cl.w/2, im2.y-hh/2, cl.w, hh);
+      }
+      /* the cracks: dark fissure, lit edge */
+      for(var q=0;q<im2.cracks.length;q++){
+        var cr=im2.cracks[q];
+        if(cr.d>reach2) continue;
+        var near=1-clamp(cr.d/im2.reach,0,1);
+        dctx.beginPath(); dctx.moveTo(cr.a[0],cr.a[1]); dctx.lineTo(cr.b[0],cr.b[1]);
+        dctx.strokeStyle='rgba(0,0,0,'+(0.62+0.3*near)+')';
+        dctx.lineWidth=(2.2+3.4*near)*DPR; dctx.stroke();
+        dctx.beginPath(); dctx.moveTo(cr.a[0],cr.a[1]); dctx.lineTo(cr.b[0],cr.b[1]);
+        dctx.strokeStyle='rgba(220,234,255,'+(0.26+0.58*near)+')';
+        dctx.lineWidth=(0.7+1.2*near)*DPR; dctx.stroke();
+      }
+      for(var sp2=0;sp2<im2.splinters.length;sp2++){
+        var sl=im2.splinters[sp2];
+        if(sl.d>reach2) continue;
+        dctx.beginPath(); dctx.moveTo(sl.a[0],sl.a[1]); dctx.lineTo(sl.b[0],sl.b[1]);
+        dctx.strokeStyle='rgba(214,230,255,0.30)';
+        dctx.lineWidth=0.7*DPR; dctx.stroke();
+      }
+      /* pulverised glass at the point of impact */
+      var ip=clamp(lp2*2,0,1);
+      var ir=0.11*im2.reach*ip;
+      var ig=dctx.createRadialGradient(im2.x,im2.y,0,im2.x,im2.y,ir);
+      ig.addColorStop(0,'rgba(236,243,255,'+(0.58*ip)+')');
+      ig.addColorStop(.5,'rgba(190,214,255,'+(0.16*ip)+')');
+      ig.addColorStop(1,'rgba(190,214,255,0)');
+      dctx.fillStyle=ig;
+      dctx.beginPath(); dctx.arc(im2.x,im2.y,ir,0,6.283); dctx.fill();
     }
-
-    /* the cracks: a dark fissure with a lit edge */
-    for(var q=0;q<cracks.length;q++){
-      var cr=cracks[q];
-      if(cr.d>reach) continue;
-      var near=1-clamp(cr.d/RMAX,0,1);
-      dctx.beginPath(); dctx.moveTo(cr.a[0],cr.a[1]); dctx.lineTo(cr.b[0],cr.b[1]);
-      dctx.strokeStyle='rgba(0,0,0,'+(0.55+0.3*near)+')';
-      dctx.lineWidth=(1.6+2.6*near)*DPR; dctx.stroke();
-      dctx.beginPath(); dctx.moveTo(cr.a[0],cr.a[1]); dctx.lineTo(cr.b[0],cr.b[1]);
-      dctx.strokeStyle='rgba(214,230,255,'+(0.20+0.5*near)+')';
-      dctx.lineWidth=(0.5+0.9*near)*DPR; dctx.stroke();
-    }
-
-    /* pulverised glass at the point of impact */
-    var ip=clamp(prog*2,0,1);
-    var ig=dctx.createRadialGradient(IX,IY,0,IX,IY,0.10*RMAX*ip);
-    ig.addColorStop(0,'rgba(232,240,255,'+(0.5*ip)+')');
-    ig.addColorStop(.5,'rgba(190,214,255,'+(0.14*ip)+')');
-    ig.addColorStop(1,'rgba(190,214,255,0)');
-    dctx.fillStyle=ig;
-    dctx.beginPath(); dctx.arc(IX,IY,0.10*RMAX*ip,0,6.283); dctx.fill();
   }
 
   function detonate(){
@@ -251,7 +287,7 @@ body.blown .cue{opacity:0}
       return;
     }
     var el=now-t0;
-    var prog=clamp(el/620,0,1);
+    var prog=clamp(el/1000,0,1);
     if(prog<1 || !built){ buildDamage(prog); if(prog>=1) built=true; }
 
     ctx.clearRect(0,0,W,H);
@@ -259,7 +295,7 @@ body.blown .cue{opacity:0}
     ctx.drawImage(dmg,0,0);
 
     /* the panel failing: backlight flicker and banding */
-    if(el>260){
+    if(el>240){
       var f=Math.random();
       if(f>0.955){
         ctx.fillStyle='rgba(0,0,0,'+rnd(0.10,0.34)+')';
