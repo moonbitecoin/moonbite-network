@@ -7,6 +7,9 @@
 <meta name="description" content="Proof of work is a search. Almost every guess is wrong. MoonBite is what happens when one is right — a fair-launch coin nobody was given.">
 <link rel="icon" type="image/svg+xml" href="/static/moonbite-logo.svg">
 <link rel="stylesheet" href="/static/fonts/moonbite-fonts.css">
+<link rel="preload" as="image" href="/static/img/hero-moon.webp"
+      imagesrcset="/static/img/hero-moon-sm.webp 1200w, /static/img/hero-moon.webp 2200w"
+      imagesizes="100vw">
 <style nonce="{{ csp_nonce }}">
 :root{
   --void:#0B0D12; --bone:#F5F2EA; --ash:#8A8580; --gold:#D9A441; --gold-2:#EBCB86;
@@ -14,86 +17,125 @@
   --ui:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   --mono:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
   --ease:cubic-bezier(0.22,1,0.36,1);
+  --d1:120ms; --d2:240ms; --d3:600ms;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{background:#000;color:var(--bone);font-family:var(--ui);overflow-x:hidden;
-  -webkit-font-smoothing:antialiased}
+body{background:var(--void);color:var(--bone);font-family:var(--ui);
+  overflow-x:hidden;-webkit-font-smoothing:antialiased}
 ::selection{background:var(--gold);color:var(--void)}
 a{color:inherit}
-canvas{display:block}
-:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
-.skip{position:absolute;left:-9999px;background:var(--gold);color:var(--void);padding:12px 18px;z-index:200}
+img{display:block}
+:focus-visible{outline:2px solid var(--gold);outline-offset:4px;border-radius:2px}
+.skip{position:absolute;left:-9999px;background:var(--gold);color:var(--void);
+  padding:12px 18px;z-index:200;font-weight:700}
 .skip:focus{left:0;top:0}
 
-#film{position:relative;height:820vh}
-#stage{position:sticky;top:0;height:100svh;overflow:hidden;background:#000}
-#gl{position:absolute;inset:0;width:100%;height:100%}
+/* ── the film ─────────────────────────────────────────────────────────── */
+#film{position:relative;height:700vh}
+#stage{position:sticky;top:0;height:100svh;overflow:hidden;background:var(--void)}
+
+#stars{position:absolute;inset:0;width:100%;height:100%}
+
+/* the plate drifts; only transform is animated */
+#plate{position:absolute;inset:-6% -4%;will-change:transform}
+#plate img{width:100%;height:100%;object-fit:cover;object-position:50% 62%}
+
+/* warm bloom that swells when a guess lands */
+.bloom{position:absolute;inset:0;pointer-events:none;opacity:0;mix-blend-mode:screen;
+  background:radial-gradient(58% 26% at 46% 74%,rgba(217,164,65,.42),rgba(217,164,65,0) 72%)}
+.flash{position:absolute;inset:0;pointer-events:none;opacity:0;background:#FFF3DA;
+  mix-blend-mode:screen}
 .vig{position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(130% 95% at 50% 50%,transparent 45%,rgba(0,0,0,.82) 100%)}
+  background:radial-gradient(125% 92% at 50% 46%,transparent 42%,rgba(6,7,10,.80) 100%)}
+.sky{position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(11,13,18,.86) 0%,rgba(11,13,18,.30) 38%,rgba(11,13,18,0) 62%)}
 
-/* masthead */
+/* ── masthead ─────────────────────────────────────────────────────────── */
 .top{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;align-items:center;gap:14px;
-  padding:18px clamp(18px,4vw,40px);
-  background:linear-gradient(180deg,rgba(0,0,0,.65),transparent)}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none;
+  padding:16px clamp(18px,4vw,40px);
+  background:linear-gradient(180deg,rgba(11,13,18,.7),transparent)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;min-height:44px;
   font-family:var(--display);font-size:1rem;text-transform:uppercase;letter-spacing:-.02em}
-.brand svg{width:24px;height:24px}
+.brand svg{width:24px;height:24px;flex:none}
 .beat{margin-left:auto;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--ash);display:flex;align-items:center;gap:8px}
-.beat i{width:6px;height:6px;border-radius:50%;background:var(--gold)}
+  text-transform:uppercase;color:var(--ash);display:flex;align-items:center;gap:8px;min-height:44px}
+.beat i{width:6px;height:6px;border-radius:50%;background:var(--gold);flex:none}
 
-/* the acts */
-.act{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;text-align:center;padding:0 clamp(20px,6vw,80px);
-  pointer-events:none;will-change:opacity,transform}
-.act::before{content:"";position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);
-  width:min(1100px,120vw);height:min(560px,62vh);pointer-events:none;
-  background:radial-gradient(50% 50% at 50% 50%,rgba(6,7,10,.72),rgba(6,7,10,0) 72%)}
-.act>*{position:relative}
-.act h2,.act h1{font-family:var(--display);font-weight:400;letter-spacing:-.03em;line-height:.98;
-  font-size:clamp(2.1rem,7.4vw,5.6rem);max-width:15ch}
-.act .sm{font-family:var(--ui);font-weight:600;color:var(--ash);
-  font-size:clamp(.95rem,2vw,1.15rem);margin-top:22px;max-width:40ch;line-height:1.5}
+/* ── acts ─────────────────────────────────────────────────────────────── */
+.act{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
+  padding:0 clamp(20px,7vw,96px);pointer-events:none;will-change:opacity,transform}
+.act::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(100deg,rgba(11,13,18,.88) 0%,rgba(11,13,18,.60) 40%,
+                             rgba(11,13,18,.10) 66%,rgba(11,13,18,0) 80%)}
+.act .in{max-width:min(880px,92vw);width:100%;position:relative}
+.act h1,.act h2{font-family:var(--display);font-weight:400;letter-spacing:-.03em;
+  line-height:.98;font-size:clamp(2.1rem,7vw,5.2rem);max-width:14ch}
+.act .sm{font-family:var(--ui);font-weight:600;color:rgba(245,242,234,.72);
+  font-size:clamp(.98rem,1.9vw,1.16rem);margin-top:20px;max-width:38ch;line-height:1.55}
 .act .tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.28em;text-transform:uppercase;
-  color:var(--gold);margin-bottom:20px}
+  color:var(--gold);margin-bottom:18px}
 .gold{color:var(--gold)}
-.btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:34px;pointer-events:auto}
-.btn{display:inline-flex;align-items:center;min-height:50px;padding:0 30px;border-radius:5px;
-  font-weight:700;font-size:1rem;text-decoration:none;border:1px solid transparent;
-  transition:transform 120ms var(--ease),background 240ms var(--ease),border-color 240ms var(--ease)}
+.btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px;pointer-events:auto}
+.btn{display:inline-flex;align-items:center;min-height:50px;padding:0 28px;border-radius:5px;
+  font-weight:700;font-size:.99rem;text-decoration:none;border:1px solid transparent;
+  transition:transform var(--d1) var(--ease),background var(--d2) var(--ease),
+             border-color var(--d2) var(--ease)}
 .btn-a{background:var(--gold);color:var(--void)}
 .btn-a:hover{transform:translateY(-2px);background:var(--gold-2)}
-.btn-b{border-color:rgba(245,242,234,.25);color:var(--bone)}
+.btn-b{border-color:rgba(245,242,234,.28);color:var(--bone)}
 .btn-b:hover{border-color:var(--gold);background:rgba(217,164,65,.08)}
-.fine{font-family:var(--ui);font-size:.82rem;color:var(--ash);margin-top:24px;max-width:46ch;line-height:1.6}
+.fine{font-family:var(--ui);font-size:.83rem;color:var(--ash);margin-top:22px;
+  max-width:46ch;line-height:1.6}
+.facts{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px;
+  font-family:var(--mono);font-size:.7rem;color:rgba(245,242,234,.6)}
+.facts span{border:1px solid rgba(245,242,234,.16);border-radius:100px;padding:7px 13px}
 
-/* hash ticker — the guesses, as text */
-.ticker{position:absolute;left:0;right:0;bottom:8vh;text-align:center;pointer-events:none;
-  font-family:var(--mono);font-size:clamp(.6rem,1.5vw,.78rem);color:rgba(245,242,234,.34);
-  letter-spacing:.06em;white-space:nowrap;overflow:hidden}
+/* the guesses */
+.ticker{position:absolute;left:0;right:0;bottom:7vh;text-align:center;pointer-events:none;
+  font-family:var(--mono);font-size:clamp(.58rem,1.4vw,.76rem);
+  color:rgba(245,242,234,.30);letter-spacing:.06em;white-space:nowrap;overflow:hidden}
 .ticker b{color:var(--gold);font-weight:400}
 
-.cue{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);
+.cue{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);
   font-family:var(--mono);font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;
-  color:rgba(245,242,234,.35);display:flex;flex-direction:column;align-items:center;gap:8px}
-.cue i{width:1px;height:28px;background:linear-gradient(180deg,var(--gold),transparent);
-  animation:d 2.2s ease-in-out infinite}
-@keyframes d{0%,100%{opacity:.25;transform:scaleY(.5)}50%{opacity:1;transform:scaleY(1)}}
+  color:rgba(245,242,234,.4);display:flex;flex-direction:column;align-items:center;gap:8px}
+.cue i{width:1px;height:26px;background:linear-gradient(180deg,var(--gold),transparent);
+  animation:dr 2.2s ease-in-out infinite}
+@keyframes dr{0%,100%{opacity:.25;transform:scaleY(.5)}50%{opacity:1;transform:scaleY(1)}}
 
 #rail{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:35;
   display:flex;flex-direction:column;gap:9px}
 #rail span{width:5px;height:5px;border-radius:50%;background:rgba(245,242,234,.22);
-  transition:background 240ms var(--ease),transform 240ms var(--ease)}
+  transition:background var(--d2) var(--ease),transform var(--d2) var(--ease)}
 #rail span.on{background:var(--gold);transform:scale(1.6)}
 @media(max-width:700px){ #rail{right:8px} }
 
-/* readable fallback for reduced motion / no webgl */
+/* ── footer ───────────────────────────────────────────────────────────── */
+footer{position:relative;z-index:2;background:var(--void);
+  border-top:1px solid rgba(245,242,234,.12);padding:48px 0 40px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(20px,4vw,28px)}
+.fg{display:grid;grid-template-columns:1.7fr repeat(3,1fr);gap:32px}
+@media(max-width:820px){.fg{grid-template-columns:1fr 1fr;gap:26px}}
+.fg p{color:var(--ash);font-size:.88rem;margin-top:12px;max-width:32ch;line-height:1.6}
+.fcol h3{font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ash);margin-bottom:12px}
+.fcol a{display:block;color:var(--ash);font-size:.9rem;padding:7px 0;text-decoration:none;
+  min-height:34px;transition:color var(--d2) var(--ease)}
+.fcol a:hover{color:var(--gold)}
+.credit{margin-top:40px;padding-top:20px;border-top:1px solid rgba(245,242,234,.06);
+  font-family:var(--mono);font-size:.68rem;color:var(--ash);line-height:1.9}
+.credit a{color:var(--ash)}
+
+/* ── fallback: reduced motion / no images ─────────────────────────────── */
 .flat #film{height:auto}
-.flat #stage{position:static;height:auto;overflow:visible;background:var(--void)}
-.flat #gl,.flat .vig,.flat .cue,.flat #rail,.flat .ticker{display:none}
+.flat #stage{position:static;height:auto;overflow:visible}
+.flat #stars,.flat .cue,.flat #rail,.flat .ticker,.flat .bloom,.flat .flash{display:none}
+.flat #plate{position:relative;inset:auto;height:52vh;transform:none!important}
+.flat .act::before{display:none}
 .flat .act{position:static;opacity:1!important;transform:none!important;
-  padding-top:14vh;padding-bottom:14vh;min-height:0;border-top:1px solid rgba(245,242,234,.08)}
+  padding-top:11vh;padding-bottom:11vh}
+.flat .act+.act{border-top:1px solid rgba(245,242,234,.07)}
 @media(prefers-reduced-motion:reduce){ .cue i{animation:none} }
 </style>
 </head>
@@ -113,82 +155,134 @@ canvas{display:block}
 </header>
 
 <div id="rail" aria-hidden="true">
-  <span class="on"></span><span></span><span></span><span></span><span></span><span></span>
+  <span class="on"></span><span></span><span></span><span></span><span></span>
 </div>
 
 <section id="film">
   <div id="stage">
-    <canvas id="gl"></canvas>
-    <div class="vig"></div>
+    <canvas id="stars" aria-hidden="true"></canvas>
+    <div id="plate">
+      <img src="/static/img/hero-moon.webp"
+           srcset="/static/img/hero-moon-sm.webp 1200w, /static/img/hero-moon.webp 2200w"
+           sizes="100vw" width="2200" height="1776" fetchpriority="high"
+           alt="The lunar surface photographed from orbit by Apollo 17, the craters Eratosthenes and Copernicus below a black sky.">
+    </div>
+    <div class="sky" aria-hidden="true"></div>
+    <div class="bloom" id="bloom" aria-hidden="true"></div>
+    <div class="flash" id="flash" aria-hidden="true"></div>
+    <div class="vig" aria-hidden="true"></div>
 
     <div class="act" data-a="0">
-      <div class="tag">Proof of work</div>
-      <h1>Somewhere a machine<br>is guessing.</h1>
-      <p class="sm">Right now, without stopping, and without being told what to look for.</p>
+      <div class="in">
+        <div class="tag">Proof of work</div>
+        <h1>Somewhere a machine is guessing.</h1>
+        <p class="sm">Right now, without stopping, and without being told what to look for.</p>
+      </div>
       <div class="cue">Scroll<i></i></div>
     </div>
 
     <div class="act" data-a="1">
-      <h2>Almost every guess<br>is <span class="gold">wrong</span>.</h2>
-      <p class="sm">That is not a flaw in the design. That is the design.</p>
+      <div class="in">
+        <h2>Almost every guess is <span class="gold">wrong</span>.</h2>
+        <p class="sm">Billions of them, thrown away. That is not a flaw in the design — it is
+          the design.</p>
+      </div>
     </div>
 
     <div class="act" data-a="2">
-      <h2>This one<br>wasn't.</h2>
-      <p class="sm">A number small enough, found by nobody in particular, worth ten MBITE.</p>
+      <div class="in">
+        <h2>This one wasn't.</h2>
+        <p class="sm">A number small enough, found by nobody in particular, and worth ten MBITE
+          to whoever's machine found it.</p>
+      </div>
     </div>
 
     <div class="act" data-a="3">
-      <h2>Every coin<br>arrived this way.</h2>
-      <p class="sm">One block at a time, in public, since the third of September 2026.</p>
-    </div>
-
-    <div class="act" data-a="4">
-      <h2>Nobody<br>was <span class="gold">given</span> one.</h2>
-      <p class="sm">No premine. No presale. No allocation. The supply began at nothing and every
-        unit of it was found.</p>
-    </div>
-
-    <div class="act" data-a="5" id="end">
-      <div class="tag">Fair launch</div>
-      <h2>Go and find one.</h2>
-      <div class="btns">
-        <a class="btn btn-a" href="/start">Start mining</a>
-        <a class="btn btn-b" href="/a">Read how it works</a>
+      <div class="in">
+        <h2>Nobody was <span class="gold">given</span> one.</h2>
+        <p class="sm">The supply began at nothing. Every unit of it since has arrived exactly
+          this way, in public, one block at a time.</p>
+        <div class="facts">
+          <span>No premine</span><span>No presale</span><span>No allocation</span>
+          <span id="fBlocks">— blocks</span>
+        </div>
       </div>
-      <p class="fine">MBITE is on no exchange and has no price. Nobody can sell you one, and anyone
-        offering to is lying. Mining costs electricity, and it may never be worth anything.</p>
+    </div>
+
+    <div class="act" data-a="4" id="end">
+      <div class="in">
+        <div class="tag">Fair launch</div>
+        <h2>Go and find one.</h2>
+        <div class="btns">
+          <a class="btn btn-a" href="/start">Start mining</a>
+          <a class="btn btn-b" href="/a">Read how it works</a>
+        </div>
+        <p class="fine">MBITE is on no exchange and has no price. Nobody can sell you one, and
+          anyone offering to is lying. Mining costs electricity, and it may never be worth
+          anything.</p>
+      </div>
     </div>
 
     <div class="ticker" id="ticker" aria-hidden="true"></div>
   </div>
 </section>
 
+<footer>
+  <div class="wrap">
+    <div class="fg">
+      <div>
+        <a class="brand" href="/">
+          <svg viewBox="-150 -150 300 300" aria-hidden="true">
+            <mask id="fb"><rect x="-150" y="-150" width="300" height="300" fill="#fff"/>
+              <circle cx="67.18" cy="-67.18" r="62" fill="#000"/></mask>
+            <circle cx="0" cy="0" r="100" fill="#F5F2EA" mask="url(#fb)"/>
+          </svg><span>MoonBite</span>
+        </a>
+        <p>Ten MBITE every two minutes, to whoever does the work.</p>
+      </div>
+      <div class="fcol"><h3>Start</h3>
+        <a href="/start">Mine</a><a href="/get-wallet">Wallet</a><a href="/a">How it works</a></div>
+      <div class="fcol"><h3>Verify</h3>
+        <a href="/explorer">Explorer</a><a href="/api/consensus">Consensus</a><a href="/full-node">Run a node</a></div>
+      <div class="fcol"><h3>Read</h3>
+        <a href="/the-case">The case</a><a href="/governance">Decisions</a><a href="/scams">Avoid scams</a></div>
+    </div>
+    <p class="credit">
+      Photograph: NASA / Apollo 17 (AS17-145-22285), the craters Eratosthenes and Copernicus
+      from lunar orbit, 13 December 1972. Colour-graded by MoonBite. NASA does not endorse
+      MoonBite.<br>
+      Chain tip <span id="fTip">—</span>
+    </p>
+  </div>
+</footer>
+
 <script nonce="{{ csp_nonce }}">
 (function(){
 var $=function(i){return document.getElementById(i)};
 var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches
            && !/[?&]motion=1/.test(location.search);
-var film=$('film'), stage=$('stage'), cv=$('gl'), body=document.body;
+var film=$('film'), stage=$('stage'), plate=$('plate'), body=document.body;
 var acts=[].slice.call(document.querySelectorAll('.act'));
 var dots=[].slice.call(document.querySelectorAll('#rail span'));
 
 /* a scroll-driven film must always start at frame one */
 if('scrollRestoration' in history) history.scrollRestoration='manual';
-addEventListener('beforeunload',function(){ scrollTo(0,0) });
 
 function clamp(v,a,b){return v<a?a:(v>b?b:v)}
 function smooth(a,b,x){if(b===a)return x<a?0:1;var t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)}
-
-/* ---------- live chain ---------- */
-var height=0, lastSeen=0, pulseAt=-9;
+function lerp(a,b,t){return a+(b-a)*t}
 function fmt(n){return (n||0).toLocaleString('en-US')}
+
+/* ── live chain ───────────────────────────────────────────────────────── */
+var height=0, pulseUntil=0;
 function poll(){
   fetch('/api/blockchain/info').then(function(r){return r.json()}).then(function(j){
     var h=j.height||j.blocks||0;
-    if(h>height && height>0){ pulseAt=performance.now()/1000; biteDeepen(); }
-    if(h!==height){ height=h; lastSeen=Date.now(); }
+    if(height>0 && h>height){ pulseUntil=performance.now()+900; biteDeepen(); }
+    height=h;
     $('beatH').textContent=fmt(h);
+    $('fBlocks').textContent=fmt(h)+' blocks';
+    if(j.tip_hash) $('fTip').textContent=j.tip_hash;
   }).catch(function(){});
 }
 poll(); setInterval(poll,15000);
@@ -198,180 +292,97 @@ var hole=$('biteHole'), bstep=0;
 function biteDeepen(){
   if(!hole||reduce) return;
   bstep=(bstep+1)%3;
-  hole.setAttribute('r', 62+6+bstep*1.4);
-  setTimeout(function(){ hole.setAttribute('r', 62+bstep*1.4) },600);
+  hole.setAttribute('r',62+6+bstep*1.4);
+  setTimeout(function(){ hole.setAttribute('r',62+bstep*1.4) },600);
 }
 
-/* ---------- the guesses, as text ---------- */
-var tick=$('ticker'), HEX='0123456789abcdef';
-function rndHash(lead){
-  var s=''; for(var i=0;i<lead;i++) s+='0';
-  for(var j=lead;j<40;j++) s+=HEX[(Math.random()*16)|0];
-  return s;
-}
-var tickAcc=0;
-
-/* ---------- WebGL ---------- */
-var gl=null, prog=null, uni={}, glOK=false, shaderLog='';
-function compile(type,srcTxt){
-  var s=gl.createShader(type); gl.shaderSource(s,srcTxt); gl.compileShader(s);
-  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){ shaderLog+=gl.getShaderInfoLog(s)||''; return null }
-  return s;
-}
-var VERT='attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
-var FRAG=[
-'precision highp float;',
-'uniform vec2 uRes; uniform float uT; uniform float uS; uniform float uHit;',
-'float h11(float p){return fract(sin(p*127.1)*43758.5453);}',
-'vec3 h31(float p){return fract(sin(vec3(p*127.1,p*311.7,p*74.7))*43758.5453);}',
-'float seg(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;',
-'  float h=clamp(dot(pa,ba)/max(dot(ba,ba),1e-6),0.,1.);return length(pa-ba*h);}',
-'void main(){',
-'  vec2 uv=(gl_FragCoord.xy-0.5*uRes)/uRes.y;',
-'  vec3 col=vec3(0.);',
-'  float s=uS;',
-    /* speed: slow, then a hard surge, then settle */
-'  float spd=0.06+0.85*smoothstep(0.05,0.42,s)*(1.0-smoothstep(0.52,0.72,s));',
-'  float warp=smoothstep(0.10,0.40,s)*(1.0-smoothstep(0.50,0.68,s));',
-    /* --- the search: a storm of candidate hashes flying past --- */
-'  for(int i=0;i<80;i++){',
-'    float fi=float(i);',
-'    vec3 rp=h31(fi*1.37+3.1);',
-'    float z=fract(rp.z + uT*spd*0.35 + s*1.6);',
-'    float pz=1.0/(z*z*2.6+0.045);',
-'    vec2 pp=(rp.xy-0.5)*pz*0.62;',
-'    vec2 tail=pp*(1.0-0.16*warp);',
-'    float d=seg(uv,pp,tail);',
-'    float sz=0.0013*pz*(0.6+0.7*h11(fi));',
-'    float g=sz/(d+0.0016);',
-'    float fade=(1.0-z)*(1.0-smoothstep(0.62,0.92,s));',
-'    col+=vec3(0.86,0.83,0.78)*g*fade*0.30;',
-'  }',
-    /* --- the winning guess: a flash and a shockwave --- */
-'  float hit=smoothstep(0.455,0.50,s)*(1.0-smoothstep(0.52,0.62,s));',
-'  float rad=length(uv);',
-'  float ring=abs(rad-(s-0.47)*5.0);',
-'  col+=vec3(1.0,0.92,0.74)*hit*(0.030/(ring+0.030));',
-'  col+=vec3(1.0,0.95,0.82)*hit*(0.012/(rad+0.012));',
-    /* --- the chain: a lattice of blocks receding --- */
-'  float lat=smoothstep(0.54,0.68,s)*(1.0-smoothstep(0.80,0.90,s));',
-'  if(lat>0.001){',
-'    float r=max(rad,0.06);',
-'    vec2 gp=vec2(atan(uv.y,uv.x)*1.9, 1.0/r*0.9 - uT*0.16 - s*2.2);',
-'    vec2 f=abs(fract(gp)-0.5);',
-'    float line=1.0-smoothstep(0.02,0.10,min(f.x,f.y));',
-'    float cell=1.0-smoothstep(0.30,0.46,max(f.x,f.y));',
-'    col+=vec3(0.85,0.64,0.26)*line*lat*0.55*smoothstep(1.05,0.15,r);',
-'    col+=vec3(0.85,0.64,0.26)*cell*lat*0.05*smoothstep(1.05,0.15,r);',
-'  }',
-    /* --- the mark: one disc, one bite --- */
-'  float mv=smoothstep(0.76,0.90,s);',
-'  if(mv>0.001){',
-'    float R=0.205;',
-'    vec2 mc=vec2(0.0,0.185);',                  /* sits above the copy, not behind it */
-'    float cta=smoothstep(0.92,0.99,s);',
-'    float disc=length(uv-mc)-R;',
-'    float bite=length(uv-mc-vec2(0.6718,0.6718)*R)-0.62*R;',
-'    float dm=max(disc,-bite);',
-'    float fillm=1.0-smoothstep(0.0,0.004,dm);',
-'    float glow=exp(-max(dm,0.0)*15.0);',
-'    vec3 body=vec3(0.94,0.93,0.90)*(1.0-0.22*cta);',
-'    col=mix(col,body,fillm*mv);',
-'    col+=vec3(0.85,0.64,0.26)*glow*0.46*mv*(1.0-fillm);',
-'  }',
-    /* --- the block-found pulse, driven by the real chain --- */
-'  col+=vec3(0.85,0.64,0.26)*uHit*(0.020/(rad+0.10));',
-    /* --- grade: warm core, cool falloff, grain, vignette --- */
-'  col*=1.0-0.55*smoothstep(0.30,1.15,rad);',
-'  col=col/(col+vec3(0.9));',                 /* rolloff, kept before any lift */
-    /* Void is the floor. only a whisper of atmosphere above it. */
-'  col+=vec3(0.043,0.051,0.071)*(1.0-smoothstep(0.0,1.25,rad))*0.55;',
-'  float gr=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233))+uT*11.0)*43758.5453);',
-'  col+=(gr-0.5)*0.020;',
-'  col=max(col,vec3(0.0));',
-'  gl_FragColor=vec4(col,1.0);',
-'}'].join('\n');
-
-function initGL(){
-  try{ gl=cv.getContext('webgl',{antialias:false,alpha:false,powerPreference:'high-performance'})
-          || cv.getContext('experimental-webgl'); }catch(e){}
-  if(!gl) return false;
-  var vs=compile(gl.VERTEX_SHADER,VERT), fs=compile(gl.FRAGMENT_SHADER,FRAG);
-  if(!vs||!fs) return false;
-  prog=gl.createProgram(); gl.attachShader(prog,vs); gl.attachShader(prog,fs); gl.linkProgram(prog);
-  if(!gl.getProgramParameter(prog,gl.LINK_STATUS)){ shaderLog+=gl.getProgramInfoLog(prog)||''; return false }
-  gl.useProgram(prog);
-  var buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf);
-  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
-  var loc=gl.getAttribLocation(prog,'p');
-  gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
-  uni.res=gl.getUniformLocation(prog,'uRes');
-  uni.t=gl.getUniformLocation(prog,'uT');
-  uni.s=gl.getUniformLocation(prog,'uS');
-  uni.hit=gl.getUniformLocation(prog,'uHit');
-  return true;
-}
-function resize(){
-  var dpr=Math.min(devicePixelRatio||1,1.75);
-  cv.width=Math.floor(innerWidth*dpr); cv.height=Math.floor(innerHeight*dpr);
-  cv.style.width=innerWidth+'px'; cv.style.height=innerHeight+'px';
-  if(gl) gl.viewport(0,0,cv.width,cv.height);
-}
-
-/* ---------- acts ---------- */
-var SEQ=[[0.00,0.02,0.09,0.15],[0.16,0.21,0.30,0.37],[0.43,0.47,0.53,0.59],
-         [0.60,0.65,0.71,0.76],[0.77,0.82,0.87,0.91],[0.92,0.96,1.00,1.01]];
+/* ── acts ─────────────────────────────────────────────────────────────── */
+var SEQ=[[0.00,0.00,0.13,0.20],[0.22,0.28,0.38,0.45],[0.47,0.52,0.60,0.66],
+         [0.68,0.73,0.82,0.88],[0.90,0.95,1.00,1.01]];
 function paintActs(p){
   for(var i=0;i<acts.length;i++){
     var q=SEQ[i], o=smooth(q[0],q[1],p)*(1-smooth(q[2],q[3],p));
     acts[i].style.opacity=o;
-    acts[i].style.transform='translateY('+((1-smooth(q[0],q[1],p))*26-smooth(q[2],q[3],p)*26)+'px)';
+    acts[i].style.transform='translate3d(0,'+
+      ((1-smooth(q[0],q[1],p))*30-smooth(q[2],q[3],p)*30)+'px,0)';
     acts[i].style.pointerEvents=o>0.6?'auto':'none';
     if(dots[i]) dots[i].classList.toggle('on',o>0.5);
   }
 }
 
-/* ---------- run ---------- */
+/* ── the drift: we descend toward the surface, then pull back out ─────── */
+var bloom=$('bloom'), flash=$('flash');
+function paintScene(p){
+  /* plate: sinks and grows as we come down, eases back out for the finale */
+  var descend=smooth(0.00,0.62,p);
+  var pull=smooth(0.72,1.00,p);
+  var scale=lerp(1.00,1.20,descend)-0.10*pull;
+  var y=lerp(0,7.5,descend)-4.0*pull;          /* percent of stage height */
+  plate.style.transform='translate3d(0,'+y+'%,0) scale('+scale.toFixed(4)+')';
+
+  /* the winning guess: a bloom along the limb and a short flash */
+  var hit=smooth(0.455,0.50,p)*(1-smooth(0.53,0.63,p));
+  var live=pulseUntil>performance.now()?0.40:0;
+  bloom.style.opacity=Math.max(hit*0.62,live).toFixed(3);
+  flash.style.opacity=(hit*0.10).toFixed(3);
+}
+
+/* ── the guesses, as text ─────────────────────────────────────────────── */
+var tick=$('ticker'), HEX='0123456789abcdef', tk=0;
+function hash(lead){
+  var s=''; for(var i=0;i<lead;i++) s+='0';
+  for(var j=lead;j<40;j++) s+=HEX[(Math.random()*16)|0];
+  return s;
+}
+
+/* ── stars ────────────────────────────────────────────────────────────── */
+var cv=$('stars'), sx=cv.getContext('2d'), SW,SH,DPR,st=[];
+function sizeStars(){
+  DPR=Math.min(devicePixelRatio||1,2);
+  SW=cv.width=Math.floor(innerWidth*DPR); SH=cv.height=Math.floor(innerHeight*DPR);
+  cv.style.width=innerWidth+'px'; cv.style.height=innerHeight+'px';
+  st=[];
+  var n=Math.round(clamp(innerWidth*innerHeight/16000,40,120));
+  for(var i=0;i<n;i++) st.push({x:Math.random()*SW,y:Math.random()*SH*0.62,
+    r:(Math.random()*1.1+0.2)*DPR,z:Math.random()*0.8+0.2,t:Math.random()*6.28});
+}
+function drawStars(){
+  sx.clearRect(0,0,SW,SH);
+  for(var i=0;i<st.length;i++){
+    var s=st[i]; s.t+=0.011;
+    sx.beginPath(); sx.arc(s.x,s.y,s.r,0,6.283);
+    sx.fillStyle='rgba(236,230,214,'+((0.22+0.30*Math.sin(s.t))*s.z)+')'; sx.fill();
+  }
+}
+
+/* ── run ──────────────────────────────────────────────────────────────── */
 var target=0,cur=0;
 function measure(){
   var r=film.getBoundingClientRect();
   var total=film.offsetHeight-stage.offsetHeight;
   target=clamp(-r.top/(total||1),0,1);
 }
-addEventListener('scroll',measure,{passive:true});
-addEventListener('resize',function(){resize();measure()});
-
-function frame(now){
-  cur+=(target-cur)*0.075;
-  var t=now/1000;
-  if(glOK){
-    gl.uniform2f(uni.res,cv.width,cv.height);
-    gl.uniform1f(uni.t,t);
-    gl.uniform1f(uni.s,cur);
-    gl.uniform1f(uni.hit,Math.max(0,1-(t-pulseAt)*1.6));
-    gl.drawArrays(gl.TRIANGLES,0,3);
-  }
-  paintActs(cur);
-  /* the ticker: guesses scrolling past, one of them a winner */
-  tickAcc+=1;
-  if(tickAcc%3===0 && cur>0.12 && cur<0.62){
-    var win=cur>0.455&&cur<0.52;
-    tick.innerHTML = win
-      ? '<b>0000000'+rndHash(0).slice(7)+'  ← found</b>'
-      : rndHash(0);
-  } else if(cur<=0.12||cur>=0.62){ tick.innerHTML=''; }
+function frame(){
+  cur+=(target-cur)*0.085;
+  paintScene(cur); paintActs(cur); drawStars();
+  tk++;
+  if(tk%3===0 && cur>0.20 && cur<0.66){
+    var win=cur>0.455&&cur<0.53;
+    tick.innerHTML = win ? '<b>0000000'+hash(0).slice(7)+'  &larr; found</b>' : hash(0);
+  } else if(cur<=0.20||cur>=0.66){ tick.innerHTML=''; }
   requestAnimationFrame(frame);
 }
 
-if(reduce){ body.classList.add('flat'); }
+addEventListener('scroll',measure,{passive:true});
+addEventListener('resize',function(){ sizeStars(); measure() });
+
+if(reduce){ body.classList.add('flat'); paintActs(0); }
 else {
-  glOK=initGL();
-  window.__shaderLog=shaderLog;
-  if(!glOK){ body.classList.add('flat'); }
-  else { scrollTo(0,0); resize(); measure(); cur=target=0; requestAnimationFrame(frame); }
+  scrollTo(0,0); sizeStars(); measure(); cur=target=0;
+  paintScene(0); paintActs(0);
+  requestAnimationFrame(frame);
 }
-if(reduce||!glOK) paintActs(0);
-window.__p=function(v){ target=cur=v; paintActs(v); return v };
+window.__p=function(v){ target=cur=v; paintScene(v); paintActs(v); return v };
 })();
 </script>
 </body>
