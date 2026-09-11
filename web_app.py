@@ -93,6 +93,17 @@ app.jinja_env.auto_reload = True
 # in production so sessions survive restarts; a random key is a safe default.
 app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
 
+# The session cookie only scopes per-visitor UI state; it must never carry a
+# secret. Even so, harden it: Secure keeps it off any plaintext hop, HttpOnly
+# keeps it out of reach of page script, and SameSite=Lax blunts CSRF on the
+# state-changing POST routes. HTTPS-only in production; allow plain HTTP when
+# a developer runs the app locally without TLS.
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=os.environ.get("MOONBITE_INSECURE_COOKIES") != "1",
+)
+
 # Trust exactly TRUSTED_PROXY_COUNT reverse-proxy hop(s) in front (nginx = 1).
 # ProxyFix rewrites request.remote_addr to the client IP that our OWN proxy
 # observed (the rightmost X-Forwarded-For hop it appended), so a client cannot
@@ -707,7 +718,13 @@ def api_consensus():
 
 @app.route("/")
 def home_page():
-    """Render the god-mode cinematic homepage (The Last Unowned Thing)."""
+    """The home page: one continuous descent, five acts, live chain in act three."""
+    return render_template("horizon.html")
+
+
+@app.route("/moon")
+def home_moon_page():
+    """Previous homepage (The Last Unowned Thing), kept for comparison."""
     return render_template("moon.html")
 
 
@@ -2465,136 +2482,33 @@ def api_address_balance(address: str):
 # ============================================================================= #
 
 
+# These routes generated a BIP39 seed on the SERVER and parked the mnemonic in
+# the Flask session cookie — which is signed but not encrypted, so the seed was
+# recoverable in plaintext by anyone who could read the cookie, and the server
+# itself saw and held every seed. That is disqualifying for a self-custody
+# wallet, where the seed must be born and stay in the browser and never cross
+# the wire. Key generation now lives entirely client-side (moonbite-hd.js /
+# moonbite-bip39.js); these endpoints are retired. They are answered with 410
+# Gone rather than deleted so any lingering caller gets a clear, permanent
+# signal instead of a silent 404.
+_HD_GONE = {
+    "status": "error",
+    "error": "endpoint_removed",
+    "message": (
+        "Server-side seed handling has been removed. MoonBite is self-custody: "
+        "your recovery phrase is generated and kept in your own browser and is "
+        "never sent to the server. Use the wallet at /wallet."
+    ),
+}
+
+
 @app.route("/api/wallet/hd/new", methods=["GET"])
-@rate_limit(10, 60)
-def api_wallet_hd_new():
-    """Generate new HD wallet with BIP39 mnemonic seed phrase."""
-    try:
-        wallet = HDWallet()
-        mnemonic = wallet.export_seed()
-
-        # Store HD wallet in session for later use
-        session["hd_wallet_mnemonic"] = mnemonic
-
-        return jsonify(
-            {
-                "status": "success",
-                "mnemonic": mnemonic,
-                "word_count": len(mnemonic.split()),
-                "message": "BACKUP THIS SEED PHRASE! You can recover all addresses with it.",
-            }
-        ), 200
-    except Exception as e:
-        return json_error(
-            "INTERNAL_ERROR",
-            debug_message=str(e),
-            suggested_action="Please reload the wallet and try creating a new wallet again",
-        )
-
-
-@app.route("/api/wallet/hd/import", methods=["POST"])
-@rate_limit(5, 60)
-def api_wallet_hd_import():
-    """Import HD wallet from BIP39 mnemonic seed phrase."""
-    try:
-        data = request.get_json() or {}
-        mnemonic = (data.get("mnemonic") or "").strip()
-        passphrase = (data.get("passphrase") or "").strip()
-
-        if not mnemonic:
-            return json_error(
-                "VALIDATION_MISSING_FIELD",
-                user_message="Seed phrase is required",
-                suggested_action="Please enter your 12 or 24 word seed phrase",
-            )
-
-        # Validate and recover wallet from mnemonic
-        wallet = HDWallet.from_mnemonic(mnemonic, passphrase)
-
-        # Store in session
-        session["hd_wallet_mnemonic"] = mnemonic
-        session["hd_wallet_count"] = 0
-
-        return jsonify(
-            {
-                "status": "success",
-                "message": "Wallet recovered from mnemonic. Use /api/wallet/hd/address to generate addresses.",
-            }
-        ), 200
-    except ValueError as e:
-        return json_error(
-            "VALIDATION_INVALID_MNEMONIC",
-            debug_message=str(e),
-            suggested_action="Please check that you entered the seed phrase correctly",
-        )
-    except Exception as e:
-        return json_error(
-            "INTERNAL_ERROR",
-            debug_message=str(e),
-            suggested_action="Please try again or reload the wallet",
-        )
-
-
-@app.route("/api/wallet/hd/address", methods=["GET"])
-@rate_limit(30, 60)
-def api_wallet_hd_address():
-    """Generate next HD-derived address (m/44'/0'/0'/0/n)."""
-    try:
-        mnemonic = session.get("hd_wallet_mnemonic")
-        if not mnemonic:
-            return json_error(
-                "SECURITY_SESSION_EXPIRED",
-                user_message="Wallet session has ended",
-                suggested_action="Please import your seed phrase again",
-            )
-
-        wallet = HDWallet.from_mnemonic(mnemonic)
-        index = session.get("hd_wallet_count", 0)
-
-        # Generate address at this index
-        address = wallet.derive_address(index)
-
-        # Increment counter and store in session
-        session["hd_wallet_count"] = index + 1
-
-        # Also store pubkey_hash for balance tracking (like /api/wallet/new)
-        from wallet import pubkey_hash_from_address
-        pkh = pubkey_hash_from_address(address)
-        pkhs = [h for h in session.get("wallet_pkhs", []) if h != pkh]
-        pkhs.append(pkh)
-        session["wallet_pkhs"] = pkhs[-_MAX_SESSION_ADDRESSES:]
-
-        return jsonify(
-            {
-                "status": "success",
-                "address": address,
-                "index": index,
-                "path": f"m/44'/0'/0'/0/{index}",
-            }
-        ), 200
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-
 @app.route("/api/wallet/hd/seed", methods=["GET"])
-@rate_limit(5, 60)
-def api_wallet_hd_seed():
-    """Get the current session's HD wallet seed (mnemonic phrase)."""
-    try:
-        mnemonic = session.get("hd_wallet_mnemonic")
-        if not mnemonic:
-            return jsonify({"status": "error", "message": "no HD wallet in session"}), 400
-
-        return jsonify(
-            {
-                "status": "success",
-                "mnemonic": mnemonic,
-                "word_count": len(mnemonic.split()),
-                "warning": "NEVER share this seed. Anyone with it can access all your funds.",
-            }
-        ), 200
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+@app.route("/api/wallet/hd/import", methods=["POST"])
+@app.route("/api/wallet/hd/address", methods=["GET"])
+def api_wallet_hd_removed():
+    """Retired server-side seed endpoints — see comment above."""
+    return jsonify(_HD_GONE), 410
 
 
 # ============================================================================= #
