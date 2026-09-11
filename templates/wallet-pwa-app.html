@@ -1452,8 +1452,8 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Your 9-Word Seed Phrase</label>
-                        <textarea id="seedPhraseInput" class="form-input" placeholder="word1 word2 word3 word4 word5 word6 word7 word8 word9"
+                        <label class="form-label">Your 12-Word Seed Phrase</label>
+                        <textarea id="seedPhraseInput" class="form-input" placeholder="word1 word2 word3 ... word12"
                               style="height: 80px; resize: none; font-family: var(--font-data);"
                               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
                         <div style="color: var(--text-secondary); font-size: 12px; margin-top: var(--spacing-sm);">Enter your 12 words separated by spaces</div>
@@ -1564,7 +1564,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             <div class="screen" id="passwordScreen">
                 <div class="screen-header">
                     <h1>Establish Access Control</h1>
-                    <p>This password will unlock your Oneta wallet only on this device.</p>
+                    <p>This password will unlock your MoonBite wallet only on this device.</p>
                 </div>
                 <div class="screen-content">
                     <div class="form-group">
@@ -1704,7 +1704,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
 
                     <div class="card">
                         <div style="color: var(--text-primary); font-weight: 600; margin-bottom: var(--spacing-md);">Recovery</div>
-                        <div style="color: var(--text-secondary); font-size: 13px; line-height: 1.6;">Save it in a place where you can access it. If you lose it, not even Oneta can help you recover it. It is the only way to access your wallet if you get locked out of the app or get a new device.</div>
+                        <div style="color: var(--text-secondary); font-size: 13px; line-height: 1.6;">Save it in a place where you can access it. If you lose it, not even MoonBite can help you recover it. It is the only way to access your wallet if you get locked out of the app or get a new device.</div>
                     </div>
 
                     <button class="btn btn-primary" data-act="screen" data-arg="skipSecurityScreen" style="width: 100%; margin-top: var(--spacing-lg);">OK, I Got It</button>
@@ -3978,7 +3978,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             sessionStorage.setItem('pendingSeedPhrase', seedInput);
 
             // Move to PIN setup
-            showScreen('passwordScreen');
+            showScreen('pinSetupScreen');
         }
 
         /* Hide the splash once the crypto modules are loaded. A timeout
@@ -4078,7 +4078,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             }
             // Verified: hand the phrase to the PIN step, which encrypts it.
             sessionStorage.setItem('pendingSeedPhrase', _generatedPhrase);
-            showScreen('passwordScreen');
+            showScreen('pinSetupScreen');
         }
 
         function ordinal(n) {
