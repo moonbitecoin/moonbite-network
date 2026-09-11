@@ -22,7 +22,14 @@ $datadir = if ($env:MOONBITE_DATADIR) { $env:MOONBITE_DATADIR } else { Join-Path
 $conf    = Join-Path $datadir "moonbite.conf"
 $rewardFile = Join-Path $datadir "reward-address.txt"
 
-function Invoke-Cli { & $clibin "-datadir=$datadir" "-conf=$conf" @args }
+function Invoke-Cli {
+  # moonbite-cli is a native exe: a non-zero exit does not raise a PowerShell
+  # error, so probe $LASTEXITCODE and throw ourselves. Without this every
+  # "is the node up?" check silently succeeds and the node is never started.
+  $out = & $clibin "-datadir=$datadir" "-conf=$conf" @args 2>&1
+  if ($LASTEXITCODE -ne 0) { throw ("moonbite-cli failed: " + ($out | Out-String)) }
+  $out | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] }
+}
 function Test-Addr([string]$a) { return ($a -match '^moon1[0-9a-z]{20,88}$') }
 
 function Write-Conf {
@@ -81,7 +88,7 @@ switch ($arg) {
     while ($true) {
       try {
         $info = Invoke-Cli getblockchaininfo | Out-String | ConvertFrom-Json
-        if (-not $info.initialblockdownload -and $info.blocks -ge $info.headers) { break }
+        if ($info -and -not $info.initialblockdownload -and $info.blocks -ge $info.headers) { break }
         Write-Host "   ...$($info.blocks) / $($info.headers) blocks"
       } catch {}
       Start-Sleep 3
