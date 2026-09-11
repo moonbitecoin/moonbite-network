@@ -1,16 +1,11 @@
 #!/usr/bin/env bash
 # Deploy MoonBite wallet updates to DigitalOcean VPS
 # Usage: ./deploy-do.sh [VPS_IP]
-# Example: ./deploy-do.sh 123.45.67.89
+# Defaults to the production droplet (moonbite.org).
 
 set -euo pipefail
 
-VPS_IP="${1:-}"
-if [ -z "$VPS_IP" ]; then
-    echo "Usage: $0 <DIGITAL_OCEAN_VPS_IP>"
-    echo "Example: $0 123.45.67.89"
-    exit 1
-fi
+VPS_IP="${1:-67.205.154.64}"
 
 APP_DIR="/opt/moonbite-dashboard"
 echo "🚀 Deploying MoonBite wallet to DigitalOcean VPS: $VPS_IP"
