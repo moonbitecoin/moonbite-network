@@ -189,7 +189,7 @@ select:focus-visible, [tabindex]:focus-visible {
     blocksPerDay: {{ consensus.blocks_per_day }},
     daily: {{ consensus.daily_emission_coins }},
     halving: {{ consensus.halving_interval }},
-    height: {{ consensus.height }}
+    height: {{ consensus.height or 0 }}
   };
   var CPU = 12000;                       /* reference desktop CPU for the slider */
   var STEPS = [1,10,100,1000,10000,100000];

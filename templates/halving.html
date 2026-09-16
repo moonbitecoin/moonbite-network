@@ -224,7 +224,7 @@ select:focus-visible, [tabindex]:focus-visible {
     blocksPerDay: {{ consensus.blocks_per_day }},
     halving: {{ consensus.halving_interval }},
     nextH: {{ consensus.next_halving_height }},
-    height: {{ consensus.height }},
+    height: {{ consensus.height or 0 }},
     years: {{ consensus.halving_years }},
     launch: {{ consensus.launch_year }},
     cap: {{ consensus.max_supply_coins }}

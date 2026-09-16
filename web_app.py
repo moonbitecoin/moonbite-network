@@ -645,6 +645,31 @@ def mining_worker(job_id: str, blocks_to_mine: int, miner_address: str) -> None:
 # ============================================================================= #
 
 
+_LIVE_HEIGHT_CACHE: dict = {"height": None, "at": 0.0}
+_LIVE_HEIGHT_TTL = 10.0
+
+
+def _live_chain_height():
+    """Tip height from the real node, cached for a few seconds.
+
+    _consensus_dict() runs on every template render, so an uncached call here
+    would put a node round trip in front of every page on the site. Returns
+    None when the node cannot be reached and nothing is cached yet: callers
+    must report that as unknown rather than substituting a number.
+    """
+    now = time.time()
+    cached = _LIVE_HEIGHT_CACHE["height"]
+    if cached is not None and (now - _LIVE_HEIGHT_CACHE["at"]) < _LIVE_HEIGHT_TTL:
+        return cached
+    try:
+        height = int(_get_merchant_rpc().getblockcount())
+    except Exception:  # noqa: BLE001 — a down node must not break page renders
+        return cached  # last known, or None
+    _LIVE_HEIGHT_CACHE["height"] = height
+    _LIVE_HEIGHT_CACHE["at"] = now
+    return height
+
+
 def _consensus_dict() -> dict:
     """One truthful snapshot of the coin's monetary rules + live reward.
 
@@ -654,10 +679,19 @@ def _consensus_dict() -> dict:
     from block import block_subsidy
     from params import (CENTS_PER_COIN, HALVING_INTERVAL, INITIAL_SUBSIDY,
                         MAX_SUPPLY, TARGET_BLOCK_TIME)
-    try:
-        height = get_node().chain.height
-    except Exception:
-        height = 0
+    if _merchant_use_rpc():
+        # The real chain is the only honest source once the site is live. The
+        # demo chain sits at height 0 forever, and reporting that next to a
+        # masthead reading "Block 6,636" is exactly the kind of contradiction
+        # a visitor checks us on. None here means "not known right now".
+        height = _live_chain_height()
+    else:
+        try:
+            height = get_node().chain.height
+        except Exception:
+            height = 0
+    # Schedule maths needs a number; the reported height keeps its None.
+    h = height or 0
     halving_years = HALVING_INTERVAL * TARGET_BLOCK_TIME / 31_557_600
     # Year the subsidy decays to zero (33 halvings for a 50-coin start).
     eras = 0
@@ -667,16 +701,16 @@ def _consensus_dict() -> dict:
         eras += 1
     return {
         "initial_subsidy_coins": INITIAL_SUBSIDY // CENTS_PER_COIN,
-        "current_reward_coins": block_subsidy(height + 1) / CENTS_PER_COIN,
+        "current_reward_coins": block_subsidy(h + 1) / CENTS_PER_COIN,
         "halving_interval": HALVING_INTERVAL,
-        "next_halving_height": ((height // HALVING_INTERVAL) + 1) * HALVING_INTERVAL,
+        "next_halving_height": ((h // HALVING_INTERVAL) + 1) * HALVING_INTERVAL,
         "block_time_sec": TARGET_BLOCK_TIME,
         "block_time_min": TARGET_BLOCK_TIME // 60,
         "blocks_per_day": 86_400 // TARGET_BLOCK_TIME,
         # Current subsidy, not the genesis one: after the first halving the
         # genesis figure would overstate daily emission by 2x.
         "daily_emission_coins": (86_400 // TARGET_BLOCK_TIME)
-        * (block_subsidy(height + 1) / CENTS_PER_COIN),
+        * (block_subsidy(h + 1) / CENTS_PER_COIN),
         "max_supply_coins": MAX_SUPPLY / CENTS_PER_COIN,
         "max_supply_label": "~33,000,000",
         "halving_years": round(halving_years, 2),
