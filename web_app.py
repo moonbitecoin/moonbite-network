@@ -2718,11 +2718,16 @@ def api_wallet_accounts_create():
         )
 
         # Store account info in session for immediate access
+        # Never persist the seed. Flask's session is a signed-but-unencrypted
+        # client cookie, so anything placed here rides to the browser in
+        # plaintext base64. The mnemonic is returned once in the response body
+        # below for the user to back up, and is never read from the session,
+        # so it is kept out of the cookie entirely. (Reintroducing it here is
+        # what regressed the 826e16d seed-in-cookie fix.)
         session_key = f"account_{account['id']}"
         session[session_key] = {
             "id": account["id"],
             "name": account["name"],
-            "mnemonic": mnemonic,
             "hd_index": 1,
         }
 
@@ -2814,12 +2819,13 @@ def api_wallet_accounts_import():
             pubkey_hash=pkh,
         )
 
-        # Store in session
+        # Store non-secret account state only. The imported seed must never
+        # enter the session cookie (see create above); it is not read back
+        # from the session anywhere, so nothing needs it here.
         session_key = f"account_{account['id']}"
         session[session_key] = {
             "id": account["id"],
             "name": account["name"],
-            "mnemonic": mnemonic,
             "hd_index": 1,
         }
 
