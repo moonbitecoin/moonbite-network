@@ -58,7 +58,7 @@ import worldcup
 from node import Node
 from store import BlockStore
 from transaction import Transaction, generate_keypair, pubkey_hash
-from wallet import (HDWallet, address_from_pubkey_hash, is_valid_address,
+from wallet import (address_from_pubkey_hash, is_valid_address,
                     pubkey_hash_from_address)
 
 # Pragmatic email validation for the listing-notify capture.
@@ -2674,6 +2674,54 @@ def api_wallet_account_detail(account_id: str):
         )
 
 
+# The production deployment is mainnet, whose bech32 addresses carry the "moon"
+# human-readable prefix. A valid-checksum testnet ("tmoon"), regtest ("rmoon")
+# or MWEB ("moonmweb") address would otherwise be accepted and stored, then
+# silently never receive mainnet funds. Overridable for a testnet deployment.
+_ACCOUNT_ADDRESS_HRP = os.environ.get("MOONBITE_ADDRESS_HRP", "moon").strip().lower()
+_ACCOUNT_ADDRESS_PREFIX = _ACCOUNT_ADDRESS_HRP + "1"
+
+
+def _is_valid_account_address(addr: str) -> bool:
+    """A well-formed bech32 address on the network this site serves.
+
+    Checks the bech32 checksum (is_valid_address) AND that the human-readable
+    prefix is this network's - so a wrong-network address is rejected at the
+    door rather than stored as an account that can never be funded. The MWEB
+    prefix "moonmweb1" is deliberately excluded: an account's base address is a
+    standard receiving address, not an opt-in confidential one.
+    """
+    a = (addr or "").strip().lower()
+    if not a.startswith(_ACCOUNT_ADDRESS_PREFIX):
+        return False
+    if a.startswith("moonmweb1"):
+        return False
+    return is_valid_address(addr)
+
+
+def _register_public_account(session_id, name, address, color, is_default,
+                             derivation_path):
+    """Store an account from a client-derived address. No key material.
+
+    Self-custody means the seed is generated and kept in the browser
+    (static/moonbite-bip39.js); the server only ever records the public
+    address and label. mnemonic=None so the DB stores no seed-derived hash,
+    and the session holds non-secret fields only.
+    """
+    account = wallet_history.create_account(
+        session_id, name, mnemonic=None, color=color or None, is_default=is_default
+    )
+    pkh = pubkey_hash_from_address(address)
+    wallet_history.add_account_address(
+        account["id"], address=address,
+        derivation_path=derivation_path or "m/44'/0'/0'/0/0", pubkey_hash=pkh,
+    )
+    session[f"account_{account['id']}"] = {
+        "id": account["id"], "name": account["name"], "hd_index": 1,
+    }
+    return account, address
+
+
 @app.route("/api/wallet/accounts/create", methods=["POST"])
 @rate_limit(10, 60)
 def api_wallet_accounts_create():
@@ -2690,46 +2738,33 @@ def api_wallet_accounts_create():
                 suggested_action="Please provide a name like 'Main', 'Savings', etc.",
             )
 
+        # Self-custody: the seed is generated in the browser and never sent
+        # here. The client posts only the public address it derived; the
+        # server stores the label + address and never sees key material.
+        address = (data.get("address") or "").strip()
+        if not address:
+            return json_error(
+                "VALIDATION_MISSING_FIELD",
+                user_message="A derived wallet address is required",
+                suggested_action=(
+                    "Generate the seed in your browser and send only the "
+                    "derived address; the server never receives the seed."
+                ),
+            )
+        if not _is_valid_account_address(address):
+            return json_error(
+                "VALIDATION_INVALID_ADDRESS",
+                user_message="That is not a valid MoonBite address for this network",
+                suggested_action="Send a mainnet moon1 address derived in your browser",
+            )
+
         color = (data.get("color") or "").strip()
         is_default = bool(data.get("is_default", False))
+        derivation_path = (data.get("derivation_path") or "").strip()
 
-        # Generate a new HD wallet
-        wallet = HDWallet()
-        mnemonic = wallet.export_seed()
-
-        # Create account with mnemonic hash
-        account = wallet_history.create_account(
-            session_id,
-            name,
-            mnemonic=mnemonic,
-            color=color or None,
-            is_default=is_default,
+        account, first_address = _register_public_account(
+            session_id, name, address, color, is_default, derivation_path
         )
-
-        # Generate first address for the account
-        first_address = wallet.derive_address(0)
-        pkh = pubkey_hash_from_address(first_address)
-
-        wallet_history.add_account_address(
-            account["id"],
-            address=first_address,
-            derivation_path="m/44'/0'/0'/0/0",
-            pubkey_hash=pkh,
-        )
-
-        # Store account info in session for immediate access
-        # Never persist the seed. Flask's session is a signed-but-unencrypted
-        # client cookie, so anything placed here rides to the browser in
-        # plaintext base64. The mnemonic is returned once in the response body
-        # below for the user to back up, and is never read from the session,
-        # so it is kept out of the cookie entirely. (Reintroducing it here is
-        # what regressed the 826e16d seed-in-cookie fix.)
-        session_key = f"account_{account['id']}"
-        session[session_key] = {
-            "id": account["id"],
-            "name": account["name"],
-            "hd_index": 1,
-        }
 
         return jsonify(
             {
@@ -2741,9 +2776,8 @@ def api_wallet_accounts_create():
                     "is_default": bool(account["is_default"]),
                     "created_at": account["created_at"],
                 },
-                "mnemonic": mnemonic,
                 "first_address": first_address,
-                "message": "BACKUP THIS SEED PHRASE! You can recover all addresses with it.",
+                "message": "Account added. Your seed stays in your browser - back it up there.",
             }
         ), 201
     except ValueError as e:
@@ -2776,58 +2810,34 @@ def api_wallet_accounts_import():
                 suggested_action="Please provide a name",
             )
 
-        mnemonic = (data.get("mnemonic") or "").strip()
-        if not mnemonic:
+        # Self-custody import: the user's existing seed is validated and its
+        # address derived IN THE BROWSER (static/moonbite-address.js). The
+        # server receives only that derived address - never the seed or
+        # passphrase - so a restored wallet exposes no key material server-side.
+        address = (data.get("address") or "").strip()
+        if not address:
             return json_error(
                 "VALIDATION_MISSING_FIELD",
-                user_message="Seed phrase is required",
-                suggested_action="Please enter your 12 or 24 word seed phrase",
+                user_message="A derived wallet address is required",
+                suggested_action=(
+                    "Derive the address from your seed in your browser and send "
+                    "only that address; the server never receives the seed."
+                ),
+            )
+        if not _is_valid_account_address(address):
+            return json_error(
+                "VALIDATION_INVALID_ADDRESS",
+                user_message="That is not a valid MoonBite address for this network",
+                suggested_action="Send a mainnet moon1 address derived in your browser",
             )
 
         color = (data.get("color") or "").strip()
-        passphrase = (data.get("passphrase") or "").strip()
         is_default = bool(data.get("is_default", False))
+        derivation_path = (data.get("derivation_path") or "").strip()
 
-        # Validate mnemonic by trying to load wallet
-        try:
-            wallet = HDWallet.from_mnemonic(mnemonic, passphrase)
-        except ValueError as e:
-            return json_error(
-                "VALIDATION_INVALID_MNEMONIC",
-                user_message="Invalid seed phrase",
-                debug_message=str(e),
-                suggested_action="Please check that you entered the seed phrase correctly",
-            )
-
-        # Create account with mnemonic hash
-        account = wallet_history.create_account(
-            session_id,
-            name,
-            mnemonic=mnemonic,
-            color=color or None,
-            is_default=is_default,
+        account, first_address = _register_public_account(
+            session_id, name, address, color, is_default, derivation_path
         )
-
-        # Generate first address(es) from imported wallet
-        first_address = wallet.derive_address(0)
-        pkh = pubkey_hash_from_address(first_address)
-
-        wallet_history.add_account_address(
-            account["id"],
-            address=first_address,
-            derivation_path="m/44'/0'/0'/0/0",
-            pubkey_hash=pkh,
-        )
-
-        # Store non-secret account state only. The imported seed must never
-        # enter the session cookie (see create above); it is not read back
-        # from the session anywhere, so nothing needs it here.
-        session_key = f"account_{account['id']}"
-        session[session_key] = {
-            "id": account["id"],
-            "name": account["name"],
-            "hd_index": 1,
-        }
 
         return jsonify(
             {
@@ -2840,7 +2850,7 @@ def api_wallet_accounts_import():
                     "created_at": account["created_at"],
                 },
                 "first_address": first_address,
-                "message": "Account imported successfully",
+                "message": "Account imported. Your seed stays in your browser.",
             }
         ), 201
     except ValueError as e:
