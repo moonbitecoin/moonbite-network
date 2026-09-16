@@ -136,7 +136,14 @@ pre { background:#0E1017; border:1px solid #23262F; border-radius:10px; padding:
         <button class="os-tab" data-os="win">Windows</button>
       </div>
       <div class="os-block on" data-os="nix"><pre>./mine.sh</pre></div>
-      <div class="os-block" data-os="win"><pre>.\mine.ps1</pre></div>
+      <div class="os-block" data-os="win">
+        <pre>powershell -ExecutionPolicy Bypass -File .\mine.ps1</pre>
+        <p class="faint" style="margin-top:10px">Windows blocks scripts downloaded
+        from the internet by default, so run it with <code>-ExecutionPolicy Bypass</code>
+        as shown — right-click the extracted folder, choose <b>Open in Terminal</b>,
+        and paste the line. Plain <code>.\mine.ps1</code> is refused with
+        "running scripts is disabled on this system."</p>
+      </div>
     </div>
   </div>
 
