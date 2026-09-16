@@ -481,11 +481,24 @@ _RETIRED_API_PREFIXES = (
 )
 
 
-def _is_retired_api(path: str) -> bool:
+def _is_retired_api(path: str, method: str = "GET") -> bool:
     if path == "/api/mine" or any(path.startswith(pfx) for pfx in _RETIRED_API_PREFIXES):
         return True
     if path.startswith("/api/address/") and path.endswith("/balance"):
         return True
+    # The account endpoints that report a balance sum the demo chain's UTXO
+    # set, so on the live node they answer 0 for an address holding real
+    # coins — and the balance route writes that 0 back into the account DB.
+    # Their sibling /api/wallet/balance was retired; these were missed. Only
+    # the reads go: create/import/update/switch/delete touch the local
+    # account DB alone and are unaffected by which chain is live.
+    if method == "GET":
+        if path == "/api/wallet/accounts":
+            return True
+        if path.startswith("/api/wallet/accounts/"):
+            rest = path[len("/api/wallet/accounts/"):]
+            if rest.endswith("/balance") or "/" not in rest:
+                return True
     return False
 
 
@@ -498,7 +511,7 @@ def retire_demo_chain_routes():
     p = path[:-1] if (len(path) > 1 and path.endswith("/")) else path
     if p in _RETIRED_PAGE_REDIRECTS:
         return redirect(_RETIRED_PAGE_REDIRECTS[p], code=302)
-    if _is_retired_api(p):
+    if _is_retired_api(p, request.method):
         return jsonify({
             "status": "error",
             "message": ("This endpoint ran on the pre-launch demo chain and has "
