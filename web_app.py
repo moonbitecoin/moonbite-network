@@ -4522,24 +4522,13 @@ def create_backup():
 def backup_status():
     """Get cloud backup status"""
     try:
-        backups = []
-        if os.path.exists("backups"):
-            for f in os.listdir("backups"):
-                if f.endswith(".json"):
-                    with open(f"backups/{f}") as fp:
-                        backup = json.load(fp)
-                        backups.append({
-                            "id": backup["id"],
-                            "timestamp": backup["timestamp"],
-                            "platform": backup["platform"]
-                        })
-
-        return jsonify({
-            "hasBackup": len(backups) > 0,
-            "lastBackup": max([b["timestamp"] for b in backups], default=None),
-            "backupCount": len(backups),
-            "backups": sorted(backups, key=lambda x: x["timestamp"], reverse=True)
-        })
+        # There is no per-user ownership on these flat-file backups, so this
+        # endpoint must never enumerate them: returning the id list turned
+        # "list all backups" + "restore <id>" into a one-click mass export of
+        # every stored encrypted seed. A client tracks its own backupId from
+        # the create response; status only confirms the store is reachable.
+        reachable = os.path.isdir("backups")
+        return jsonify({"hasBackup": False, "storeReachable": reachable})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -4552,6 +4541,13 @@ def restore_backup():
 
         if not backup_id:
             return jsonify({"error": "Backup ID required"}), 400
+
+        # backupId comes from the request body and is interpolated into a file
+        # path, so it must be exactly the token_hex(8) format we issue - 16 hex
+        # chars, nothing else. Without this, "../railway" reads backups/../
+        # railway.json and returns any .json on the server as "encryptedSeed".
+        if not re.fullmatch(r"[0-9a-f]{16}", backup_id):
+            return jsonify({"error": "Invalid backup ID"}), 400
 
         backup_file = f"backups/{backup_id}.json"
         if not os.path.exists(backup_file):
