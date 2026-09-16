@@ -32,11 +32,17 @@ write_conf() {
   mkdir -p "$DATADIR"
   # Preserve the RPC password across restarts; regenerating it would orphan any
   # running process still holding the old one.
-  local pw
+  local pw old_umask
   # First run has no conf, so sed fails; under `set -e` an unguarded
   # assignment from a failing substitution kills the script silently.
   pw=$(sed -n 's/^rpcpassword=//p' "$CONF" 2>/dev/null | head -1) || true
   [ -z "$pw" ] && pw=$(head -c 24 /dev/urandom | od -An -tx1 | tr -d ' \n')
+  # Create the file 0600 from birth. A bare `> "$CONF"` makes it at the
+  # default umask (often 0644), leaving a window where the RPC password is
+  # world-readable before the chmod below runs. Tighten umask around the
+  # write only, then restore it.
+  old_umask=$(umask)
+  umask 077
   {
     echo "server=1"
     echo "listen=1"
@@ -51,6 +57,7 @@ write_conf() {
     local s
     for s in ${SEEDS//,/ }; do echo "addnode=$s"; done
   } > "$CONF"
+  umask "$old_umask"
   chmod 600 "$CONF"
 }
 
