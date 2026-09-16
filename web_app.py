@@ -492,7 +492,10 @@ def _is_retired_api(path: str, method: str = "GET") -> bool:
     # Their sibling /api/wallet/balance was retired; these were missed. Only
     # the reads go: create/import/update/switch/delete touch the local
     # account DB alone and are unaffected by which chain is live.
-    if method == "GET":
+    # HEAD counts as a read: Flask adds it to every GET route and runs the
+    # full view (discarding only the body), so a HEAD that slipped past this
+    # guard would still execute the balance route's DB write.
+    if method in ("GET", "HEAD"):
         if path == "/api/wallet/accounts":
             return True
         if path.startswith("/api/wallet/accounts/"):
