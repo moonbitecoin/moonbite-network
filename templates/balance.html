@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Check your MoonBite balance</title>
+<meta name="description" content="Paste the address you mined to and see its balance, read live from the MoonBite chain. No account, no wallet connection.">
+<link rel="icon" type="image/svg+xml" href="/static/moonbite-logo.svg">
+<link rel="stylesheet" href="/static/fonts/moonbite-fonts.css">
+<style nonce="{{ csp_nonce }}">
+/* Brand Reserve only: Void / Slate / Moongold / Bone / Ash. Matches the home
+   page so the walk from "you mined a block" to "here is what you have" is one
+   continuous world. Nothing loads from a third party. */
+:root{
+  --void:#0B0D12; --slate:#161A22; --gold:#D9A441; --gold-2:#EBCB86;
+  --bone:#F5F2EA; --ash:#8A8580; --ok:#2E9E6B;
+  --display:'Archivo Black','Helvetica Neue','Arial Black',sans-serif;
+  --ui:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --mono:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  --ease:cubic-bezier(0.22,1,0.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--void);color:var(--bone);font-family:var(--ui);line-height:1.5;
+  min-height:100svh;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--gold);color:var(--void)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:3px}
+.skip{position:absolute;left:-9999px;z-index:50;background:var(--gold);color:var(--void);padding:12px 18px;font-weight:700}
+.skip:focus{left:0;top:0}
+
+.top{display:flex;align-items:center;gap:12px;padding:16px clamp(18px,4vw,44px)}
+.brand{display:flex;align-items:center;gap:10px;min-height:44px;
+  font-family:var(--display);font-size:1rem;text-transform:uppercase;letter-spacing:-.02em}
+.brand svg{width:24px;height:24px;flex:none}
+.top nav{margin-left:auto;display:flex;gap:clamp(12px,3vw,26px);font-size:.9rem}
+.top nav a{color:var(--ash);min-height:44px;display:flex;align-items:center}
+.top nav a:hover{color:var(--gold)}
+
+main{max-width:720px;margin:0 auto;padding:clamp(28px,7vh,72px) clamp(20px,5vw,28px) 80px}
+.tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:16px}
+h1{font-family:var(--display);font-weight:400;letter-spacing:-.03em;line-height:1;
+  font-size:clamp(2rem,6vw,3.4rem)}
+.lede{margin-top:16px;max-width:46ch;color:rgba(245,242,234,.76);font-size:clamp(1rem,1.8vw,1.12rem)}
+
+form{margin-top:32px;display:flex;gap:10px;flex-wrap:wrap}
+.field{flex:1 1 320px;display:flex;flex-direction:column;gap:6px}
+label{font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ash)}
+input{width:100%;background:var(--slate);border:1px solid rgba(245,242,234,.16);color:var(--bone);
+  border-radius:6px;padding:14px 16px;font-family:var(--mono);font-size:.92rem;min-height:52px}
+input::placeholder{color:rgba(245,242,234,.34)}
+input:focus{border-color:var(--gold);outline:none}
+button{min-height:52px;align-self:flex-end;padding:0 30px;border:0;border-radius:6px;cursor:pointer;
+  background:var(--gold);color:var(--void);font-weight:700;font-size:1rem;
+  transition:transform .12s var(--ease),background .2s var(--ease)}
+button:hover{transform:translateY(-2px);background:var(--gold-2)}
+button:disabled{opacity:.5;cursor:default;transform:none}
+
+.hint{margin-top:14px;font-size:.86rem;color:var(--ash);max-width:52ch;line-height:1.6}
+
+/* result card, one shape for every state */
+.card{margin-top:30px;border:1px solid rgba(245,242,234,.14);border-radius:12px;
+  background:linear-gradient(180deg,rgba(22,26,34,.7),rgba(11,13,18,.7));
+  padding:26px clamp(20px,4vw,30px)}
+.card[hidden]{display:none}
+.card .addr{font-family:var(--mono);font-size:.8rem;color:var(--ash);word-break:break-all;margin-bottom:16px}
+.amount{font-family:var(--display);font-weight:400;letter-spacing:-.02em;line-height:1;
+  font-size:clamp(2.4rem,8vw,4rem)}
+.amount .u{font-family:var(--ui);font-weight:600;font-size:.34em;color:var(--gold);margin-left:.35em;letter-spacing:0}
+.meta{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px 22px;font-family:var(--mono);
+  font-size:.74rem;color:rgba(245,242,234,.6)}
+.meta b{color:var(--bone);font-weight:400}
+.note{margin-top:18px;font-size:.82rem;color:var(--ash);line-height:1.6;max-width:54ch}
+.zero .amount{color:var(--ash)}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(217,164,65,.3);
+  border-top-color:var(--gold);border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px;margin-right:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spin{animation:none}button:hover{transform:none}}
+.err{border-color:rgba(200,64,47,.45)}
+.err .amount{font-size:clamp(1.1rem,3vw,1.5rem);color:var(--bone)}
+
+footer{max-width:720px;margin:0 auto;padding:0 clamp(20px,5vw,28px) 48px;
+  font-family:var(--mono);font-size:.7rem;color:var(--ash);line-height:1.8}
+footer a{color:var(--ash);text-decoration:underline;text-underline-offset:3px}
+</style>
+</head>
+<body>
+<a class="skip" href="#check">Skip to the address box</a>
+
+<header class="top">
+  <a class="brand" href="/">
+    <svg viewBox="-150 -150 300 300" aria-hidden="true">
+      <mask id="bite"><rect x="-150" y="-150" width="300" height="300" fill="#fff"/>
+        <circle cx="67.18" cy="-67.18" r="62" fill="#000"/></mask>
+      <circle r="100" fill="#F5F2EA" mask="url(#bite)"/>
+    </svg>
+    <span>MoonBite</span>
+  </a>
+  <nav>
+    <a href="/mine">Mine</a>
+    <a href="/explorer">Explorer</a>
+  </nav>
+</header>
+
+<main id="check">
+  <p class="tag">Read live from the chain</p>
+  <h1>See what you've mined.</h1>
+  <p class="lede">Paste the address you mined to. No wallet to connect, no account,
+    nothing to sign — this only reads the public chain.</p>
+
+  <form id="form" autocomplete="off">
+    <div class="field">
+      <label for="addr">Your MoonBite address</label>
+      <input id="addr" name="addr" inputmode="text" spellcheck="false"
+             placeholder="moon1…" aria-describedby="hint">
+    </div>
+    <button type="submit" id="go">Check balance</button>
+  </form>
+  <p class="hint" id="hint">A mainnet address begins with <b>moon1</b>. Your seed never
+    leaves your machine — you are only sharing a public address.</p>
+
+  <section class="card" id="card" hidden aria-live="polite"></section>
+  <noscript>
+    <p class="hint">This lookup needs JavaScript to read the chain live. You can also
+      look up any address on the <a href="/explorer" style="color:var(--gold)">block
+      explorer</a>.</p>
+  </noscript>
+</main>
+
+<footer>
+  This is the current <b>unspent</b> balance, scanned live from the MoonBite chain.
+  Freshly mined coins become spendable 100 blocks after they are found
+  (standard coinbase maturity), so a block you just mined may not appear here yet.<br>
+  Prefer the raw data? <a href="/explorer">Open the explorer</a>.
+</footer>
+
+<script nonce="{{ csp_nonce }}">
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var form=$('form'), input=$('addr'), go=$('go'), card=$('card');
+var UNITS=100000000;
+
+function fmt(coins){
+  // whole MBITE with thousands separators, up to 8 dp trimmed of trailing zeros
+  var s=coins.toLocaleString('en-US',{maximumFractionDigits:8});
+  return s;
+}
+function esc(s){return String(s).replace(/[<&>]/g,function(c){return {'<':'&lt;','&':'&amp;','>':'&gt;'}[c]})}
+
+function show(html, cls){
+  card.className='card'+(cls?' '+cls:'');
+  card.innerHTML=html;
+  card.hidden=false;
+}
+
+function looksLikeAddress(a){
+  // permissive gate only; the node is the authority. bech32 charset, moon1 HRP.
+  return /^moon1[0-9ac-hj-np-z]{10,90}$/.test(a);
+}
+
+function render(addr, data){
+  var units=(data.balance_units!=null)?data.balance_units:0;
+  var coins=units/UNITS;
+  var n=(data.utxos&&data.utxos.length!=null)?data.utxos.length:null;
+  var height=data.height!=null?data.height:null;
+  if(units===0){
+    show(
+      '<p class="addr">'+esc(addr)+'</p>'+
+      '<div class="amount">0<span class="u">MBITE</span></div>'+
+      '<p class="note">Nothing has landed on this address yet. If you just started '+
+      'mining, give it a few blocks — and remember new rewards need 100 confirmations '+
+      'before they show as spendable.</p>', 'zero');
+    return;
+  }
+  var meta='';
+  if(n!=null) meta+='<span><b>'+n+'</b> unspent output'+(n===1?'':'s')+'</span>';
+  if(height!=null) meta+='<span>as of block <b>#'+height.toLocaleString('en-US')+'</b></span>';
+  show(
+    '<p class="addr">'+esc(addr)+'</p>'+
+    '<div class="amount">'+fmt(coins)+'<span class="u">MBITE</span></div>'+
+    (meta?'<div class="meta">'+meta+'</div>':'')+
+    '<p class="note">Confirmed, unspent, and yours. This is read straight from the '+
+    'chain — nobody was asked, and nothing was signed.</p>');
+}
+
+function check(addr){
+  go.disabled=true;
+  show('<div class="amount" style="font-size:1.2rem"><span class="spin"></span>'+
+       'Scanning the chain…</div>'+
+       '<p class="note">Reading every unspent output for this address. '+
+       'This can take a few seconds.</p>');
+  var ctrl=new AbortController();
+  var t=setTimeout(function(){ctrl.abort()},28000);
+  fetch('/api/chain/address/'+encodeURIComponent(addr),{signal:ctrl.signal})
+    .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j}})})
+    .then(function(res){
+      clearTimeout(t);
+      if(res.ok && res.j && res.j.status==='success'){ render(addr,res.j); }
+      else if(res.j && /not configured/i.test(res.j.message||'')){
+        show('<div class="amount">Live lookup is off</div><p class="note">This '+
+             'server is not connected to the node right now. Try the '+
+             '<a href="/explorer" style="color:var(--gold)">explorer</a>.</p>','err');
+      } else {
+        show('<div class="amount">Could not read that address</div><p class="note">'+
+             esc((res.j&&res.j.message)||'The scan did not complete.')+
+             ' Check the address and try again.</p>','err');
+      }
+    })
+    .catch(function(e){
+      clearTimeout(t);
+      var msg=(e&&e.name==='AbortError')
+        ? 'The node is busy scanning the chain. Give it a moment and try again.'
+        : 'Something went wrong reaching the node. Try again in a moment.';
+      show('<div class="amount">Try again</div><p class="note">'+msg+'</p>','err');
+    })
+    .then(function(){ go.disabled=false; });
+}
+
+form.addEventListener('submit',function(e){
+  e.preventDefault();
+  var addr=(input.value||'').trim();
+  if(!addr){ input.focus(); return; }
+  if(!looksLikeAddress(addr.toLowerCase())){
+    show('<div class="amount">That is not a MoonBite address</div><p class="note">'+
+         'A mainnet address begins with <b>moon1</b>. Paste the receiving address '+
+         'you mined to.</p>','err');
+    return;
+  }
+  // reflect the address in the URL so the result is shareable / reloadable
+  try{ history.replaceState(null,'','/balance?address='+encodeURIComponent(addr)); }catch(_e){}
+  check(addr);
+});
+
+// deep-link: /balance?address=moon1... checks immediately
+(function(){
+  var m=/[?&]address=([^&]+)/.exec(location.search);
+  if(m){ try{ input.value=decodeURIComponent(m[1]); }catch(_e){ input.value=m[1]; }
+    if(input.value.trim()) form.dispatchEvent(new Event('submit')); }
+  else { input.focus(); }
+})();
+})();
+</script>
+</body>
+</html>

@@ -47,6 +47,15 @@ h2 { font-size:1.35rem; margin:44px 0 6px; }
 .step .body { flex:1; }
 .step h3 { font-size:1rem; font-weight:700; margin-bottom:6px; }
 .step p { color:#8A8580; font-size:.9rem; line-height:1.58; margin-bottom:8px; }
+.earned { display:block; margin:22px 0 4px; padding:18px 20px; border-radius:12px;
+  text-decoration:none; border:1px solid rgba(217,164,65,.4);
+  background:linear-gradient(135deg, rgba(217,164,65,.12), rgba(217,164,65,.05));
+  transition:border-color .2s, transform .12s; }
+.earned:hover { border-color:#D9A441; transform:translateY(-2px); }
+.earned-k { display:block; font-family:ui-monospace,monospace; font-size:.64rem;
+  letter-spacing:.18em; text-transform:uppercase; color:#D9A441; }
+.earned-t { display:block; margin-top:6px; font-size:1.15rem; font-weight:800; color:#F5F2EA; }
+.earned-s { display:block; margin-top:6px; font-size:.86rem; color:#8A8580; line-height:1.55; }
 
 .os-tabs { display:flex; gap:8px; margin:6px 0 10px; }
 .os-tab { background:#14171F; border:1px solid #23262F; color:#8A8580; border-radius:8px;
@@ -142,6 +151,12 @@ pre { background:#0E1017; border:1px solid #23262F; border-radius:10px; padding:
       it. That is standard coinbase maturity and it protects the chain.</p>
     </div>
   </div>
+
+  <a class="earned" href="/balance">
+    <span class="earned-k">Mined a block?</span>
+    <span class="earned-t">See what landed on your address &rarr;</span>
+    <span class="earned-s">Paste your address, read the balance live from the chain. No wallet to connect.</span>
+  </a>
 
   <div class="note">
     <b>Why one CPU thread?</b> The node mines with one thread per CPU core, so an ordinary computer is competitive. RandomX is a CPU algorithm; specialised hardware has no edge.</div>

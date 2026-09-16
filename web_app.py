@@ -1531,6 +1531,14 @@ def explorer_page():
     return render_template("explorer.html")
 
 
+@app.route("/balance")
+def balance_page():
+    """Paste a mined address, see its live balance. Closes the loop the mine
+    flow leaves open: the node pays you, and this is where you watch it arrive.
+    Reads /api/chain/address/<addr> (scantxoutset); shares no key material."""
+    return render_template("balance.html")
+
+
 @app.route("/downloads/<path:filename>")
 def downloads(filename: str):
     """Serve real release artifacts from website/downloads."""
