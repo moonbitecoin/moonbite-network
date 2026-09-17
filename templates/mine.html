@@ -116,12 +116,15 @@ pre { background:#0E1017; border:1px solid #23262F; border-radius:10px; padding:
       <p>Download the package, unzip it, and keep the <code>mine</code> script in
       the same folder as the <code>moonbited</code> binary.</p>
       <div class="dlrow">
-        <a class="dl" href="/download/linux">Linux</a>
-        <a class="dl ghost" href="/download/macos">macOS</a>
-        <a class="dl ghost" href="/download/windows">Windows</a>
+        <a class="dl{{ '' if downloads.get('linux') else ' ghost' }}" href="/download/linux">Linux</a>
+        <a class="dl{{ '' if downloads.get('macos-arm64') else ' ghost' }}" href="/download/macos-arm64">macOS · Apple&nbsp;Silicon</a>
+        <a class="dl{{ '' if downloads.get('macos-x86_64') else ' ghost' }}" href="/download/macos-x86_64">macOS · Intel</a>
+        <a class="dl{{ '' if downloads.get('windows') else ' ghost' }}" href="/download/windows">Windows</a>
       </div>
-      <p class="faint" style="margin-top:10px">Prefer to build from source? The code is at
-      <a href="https://github.com/moonbitecoin" style="color:#8A8580">github.com/moonbitecoin</a>.</p>
+      <p class="faint" style="margin-top:10px">A hollow button means that build is not
+      published yet — you can build it from source at
+      <a href="https://github.com/moonbitecoin" style="color:#8A8580">github.com/moonbitecoin</a>.
+      On a Mac, the menu &rarr; <b>About This Mac</b> tells you Apple Silicon or Intel.</p>
     </div>
   </div>
 
@@ -132,10 +135,20 @@ pre { background:#0E1017; border:1px solid #23262F; border-radius:10px; padding:
       <p>One command. It launches your node, connects to the network, makes a
       wallet, and starts mining to your own address.</p>
       <div class="os-tabs">
-        <button class="os-tab on" data-os="nix">Linux / macOS</button>
+        <button class="os-tab on" data-os="nix">Linux</button>
+        <button class="os-tab" data-os="mac">macOS</button>
         <button class="os-tab" data-os="win">Windows</button>
       </div>
       <div class="os-block on" data-os="nix"><pre>./mine.sh</pre></div>
+      <div class="os-block" data-os="mac">
+        <pre>xattr -dr com.apple.quarantine moonbite-miner &amp;&amp; ./mine.sh</pre>
+        <p class="faint" style="margin-top:10px">macOS quarantines programs
+        downloaded from the internet, so an unsigned binary is blocked with
+        "cannot be opened because the developer cannot be verified." The
+        <code>xattr</code> line clears that flag for the extracted
+        <code>moonbite-miner</code> folder; then run <code>./mine.sh</code> as
+        usual. Run both from a Terminal opened in that folder.</p>
+      </div>
       <div class="os-block" data-os="win">
         <pre>powershell -ExecutionPolicy Bypass -File .\mine.ps1</pre>
         <p class="faint" style="margin-top:10px">Windows blocks scripts downloaded

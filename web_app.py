@@ -1127,7 +1127,11 @@ def get_wallet_page():
 @app.route("/mine")
 def mine_page():
     """Render the mining landing page."""
-    return render_template("mine.html")
+    # Report which OS bundles are actually staged so the download buttons reflect
+    # reality (live vs build-from-source) instead of a hardcoded guess.
+    avail = {os_name: _bundle_available(os_name)
+             for os_name in ("linux", "macos-arm64", "macos-x86_64", "windows")}
+    return render_template("mine.html", downloads=avail)
 
 
 @app.route("/markets")
@@ -1469,12 +1473,26 @@ def halving_page():
 _MINER_DOWNLOAD_DIR = storage.data_path("downloads", "MOONBITE_DOWNLOAD_DIR")
 _MINER_BUNDLES = {
     "linux": "moonbite-miner-linux-x86_64.tar.gz",
-    "macos": "moonbite-miner-macos.tar.gz",
+    # macOS ships per-architecture - the release CI builds both natively
+    # (macos-14 arm64, macos-13 x86_64). The bare "macos" key defaults to Apple
+    # Silicon, which covers every Mac since 2020; Intel Macs use macos-x86_64.
+    # Filenames match the release workflow's artifacts exactly, so the moment a
+    # bundle is staged in the download dir the button below goes live.
+    "macos": "moonbite-miner-macos-arm64.tar.gz",
+    "macos-arm64": "moonbite-miner-macos-arm64.tar.gz",
+    "macos-x86_64": "moonbite-miner-macos-x86_64.tar.gz",
     "windows": "moonbite-miner-windows-x86_64.zip",
     # The desktop wallet app is a separate download (kept out of the miner
     # bundle so the miner stays small and quick to fetch).
     "wallet": "moonbite-wallet.exe",
 }
+
+
+def _bundle_available(os_name: str) -> bool:
+    """True when the bundle for `os_name` is staged and downloadable now, so the
+    mine page can show a live button rather than a build-from-source ghost."""
+    fname = _MINER_BUNDLES.get(os_name)
+    return bool(fname) and os.path.isfile(os.path.join(_MINER_DOWNLOAD_DIR, fname))
 
 
 @app.route("/download/<os_name>")
