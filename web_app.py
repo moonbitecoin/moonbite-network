@@ -815,6 +815,14 @@ def home_page():
     return render_template("horizon.html")
 
 
+@app.route("/hello")
+def hello_page():
+    """A welcome homepage for people who have never touched crypto: feel the
+    magic first (mine a practice coin in the browser), then plain-language
+    explanation, the anti-scam honesty, and a gentle free first step."""
+    return render_template("hello.html")
+
+
 @app.route("/moon")
 def home_moon_page():
     """Previous homepage (The Last Unowned Thing), kept for comparison."""
