@@ -2,42 +2,41 @@
 /* MoonBite Dashboard — Cosmic Mining Design System                            */
 /* ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {
     /* Dark Mode (default) — deep space palette */
-    --bg-primary: #05060d;
-    --bg-secondary: #0a0d1a;
-    --bg-tertiary: #131a2e;
-    --text-primary: #f2f4fb;
-    --text-secondary: #8991b3;
-    --border-color: rgba(255, 255, 255, 0.09);
-    --card-bg: rgba(255, 255, 255, 0.035);
-    --card-bg-solid: #0e1220;
+    --bg-primary: #0B0D12;
+    --bg-secondary: #12151d;
+    --bg-tertiary: #161A22;
+    --text-primary: #F5F2EA;
+    --text-secondary: #8A8580;
+    --border-color: rgba(245, 242, 234, 0.09);
+    --card-bg: rgba(245, 242, 234, 0.035);
+    --card-bg-solid: #12151d;
     --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
     --glass-blur: blur(18px);
 
     /* Accent gradient palette */
-    --primary-color: #7c5cff;
-    --primary-color-2: #34d3ff;
-    --success-color: #22e5a8;
-    --danger-color: #ff5470;
-    --warning-color: #ffb84d;
-    --info-color: #34d3ff;
-    --secondary-color: #6c7597;
+    --primary-color: #D9A441;
+    --primary-color-2: #B8863B;
+    --success-color: #2E9E6B;
+    --danger-color: #C8402F;
+    --warning-color: #D9A441;
+    --info-color: #B8863B;
+    --secondary-color: #8A8580;
 
-    --gradient-primary: linear-gradient(135deg, #7c5cff 0%, #34d3ff 100%);
-    --gradient-success: linear-gradient(135deg, #22e5a8 0%, #34d3ff 100%);
-    --gradient-danger: linear-gradient(135deg, #ff5470 0%, #ff8a5c 100%);
-    --gradient-gold: linear-gradient(135deg, #ffb84d 0%, #ff5470 100%);
+    --gradient-primary: linear-gradient(135deg, #D9A441 0%, #B8863B 100%);
+    --gradient-success: linear-gradient(135deg, #2E9E6B 0%, #B8863B 100%);
+    --gradient-danger: linear-gradient(135deg, #C8402F 0%, #B8863B 100%);
+    --gradient-gold: linear-gradient(135deg, #D9A441 0%, #C8402F 100%);
 
     --glow-primary: 0 0 24px rgba(124, 92, 255, 0.45);
     --glow-success: 0 0 24px rgba(34, 229, 168, 0.45);
     --glow-danger: 0 0 24px rgba(255, 84, 112, 0.4);
 
     /* Typography */
-    --font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --font-mono: 'JetBrains Mono', "Monaco", "Menlo", "Consolas", monospace;
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: ui-monospace, "Monaco", "Menlo", "Consolas", monospace;
 
     /* Spacing */
     --spacing-xs: 0.25rem;
@@ -63,9 +62,9 @@ html[data-theme="light"] {
     --bg-secondary: #ffffff;
     --bg-tertiary: #eceef7;
     --text-primary: #161a2c;
-    --text-secondary: #5c6488;
+    --text-secondary: #6b6862;
     --border-color: rgba(22, 26, 44, 0.09);
-    --card-bg: rgba(255, 255, 255, 0.7);
+    --card-bg: rgba(245, 242, 234, 0.7);
     --card-bg-solid: #ffffff;
     --card-shadow: 0 8px 30px rgba(85, 90, 150, 0.14);
     --glow-primary: 0 0 20px rgba(124, 92, 255, 0.18);
@@ -124,12 +123,12 @@ body::after {
     inset: 0;
     z-index: -1;
     background-image:
-        radial-gradient(1.5px 1.5px at 20% 30%, rgba(255, 255, 255, 0.55), transparent),
-        radial-gradient(1.5px 1.5px at 70% 65%, rgba(255, 255, 255, 0.4), transparent),
-        radial-gradient(1px 1px at 85% 20%, rgba(255, 255, 255, 0.5), transparent),
-        radial-gradient(1px 1px at 40% 80%, rgba(255, 255, 255, 0.35), transparent),
-        radial-gradient(1.5px 1.5px at 55% 10%, rgba(255, 255, 255, 0.4), transparent),
-        radial-gradient(1px 1px at 10% 60%, rgba(255, 255, 255, 0.3), transparent);
+        radial-gradient(1.5px 1.5px at 20% 30%, rgba(245, 242, 234, 0.55), transparent),
+        radial-gradient(1.5px 1.5px at 70% 65%, rgba(245, 242, 234, 0.4), transparent),
+        radial-gradient(1px 1px at 85% 20%, rgba(245, 242, 234, 0.5), transparent),
+        radial-gradient(1px 1px at 40% 80%, rgba(245, 242, 234, 0.35), transparent),
+        radial-gradient(1.5px 1.5px at 55% 10%, rgba(245, 242, 234, 0.4), transparent),
+        radial-gradient(1px 1px at 10% 60%, rgba(245, 242, 234, 0.3), transparent);
     background-repeat: repeat;
     background-size: 600px 600px;
     opacity: 0.5;
@@ -432,7 +431,7 @@ html[data-theme="light"] body::after {
 }
 
 .btn-info {
-    background: linear-gradient(135deg, #34d3ff, #7c5cff);
+    background: linear-gradient(135deg, #B8863B, #D9A441);
     color: #06172a;
 }
 
@@ -640,7 +639,7 @@ input[type="number"]:focus {
     background: linear-gradient(
         110deg,
         transparent 20%,
-        rgba(255, 255, 255, 0.35) 45%,
+        rgba(245, 242, 234, 0.35) 45%,
         transparent 70%
     );
     background-size: 200% 100%;
@@ -841,13 +840,13 @@ input[type="number"]:focus {
 
 .tx-status.confirmed {
     background-color: rgba(34, 229, 168, 0.15);
-    color: #22e5a8;
+    color: #2E9E6B;
     border: 1px solid rgba(34, 229, 168, 0.3);
 }
 
 .tx-status.pending {
     background-color: rgba(255, 184, 77, 0.15);
-    color: #ffb84d;
+    color: #D9A441;
     border: 1px solid rgba(255, 184, 77, 0.3);
 }
 
@@ -979,19 +978,19 @@ input[type="number"]:focus {
 }
 
 .status-message.success {
-    color: #22e5a8;
+    color: #2E9E6B;
     border: 1px solid rgba(34, 229, 168, 0.35);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(34, 229, 168, 0.2);
 }
 
 .status-message.error {
-    color: #ff5470;
+    color: #C8402F;
     border: 1px solid rgba(255, 84, 112, 0.35);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 84, 112, 0.2);
 }
 
 .status-message.info {
-    color: #34d3ff;
+    color: #B8863B;
     border: 1px solid rgba(52, 211, 255, 0.35);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(52, 211, 255, 0.2);
 }
@@ -1413,7 +1412,7 @@ body.loaded .main-content {
     gap: var(--spacing-lg);
     margin-bottom: var(--spacing-xl);
     padding: var(--spacing-lg);
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(245, 242, 234, 0.02);
     border-radius: var(--radius-md);
 }
 
@@ -1485,13 +1484,13 @@ body.loaded .main-content {
 }
 
 .mb-receipt-btn-copy {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(245, 242, 234, 0.08);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
 }
 
 .mb-receipt-btn-copy:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(245, 242, 234, 0.12);
     border-color: var(--primary-color);
 }
 

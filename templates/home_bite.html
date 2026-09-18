@@ -6,23 +6,23 @@
 <title>MoonBite — Take a bite of the moon</title>
 <meta name="description" content="MoonBite is money you mine, not money you're sold. A fair-launch proof-of-work coin: no pre-sale, no allocation — every coin was earned by a CPU somewhere.">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/fonts/moonbite-fonts.css">
 <style>
 :root{
-  --bg:#05060A;
-  --panel:#0C0E14;
-  --line:#1F232C;
-  --line-soft:#141820;
-  --text:#EDEBE6;
-  --muted:#9AA0AA;
-  --faint:#565C68;
+  --bg:#0B0D12;
+  --panel:#161A22;
+  --line:#232830;
+  --line-soft:#171B23;
+  --text:#F5F2EA;
+  --muted:#8A8580;
+  --faint:#6E6961;
   --gold:#D9A441;
   --gold-hot:#F2CE7B;
   --gold-dim:rgba(217,164,65,.14);
-  --up:#4CC38A;
-  --sans:'Space Grotesk',system-ui,sans-serif;
-  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --up:#2E9E6B;
+  --sans:'Inter',-apple-system,'Segoe UI',system-ui,sans-serif;
+  --display:'Archivo Black','Helvetica Neue','Arial Black',sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -43,10 +43,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:cent
   border-radius:50%;background:var(--bg)}
 .nav-links{display:flex;gap:26px;align-items:center}
 .nav-links a{color:var(--muted);text-decoration:none;font-size:12px;letter-spacing:.14em;
-  text-transform:uppercase;font-family:var(--mono);transition:color .2s}
+  text-transform:uppercase;font-family:var(--mono);transition:color .24s cubic-bezier(.22,1,.36,1)}
 .nav-links a:hover{color:var(--gold)}
-.nav-cta{background:var(--gold);color:#0A0800!important;padding:9px 18px;border-radius:7px;font-weight:700}
-.nav-cta:hover{box-shadow:0 0 22px rgba(217,164,65,.5)}
 
 .scene{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;
   align-items:center;justify-content:center;padding:110px 24px;text-align:center}
@@ -54,40 +52,34 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:cent
 
 .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.34em;text-transform:uppercase;
   color:var(--gold);margin-bottom:20px}
-h1{font-size:clamp(44px,7.4vw,104px);font-weight:700;line-height:.98;letter-spacing:-.03em;max-width:1000px;
-  text-shadow:0 2px 34px rgba(5,6,10,.85)}
+h1{font-family:var(--display);font-size:clamp(40px,6.8vw,96px);font-weight:400;line-height:.98;letter-spacing:-.03em;max-width:1000px;
+  text-shadow:0 2px 34px rgba(11,13,18,.85)}
 h1 em{font-style:normal;color:var(--gold)}
 .hero-sub{color:var(--muted);font-size:clamp(15px,1.6vw,19px);max-width:560px;line-height:1.65;margin:26px 0 38px}
 .hero-live{font-family:var(--mono);font-size:12.5px;color:var(--faint);margin-top:34px;
   display:flex;gap:10px;align-items:center;justify-content:center}
 .pulse-dot{width:7px;height:7px;border-radius:50%;background:var(--up);
-  box-shadow:0 0 0 0 rgba(76,195,138,.6);animation:pulse 2s infinite}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(76,195,138,.55)}70%{box-shadow:0 0 0 9px rgba(76,195,138,0)}100%{box-shadow:0 0 0 0 rgba(76,195,138,0)}}
+  box-shadow:0 0 0 0 rgba(46,158,107,.6);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(46,158,107,.55)}70%{box-shadow:0 0 0 9px rgba(46,158,107,0)}100%{box-shadow:0 0 0 0 rgba(46,158,107,0)}}
 .hero-live b{color:var(--text);font-weight:500}
 .hero-live .gold{color:var(--gold)}
 .hero-live.stale .pulse-dot{background:var(--faint);animation:none}
 
 .cta-row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
-.btn{font-family:var(--sans);font-size:15.5px;font-weight:600;padding:15px 32px;border-radius:9px;
-  cursor:pointer;border:1px solid transparent;text-decoration:none;transition:all .22s;display:inline-block}
-.btn-primary{background:var(--gold);color:#0A0800;position:relative;overflow:hidden}
-.btn-primary::after{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;
-  background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);
-  animation:sheen 3.4s ease-in-out infinite}
-@keyframes sheen{0%,55%{left:-80%}85%,100%{left:130%}}
+.btn{font-family:var(--sans);font-size:15.5px;font-weight:600;padding:15px 32px;border-radius:6px;
+  cursor:pointer;border:1px solid transparent;text-decoration:none;transition:all .24s cubic-bezier(.22,1,.36,1);display:inline-block}
+.btn-primary{background:var(--gold);color:#0A0800}
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 34px rgba(217,164,65,.45)}
-.btn-ghost{background:rgba(5,6,10,.5);backdrop-filter:blur(6px);color:var(--text);border-color:var(--line)}
+.btn-ghost{background:rgba(11,13,18,.5);backdrop-filter:blur(6px);color:var(--text);border-color:var(--line)}
 .btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
 
 .scroll-hint{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
   color:var(--faint);font-family:var(--mono);font-size:10px;letter-spacing:.34em;text-transform:uppercase}
 .scroll-hint::after{content:'';display:block;width:1px;height:34px;margin:10px auto 0;
-  background:linear-gradient(to bottom,var(--gold),transparent);animation:drip 1.8s ease-in-out infinite}
-@keyframes drip{0%{transform:scaleY(0);transform-origin:top}55%{transform:scaleY(1);transform-origin:top}
-  56%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+  background:linear-gradient(to bottom,var(--gold),transparent)}
 
-.big-line{font-size:clamp(34px,5.6vw,78px);font-weight:700;letter-spacing:-.025em;line-height:1.04;
-  max-width:900px;text-shadow:0 2px 30px rgba(5,6,10,.9)}
+.big-line{font-family:var(--display);font-size:clamp(30px,5vw,70px);font-weight:400;letter-spacing:-.025em;line-height:1.04;
+  max-width:900px;text-shadow:0 2px 30px rgba(11,13,18,.9)}
 .big-line .dim{color:var(--faint)}
 .big-line .gold{color:var(--gold)}
 .support{color:var(--muted);font-size:16.5px;line-height:1.7;max-width:540px;margin-top:24px}
@@ -105,8 +97,8 @@ h1 em{font-style:normal;color:var(--gold)}
 
 .panel-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:70px;align-items:center;
   max-width:1120px;width:100%;margin:0 auto}
-.glass{background:rgba(12,14,20,.72);backdrop-filter:blur(14px);
-  border:1px solid var(--line);border-radius:16px;padding:28px;
+.glass{background:rgba(22,26,34,.72);backdrop-filter:blur(14px);
+  border:1px solid var(--line);border-radius:10px;padding:28px;
   box-shadow:0 30px 80px rgba(0,0,0,.5)}
 .g-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
 .g-title{font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--faint)}
@@ -120,20 +112,20 @@ h1 em{font-style:normal;color:var(--gold)}
 @keyframes txIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
 
 .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px}
-.stat-cell{background:rgba(5,6,10,.55);border:1px solid var(--line-soft);border-radius:10px;padding:16px}
+.stat-cell{background:rgba(11,13,18,.55);border:1px solid var(--line-soft);border-radius:10px;padding:16px}
 .stat-cell b{display:block;font-family:var(--mono);font-size:19px;font-weight:500;color:var(--text)}
 .stat-cell span{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
 
-.dl-card{background:rgba(12,14,20,.78);backdrop-filter:blur(14px);border:1px solid var(--line);
-  border-radius:16px;padding:30px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
-.dl-toggle{display:flex;background:rgba(5,6,10,.6);border:1px solid var(--line);border-radius:9px;
+.dl-card{background:rgba(22,26,34,.78);backdrop-filter:blur(14px);border:1px solid var(--line);
+  border-radius:10px;padding:30px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.dl-toggle{display:flex;background:rgba(11,13,18,.6);border:1px solid var(--line);border-radius:6px;
   padding:3px;margin-bottom:20px}
 .dl-toggle button{flex:1;font-family:var(--sans);font-size:13.5px;font-weight:500;padding:10px;border:0;
-  border-radius:7px;background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
+  border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
 .dl-toggle button.on{background:var(--gold-dim);color:var(--gold)}
 .dl-desc{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:20px;min-height:44px}
 .dl-btn{display:block;width:100%;text-align:center;background:var(--gold);color:#0A0800;
-  font-weight:700;font-size:15.5px;padding:16px;border-radius:9px;text-decoration:none;transition:all .2s}
+  font-weight:700;font-size:15.5px;padding:16px;border-radius:6px;text-decoration:none;transition:all .2s}
 .dl-btn:hover{box-shadow:0 0 30px rgba(217,164,65,.4)}
 .dl-meta{display:flex;justify-content:space-between;margin-top:13px;
   font-family:var(--mono);font-size:10.5px;color:var(--faint)}
@@ -141,14 +133,14 @@ h1 em{font-style:normal;color:var(--gold)}
 .hash-viz i{flex:1;background:var(--gold-dim);border-top:2px solid var(--gold);border-radius:1px;
   transition:height .6s ease}
 
-.claim-card{width:min(520px,92vw);margin:38px auto 0;border-radius:18px;overflow:hidden;
+.claim-card{width:min(520px,92vw);margin:38px auto 0;border-radius:10px;overflow:hidden;
   border:1px solid var(--line);box-shadow:0 40px 110px rgba(0,0,0,.65);
   transform:rotate(-1.2deg);transition:transform .3s}
 .claim-card:hover{transform:rotate(0deg) scale(1.015)}
 #claimCanvas{display:block;width:100%;height:auto}
 .claim-row{display:flex;gap:12px;justify-content:center;margin-top:26px;flex-wrap:wrap}
-.claim-input{font-family:var(--mono);font-size:14px;background:rgba(12,14,20,.8);color:var(--text);
-  border:1px solid var(--line);border-radius:9px;padding:13px 16px;width:220px;outline:none;transition:border .2s}
+.claim-input{font-family:var(--mono);font-size:14px;background:rgba(22,26,34,.8);color:var(--text);
+  border:1px solid var(--line);border-radius:6px;padding:13px 16px;width:220px;outline:none;transition:border .2s}
 .claim-input:focus{border-color:var(--gold)}
 .claim-input::placeholder{color:var(--faint)}
 
@@ -159,13 +151,14 @@ h1 em{font-style:normal;color:var(--gold)}
 .foot-links a:hover{color:var(--gold);border-color:var(--gold)}
 .foot-note{margin-top:44px;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.1em}
 
-.rv{opacity:0;transform:translateY(46px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.rv{opacity:0;transform:translateY(46px);transition:opacity .6s cubic-bezier(.22,1,.36,1),transform .6s cubic-bezier(.22,1,.36,1)}
 .rv.vis{opacity:1;transform:none}
 .rv2{transition-delay:.12s}.rv3{transition-delay:.24s}
+.btn:focus-visible,a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
 @media(max-width:860px){
   nav{padding:16px 20px}
-  .nav-links a:not(.nav-cta){display:none}
+  .nav-links a{display:none}
   .panel-grid{grid-template-columns:1fr;gap:36px}
   .scene{padding:90px 20px}
 }
@@ -183,13 +176,13 @@ h1 em{font-style:normal;color:var(--gold)}
   <a class="logo" href="/"><div class="logo-mark"></div>MOONBITE</a>
   <div class="nav-links">
     <a href="/mine">Mine</a><a href="/explorer">Chain</a><a href="/wallet">Wallet</a>
-    <a href="/mine" class="nav-cta">Start mining</a>
+    <a href="/whitepaper">Whitepaper</a>
   </div>
 </nav>
 
 <!-- SCENE 1 · HERO -->
 <section class="scene" id="hero">
-  <div class="kicker rv">A proof-of-work coin · fair launch · no pre-sale</div>
+  <div class="kicker rv">Fair launch · no pre-sale</div>
   <h1 class="rv rv2">Take a bite<br>of <em>the moon.</em></h1>
   <p class="hero-sub rv rv3">MoonBite is money you mine, not money you're sold. Every {{ consensus.block_time_min }} minutes the chain gives {{ consensus.current_reward_coins|int }} MBITE to whoever earned it — tonight that could be your laptop.</p>
   <div class="cta-row rv rv3">
@@ -205,14 +198,14 @@ h1 em{font-style:normal;color:var(--gold)}
 
 <!-- SCENE 2 · THE BITE -->
 <section class="scene">
-  <div class="kicker rv">Every scroll takes a piece</div>
+  <div class="kicker rv">Every scroll bites</div>
   <div class="big-line rv rv2">Nobody printed it.<br><span class="dim">Nobody pre-mined it.</span><br><span class="gold">Somebody earned it.</span></div>
   <p class="support rv rv3">No VC allocation. No founder stash hidden in a spreadsheet. The supply exists only because CPUs around the world bit it out of the dark, {{ consensus.current_reward_coins|int }} MBITE at a time.</p>
 </section>
 
 <!-- SCENE 3 · YOU ARE EARLY -->
 <section class="scene">
-  <div class="kicker rv">The part everyone screenshots</div>
+  <div class="kicker rv">Proof of early</div>
   <div class="mega-num rv rv2" id="earlyPct">—</div>
   <div class="mega-cap rv rv2">of all MBITE that will ever exist has been mined</div>
   <div class="early-bar rv rv3"><div class="early-fill" id="earlyFill"></div></div>
@@ -223,7 +216,7 @@ h1 em{font-style:normal;color:var(--gold)}
 <section class="scene scene-left" id="ledger">
   <div class="panel-grid">
     <div>
-      <div class="kicker rv">Not a promise. A pulse.</div>
+      <div class="kicker rv">Live network</div>
       <div class="big-line rv rv2" style="font-size:clamp(30px,4vw,54px)">The chain is alive right now, on this page.</div>
       <p class="support rv rv3">These numbers aren't marketing. They stream from the seed node mining real blocks — watch one land while you're here.</p>
       <div class="stat-grid rv rv3">
@@ -285,6 +278,7 @@ h1 em{font-style:normal;color:var(--gold)}
     <a href="https://github.com/moonbitecoin" rel="noopener">GitHub</a>
     <a href="/wallet">Wallet</a><a href="/community">Community</a>
   </div>
+  <p style="max-width:640px;margin:34px auto 0;font-family:var(--mono);font-size:11px;line-height:1.7;color:var(--faint)">MBITE is a proof-of-work cryptocurrency. It is not an investment, a security, or a promise of future value. It has no guaranteed price, no listing, and no team allocation. Mining consumes electricity that may never be recovered.</p>
   <div class="foot-note">MOONBITE · MINED, NEVER MINTED · SINCE {{ consensus.launch_year }}</div>
 </section>
 
@@ -294,6 +288,7 @@ const BLOCK_SEC={{ consensus.block_time_sec }};
 const CAP={{ consensus.max_supply_coins|int }};
 const REWARD={{ consensus.current_reward_coins|int }};
 const fmt=n=>Math.round(n).toLocaleString('en-US');
+const fmtH=n=>String(Math.round(n)); /* block heights are never separated */
 const $=id=>document.getElementById(id);
 
 const chain={height:null,lastBlockTime:null,supply:null,hashps:null,blocks:[],stale:true,skew:0};
@@ -342,13 +337,14 @@ function renderChain(){
   const feed=$('txFeed');feed.innerHTML='';
   chain.blocks.forEach(b=>{
     const row=document.createElement('div');row.className='card-row';
-    row.innerHTML='<span>⛏ block '+fmt(b.height)+' · '+agoTxt(b.time)+' ago</span><b class="a">+'
+    row.innerHTML='<span>⛏ block '+fmtH(b.height)+' · '+agoTxt(b.time)+' ago</span><b class="a">+'
       +b.subsidy_coins.toFixed(0)+' MBITE</b>';
     feed.appendChild(row);
   });
   drawClaim();
 }
 function celebrate(){
+  if(REDUCED)return;
   chomp();                          /* moon takes a fresh nibble */
   spawnCrumbs(W*.5,H*.3,26,4);
 }
@@ -360,7 +356,7 @@ function tickUI(){
     const el=Math.max(0,Date.now()/1000-chain.skew-chain.lastBlockTime);
     const rem=BLOCK_SEC-el;
     const eta=rem>0?'~'+Math.ceil(rem/60)+'m':'any moment';
-    $('heroLiveTxt').innerHTML='Block <b>'+fmt(chain.height)+'</b> mined <b class="gold">'
+    $('heroLiveTxt').innerHTML='Block <b>'+fmtH(chain.height)+'</b> mined <b class="gold">'
       +agoTxt(chain.lastBlockTime)+'</b> ago · next <b>'+eta+'</b>';
   }
   requestAnimationFrame(tickUI);
@@ -368,6 +364,7 @@ function tickUI(){
 tickUI();
 
 /* ================= cinematic sky canvas ================= */
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const cv=$('sky'),cx=cv.getContext('2d');
 let W,H,DPR;
 function resize(){DPR=Math.min(devicePixelRatio||1,2);
@@ -419,7 +416,7 @@ function moonState(p){
 
 function drawMoon(t){
   const m=moonState(scrollP);
-  const cxM=m.x, cyM=m.y+Math.sin(t*.0004)*5, R=m.r*(1+chompPulse*.04);
+  const cxM=m.x, cyM=m.y+(REDUCED?0:Math.sin(t*.0004)*5), R=m.r*(1+chompPulse*.04);
   biteWobble+=(m.bite-biteWobble)*.08;
   const biteP=biteWobble;
 
@@ -435,16 +432,11 @@ function drawMoon(t){
   CRATERS.forEach(c=>{const px=cxM+Math.cos(c.a)*c.d*R,py=cyM+Math.sin(c.a)*c.d*R;
     cx.beginPath();cx.arc(px,py,c.r*R,0,6.29);cx.fillStyle=`rgba(50,38,12,${c.o})`;cx.fill();});
   if(biteP>.01){
-    const ba=-Math.PI/4;
-    const bd=R*1.02, br=R*.58*biteP;
+    const ba=-Math.PI/4;                     /* doc 01: bite r=0.62R, centre 0.95R @ 45deg */
+    const bd=R*.95, br=R*.62*biteP;
     const bx=cxM+Math.cos(ba)*bd, by=cyM+Math.sin(ba)*bd;
     cx.globalCompositeOperation='destination-out';
     cx.beginPath();cx.arc(bx,by,br,0,6.29);cx.fill();
-    for(let k=-1;k<=1;k++){
-      const ta=ba+k*.34;
-      const tx=cxM+Math.cos(ta)*(bd-br*.82), ty=cyM+Math.sin(ta)*(bd-br*.82);
-      cx.beginPath();cx.arc(tx,ty,br*.30,0,6.29);cx.fill();
-    }
     cx.globalCompositeOperation='source-over';
     cx.beginPath();cx.arc(bx,by,br,Math.PI*.62,Math.PI*1.45);
     cx.strokeStyle=`rgba(242,206,123,${.75*m.al})`;cx.lineWidth=2.5;
@@ -454,11 +446,11 @@ function drawMoon(t){
   cx.restore();
 
   const v=cx.createRadialGradient(W*.5,H*.5,Math.min(W,H)*.32,W*.5,H*.5,Math.max(W,H)*.75);
-  v.addColorStop(0,'rgba(5,6,10,0)');v.addColorStop(1,'rgba(5,6,10,.66)');
+  v.addColorStop(0,'rgba(11,13,18,0)');v.addColorStop(1,'rgba(11,13,18,.66)');
   cx.fillStyle=v;cx.fillRect(0,0,W,H);
   if(scrollP<.16){
     const s=cx.createLinearGradient(0,H*.45,0,H);
-    s.addColorStop(0,'rgba(5,6,10,0)');s.addColorStop(1,`rgba(5,6,10,${.8*(1-scrollP/.16)})`);
+    s.addColorStop(0,'rgba(11,13,18,0)');s.addColorStop(1,`rgba(11,13,18,${.8*(1-scrollP/.16)})`);
     cx.fillStyle=s;cx.fillRect(0,H*.45,W,H*.55);
   }
   return {cxM,cyM,R,biteP};
@@ -474,7 +466,7 @@ function frame(t){
     cx.beginPath();cx.arc(s.x*W,s.y*H,s.r,0,6.29);cx.fill();});
   cx.globalAlpha=1;
   const m=drawMoon(t);
-  if(m.biteP>prevBite+.004){spawnCrumbs(m.cxM+m.R*.5,m.cyM-m.R*.55,3,2.2);}
+  if(!REDUCED&&m.biteP>prevBite+.004){spawnCrumbs(m.cxM+m.R*.5,m.cyM-m.R*.55,3,2.2);}
   prevBite=m.biteP;
   for(let i=crumbs.length-1;i>=0;i--){const c=crumbs[i];
     c.x+=c.vx*dt*.06;c.y+=c.vy*dt*.06;c.vy+=.012*dt*.06;c.l-=.006*dt*.06;
@@ -509,7 +501,7 @@ function drawClaim(){
   const w=1040,h=584;
   c2.clearRect(0,0,w,h);
   const bg=c2.createLinearGradient(0,0,w,h);
-  bg.addColorStop(0,'#0A0C12');bg.addColorStop(1,'#05060A');
+  bg.addColorStop(0,'#0A0C12');bg.addColorStop(1,'#0B0D12');
   c2.fillStyle=bg;c2.fillRect(0,0,w,h);
   const r2=mulberry(9);
   for(let i=0;i<70;i++){c2.globalAlpha=r2()*.4+.08;c2.fillStyle='#fff';
@@ -519,33 +511,31 @@ function drawClaim(){
   const mg=c2.createRadialGradient(mx-40,my-40,10,mx,my,mr);
   mg.addColorStop(0,'#F1E4C4');mg.addColorStop(.6,'#CFB170');mg.addColorStop(1,'#6d5423');
   c2.beginPath();c2.arc(mx,my,mr,0,6.29);c2.fillStyle=mg;c2.fill();
-  const bA=-Math.PI/4,bD=mr*1.02,bR=mr*.58;
+  const bA=-Math.PI/4,bD=mr*.95,bR=mr*.62;   /* doc 01 geometry */
   const bX=mx+Math.cos(bA)*bD,bY=my+Math.sin(bA)*bD;
   c2.globalCompositeOperation='destination-out';
   c2.beginPath();c2.arc(bX,bY,bR,0,6.29);c2.fill();
-  for(let k=-1;k<=1;k++){const ta=bA+k*.34;
-    c2.beginPath();c2.arc(mx+Math.cos(ta)*(bD-bR*.82),my+Math.sin(ta)*(bD-bR*.82),bR*.3,0,6.29);c2.fill();}
   c2.globalCompositeOperation='source-over';
   c2.beginPath();c2.arc(bX,bY,bR,Math.PI*.62,Math.PI*1.45);
   c2.strokeStyle='rgba(242,206,123,.7)';c2.lineWidth=2.5;c2.stroke();
   c2.strokeStyle='rgba(217,164,65,.35)';c2.lineWidth=2;
   c2.strokeRect(24,24,w-48,h-48);
-  c2.fillStyle='#D9A441';c2.font='600 22px "JetBrains Mono"';
+  c2.fillStyle='#D9A441';c2.font='600 22px Menlo,Consolas,monospace';
   c2.fillText('MOONBITE · PROOF OF EARLY',60,96);
-  c2.fillStyle='#EDEBE6';c2.font='700 74px "Space Grotesk"';
+  c2.fillStyle='#F5F2EA';c2.font='400 66px "Archivo Black","Arial Black",sans-serif';
   c2.fillText('I claimed block',60,210);
-  c2.fillStyle='#D9A441';c2.font='700 110px "JetBrains Mono"';
-  c2.fillText(liveH?'#'+fmt(liveH):'#—',60,330);
-  c2.fillStyle='#B9C0CA';c2.font='400 26px "JetBrains Mono"';
+  c2.fillStyle='#D9A441';c2.font='700 104px Menlo,Consolas,monospace';
+  c2.fillText(liveH?'#'+fmtH(liveH):'#—',60,330);
+  c2.fillStyle='#B8B3AB';c2.font='400 26px Menlo,Consolas,monospace';
   const pctTxt=chain.supply!==null?(chain.supply/CAP*100).toFixed(2):'—';
   c2.fillText('while '+pctTxt+'% of supply existed',60,388);
   c2.fillStyle='rgba(217,164,65,.12)';
   c2.beginPath();c2.roundRect(60,436,420,72,12);c2.fill();
   c2.strokeStyle='rgba(217,164,65,.5)';c2.lineWidth=1.5;
   c2.beginPath();c2.roundRect(60,436,420,72,12);c2.stroke();
-  c2.fillStyle='#F2CE7B';c2.font='600 34px "JetBrains Mono"';
+  c2.fillStyle='#F2CE7B';c2.font='600 34px Menlo,Consolas,monospace';
   c2.fillText(name,84,484);
-  c2.fillStyle='#565C68';c2.font='400 20px "JetBrains Mono"';
+  c2.fillStyle='#6E6961';c2.font='400 20px Menlo,Consolas,monospace';
   c2.fillText('moonbite.org',w-240,h-52);
 }
 document.fonts.ready.then(drawClaim);
@@ -554,8 +544,8 @@ $('shareBtn').addEventListener('click',e=>{
   const liveH=chain.height!==null?chain.height+1:null;
   const pctTxt=chain.supply!==null?(chain.supply/CAP*100).toFixed(2):null;
   const txt=liveH
-    ?`I claimed block #${fmt(liveH)} on MoonBite while only ${pctTxt}% of supply existed. Take a bite of the moon 🌗 moonbite.org`
-    :'Take a bite of the moon 🌗 moonbite.org';
+    ?`I claimed block #${fmtH(liveH)} on MoonBite while only ${pctTxt}% of supply existed. Take a bite of the moon. moonbite.org`
+    :'Take a bite of the moon. moonbite.org';
   e.currentTarget.href='https://twitter.com/intent/tweet?text='+encodeURIComponent(txt);
 });
 

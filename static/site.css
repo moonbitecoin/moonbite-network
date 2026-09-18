@@ -359,7 +359,7 @@ a.mb-card:hover, .mb-card.mb-hoverable:hover {
 .mb-teaser-copy h2 { font-size: clamp(1.6rem, 3vw, 2.3rem); margin: 0 0 var(--spacing-md); letter-spacing: -0.02em; }
 .mb-teaser-copy p { color: var(--text-secondary); line-height: 1.6; margin: 0 0 var(--spacing-lg); }
 .mb-code {
-    background: #05060d;
+    background: #0B0D12;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: var(--spacing-lg);
@@ -739,7 +739,7 @@ a.mb-card:hover, .mb-card.mb-hoverable:hover {
 .mb-ex-leg-recv .mb-ex-leg-label { color: var(--success-color); }
 .mb-ex-leg-amt { font-family: var(--font-mono); font-weight: 700; font-size: 0.95rem; }
 .mb-ex-leg-to { font-size: 0.72rem; color: var(--text-secondary); }
-.mb-ex-leg-addr { display: block; font-family: var(--font-mono); font-size: 0.72rem; color: var(--primary-color-2); word-break: break-all; background: #05060d; border-radius: 6px; padding: 6px 8px; }
+.mb-ex-leg-addr { display: block; font-family: var(--font-mono); font-size: 0.72rem; color: var(--primary-color-2); word-break: break-all; background: #0B0D12; border-radius: 6px; padding: 6px 8px; }
 .mb-ex-leg-swap { display: grid; place-items: center; font-size: 1.3rem; color: var(--text-secondary); }
 .mb-ex-modal-note {
     margin-top: var(--spacing-lg);
@@ -772,7 +772,7 @@ a.mb-card:hover, .mb-card.mb-hoverable:hover {
 .mb-mrc-name-link { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); text-decoration: none; }
 .mb-mrc-name-link:hover { color: var(--primary-color-2); }
 .mb-mrc-addr { margin-top: auto; padding-top: var(--spacing-sm); display: flex; flex-direction: column; gap: 8px; }
-.mb-mrc-addr code { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-secondary); word-break: break-all; background: #05060d; border-radius: 6px; padding: 6px 8px; }
+.mb-mrc-addr code { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-secondary); word-break: break-all; background: #0B0D12; border-radius: 6px; padding: 6px 8px; }
 .mb-mrc-pay { font: inherit; font-size: 0.82rem; font-weight: 600; padding: 8px; border-radius: var(--border-radius); background: color-mix(in srgb, var(--primary-color) 16%, transparent); border: 1px solid var(--primary-color); color: var(--text-primary); cursor: pointer; }
 .mb-mrc-pay:hover { background: var(--gradient-primary); box-shadow: var(--glow-primary); }
 
@@ -804,7 +804,7 @@ a.mb-card:hover, .mb-card.mb-hoverable:hover {
 .mb-mrc-status.is-expired { background: color-mix(in srgb, var(--danger-color, #ff5c72) 14%, transparent); border-color: color-mix(in srgb, var(--danger-color, #ff5c72) 35%, transparent); color: var(--danger-color, #ff5c72); }
 .mb-mrc-checkout-body { padding: var(--spacing-xl); display: flex; flex-direction: column; gap: var(--spacing-md); }
 .mb-mrc-copyrow { display: flex; gap: 8px; align-items: stretch; }
-.mb-mrc-copyrow code { flex: 1; font-family: var(--font-mono); font-size: 0.72rem; color: var(--primary-color-2); word-break: break-all; background: #05060d; border-radius: 6px; padding: 10px 12px; }
+.mb-mrc-copyrow code { flex: 1; font-family: var(--font-mono); font-size: 0.72rem; color: var(--primary-color-2); word-break: break-all; background: #0B0D12; border-radius: 6px; padding: 10px 12px; }
 .mb-mrc-copy { font: inherit; font-size: 0.78rem; font-weight: 600; padding: 0 14px; border-radius: 6px; background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; white-space: nowrap; }
 .mb-mrc-copy:hover { border-color: var(--primary-color); color: var(--primary-color-2); }
 .mb-mrc-progress { height: 8px; border-radius: 999px; background: var(--bg-tertiary); overflow: hidden; }

@@ -10,40 +10,39 @@
    (terminal mono labels, editorial headlines, mint/void glass, static top nav).
    ========================================================================== */
 
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap");
 
 /* ---------------------------------------------------------------- palette */
 /* Force the always-dark home-v2 palette regardless of the theme toggle.     */
 body.mb-v2,
 html[data-theme="light"] body.mb-v2,
 html[data-theme="dark"] body.mb-v2 {
-    --void: #04050a;
-    --ice: #F2F6FF;
-    --accent: #5FE9D0;
-    --cool: #5B7BFF;
+    --void: #0B0D12;
+    --ice: #F5F2EA;
+    --accent: #D9A441;
+    --cool: #B8863B;
 
-    --bg-primary: #04050a;
-    --bg-secondary: #070912;
-    --bg-tertiary: #0b0e1a;
-    --card-bg: rgba(242, 246, 255, 0.02);
-    --card-bg-solid: #06070f;
-    --border-color: rgba(242, 246, 255, 0.12);
+    --bg-primary: #0B0D12;
+    --bg-secondary: #12151d;
+    --bg-tertiary: #161A22;
+    --card-bg: rgba(245, 242, 234, 0.02);
+    --card-bg-solid: #12151d;
+    --border-color: rgba(245, 242, 234, 0.12);
 
-    --text-primary: #F2F6FF;
-    --text-secondary: rgba(242, 246, 255, 0.62);
+    --text-primary: #F5F2EA;
+    --text-secondary: rgba(245, 242, 234, 0.62);
 
-    --primary-color: #5FE9D0;
-    --primary-color-2: #5FE9D0;
-    --success-color: #5FE9D0;
-    --warning-color: #F2C879;
-    --danger-color: #ff6b81;
+    --primary-color: #D9A441;
+    --primary-color-2: #D9A441;
+    --success-color: #D9A441;
+    --warning-color: #D9A441;
+    --danger-color: #C8402F;
 
-    --gradient-primary: linear-gradient(90deg, #5FE9D0, #5B7BFF);
+    --gradient-primary: linear-gradient(90deg, #D9A441, #B8863B);
     --glow-primary: 0 0 0 1px rgba(95, 233, 208, 0.35), 0 0 26px rgba(95, 233, 208, 0.16);
     --glass-blur: blur(10px);
 
-    --font-sans: "Space Grotesk", system-ui, sans-serif;
-    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 
     --border-radius-sm: 2px;
     --border-radius: 3px;
@@ -66,7 +65,7 @@ body.mb-v2 .mb-reveal.is-visible {
 body.mb-v2 {
     background: var(--void);
     color: var(--ice);
-    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     overflow-x: hidden;
 }
 
@@ -77,7 +76,7 @@ body.mb-v2::before {
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    background: radial-gradient(58% 52% at 50% 30%, #101a3a 0%, rgba(4, 5, 10, 0) 72%);
+    background: radial-gradient(58% 52% at 50% 30%, #1a1610 0%, rgba(4, 5, 10, 0) 72%);
 }
 body.mb-v2::after {
     content: "";
@@ -86,7 +85,7 @@ body.mb-v2::after {
     z-index: 0;
     pointer-events: none;
     opacity: 0.5;
-    background: repeating-linear-gradient(to bottom, rgba(242, 246, 255, 0.05) 0 1px, transparent 1px 6px);
+    background: repeating-linear-gradient(to bottom, rgba(245, 242, 234, 0.05) 0 1px, transparent 1px 6px);
 }
 body.mb-v2 main,
 body.mb-v2 .mb-footer { position: relative; z-index: 1; }
@@ -96,15 +95,15 @@ body.mb-v2 .mb-footer { position: relative; z-index: 1; }
    forced to position:relative or they drop into flow and open a gap up top. */
 
 /* --------------------------------------------------------------- headings */
-body.mb-v2 h1, body.mb-v2 h2, body.mb-v2 h3 { font-family: "Space Grotesk", sans-serif; }
-body.mb-v2 code, body.mb-v2 .mono { font-family: "JetBrains Mono", monospace; color: var(--accent); }
+body.mb-v2 h1, body.mb-v2 h2, body.mb-v2 h3 { font-family: 'Archivo Black', 'Arial Black', sans-serif; font-weight: 400; letter-spacing: -0.02em; }
+body.mb-v2 code, body.mb-v2 .mono { font-family: ui-monospace, monospace; color: var(--accent); }
 
 /* --------------------------------------------------------------- mega nav */
 body.mb-v2 .mb-meganav {
-    background: linear-gradient(#04050a 55%, rgba(4, 5, 10, 0.55));
+    background: linear-gradient(#0B0D12 55%, rgba(4, 5, 10, 0.55));
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border-bottom: 1px solid rgba(242, 246, 255, 0.08);
+    border-bottom: 1px solid rgba(245, 242, 234, 0.08);
 }
 body.mb-v2 .mb-brand { color: var(--ice); letter-spacing: 0.4px; }
 body.mb-v2 .mb-brand .mb-brand-name {
@@ -113,20 +112,20 @@ body.mb-v2 .mb-brand .mb-brand-name {
     color: var(--accent);
 }
 body.mb-v2 .mb-nav-trigger {
-    font-family: "JetBrains Mono", monospace;
+    font-family: ui-monospace, monospace;
     font-size: 0.72rem;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: rgba(242, 246, 255, 0.6);
+    color: rgba(245, 242, 234, 0.6);
 }
 body.mb-v2 .mb-nav-trigger:hover,
-body.mb-v2 .mb-nav-item.is-open .mb-nav-trigger { color: var(--ice); background: rgba(242, 246, 255, 0.05); }
-body.mb-v2 .mb-dropdown { background: #06070f; border: 1px solid rgba(242, 246, 255, 0.12); border-radius: 3px; }
+body.mb-v2 .mb-nav-item.is-open .mb-nav-trigger { color: var(--ice); background: rgba(245, 242, 234, 0.05); }
+body.mb-v2 .mb-dropdown { background: #12151d; border: 1px solid rgba(245, 242, 234, 0.12); border-radius: 3px; }
 body.mb-v2 .mb-theme-btn { display: none; }
 
 /* --------------------------------------------------------------- buttons */
 body.mb-v2 .btn {
-    font-family: "JetBrains Mono", monospace;
+    font-family: ui-monospace, monospace;
     font-size: 0.8rem;
     letter-spacing: 2px;
     text-transform: uppercase;
@@ -143,8 +142,8 @@ body.mb-v2 .mb-notify-form .btn-primary {
 body.mb-v2 .btn-primary:hover { filter: brightness(1.12); box-shadow: 0 0 24px rgba(95, 233, 208, 0.28); }
 body.mb-v2 .btn-secondary {
     background: none;
-    border: 1px solid rgba(242, 246, 255, 0.24);
-    color: rgba(242, 246, 255, 0.82);
+    border: 1px solid rgba(245, 242, 234, 0.24);
+    color: rgba(245, 242, 234, 0.82);
 }
 body.mb-v2 .btn-secondary:hover { border-color: var(--ice); color: var(--ice); background: none; }
 /* tool-page button variants (wallet/mining/dashboard) */
@@ -196,11 +195,11 @@ body.mb-v2 .mb-gradient-text {
             background-clip: text;
     -webkit-text-fill-color: transparent;
 }
-body.mb-v2 .mb-hero-sub { color: rgba(242, 246, 255, 0.66); font-size: clamp(1.05rem, 2vw, 1.3rem); }
+body.mb-v2 .mb-hero-sub { color: rgba(245, 242, 234, 0.66); font-size: clamp(1.05rem, 2vw, 1.3rem); }
 
 /* --------------------------------------------------------- section heads */
 body.mb-v2 .mb-eyebrow {
-    font-family: "JetBrains Mono", monospace;
+    font-family: ui-monospace, monospace;
     letter-spacing: 3px;
     color: var(--accent);
 }
@@ -209,7 +208,7 @@ body.mb-v2 .mb-section-title {
     letter-spacing: -0.03em;
     font-weight: 700;
 }
-body.mb-v2 .mb-section-sub { color: rgba(242, 246, 255, 0.6); }
+body.mb-v2 .mb-section-sub { color: rgba(245, 242, 234, 0.6); }
 
 /* --------------------------------------------------------- glass cards */
 body.mb-v2 .mb-card,
@@ -217,8 +216,8 @@ body.mb-v2 .mb-download-card,
 body.mb-v2 .mb-notify,
 body.mb-v2 .mb-faq-item,
 body.mb-v2 .mb-exchange-card {
-    background: rgba(242, 246, 255, 0.02);
-    border: 1px solid rgba(242, 246, 255, 0.12);
+    background: rgba(245, 242, 234, 0.02);
+    border: 1px solid rgba(245, 242, 234, 0.12);
     border-radius: 3px;
 }
 body.mb-v2 a.mb-card:hover,
@@ -233,19 +232,19 @@ body.mb-v2 .mb-card-icon {
     border: 1px solid rgba(95, 233, 208, 0.22);
 }
 body.mb-v2 .mb-card-title { letter-spacing: -0.02em; }
-body.mb-v2 .mb-card-link { color: var(--accent); font-family: "JetBrains Mono", monospace; font-size: 0.76rem; letter-spacing: 1.6px; text-transform: uppercase; }
+body.mb-v2 .mb-card-link { color: var(--accent); font-family: ui-monospace, monospace; font-size: 0.76rem; letter-spacing: 1.6px; text-transform: uppercase; }
 body.mb-v2 .mb-feature-icon { filter: none; }
 body.mb-v2 .mb-feature h3 { letter-spacing: -0.01em; }
 
 /* --------------------------------------------------------- stat band */
 body.mb-v2 .mb-statband {
     border-radius: 3px;
-    background: rgba(242, 246, 255, 0.1);
-    border: 1px solid rgba(242, 246, 255, 0.1);
+    background: rgba(245, 242, 234, 0.1);
+    border: 1px solid rgba(245, 242, 234, 0.1);
 }
 body.mb-v2 .mb-stat { background: var(--void); }
-body.mb-v2 .mb-stat-value { color: var(--ice); font-family: "JetBrains Mono", monospace; }
-body.mb-v2 .mb-stat-label { color: rgba(242, 246, 255, 0.42); }
+body.mb-v2 .mb-stat-value { color: var(--ice); font-family: ui-monospace, monospace; }
+body.mb-v2 .mb-stat-label { color: rgba(245, 242, 234, 0.42); }
 
 /* --------------------------------------------------------- roadmap dots */
 body.mb-v2 .mb-milestone.is-done::before { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px var(--accent); }
@@ -263,10 +262,10 @@ body.mb-v2 .mb-soon-chip { color: var(--warning-color); border-radius: 2px; }
 
 /* --------------------------------------------------------- exchange soon */
 body.mb-v2 .mb-exchange-card { border-style: dashed; }
-body.mb-v2 .mb-exchange-logo { background: rgba(95, 233, 208, 0.06); border: 1px solid rgba(242, 246, 255, 0.12); }
+body.mb-v2 .mb-exchange-logo { background: rgba(95, 233, 208, 0.06); border: 1px solid rgba(245, 242, 234, 0.12); }
 
 /* --------------------------------------------------------- code / dev */
-body.mb-v2 .mb-code { background: #06070f; border: 1px solid rgba(242, 246, 255, 0.12); border-radius: 3px; color: #cdd6ff; }
+body.mb-v2 .mb-code { background: #12151d; border: 1px solid rgba(245, 242, 234, 0.12); border-radius: 3px; color: #cdd6ff; }
 body.mb-v2 .mb-code .mb-c-key { color: var(--accent); }
 
 /* --------------------------------------------------------- notify form */
@@ -275,8 +274,8 @@ body.mb-v2 .mb-ex-field input,
 body.mb-v2 .mb-ex-field select,
 body.mb-v2 .mb-mrc-field input,
 body.mb-v2 .mb-mrc-field select {
-    background: #0b0e1a;
-    border: 1px solid rgba(242, 246, 255, 0.14);
+    background: #161A22;
+    border: 1px solid rgba(245, 242, 234, 0.14);
     border-radius: 2px;
     color: var(--ice);
 }
@@ -286,10 +285,10 @@ body.mb-v2 .mb-notify-ok { color: var(--accent); }
 /* --------------------------------------------------------- footer */
 body.mb-v2 .mb-footer {
     background: transparent;
-    border-top: 1px solid rgba(242, 246, 255, 0.1);
+    border-top: 1px solid rgba(245, 242, 234, 0.1);
 }
-body.mb-v2 .mb-footer-col h4 { color: rgba(242, 246, 255, 0.5); font-family: "JetBrains Mono", monospace; letter-spacing: 2px; }
-body.mb-v2 .mb-footer-col a { color: rgba(242, 246, 255, 0.6); }
+body.mb-v2 .mb-footer-col h4 { color: rgba(245, 242, 234, 0.5); font-family: ui-monospace, monospace; letter-spacing: 2px; }
+body.mb-v2 .mb-footer-col a { color: rgba(245, 242, 234, 0.6); }
 body.mb-v2 .mb-footer-col a:hover { color: var(--ice); }
 body.mb-v2 .mb-footer-brand .mb-brand-name { -webkit-text-fill-color: var(--accent); color: var(--accent); background: none; }
 
@@ -304,14 +303,14 @@ body.mb-v2 .page-loader { background: var(--void); }
 
 /* ---- top bar: drop the heavy glass box for the home_v2 gradient fade ---- */
 body.mb-v2 .mb-meganav {
-    background: linear-gradient(#04050a 42%, rgba(4, 5, 10, 0));
+    background: linear-gradient(#0B0D12 42%, rgba(4, 5, 10, 0));
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     border-bottom: none;
 }
 body.mb-v2 .mb-nav-inner { height: 76px; }
 /* the primary CTA becomes the signature bordered mint pill with an arrow */
-body.mb-v2 .mb-nav-cta-btn.btn-secondary { border-color: rgba(242, 246, 255, 0.22); }
+body.mb-v2 .mb-nav-cta-btn.btn-secondary { border-color: rgba(245, 242, 234, 0.22); }
 
 /* ---- hero: left-aligned editorial sting, not a centered pill card ---- */
 body.mb-v2 .mb-hero { padding: clamp(6rem, 13vw, 10rem) 0 clamp(3rem, 6vw, 5rem); }
