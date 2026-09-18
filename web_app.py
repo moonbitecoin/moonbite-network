@@ -809,9 +809,44 @@ def api_consensus():
     return jsonify(data)
 
 
+_TIP_CACHE: dict = {"data": None, "at": 0.0}
+_TIP_TTL = 10.0
+
+
+@app.route("/api/tip", methods=["GET"])
+def api_tip():
+    """Homepage heartbeat: tip height, last block time, supply, hashrate and
+    recent blocks. Cached for a few seconds — this is polled by every visitor
+    on the front page and must never queue round trips on the seed box."""
+    now = time.time()
+    if _TIP_CACHE["data"] is not None and (now - _TIP_CACHE["at"]) < _TIP_TTL:
+        return jsonify(_TIP_CACHE["data"])
+    if not _merchant_use_rpc():
+        return jsonify({"status": "error", "message": "node unavailable"}), 503
+    try:
+        payload, code = live_explorer.tip(_get_merchant_rpc())
+    except Exception:  # noqa: BLE001 — a down node degrades, never 500s the page
+        stale = _TIP_CACHE["data"]
+        if stale is not None:
+            return jsonify(stale)
+        return jsonify({"status": "error", "message": "node unavailable"}), 503
+    if code == 200:
+        _TIP_CACHE["data"] = payload
+        _TIP_CACHE["at"] = now
+    return jsonify(payload), code
+
+
 @app.route("/")
 def home_page():
-    """The home page: one continuous descent, five acts, live chain in act three."""
+    """The home page: 'Take a bite of the moon' — a keyframed canvas moon that
+    gets bitten as you scroll, live chain heartbeat from /api/tip, and a
+    shareable claim-a-block card at the end."""
+    return render_template("home_bite.html")
+
+
+@app.route("/horizon")
+def horizon_page():
+    """Previous homepage (one continuous descent), kept for comparison."""
     return render_template("horizon.html")
 
 

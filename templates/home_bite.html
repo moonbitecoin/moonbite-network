@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoonBite — Take a bite of the moon</title>
+<meta name="description" content="MoonBite is money you mine, not money you're sold. A fair-launch proof-of-work coin: no pre-sale, no allocation — every coin was earned by a CPU somewhere.">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05060A;
+  --panel:#0C0E14;
+  --line:#1F232C;
+  --line-soft:#141820;
+  --text:#EDEBE6;
+  --muted:#9AA0AA;
+  --faint:#565C68;
+  --gold:#D9A441;
+  --gold-hot:#F2CE7B;
+  --gold-dim:rgba(217,164,65,.14);
+  --up:#4CC38A;
+  --sans:'Space Grotesk',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:hidden}
+::selection{background:var(--gold);color:#000}
+
+#sky{position:fixed;inset:0;z-index:0;display:block}
+#prog{position:fixed;top:0;left:0;height:2px;background:var(--gold);z-index:60;width:0;
+  box-shadow:0 0 10px rgba(217,164,65,.8)}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;
+  justify-content:space-between;padding:22px 44px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;letter-spacing:.03em;
+  color:var(--text);text-decoration:none}
+.logo-mark{width:24px;height:24px;border-radius:50%;position:relative;overflow:hidden;
+  background:radial-gradient(circle at 62% 38%,var(--gold-hot),#8a6420 72%)}
+.logo-mark::after{content:'';position:absolute;top:-7px;right:-7px;width:16px;height:16px;
+  border-radius:50%;background:var(--bg)}
+.nav-links{display:flex;gap:26px;align-items:center}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:12px;letter-spacing:.14em;
+  text-transform:uppercase;font-family:var(--mono);transition:color .2s}
+.nav-links a:hover{color:var(--gold)}
+.nav-cta{background:var(--gold);color:#0A0800!important;padding:9px 18px;border-radius:7px;font-weight:700}
+.nav-cta:hover{box-shadow:0 0 22px rgba(217,164,65,.5)}
+
+.scene{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:110px 24px;text-align:center}
+.scene-left{align-items:flex-start;text-align:left;max-width:1200px;margin:0 auto;width:100%}
+
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:20px}
+h1{font-size:clamp(44px,7.4vw,104px);font-weight:700;line-height:.98;letter-spacing:-.03em;max-width:1000px;
+  text-shadow:0 2px 34px rgba(5,6,10,.85)}
+h1 em{font-style:normal;color:var(--gold)}
+.hero-sub{color:var(--muted);font-size:clamp(15px,1.6vw,19px);max-width:560px;line-height:1.65;margin:26px 0 38px}
+.hero-live{font-family:var(--mono);font-size:12.5px;color:var(--faint);margin-top:34px;
+  display:flex;gap:10px;align-items:center;justify-content:center}
+.pulse-dot{width:7px;height:7px;border-radius:50%;background:var(--up);
+  box-shadow:0 0 0 0 rgba(76,195,138,.6);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(76,195,138,.55)}70%{box-shadow:0 0 0 9px rgba(76,195,138,0)}100%{box-shadow:0 0 0 0 rgba(76,195,138,0)}}
+.hero-live b{color:var(--text);font-weight:500}
+.hero-live .gold{color:var(--gold)}
+.hero-live.stale .pulse-dot{background:var(--faint);animation:none}
+
+.cta-row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.btn{font-family:var(--sans);font-size:15.5px;font-weight:600;padding:15px 32px;border-radius:9px;
+  cursor:pointer;border:1px solid transparent;text-decoration:none;transition:all .22s;display:inline-block}
+.btn-primary{background:var(--gold);color:#0A0800;position:relative;overflow:hidden}
+.btn-primary::after{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);
+  animation:sheen 3.4s ease-in-out infinite}
+@keyframes sheen{0%,55%{left:-80%}85%,100%{left:130%}}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 34px rgba(217,164,65,.45)}
+.btn-ghost{background:rgba(5,6,10,.5);backdrop-filter:blur(6px);color:var(--text);border-color:var(--line)}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+
+.scroll-hint{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
+  color:var(--faint);font-family:var(--mono);font-size:10px;letter-spacing:.34em;text-transform:uppercase}
+.scroll-hint::after{content:'';display:block;width:1px;height:34px;margin:10px auto 0;
+  background:linear-gradient(to bottom,var(--gold),transparent);animation:drip 1.8s ease-in-out infinite}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}55%{transform:scaleY(1);transform-origin:top}
+  56%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+.big-line{font-size:clamp(34px,5.6vw,78px);font-weight:700;letter-spacing:-.025em;line-height:1.04;
+  max-width:900px;text-shadow:0 2px 30px rgba(5,6,10,.9)}
+.big-line .dim{color:var(--faint)}
+.big-line .gold{color:var(--gold)}
+.support{color:var(--muted);font-size:16.5px;line-height:1.7;max-width:540px;margin-top:24px}
+
+.mega-num{font-family:var(--mono);font-weight:700;font-size:clamp(56px,10vw,150px);
+  letter-spacing:-.03em;color:var(--gold);text-shadow:0 0 60px rgba(217,164,65,.35);line-height:1}
+.mega-cap{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--faint);margin-top:18px}
+.early-bar{width:min(560px,84vw);height:6px;border-radius:3px;background:var(--line-soft);
+  margin:34px auto 10px;overflow:hidden;position:relative}
+.early-fill{height:100%;width:1.2%;background:linear-gradient(90deg,var(--gold),var(--gold-hot));
+  border-radius:3px;box-shadow:0 0 14px rgba(217,164,65,.7);transition:width 1s ease}
+.early-note{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.early-note b{color:var(--gold)}
+
+.panel-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:70px;align-items:center;
+  max-width:1120px;width:100%;margin:0 auto}
+.glass{background:rgba(12,14,20,.72);backdrop-filter:blur(14px);
+  border:1px solid var(--line);border-radius:16px;padding:28px;
+  box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.g-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.g-title{font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--faint)}
+.g-live{font-family:var(--mono);font-size:10px;color:var(--up);display:flex;gap:7px;align-items:center}
+.card-row{display:flex;justify-content:space-between;padding:11px 0;
+  border-bottom:1px solid var(--line-soft);font-family:var(--mono);font-size:13px;color:var(--muted)}
+.card-row:last-child{border-bottom:0}
+.card-row b{color:var(--text);font-weight:500}
+.card-row .a{color:var(--gold)}
+.tx-feed .card-row{animation:txIn .5s ease}
+@keyframes txIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:16px}
+.stat-cell{background:rgba(5,6,10,.55);border:1px solid var(--line-soft);border-radius:10px;padding:16px}
+.stat-cell b{display:block;font-family:var(--mono);font-size:19px;font-weight:500;color:var(--text)}
+.stat-cell span{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+
+.dl-card{background:rgba(12,14,20,.78);backdrop-filter:blur(14px);border:1px solid var(--line);
+  border-radius:16px;padding:30px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.dl-toggle{display:flex;background:rgba(5,6,10,.6);border:1px solid var(--line);border-radius:9px;
+  padding:3px;margin-bottom:20px}
+.dl-toggle button{flex:1;font-family:var(--sans);font-size:13.5px;font-weight:500;padding:10px;border:0;
+  border-radius:7px;background:transparent;color:var(--muted);cursor:pointer;transition:all .2s}
+.dl-toggle button.on{background:var(--gold-dim);color:var(--gold)}
+.dl-desc{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:20px;min-height:44px}
+.dl-btn{display:block;width:100%;text-align:center;background:var(--gold);color:#0A0800;
+  font-weight:700;font-size:15.5px;padding:16px;border-radius:9px;text-decoration:none;transition:all .2s}
+.dl-btn:hover{box-shadow:0 0 30px rgba(217,164,65,.4)}
+.dl-meta{display:flex;justify-content:space-between;margin-top:13px;
+  font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+.hash-viz{display:flex;align-items:flex-end;gap:3px;height:52px;margin-top:22px;max-width:420px}
+.hash-viz i{flex:1;background:var(--gold-dim);border-top:2px solid var(--gold);border-radius:1px;
+  transition:height .6s ease}
+
+.claim-card{width:min(520px,92vw);margin:38px auto 0;border-radius:18px;overflow:hidden;
+  border:1px solid var(--line);box-shadow:0 40px 110px rgba(0,0,0,.65);
+  transform:rotate(-1.2deg);transition:transform .3s}
+.claim-card:hover{transform:rotate(0deg) scale(1.015)}
+#claimCanvas{display:block;width:100%;height:auto}
+.claim-row{display:flex;gap:12px;justify-content:center;margin-top:26px;flex-wrap:wrap}
+.claim-input{font-family:var(--mono);font-size:14px;background:rgba(12,14,20,.8);color:var(--text);
+  border:1px solid var(--line);border-radius:9px;padding:13px 16px;width:220px;outline:none;transition:border .2s}
+.claim-input:focus{border-color:var(--gold)}
+.claim-input::placeholder{color:var(--faint)}
+
+.genesis{position:relative;z-index:2;text-align:center;padding:40px 24px 70px}
+.foot-links{display:flex;gap:30px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.foot-links a{color:var(--muted);text-decoration:none;font-family:var(--mono);font-size:11.5px;
+  letter-spacing:.16em;text-transform:uppercase;border-bottom:1px solid transparent;transition:all .2s}
+.foot-links a:hover{color:var(--gold);border-color:var(--gold)}
+.foot-note{margin-top:44px;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.1em}
+
+.rv{opacity:0;transform:translateY(46px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.rv.vis{opacity:1;transform:none}
+.rv2{transition-delay:.12s}.rv3{transition-delay:.24s}
+
+@media(max-width:860px){
+  nav{padding:16px 20px}
+  .nav-links a:not(.nav-cta){display:none}
+  .panel-grid{grid-template-columns:1fr;gap:36px}
+  .scene{padding:90px 20px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<canvas id="sky"></canvas>
+<div id="prog"></div>
+
+<nav>
+  <a class="logo" href="/"><div class="logo-mark"></div>MOONBITE</a>
+  <div class="nav-links">
+    <a href="/mine">Mine</a><a href="/explorer">Chain</a><a href="/wallet">Wallet</a>
+    <a href="/mine" class="nav-cta">Start mining</a>
+  </div>
+</nav>
+
+<!-- SCENE 1 · HERO -->
+<section class="scene" id="hero">
+  <div class="kicker rv">A proof-of-work coin · fair launch · no pre-sale</div>
+  <h1 class="rv rv2">Take a bite<br>of <em>the moon.</em></h1>
+  <p class="hero-sub rv rv3">MoonBite is money you mine, not money you're sold. Every {{ consensus.block_time_min }} minutes the chain gives {{ consensus.current_reward_coins|int }} MBITE to whoever earned it — tonight that could be your laptop.</p>
+  <div class="cta-row rv rv3">
+    <a class="btn btn-primary" href="/mine">Start mining free</a>
+    <a class="btn btn-ghost" href="/explorer">Watch the chain live</a>
+  </div>
+  <div class="hero-live rv rv3" id="heroLive">
+    <span class="pulse-dot"></span>
+    <span id="heroLiveTxt">Connecting to the chain…</span>
+  </div>
+  <div class="scroll-hint">Scroll to bite</div>
+</section>
+
+<!-- SCENE 2 · THE BITE -->
+<section class="scene">
+  <div class="kicker rv">Every scroll takes a piece</div>
+  <div class="big-line rv rv2">Nobody printed it.<br><span class="dim">Nobody pre-mined it.</span><br><span class="gold">Somebody earned it.</span></div>
+  <p class="support rv rv3">No VC allocation. No founder stash hidden in a spreadsheet. The supply exists only because CPUs around the world bit it out of the dark, {{ consensus.current_reward_coins|int }} MBITE at a time.</p>
+</section>
+
+<!-- SCENE 3 · YOU ARE EARLY -->
+<section class="scene">
+  <div class="kicker rv">The part everyone screenshots</div>
+  <div class="mega-num rv rv2" id="earlyPct">—</div>
+  <div class="mega-cap rv rv2">of all MBITE that will ever exist has been mined</div>
+  <div class="early-bar rv rv3"><div class="early-fill" id="earlyFill"></div></div>
+  <div class="early-note rv rv3" id="earlyNote">You are earlier than almost everyone who will ever hold this coin.</div>
+</section>
+
+<!-- SCENE 4 · LIVE LEDGER -->
+<section class="scene scene-left" id="ledger">
+  <div class="panel-grid">
+    <div>
+      <div class="kicker rv">Not a promise. A pulse.</div>
+      <div class="big-line rv rv2" style="font-size:clamp(30px,4vw,54px)">The chain is alive right now, on this page.</div>
+      <p class="support rv rv3">These numbers aren't marketing. They stream from the seed node mining real blocks — watch one land while you're here.</p>
+      <div class="stat-grid rv rv3">
+        <div class="stat-cell"><b id="stSupply">—</b><span>MBITE mined</span></div>
+        <div class="stat-cell"><b id="stHash">—</b><span>network hashrate</span></div>
+        <div class="stat-cell"><b>{{ consensus.block_time_min }} min</b><span>block time</span></div>
+        <div class="stat-cell"><b>{{ consensus.max_supply_label }}</b><span>hard cap</span></div>
+      </div>
+    </div>
+    <div class="glass rv rv2">
+      <div class="g-head">
+        <span class="g-title">Latest blocks</span>
+        <span class="g-live" id="feedLive"><span class="pulse-dot"></span>LIVE</span>
+      </div>
+      <div class="tx-feed" id="txFeed">
+        <div class="card-row"><span>waiting for the node…</span><b>—</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCENE 5 · MINE -->
+<section class="scene scene-left" id="mine-scene">
+  <div class="panel-grid">
+    <div>
+      <div class="kicker rv">Your turn</div>
+      <div class="big-line rv rv2" style="font-size:clamp(30px,4vw,54px)">Mined on CPUs.<br>Yours included.</div>
+      <p class="support rv rv3">RandomX shuts out ASIC farms, so ordinary processors compete on even ground. Download, paste an address, and the machine you're reading this on joins the chain in minutes.</p>
+      <div class="hash-viz rv rv3" id="hashViz"></div>
+    </div>
+    <div class="dl-card rv rv2">
+      <div class="dl-toggle">
+        <button class="on" id="tgSimple" type="button">Simple</button>
+        <button id="tgFull" type="button">Full node</button>
+      </div>
+      <div class="dl-desc" id="dlDesc">The guided on-ramp: get a wallet address and a one-click miner, and start earning in minutes.</div>
+      <a class="dl-btn" id="dlBtn" href="/mine">Start mining — free</a>
+      <div class="dl-meta"><span>Windows · macOS · Linux</span><span>open source</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SCENE 6 · CLAIM / SHARE -->
+<section class="scene" id="claim" style="padding-top:150px;padding-bottom:150px">
+  <div class="kicker rv">Plant your flag</div>
+  <div class="big-line rv rv2" style="font-size:clamp(30px,4.6vw,60px)">Claim the block that's<br>being mined <span class="gold">right now.</span></div>
+  <p class="support rv rv3" style="margin-left:auto;margin-right:auto">Type a name. We'll stamp it on the live block and give you a card worth posting — when the block lands on-chain, your screenshot becomes a receipt anyone can check in the explorer.</p>
+  <div class="claim-row rv rv3">
+    <input class="claim-input" id="claimName" maxlength="18" placeholder="@yourname" value="">
+    <a class="btn btn-primary" id="shareBtn" href="#" target="_blank" rel="noopener">Share it →</a>
+  </div>
+  <div class="claim-card rv rv3"><canvas id="claimCanvas" width="1040" height="584"></canvas></div>
+</section>
+
+<!-- FOOTER -->
+<section class="genesis">
+  <div class="foot-links">
+    <a href="/whitepaper">Whitepaper</a><a href="/explorer">Explorer</a>
+    <a href="https://github.com/moonbitecoin" rel="noopener">GitHub</a>
+    <a href="/wallet">Wallet</a><a href="/community">Community</a>
+  </div>
+  <div class="foot-note">MOONBITE · MINED, NEVER MINTED · SINCE {{ consensus.launch_year }}</div>
+</section>
+
+<script nonce="{{ csp_nonce }}">
+/* ================= live chain state (polled from /api/tip) ================ */
+const BLOCK_SEC={{ consensus.block_time_sec }};
+const CAP={{ consensus.max_supply_coins|int }};
+const REWARD={{ consensus.current_reward_coins|int }};
+const fmt=n=>Math.round(n).toLocaleString('en-US');
+const $=id=>document.getElementById(id);
+
+const chain={height:null,lastBlockTime:null,supply:null,hashps:null,blocks:[],stale:true,skew:0};
+
+function fmtHash(h){
+  if(h==null)return '—';
+  const u=[['GH/s',1e9],['MH/s',1e6],['kH/s',1e3]];
+  for(const [n,f] of u)if(h>=f)return (h/f).toFixed(1)+' '+n;
+  return Math.round(h)+' H/s';
+}
+function agoTxt(unix){
+  const s=Math.max(0,Math.floor(Date.now()/1000-chain.skew-unix));
+  if(s<90)return s+'s';
+  if(s<5400)return Math.round(s/60)+'m';
+  return Math.round(s/3600)+'h';
+}
+
+let firstTip=true;
+async function pollTip(){
+  try{
+    const r=await fetch('/api/tip');
+    if(!r.ok)throw 0;
+    const d=await r.json();
+    if(d.status!=='success')throw 0;
+    const newBlock=chain.height!==null&&d.height>chain.height;
+    chain.skew=Math.floor(Date.now()/1000)-(d.timestamp||Date.now()/1000);
+    chain.height=d.height;chain.lastBlockTime=d.last_block_time;
+    chain.supply=d.supply_coins;chain.hashps=d.hashps;chain.blocks=d.blocks||[];
+    chain.stale=false;
+    renderChain();
+    if(newBlock)celebrate();
+  }catch(e){
+    chain.stale=true;
+    $('heroLive').classList.add('stale');
+    if(chain.height===null)$('heroLiveTxt').textContent='Node syncing — live numbers back shortly';
+  }
+}
+function renderChain(){
+  $('heroLive').classList.remove('stale');
+  $('stSupply').textContent=fmt(chain.supply);
+  $('stHash').textContent=fmtHash(chain.hashps);
+  const pct=chain.supply/CAP*100;
+  $('earlyPct').textContent=pct.toFixed(2)+'%';
+  $('earlyFill').style.width=Math.max(1.2,pct)+'%';
+  $('earlyNote').innerHTML='You are earlier than <b>'+(100-pct).toFixed(1)+'%</b> of this coin’s entire life.';
+  const feed=$('txFeed');feed.innerHTML='';
+  chain.blocks.forEach(b=>{
+    const row=document.createElement('div');row.className='card-row';
+    row.innerHTML='<span>⛏ block '+fmt(b.height)+' · '+agoTxt(b.time)+' ago</span><b class="a">+'
+      +b.subsidy_coins.toFixed(0)+' MBITE</b>';
+    feed.appendChild(row);
+  });
+  drawClaim();
+}
+function celebrate(){
+  chomp();                          /* moon takes a fresh nibble */
+  spawnCrumbs(W*.5,H*.3,26,4);
+}
+pollTip();setInterval(pollTip,10000);
+
+/* live hero line + ring, driven by wall clock between polls */
+function tickUI(){
+  if(chain.lastBlockTime!==null){
+    const el=Math.max(0,Date.now()/1000-chain.skew-chain.lastBlockTime);
+    const rem=BLOCK_SEC-el;
+    const eta=rem>0?'~'+Math.ceil(rem/60)+'m':'any moment';
+    $('heroLiveTxt').innerHTML='Block <b>'+fmt(chain.height)+'</b> mined <b class="gold">'
+      +agoTxt(chain.lastBlockTime)+'</b> ago · next <b>'+eta+'</b>';
+  }
+  requestAnimationFrame(tickUI);
+}
+tickUI();
+
+/* ================= cinematic sky canvas ================= */
+const cv=$('sky'),cx=cv.getContext('2d');
+let W,H,DPR;
+function resize(){DPR=Math.min(devicePixelRatio||1,2);
+  W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px';
+  cx.setTransform(DPR,0,0,DPR,0,0);}
+resize();addEventListener('resize',resize);
+
+const STARS=Array.from({length:170},()=>({x:Math.random(),y:Math.random(),
+  r:Math.random()*1.1+.3,tw:Math.random()*6.28,sp:.4+Math.random()*1.2}));
+
+const crumbs=[];
+function spawnCrumbs(x,y,n,pow){for(let i=0;i<n;i++){const a=Math.random()*6.28,v=(Math.random()*.8+.3)*pow;
+  crumbs.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-.4,r:Math.random()*3+1,l:1});}}
+let chompPulse=0;
+function chomp(){chompPulse=1;}
+
+let scrollP=0, docH=1;
+function measure(){docH=document.body.scrollHeight-innerHeight;}
+measure();addEventListener('resize',measure);
+addEventListener('scroll',()=>{scrollP=Math.min(1,Math.max(0,scrollY/docH));
+  $('prog').style.width=(scrollP*100)+'%';},{passive:true});
+
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);
+  t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rng=mulberry(77);
+const CRATERS=Array.from({length:14},()=>({a:rng()*6.28,d:rng()*.75+.1,r:rng()*.09+.03,o:rng()*.25+.1}));
+
+const easeIO=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const clamp01=t=>Math.min(1,Math.max(0,t));
+let lastFrame=0, biteWobble=0;
+
+const KF=[
+  {p:0.00, x:.50, y:1.58, r:1.08, a:.95, b:0},
+  {p:0.13, x:.50, y:1.58, r:1.08, a:.95, b:0},
+  {p:0.22, x:.80, y:.44,  r:.27,  a:.92, b:0},
+  {p:0.30, x:.80, y:.44,  r:.27,  a:.92, b:1},
+  {p:0.42, x:.50, y:.26,  r:.17,  a:.30, b:1},
+  {p:0.55, x:.90, y:.16,  r:.09,  a:.22, b:1},
+  {p:0.82, x:.90, y:.16,  r:.09,  a:.22, b:1},
+  {p:1.00, x:.50, y:.20,  r:.13,  a:.42, b:1},
+];
+function moonState(p){
+  let i=0;while(i<KF.length-2&&p>KF[i+1].p)i++;
+  const a=KF[i],b=KF[i+1],t=easeIO(clamp01((p-a.p)/(b.p-a.p||1)));
+  const L=(k)=>a[k]+(b[k]-a[k])*t;
+  const base=H>W?Math.min(W*1.5,H):Math.min(W,H); /* portrait: keep the arc above the fold */
+  return {x:L('x')*W,y:L('y')*H,r:L('r')*base,al:L('a'),bite:L('b')};
+}
+
+function drawMoon(t){
+  const m=moonState(scrollP);
+  const cxM=m.x, cyM=m.y+Math.sin(t*.0004)*5, R=m.r*(1+chompPulse*.04);
+  biteWobble+=(m.bite-biteWobble)*.08;
+  const biteP=biteWobble;
+
+  cx.save();
+  cx.globalAlpha=m.al;
+  const g=cx.createRadialGradient(cxM,cyM,R*.2,cxM,cyM,R*1.55);
+  g.addColorStop(0,'rgba(217,164,65,.18)');g.addColorStop(1,'rgba(217,164,65,0)');
+  cx.fillStyle=g;cx.fillRect(0,0,W,H);
+  const body=cx.createRadialGradient(cxM-R*.3,cyM-R*.35,R*.1,cxM,cyM,R);
+  body.addColorStop(0,'#F1E4C4');body.addColorStop(.45,'#CFB170');
+  body.addColorStop(.8,'#7E6529');body.addColorStop(1,'#3E3112');
+  cx.beginPath();cx.arc(cxM,cyM,R,0,6.29);cx.fillStyle=body;cx.fill();
+  CRATERS.forEach(c=>{const px=cxM+Math.cos(c.a)*c.d*R,py=cyM+Math.sin(c.a)*c.d*R;
+    cx.beginPath();cx.arc(px,py,c.r*R,0,6.29);cx.fillStyle=`rgba(50,38,12,${c.o})`;cx.fill();});
+  if(biteP>.01){
+    const ba=-Math.PI/4;
+    const bd=R*1.02, br=R*.58*biteP;
+    const bx=cxM+Math.cos(ba)*bd, by=cyM+Math.sin(ba)*bd;
+    cx.globalCompositeOperation='destination-out';
+    cx.beginPath();cx.arc(bx,by,br,0,6.29);cx.fill();
+    for(let k=-1;k<=1;k++){
+      const ta=ba+k*.34;
+      const tx=cxM+Math.cos(ta)*(bd-br*.82), ty=cyM+Math.sin(ta)*(bd-br*.82);
+      cx.beginPath();cx.arc(tx,ty,br*.30,0,6.29);cx.fill();
+    }
+    cx.globalCompositeOperation='source-over';
+    cx.beginPath();cx.arc(bx,by,br,Math.PI*.62,Math.PI*1.45);
+    cx.strokeStyle=`rgba(242,206,123,${.75*m.al})`;cx.lineWidth=2.5;
+    cx.shadowColor='rgba(242,206,123,.8)';cx.shadowBlur=14;cx.stroke();
+    cx.shadowBlur=0;
+  }
+  cx.restore();
+
+  const v=cx.createRadialGradient(W*.5,H*.5,Math.min(W,H)*.32,W*.5,H*.5,Math.max(W,H)*.75);
+  v.addColorStop(0,'rgba(5,6,10,0)');v.addColorStop(1,'rgba(5,6,10,.66)');
+  cx.fillStyle=v;cx.fillRect(0,0,W,H);
+  if(scrollP<.16){
+    const s=cx.createLinearGradient(0,H*.45,0,H);
+    s.addColorStop(0,'rgba(5,6,10,0)');s.addColorStop(1,`rgba(5,6,10,${.8*(1-scrollP/.16)})`);
+    cx.fillStyle=s;cx.fillRect(0,H*.45,W,H*.55);
+  }
+  return {cxM,cyM,R,biteP};
+}
+
+let prevBite=0;
+function frame(t){
+  const dt=Math.min(32,t-lastFrame);lastFrame=t;
+  chompPulse=Math.max(0,chompPulse-.0015*dt);
+  cx.clearRect(0,0,W,H);
+  STARS.forEach(s=>{const a=.10+.14*Math.abs(Math.sin(t*.001*s.sp+s.tw));
+    cx.globalAlpha=a;cx.fillStyle='#fff';
+    cx.beginPath();cx.arc(s.x*W,s.y*H,s.r,0,6.29);cx.fill();});
+  cx.globalAlpha=1;
+  const m=drawMoon(t);
+  if(m.biteP>prevBite+.004){spawnCrumbs(m.cxM+m.R*.5,m.cyM-m.R*.55,3,2.2);}
+  prevBite=m.biteP;
+  for(let i=crumbs.length-1;i>=0;i--){const c=crumbs[i];
+    c.x+=c.vx*dt*.06;c.y+=c.vy*dt*.06;c.vy+=.012*dt*.06;c.l-=.006*dt*.06;
+    if(c.l<=0){crumbs.splice(i,1);continue;}
+    cx.globalAlpha=c.l*.9;cx.fillStyle='#D9A441';
+    cx.fillRect(c.x,c.y,c.r,c.r);}
+  cx.globalAlpha=1;
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* hashrate viz */
+const hv=$('hashViz');
+for(let i=0;i<26;i++){const b=document.createElement('i');
+  b.style.height=(20+Math.random()*80)+'%';hv.appendChild(b);}
+setInterval(()=>{[...hv.children].forEach(b=>b.style.height=(20+Math.random()*80)+'%');},2800);
+
+/* download toggle */
+const tgS=$('tgSimple'),tgF=$('tgFull');
+tgS.onclick=()=>{tgS.classList.add('on');tgF.classList.remove('on');
+  $('dlDesc').textContent='The guided on-ramp: get a wallet address and a one-click miner, and start earning in minutes.';
+  $('dlBtn').textContent='Start mining — free';$('dlBtn').href='/mine';};
+tgF.onclick=()=>{tgF.classList.add('on');tgS.classList.remove('on');
+  $('dlDesc').textContent='MoonBite Core: run a full node, verify the whole chain yourself, and mine with maximum sovereignty.';
+  $('dlBtn').textContent='Get MoonBite Core';$('dlBtn').href='/mine#full-node';};
+
+/* ================= claim card ================= */
+const cc=$('claimCanvas'),c2=cc.getContext('2d');
+function drawClaim(){
+  const name=($('claimName').value||'@you').slice(0,18);
+  const liveH=chain.height!==null?chain.height+1:null;
+  const w=1040,h=584;
+  c2.clearRect(0,0,w,h);
+  const bg=c2.createLinearGradient(0,0,w,h);
+  bg.addColorStop(0,'#0A0C12');bg.addColorStop(1,'#05060A');
+  c2.fillStyle=bg;c2.fillRect(0,0,w,h);
+  const r2=mulberry(9);
+  for(let i=0;i<70;i++){c2.globalAlpha=r2()*.4+.08;c2.fillStyle='#fff';
+    c2.fillRect(r2()*w,r2()*h,1.6,1.6);}
+  c2.globalAlpha=1;
+  const mx=w-170,my=150,mr=120;
+  const mg=c2.createRadialGradient(mx-40,my-40,10,mx,my,mr);
+  mg.addColorStop(0,'#F1E4C4');mg.addColorStop(.6,'#CFB170');mg.addColorStop(1,'#6d5423');
+  c2.beginPath();c2.arc(mx,my,mr,0,6.29);c2.fillStyle=mg;c2.fill();
+  const bA=-Math.PI/4,bD=mr*1.02,bR=mr*.58;
+  const bX=mx+Math.cos(bA)*bD,bY=my+Math.sin(bA)*bD;
+  c2.globalCompositeOperation='destination-out';
+  c2.beginPath();c2.arc(bX,bY,bR,0,6.29);c2.fill();
+  for(let k=-1;k<=1;k++){const ta=bA+k*.34;
+    c2.beginPath();c2.arc(mx+Math.cos(ta)*(bD-bR*.82),my+Math.sin(ta)*(bD-bR*.82),bR*.3,0,6.29);c2.fill();}
+  c2.globalCompositeOperation='source-over';
+  c2.beginPath();c2.arc(bX,bY,bR,Math.PI*.62,Math.PI*1.45);
+  c2.strokeStyle='rgba(242,206,123,.7)';c2.lineWidth=2.5;c2.stroke();
+  c2.strokeStyle='rgba(217,164,65,.35)';c2.lineWidth=2;
+  c2.strokeRect(24,24,w-48,h-48);
+  c2.fillStyle='#D9A441';c2.font='600 22px "JetBrains Mono"';
+  c2.fillText('MOONBITE · PROOF OF EARLY',60,96);
+  c2.fillStyle='#EDEBE6';c2.font='700 74px "Space Grotesk"';
+  c2.fillText('I claimed block',60,210);
+  c2.fillStyle='#D9A441';c2.font='700 110px "JetBrains Mono"';
+  c2.fillText(liveH?'#'+fmt(liveH):'#—',60,330);
+  c2.fillStyle='#B9C0CA';c2.font='400 26px "JetBrains Mono"';
+  const pctTxt=chain.supply!==null?(chain.supply/CAP*100).toFixed(2):'—';
+  c2.fillText('while '+pctTxt+'% of supply existed',60,388);
+  c2.fillStyle='rgba(217,164,65,.12)';
+  c2.beginPath();c2.roundRect(60,436,420,72,12);c2.fill();
+  c2.strokeStyle='rgba(217,164,65,.5)';c2.lineWidth=1.5;
+  c2.beginPath();c2.roundRect(60,436,420,72,12);c2.stroke();
+  c2.fillStyle='#F2CE7B';c2.font='600 34px "JetBrains Mono"';
+  c2.fillText(name,84,484);
+  c2.fillStyle='#565C68';c2.font='400 20px "JetBrains Mono"';
+  c2.fillText('moonbite.org',w-240,h-52);
+}
+document.fonts.ready.then(drawClaim);
+$('claimName').addEventListener('input',drawClaim);
+$('shareBtn').addEventListener('click',e=>{
+  const liveH=chain.height!==null?chain.height+1:null;
+  const pctTxt=chain.supply!==null?(chain.supply/CAP*100).toFixed(2):null;
+  const txt=liveH
+    ?`I claimed block #${fmt(liveH)} on MoonBite while only ${pctTxt}% of supply existed. Take a bite of the moon 🌗 moonbite.org`
+    :'Take a bite of the moon 🌗 moonbite.org';
+  e.currentTarget.href='https://twitter.com/intent/tweet?text='+encodeURIComponent(txt);
+});
+
+/* reveal on scroll */
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting)e.target.classList.add('vis');}),{threshold:.2});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+measure();
+</script>
+</body>
+</html>

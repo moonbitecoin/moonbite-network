@@ -270,3 +270,41 @@ def mempool(rpc) -> tuple[dict, int]:
             }
         )
     return {"status": "success", "transactions": txs}, 200
+
+
+def tip(rpc) -> tuple[dict, int]:
+    """Lightweight heartbeat for the homepage: tip height, last block time,
+    issued supply, hashrate and a handful of recent block summaries. Header
+    reads only (see _block_summary) so it stays cheap on the seed box."""
+    height = int(rpc.getblockcount())
+    best = rpc.call("getblockheader", rpc.getblockhash(height))
+    try:
+        hashps = float(rpc.call("getnetworkhashps", 120))
+    except Exception:  # noqa: BLE001 — decorative
+        hashps = None
+    recent = []
+    h = height
+    while h >= 0 and len(recent) < 6:
+        hdr = best if h == height else rpc.call("getblockheader", rpc.getblockhash(h))
+        recent.append(
+            {
+                "height": h,
+                "time": hdr["time"],
+                "subsidy_coins": subsidy_units(h) / UNITS_PER_COIN,
+                "tx_count": int(hdr.get("nTx", 0) or 0),
+            }
+        )
+        h -= 1
+    issued = issued_supply_units(height)
+    return (
+        {
+            "status": "success",
+            "height": height,
+            "last_block_time": int(best["time"]),
+            "supply_coins": issued / UNITS_PER_COIN,
+            "hashps": hashps,
+            "blocks": recent,
+            "timestamp": time.time(),
+        },
+        200,
+    )
