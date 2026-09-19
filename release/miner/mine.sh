@@ -53,23 +53,23 @@ start_node() {
   wait_rpc
 }
 
-# Where mining rewards go. Priority: CLI arg, env, saved file, prompt, then a
-# local node wallet as a last resort (with a clear warning).
+# Where mining rewards go. Priority: CLI arg, env, saved file - then, with
+# none of those, no prompt and no wallet app required: the node has its own
+# built-in wallet, so mining starts with zero setup either way, interactive
+# terminal or not. Bringing an address stays fully optional, never required.
 resolve_reward_address() {
   local cand="${1:-}"
   if [ -n "$cand" ] && is_addr "$cand"; then printf '%s' "$cand" > "$REWARD_FILE"; echo "$cand"; return; fi
   if [ -n "${MOONBITE_ADDRESS:-}" ] && is_addr "$MOONBITE_ADDRESS"; then printf '%s' "$MOONBITE_ADDRESS" > "$REWARD_FILE"; echo "$MOONBITE_ADDRESS"; return; fi
   if [ -s "$REWARD_FILE" ]; then local a; a=$(cat "$REWARD_FILE"); if is_addr "$a"; then echo "$a"; return; fi; fi
-  if [ -t 0 ]; then
-    echo "Paste the MoonBite wallet address to receive your mining rewards" >&2
-    echo "(from the wallet app / moonbite.org/wallet - Receive tab, moon1...):" >&2
-    local a; read -r a
-    if is_addr "$a"; then printf '%s' "$a" > "$REWARD_FILE"; echo "$a"; return; fi
-    echo "That did not look like a moon1 address." >&2; exit 1
-  fi
-  # Non-interactive, no address: fall back to a local node wallet.
-  cli createwallet wallet >/dev/null 2>&1 || cli loadwallet wallet >/dev/null 2>&1 || true
-  local a; a=$(cli -rpcwallet=wallet getnewaddress "mining"); printf '%s' "$a" > "$REWARD_FILE"
+  cli createwallet miner >/dev/null 2>&1 || cli loadwallet miner >/dev/null 2>&1 || true
+  local a; a=$(cli -rpcwallet=miner getnewaddress "mining"); printf '%s' "$a" > "$REWARD_FILE"
+  {
+    echo "No wallet address given, so this node made you one: $a"
+    echo "That's a real MoonBite address, held in this node's own wallet on this machine."
+    echo "Import it into the wallet app anytime to spend from it - moonbite.org/wallet."
+    echo "(Already have a wallet? Run ./mine.sh moon1youraddress to mine straight into it.)"
+  } >&2
   echo "$a"
 }
 

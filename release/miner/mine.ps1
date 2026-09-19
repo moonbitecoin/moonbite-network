@@ -57,14 +57,22 @@ function Start-Node {
 }
 
 function Resolve-Reward([string]$cand) {
+  # Priority: CLI arg, env var, a previously saved address - then, with none of
+  # those, no prompt and no wallet app required: the node has its own built-in
+  # wallet (createwallet + getnewaddress), so mining starts with zero setup.
+  # Bringing an address from the wallet app stays fully optional, not required.
   if ($cand -and (Test-Addr $cand)) { Set-Content -Encoding ascii $rewardFile $cand; return $cand }
   if ($env:MOONBITE_ADDRESS -and (Test-Addr $env:MOONBITE_ADDRESS)) { Set-Content -Encoding ascii $rewardFile $env:MOONBITE_ADDRESS; return $env:MOONBITE_ADDRESS }
   if (Test-Path $rewardFile) { $a = (Get-Content $rewardFile -Raw).Trim(); if (Test-Addr $a) { return $a } }
-  Write-Host "Paste the MoonBite wallet address to receive your mining rewards"
-  Write-Host "(from the wallet app / moonbite.org/wallet - Receive tab, moon1...):"
-  $a = (Read-Host).Trim()
-  if (Test-Addr $a) { Set-Content -Encoding ascii $rewardFile $a; return $a }
-  throw "That did not look like a moon1 address."
+  try { Invoke-Cli createwallet "miner" | Out-Null } catch { try { Invoke-Cli loadwallet "miner" | Out-Null } catch {} }
+  $a = (Invoke-Cli -rpcwallet=miner getnewaddress "mining" | Out-String).Trim()
+  if (-not (Test-Addr $a)) { throw "Could not create a mining wallet on this node." }
+  Set-Content -Encoding ascii $rewardFile $a
+  Write-Host "No wallet address given, so this node made you one: $a"
+  Write-Host "That's a real MoonBite address, held in this node's own wallet on this machine."
+  Write-Host "Import it into the wallet app anytime to spend from it - moonbite.org/wallet."
+  Write-Host "(Already have a wallet? Run .\mine.ps1 moon1youraddress to mine straight into it.)"
+  return $a
 }
 
 switch ($arg) {

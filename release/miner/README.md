@@ -17,24 +17,34 @@ find pays you, and only you.
 
 ## Run it
 
-First get your address: open the MoonBite wallet (the app, or
-moonbite.org/wallet), create a wallet, go to **Receive**, and copy your
-`moon1...` address. Then point the miner at it so rewards land in your wallet:
+No wallet, no account, nothing to set up first. Just run the script:
 
 **Linux / macOS**
 ```bash
-./mine.sh moon1youraddress
+./mine.sh
 ```
 
 **Windows (PowerShell)**
 ```powershell
-.\mine.ps1 moon1youraddress
+.\mine.ps1
 ```
 
 The script starts your node, connects to the network, waits until it is fully
-synced, then mines to that address. Run it again later without the address and
-it reuses the one you saved. Leave it running; each block it finds is printed,
-and the reward appears in your wallet after it matures.
+synced, then mines. With no address given it generates one for you, in this
+node's own built-in wallet on this machine — it prints that address the first
+time, and reuses it on every run after. That address is real and yours; import
+it into the wallet app any time you want to spend from it.
+
+Already have a wallet and want rewards to land there directly instead? Pass its
+address:
+
+```bash
+./mine.sh moon1youraddress        # Linux / macOS
+.\mine.ps1 moon1youraddress       # Windows
+```
+
+Leave it running; each block it finds is printed, and the reward is spendable
+after it matures (below).
 
 ## Data directory
 
@@ -44,11 +54,14 @@ the script to put them somewhere else.
 
 ## The wallet app
 
-The MoonBite desktop wallet is a separate download - it is the same wallet as
-moonbite.org/wallet, in its own window (self-custody, 12-word recovery phrase).
-Get it from moonbite.org/wallet (Download) or moonbite.org/download/wallet.
-You don't need it to mine: create a wallet there, copy your address, and pass
-it to this miner.
+You do not need this to mine — the miner makes its own address, above. The
+MoonBite desktop wallet is a separate download for when you want to spend,
+send, or manage coins with a proper interface: the same wallet as
+moonbite.org/wallet, in its own window (self-custody, 12-word recovery
+phrase). Get it from moonbite.org/wallet (Download) or
+moonbite.org/download/wallet, then import the address this miner generated —
+or skip that step entirely and just point the miner at a wallet address you
+already made there.
 
 
 ## Your coins and your wallet
