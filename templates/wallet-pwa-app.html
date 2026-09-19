@@ -1924,6 +1924,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                             <button type="button" data-act="call" data-fn="setMaxSendAmount" class="btn btn-secondary" style="width:auto; padding: 0 var(--spacing-md); min-height:44px; margin:0;">Max</button>
                         </div>
                         <div id="sendAvailable" style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;"></div>
+                        <div id="sendReviewError" style="font-size: 13px; color: var(--danger); margin-top: 8px; min-height: 16px;"></div>
                     </div>
 
                     <div class="card">
@@ -1949,7 +1950,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                         </div>
                     </div>
 
-                    <button class="btn btn-primary" data-act="screen" data-arg="confirmSendScreen">Review & Send</button>
+                    <button class="btn btn-primary" data-act="call" data-fn="reviewAndSend">Review & Send</button>
                     <button class="btn btn-secondary" data-act="screen" data-arg="dashboardScreen">← Back</button>
                 </div>
             </div>
@@ -2010,7 +2011,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                         <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-md);">
                             <div>
                                 <div class="card-title">Amount</div>
-                                <div class="card-value" style="font-size: 20px;">1.5 MBITE</div>
+                                <div class="card-value" id="confirmAmount" style="font-size: 20px;">-</div>
                             </div>
                         </div>
                     </div>
@@ -2018,11 +2019,11 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                     <div class="card">
                         <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-sm);">
                             <div class="card-title">Network Fee</div>
-                            <div class="card-value" style="font-size: 14px;">0.0001 MBITE</div>
+                            <div class="card-value" id="confirmFee" style="font-size: 14px;">-</div>
                         </div>
                         <div style="border-top: 1px solid var(--border-color); padding-top: var(--spacing-md); margin-top: var(--spacing-md); display: flex; justify-content: space-between;">
                             <div class="card-title">Total</div>
-                            <div class="card-value" style="font-size: 18px;">1.5001 MBITE</div>
+                            <div class="card-value" id="confirmTotal" style="font-size: 18px;">-</div>
                         </div>
                     </div>
 
@@ -2351,6 +2352,52 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 <div>Security</div>
             </button>
         </div>
+    </div>
+
+    <!-- PIN re-authorization, in-page. Authorizing a send and revealing the
+         recovery phrase both used to call the browser-native prompt() for the
+         PIN - which several real contexts refuse (installed-PWA standalone
+         mode on many mobile platforms, some in-app webviews), silently
+         blocking the wallet's core actions with no way to proceed. This modal
+         replaces it: works everywhere, and matches the rest of the app. -->
+    <div id="pinAuthOverlay" style="display:none;position:fixed;inset:0;z-index:500;
+         background:rgba(11,13,18,0.72);backdrop-filter:blur(6px);
+         align-items:center;justify-content:center;padding:20px;">
+      <div style="width:100%;max-width:340px;background:var(--bg-secondary,#161A22);
+           border:1px solid var(--border-color,rgba(217,164,65,0.14));border-radius:16px;
+           padding:28px 24px;text-align:center;">
+        <div id="pinAuthTitle" style="color:var(--text-primary,#F5F2EA);font-weight:700;
+             font-size:16px;margin-bottom:6px;">Enter your PIN</div>
+        <div id="pinAuthError" style="color:var(--danger,#C8402F);font-size:13px;
+             min-height:18px;margin-bottom:10px;"></div>
+        <div style="display:flex;gap:8px;justify-content:center;margin:10px 0 20px;">
+          <input type="password" inputmode="numeric" maxlength="1" class="pin-input pin-auth-box"
+                 style="width:42px;height:50px;text-align:center;font-size:22px;
+                 border:2px solid var(--border-color,rgba(217,164,65,0.14));border-radius:8px;
+                 background:rgba(217,164,65,0.06);color:var(--gold,#D9A441);">
+          <input type="password" inputmode="numeric" maxlength="1" class="pin-input pin-auth-box"
+                 style="width:42px;height:50px;text-align:center;font-size:22px;
+                 border:2px solid var(--border-color,rgba(217,164,65,0.14));border-radius:8px;
+                 background:rgba(217,164,65,0.06);color:var(--gold,#D9A441);">
+          <input type="password" inputmode="numeric" maxlength="1" class="pin-input pin-auth-box"
+                 style="width:42px;height:50px;text-align:center;font-size:22px;
+                 border:2px solid var(--border-color,rgba(217,164,65,0.14));border-radius:8px;
+                 background:rgba(217,164,65,0.06);color:var(--gold,#D9A441);">
+          <input type="password" inputmode="numeric" maxlength="1" class="pin-input pin-auth-box"
+                 style="width:42px;height:50px;text-align:center;font-size:22px;
+                 border:2px solid var(--border-color,rgba(217,164,65,0.14));border-radius:8px;
+                 background:rgba(217,164,65,0.06);color:var(--gold,#D9A441);">
+          <input type="password" inputmode="numeric" maxlength="1" class="pin-input pin-auth-box"
+                 style="width:42px;height:50px;text-align:center;font-size:22px;
+                 border:2px solid var(--border-color,rgba(217,164,65,0.14));border-radius:8px;
+                 background:rgba(217,164,65,0.06);color:var(--gold,#D9A441);">
+          <input type="password" inputmode="numeric" maxlength="1" class="pin-input pin-auth-box"
+                 style="width:42px;height:50px;text-align:center;font-size:22px;
+                 border:2px solid var(--border-color,rgba(217,164,65,0.14));border-radius:8px;
+                 background:rgba(217,164,65,0.06);color:var(--gold,#D9A441);">
+        </div>
+        <button id="pinAuthCancel" class="btn btn-secondary" style="width:100%;">Cancel</button>
+      </div>
     </div>
 
     <!-- Real secp256k1 address derivation. Loaded as a module before the
@@ -2873,6 +2920,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             copyToClipboard: (arg) => copyToClipboard(arg),
             togglePasswordVisibility: (arg) => togglePasswordVisibility(arg),
             generateQRCode: () => generateQRCode(),
+            reviewAndSend: () => reviewAndSend(),
             shareWalletAddress: () => shareWalletAddress(),
         };
 
@@ -3292,6 +3340,64 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             }
         }
 
+        /* In-page replacement for prompt('Enter your PIN...'). Native prompt()
+           is not reliably available - most importantly in a PWA launched from
+           the home screen (this app's own manifest sets "display": "standalone"),
+           which is exactly how users are pushed to install it - so a feature
+           gated behind prompt() could silently stop working for them with no
+           way to proceed. This resolves with the 6-digit string, or null if the
+           user cancels; callers already treat a falsy result as "cancelled",
+           the same contract prompt() had. */
+        let _pinAuthResolve = null;
+        function _pinAuthBoxes() {
+            return Array.from(document.querySelectorAll('#pinAuthOverlay .pin-auth-box'));
+        }
+        function _pinAuthClose(result) {
+            const overlay = document.getElementById('pinAuthOverlay');
+            overlay.style.display = 'none';
+            document.removeEventListener('keydown', _pinAuthEscHandler);
+            _pinAuthBoxes().forEach(b => { b.value = ''; });
+            document.getElementById('pinAuthError').textContent = '';
+            const resolve = _pinAuthResolve;
+            _pinAuthResolve = null;
+            if (resolve) resolve(result);
+        }
+        function _pinAuthEscHandler(e) {
+            if (e.key === 'Escape') _pinAuthClose(null);
+        }
+        function requestPinAsync(title, errorText) {
+            return new Promise((resolve) => {
+                _pinAuthResolve = resolve;
+                document.getElementById('pinAuthTitle').textContent = title || 'Enter your PIN';
+                document.getElementById('pinAuthError').textContent = errorText || '';
+                document.getElementById('pinAuthOverlay').style.display = 'flex';
+                document.addEventListener('keydown', _pinAuthEscHandler);
+                const boxes = _pinAuthBoxes();
+                boxes.forEach(b => { b.value = ''; });
+                boxes[0].focus();
+            });
+        }
+        (function initPinAuthOverlay() {
+            const boxes = _pinAuthBoxes();
+            boxes.forEach((box, i) => {
+                box.addEventListener('input', () => {
+                    box.value = box.value.replace(/[^0-9]/g, '').slice(0, 1);
+                    if (box.value && i < boxes.length - 1) { boxes[i + 1].focus(); return; }
+                    if (box.value && i === boxes.length - 1) {
+                        const pin = boxes.map(b => b.value).join('');
+                        if (pin.length === 6) _pinAuthClose(pin);
+                    }
+                });
+                box.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+                });
+            });
+            const cancelBtn = document.getElementById('pinAuthCancel');
+            if (cancelBtn) cancelBtn.addEventListener('click', () => _pinAuthClose(null));
+            const overlay = document.getElementById('pinAuthOverlay');
+            if (overlay) overlay.addEventListener('click', (e) => { if (e.target === overlay) _pinAuthClose(null); });
+        })();
+
         function handlePinComplete() {
             const lastDigit = document.getElementById('confirmPinDigit6');
             if (lastDigit.value.length === 1) {
@@ -3531,7 +3637,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 /* The seed is only ever stored PIN-encrypted, so spending asks
                    for the PIN. That is also the point of the PIN: it is what
                    stands between someone holding this device and the funds. */
-                const pin = prompt('Enter your PIN to authorize this transaction');
+                const pin = await requestPinAsync('Enter your PIN to authorize this transaction');
                 if (!pin) return fail('Transaction cancelled.');
                 // A wrong PIN simply fails to decrypt; there is no stored copy
                 // to compare against.
@@ -3853,6 +3959,46 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             const bal = CustodialWallet.getWallet().balanceCents || 0;
             el.textContent = 'Available: ' + mbite(bal) + ' MBITE';
         }
+        /* "Review & Send" used to be a bare screen switch (data-act="screen"),
+           with no check on what was typed - an invalid address or an amount
+           the wallet does not have would sail straight through onto a screen
+           headed "THIS CANNOT BE UNDONE", and only fail (via alert, after
+           typing the confirmation amount) on the final destructive click. The
+           real checks belong here, before the user is told to double-check
+           anything. sendTransaction() still re-validates independently before
+           it ever signs - this is an earlier, friendlier gate, not the only one. */
+        function reviewAndSend() {
+            const errEl = document.getElementById('sendReviewError');
+            const fail = (msg) => { if (errEl) errEl.textContent = msg; };
+            if (errEl) errEl.textContent = '';
+
+            if (!window.MoonBiteAddress) return fail('Wallet is still loading. Please try again in a moment.');
+            const recipient = (document.getElementById('sendRecipient').value || '').trim();
+            if (!recipient) return fail('Enter a recipient address.');
+            if (!window.MoonBiteAddress.isValidAddress(recipient)) {
+                return fail('That recipient address is not valid. Check it and try again.');
+            }
+            const wallet = CustodialWallet.getWallet();
+            if (wallet && recipient === wallet.address) return fail('That is your own address.');
+
+            const amountUnits = toCents(document.getElementById('sendAmount').value);
+            if (!amountUnits || amountUnits <= 0) return fail('Enter an amount greater than zero.');
+            const bal = (wallet && wallet.balanceCents) || 0;
+            const feeUnits = currentFeeUnits();
+            if (amountUnits + feeUnits > bal) return fail('Not enough MBITE for that amount plus the network fee.');
+
+            const fmt = (units) => (units / 1e8).toFixed(8).replace(/0+$/, '').replace(/\.$/, '') + ' MBITE';
+            document.getElementById('confirmRecipient').textContent = recipient;
+            document.getElementById('confirmAmount').textContent = fmt(amountUnits);
+            document.getElementById('confirmFee').textContent = fmt(feeUnits);
+            document.getElementById('confirmTotal').textContent = fmt(amountUnits + feeUnits);
+            const targetEl = document.getElementById('sendConfirmTarget');
+            if (targetEl) targetEl.textContent = (amountUnits / 1e8).toFixed(8).replace(/0+$/, '').replace(/\.$/, '');
+            const sc = document.getElementById('sendConfirmInput');
+            if (sc) sc.value = '';
+            showScreen('confirmSendScreen');
+        }
+
         function setMaxSendAmount() {
             const bal = CustodialWallet.getWallet().balanceCents || 0;
             const maxUnits = Math.max(0, bal - currentFeeUnits());
@@ -4099,7 +4245,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
         async function revealRecoveryPhrase() {
             const stored = localStorage.getItem('moonbite_seed_encrypted');
             if (!stored) { alert('No wallet on this device.'); return; }
-            const pin = prompt('Enter your PIN to view your recovery phrase');
+            const pin = await requestPinAsync('Enter your PIN to view your recovery phrase');
             if (!pin) return;
             let seed = null;
             try { seed = await CustodialWallet.decryptSeedWithPIN(stored, pin); }
