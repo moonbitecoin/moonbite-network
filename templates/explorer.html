@@ -113,15 +113,29 @@
 
     // Base units per coin: 100 on the educational chain, 1e8 on MoonBite Core.
     // /api/blockchain/info reports it; every payload also carries units_per_coin.
-    let UNITS_PER_COIN = 100;
+    // Default matches the real chain (1 MBITE = 1e8 units) rather than a value
+    // off by 1,000,000x, in case anything renders before the first stats fetch.
+    let UNITS_PER_COIN = 100000000;
+    // d18: never round a balance down for display. Math.floor(sats/UNITS) used
+    // to discard every fractional MBITE, so any amount under one whole coin
+    // rendered as "0 MBITE" - on the one page whose entire value is honesty
+    // about what the chain actually did (d19). 8dp per d11, trimmed of
+    // trailing zeros, same convention the wallet uses.
     function fmtCoins(sats) {
-        const coins = Math.floor(sats / UNITS_PER_COIN);
-        return `${coins.toLocaleString()} MBITE`;
+        const coins = (sats || 0) / UNITS_PER_COIN;
+        const s = coins.toFixed(8).replace(/0+$/, '').replace(/\.$/, '');
+        return `${s || '0'} MBITE`;
     }
 
+    // d11: times are UTC, always labelled - not the viewer's local zone with
+    // no indication of which zone it is.
     function fmtTime(ts) {
-        try { return new Date(ts * 1000).toLocaleString(); }
-        catch (e) { return ts; }
+        try {
+            const d = new Date(ts * 1000);
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} `
+                 + `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())} UTC`;
+        } catch (e) { return ts; }
     }
 
     // ---- Chain stats ----
@@ -179,6 +193,9 @@
         document.getElementById('browseView').classList.remove('hidden');
         document.getElementById('detailView').classList.add('hidden');
         document.getElementById('backBtn').classList.add('hidden');
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function showDetail(title, html) {
@@ -187,6 +204,14 @@
         document.getElementById('browseView').classList.add('hidden');
         document.getElementById('detailView').classList.remove('hidden');
         document.getElementById('backBtn').classList.remove('hidden');
+        // This layout scrolls <body> itself (mobile-sheet pattern), not the
+        // window/viewport, so window.scrollTo() alone was a no-op: clicking a
+        // transaction from partway down a block's list landed on the new
+        // page still scrolled to that same depth, with its own header and
+        // search box scrolled out of view above. Reset both, since which one
+        // is the real scroller can vary by browser/layout.
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
