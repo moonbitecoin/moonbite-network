@@ -16,13 +16,17 @@
    functional colours and appear nowhere on this page. Nothing loads from a
    third party: type, image and script all come from our own origin. */
 :root{
-  --void:#0B0D12; --slate:#161A22; --gold:#D9A441; --gold-2:#EBCB86;
-  --bone:#F5F2EA; --ash:#8A8580;
+  /* docs/moonbite-guidelines.html d03: Void and Bone carry the brand; gold is
+     the one accent, used sparingly. No second gold tone — a lighter "gold-2"
+     reads as a gradient family, which d01/d03 rule out. */
+  --void:#0B0D12; --slate:#161A22; --gold:#D9A441;
+  --bone:#F5F2EA; --ash:#8A8580; --gain:#2E9E6B; --loss:#C8402F;
   --display:'Archivo Black','Helvetica Neue','Arial Black',sans-serif;
   --ui:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   --mono:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  /* d06: one easing curve everywhere, three durations only. */
   --ease:cubic-bezier(0.22,1,0.36,1);
-  --t1:120ms; --t2:260ms;
+  --t1:120ms; --t2:240ms; --t3:600ms;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -36,19 +40,29 @@ a{color:inherit;text-decoration:none}
   padding:12px 18px;font-weight:700}
 .skip:focus{left:0;top:0}
 
-/* masthead */
+/* masthead — d15: a real primary nav, Caveats included, not buried in the footer */
 .top{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;align-items:center;gap:14px;
   padding:16px clamp(18px,4vw,44px);
   background:linear-gradient(180deg,rgba(11,13,18,.78),rgba(11,13,18,0))}
 .brand{display:flex;align-items:center;gap:10px;min-height:44px;
   font-family:var(--display);font-size:1rem;text-transform:uppercase;letter-spacing:-.02em}
-.brand svg{width:24px;height:24px;flex:none}
+.brand svg{width:24px;height:24px;flex:none;overflow:visible}
+/* d06 signature: the bite deepens by one increment as a block is found. The
+   mark is a single closed path rebuilt from its own construction geometry
+   (d01: R=100, bite 0.62R centred 0.95R on the 45deg axis) — no separate
+   "found" graphic, the mark itself is the live indicator. */
+.brand path{transition:d var(--t3) var(--ease)}
+.topnav{margin-left:var(--s5,24px);display:flex;gap:20px;list-style:none}
+.topnav a{color:var(--ash);font-size:.9rem;min-height:44px;display:inline-flex;align-items:center;
+  transition:color var(--t1) var(--ease)}
+.topnav a:hover{color:var(--bone)}
+@media(max-width:900px){ .topnav{gap:14px} .topnav li:nth-child(2),.topnav li:nth-child(3){display:none} }
 .beat{margin-left:auto;display:flex;align-items:center;gap:8px;min-height:44px;
   font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
   color:var(--ash)}
 .beat i{width:6px;height:6px;border-radius:50%;background:var(--gold);flex:none;
-  transition:transform var(--t2) var(--ease),box-shadow var(--t2) var(--ease)}
-.beat.hit i{transform:scale(1.9);box-shadow:0 0 12px rgba(217,164,65,.9)}
+  transition:transform var(--t2) var(--ease)}
+.beat.hit i{transform:scale(1.9)}
 
 /* the world */
 #film{position:relative}
@@ -60,11 +74,12 @@ a{color:inherit;text-decoration:none}
 #plate::after{content:"";position:absolute;inset:0;
   background:linear-gradient(180deg,rgba(11,13,18,.55) 0%,rgba(11,13,18,0) 45%,
                              rgba(11,13,18,.65) 88%,var(--void) 100%)}
-.sky,.vig,.bloom{display:none;position:absolute;inset:0;pointer-events:none;z-index:1}
+/* d07: duotone Void/Bone keeps the photograph inside the palette. These are
+   legibility scrims only — pure Void, no colour — never a gold glow: the
+   block-found signature lives on the mark (d06), not as light on the photo. */
+.sky,.vig{display:none;position:absolute;inset:0;pointer-events:none;z-index:1}
 .sky{background:linear-gradient(180deg,rgba(11,13,18,.88) 0%,rgba(11,13,18,.34) 36%,rgba(11,13,18,0) 62%)}
 .vig{background:radial-gradient(126% 92% at 50% 46%,transparent 40%,rgba(6,7,10,.82) 100%)}
-.bloom{opacity:0;mix-blend-mode:screen;
-  background:radial-gradient(56% 26% at 44% 72%,rgba(217,164,65,.40),rgba(217,164,65,0) 72%)}
 
 /* acts */
 .act{position:relative;z-index:2;padding:clamp(64px,11vh,120px) clamp(20px,7vw,96px)}
@@ -72,8 +87,14 @@ a{color:inherit;text-decoration:none}
 .in{position:relative;max-width:min(920px,94vw)}
 .tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.28em;text-transform:uppercase;
   color:var(--gold);margin-bottom:18px}
-h1,h2{font-family:var(--display);font-weight:400;letter-spacing:-.03em;line-height:.98;
+/* d04: display type (Archivo Black) is used at most twice per page — the
+   wordmark and the single largest statement. h1 is that statement; every
+   other heading on the page uses the H1/H2 role from the same doc, a heavy
+   Inter weight, not the display face. */
+h1{font-family:var(--display);font-weight:400;letter-spacing:-.03em;line-height:.98;
   font-size:clamp(2.05rem,6.6vw,4.9rem);max-width:15ch}
+h2{font-family:var(--ui);font-weight:800;letter-spacing:-.01em;line-height:1.08;
+  font-size:clamp(1.6rem,4.4vw,2.55rem);max-width:16ch}
 .sub{margin-top:22px;max-width:40ch;font-size:clamp(1rem,1.9vw,1.18rem);font-weight:500;
   line-height:1.55;color:rgba(245,242,234,.76)}
 .gold{color:var(--gold)}
@@ -82,22 +103,20 @@ h1,h2{font-family:var(--display);font-weight:400;letter-spacing:-.03em;line-heig
   font-size:clamp(1.05rem,2.1vw,1.32rem)}
 .quiet{margin-top:14px;font-size:clamp(.9rem,1.6vw,1rem);color:var(--ash);max-width:34ch}
 
-/* the block that closed while you were here */
-.moment{margin-top:18px;padding:13px 15px;border:1px solid rgba(217,164,65,.45);
-  background:rgba(217,164,65,.07);font-family:var(--mono);font-size:.78rem;
+/* the block that closed while you were here — Slate panel, a thin gold rule,
+   not a gold-tinted box: gold stays the exception, not the background */
+.moment{margin-top:18px;padding:13px 15px;border-left:2px solid var(--gold);
+  background:var(--slate);font-family:var(--mono);font-size:.78rem;
   line-height:1.7;color:var(--bone);max-width:46ch}
 .moment b{color:var(--gold);font-weight:400}
 .moment a{color:var(--ash);text-decoration:underline;text-underline-offset:3px}
-.moment.in{animation:momentIn 900ms var(--ease)}
+.moment.in{animation:momentIn var(--t3) var(--ease)}
 @keyframes momentIn{from{opacity:0;transform:translate3d(0,10px,0)}to{opacity:1;transform:none}}
 /* what the chain did during your visit — yours, and checkable */
 .visit{margin-top:24px;font-family:var(--mono);font-size:.78rem;line-height:1.8;
   color:var(--ash);max-width:46ch}
 .visit b{color:var(--bone);font-weight:400}
-.visit em{font-style:normal;color:var(--gold)}
-.flash{position:absolute;inset:0;pointer-events:none;z-index:1;display:none;
-  opacity:0;background:#FFF3DA;mix-blend-mode:screen}
-body.film .flash{display:block}
+.visit em{font-style:normal;color:var(--bone)}
 @media(prefers-reduced-motion:reduce){ .moment.in{animation:none} }
 
 .btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
@@ -105,16 +124,19 @@ body.film .flash{display:block}
   font-weight:700;font-size:.99rem;border:1px solid transparent;
   transition:transform var(--t1) var(--ease),background var(--t2) var(--ease),
              border-color var(--t2) var(--ease)}
+/* d14: one primary action per view, in Moongold; the interaction is motion
+   only (the prescribed lift), never a second gold tone standing in for a hover state */
 .btn-a{background:var(--gold);color:var(--void)}
-.btn-a:hover{transform:translateY(-2px);background:var(--gold-2)}
+.btn-a:hover{transform:translateY(-2px)}
 .btn-b{border-color:rgba(245,242,234,.28);color:var(--bone)}
 .btn-b:hover{border-color:var(--gold);background:rgba(217,164,65,.08)}
 .fine{margin-top:24px;max-width:48ch;font-size:.84rem;line-height:1.65;color:var(--ash)}
 
-/* act II — three claims, each on its own beat */
+/* act II — three claims, each on its own beat. Inter Extrabold, not the
+   display face: d04 reserves Archivo Black for the wordmark + h1 only. */
 .claims{margin-top:16px;display:flex;flex-direction:column;gap:clamp(18px,3.2vh,32px)}
-.claim{max-width:24ch;font-family:var(--display);font-weight:400;letter-spacing:-.02em;
-  line-height:1.04;font-size:clamp(1.5rem,3.9vw,2.7rem)}
+.claim{max-width:24ch;font-family:var(--ui);font-weight:800;letter-spacing:-.01em;
+  line-height:1.1;font-size:clamp(1.4rem,3.6vw,2.4rem)}
 .claim small{display:block;margin-top:10px;font-family:var(--ui);font-weight:500;
   font-size:clamp(.9rem,1.5vw,1rem);line-height:1.55;color:rgba(245,242,234,.66);
   letter-spacing:0;max-width:34ch}
@@ -126,8 +148,8 @@ body.film .flash{display:block}
   font-size:.8rem;color:rgba(245,242,234,.62)}
 .row b{color:var(--bone);font-weight:400}
 .row .h{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ash)}
-.row .w{color:var(--gold);white-space:nowrap}
-.row.new{animation:rowIn 700ms var(--ease)}
+.row .w{color:var(--bone);white-space:nowrap}
+.row.new{animation:rowIn var(--t3) var(--ease)}
 @keyframes rowIn{from{opacity:0;transform:translate3d(0,-8px,0)}to{opacity:1;transform:none}}
 .lstate{padding:16px 0;font-family:var(--mono);font-size:.78rem;color:var(--ash)}
 @media(max-width:640px){ .row{grid-template-columns:4.6rem 1fr;font-size:.74rem}
@@ -137,13 +159,15 @@ body.film .flash{display:block}
 .rules{margin-top:30px;display:grid;gap:1px;background:rgba(245,242,234,.10);
   grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border:1px solid rgba(245,242,234,.10)}
 .rule{background:var(--void);padding:18px 16px}
-.rule b{display:block;font-family:var(--display);font-weight:400;
-  font-size:clamp(1.2rem,2.4vw,1.7rem);letter-spacing:-.02em;line-height:1}
+/* d04: every figure representing money or a count is set in the monospace
+   face with tabular figures, not the display face — these are data. */
+.rule b{display:block;font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums;
+  font-size:clamp(1.05rem,2.1vw,1.45rem);letter-spacing:0;line-height:1.15}
 .rule span{display:block;margin-top:8px;font-family:var(--mono);font-size:.62rem;
   letter-spacing:.16em;text-transform:uppercase;color:var(--ash)}
 /* act IV carries the most content, so it runs two columns where there is room */
 .act-rules .in{max-width:min(1140px,94vw)}
-.act-rules h2{font-size:clamp(1.85rem,4.3vw,3.3rem);max-width:13ch}
+.act-rules h2{font-size:clamp(1.5rem,3.6vw,2.3rem);max-width:14ch}
 @media(min-width:980px){
   .act-rules .in{display:grid;grid-template-columns:1.05fr .95fr;
     gap:clamp(30px,4vw,60px);align-items:start}
@@ -158,7 +182,7 @@ body.film .flash{display:block}
 .also{margin-top:34px;display:grid;gap:22px;
   grid-template-columns:repeat(auto-fit,minmax(230px,1fr));max-width:760px}
 .also h3{font-family:var(--mono);font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--gold);margin-bottom:8px}
+  color:var(--bone);margin-bottom:8px}
 .also p{font-size:.93rem;line-height:1.6;color:rgba(245,242,234,.72)}
 
 /* scroll cue + rail */
@@ -198,7 +222,7 @@ body.film #stage{position:sticky;top:0;height:100svh;overflow:hidden}
 body.film #stars{display:block}
 body.film #plate{position:absolute;inset:-8% -4%;height:auto;will-change:transform}
 body.film #plate::after{display:none}
-body.film .sky,body.film .vig,body.film .bloom{display:block}
+body.film .sky,body.film .vig{display:block}
 body.film .cue{display:flex}
 body.film #rail{display:flex}
 /* padding-top clears the fixed masthead so no act ever sits under it */
@@ -251,12 +275,17 @@ body.film .act a{pointer-events:auto}
 <header class="top">
   <a class="brand" href="/">
     <svg viewBox="-150 -150 300 300" aria-hidden="true">
-      <mask id="bite"><rect x="-150" y="-150" width="300" height="300" fill="#fff"/>
-        <circle cx="67.18" cy="-67.18" r="62" fill="#000"/></mask>
-      <circle r="100" fill="#F5F2EA" mask="url(#bite)"/>
+      <path id="markPath" fill="#F5F2EA"
+            d="M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 A 62 62 0 0 1 13.99 -99.02 Z"/>
     </svg>
     <span>MoonBite</span>
   </a>
+  <ul class="topnav">
+    <li><a href="/how-it-works">How mining works</a></li>
+    <li><a href="/mine">Get started</a></li>
+    <li><a href="/explorer">Explorer</a></li>
+    <li><a href="/you-need-to-know">Caveats</a></li>
+  </ul>
   <p class="beat" id="beat"><i aria-hidden="true"></i>Block <span id="beatH">—</span></p>
 </header>
 
@@ -274,8 +303,6 @@ body.film .act a{pointer-events:auto}
            alt="The lunar surface photographed from orbit by Apollo 17: the craters Eratosthenes and Copernicus under a black sky.">
     </div>
     <div class="sky" aria-hidden="true"></div>
-    <div class="bloom" id="bloom" aria-hidden="true"></div>
-    <div class="flash" id="flash" aria-hidden="true"></div>
     <div class="vig" aria-hidden="true"></div>
 
     <!-- ACT I — ARRIVAL -->
@@ -380,9 +407,9 @@ body.film .act a{pointer-events:auto}
           <a class="btn btn-b" href="/full-node">Run a node</a>
           <a class="btn btn-b" href="/moonbite-core">Read the source</a>
         </div>
-        <p class="fine">MBITE is on no exchange and has no price. Nobody can sell you one, and
-          anyone offering to is lying. Mining costs electricity, and it may never be worth
-          anything. This is not investment advice.</p>
+        <p class="fine">MBITE is a proof-of-work cryptocurrency. It is not an investment, a
+          security, or a promise of future value. It has no guaranteed price, no listing, and
+          no team allocation. Mining consumes electricity that may never be recovered.</p>
       </div>
     </section>
   </div>
@@ -394,9 +421,7 @@ body.film .act a{pointer-events:auto}
       <div>
         <p class="brand">
           <svg viewBox="-150 -150 300 300" aria-hidden="true">
-            <mask id="bite2"><rect x="-150" y="-150" width="300" height="300" fill="#fff"/>
-              <circle cx="67.18" cy="-67.18" r="62" fill="#000"/></mask>
-            <circle r="100" fill="#F5F2EA" mask="url(#bite2)"/>
+            <path fill="#F5F2EA" d="M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 A 62 62 0 0 1 13.99 -99.02 Z"/>
           </svg><span>MoonBite</span>
         </p>
         <p>{{ consensus.initial_subsidy_coins }} MBITE every {{ consensus.block_time_min }}
@@ -407,8 +432,13 @@ body.film .act a{pointer-events:auto}
       <div class="fcol"><h3>Verify</h3>
         <a href="/balance">Check a balance</a><a href="/explorer">Explorer</a><a href="/api/consensus">Consensus rules</a><a href="/full-node">Run a node</a></div>
       <div class="fcol"><h3>Read</h3>
-        <a href="/whitepaper">Whitepaper</a><a href="/governance">Decisions</a><a href="/scams">Avoid scams</a></div>
+        <a href="/whitepaper">Whitepaper</a><a href="/governance">Decisions</a>
+        <a href="/you-need-to-know">Caveats</a><a href="/scams">Avoid scams</a></div>
     </div>
+    <!-- d12: the standing disclosure, verbatim, wherever a page speaks for the project -->
+    <p class="fine" style="max-width:70ch">MBITE is a proof-of-work cryptocurrency. It is not
+      an investment, a security, or a promise of future value. It has no guaranteed price, no
+      listing, and no team allocation. Mining consumes electricity that may never be recovered.</p>
     <p class="credit">
       Open source. Consensus parameters and every design decision are recorded in the ADRs.<br>
       Photograph: NASA / Apollo 17 (AS17-145-22285), the craters Eratosthenes and Copernicus
@@ -430,7 +460,26 @@ var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches
 /* Live chain. Every figure here is fetched or it stays an em dash. */
 var height=0, hasTip=false, pulseUntil=0, beat=$('beat');
 var arrival=null, arrivedAt=Date.now(), watched=0;
+/* d11: thousands are separated with a comma for amounts and counts, but a
+   BLOCK HEIGHT is never separated — fmt() is for money/counts, fmtH() for height. */
 function fmt(n){return (n||0).toLocaleString('en-US')}
+function fmtH(n){return String(n||0)}
+
+/* d01/d06: the mark is a single closed path; the bite deepens by one
+   increment for every block found — the prescribed signature motion, not a
+   decorative light on the photograph. Geometry mirrors the construction grid:
+   R=100, bite centred at 0.95R on the 45deg upper-right axis. */
+var R=100, D=95, r=62, RMAX=66;
+var markPath=$('markPath');
+function biteD(rb){
+  var a=(R*R-rb*rb+D*D)/(2*D), h=Math.sqrt(Math.max(0,R*R-a*a));
+  var ux=Math.SQRT1_2, uy=-Math.SQRT1_2, px=-uy, py=ux;
+  var cx=a*ux, cy=a*uy, p1x=cx+h*px, p1y=cy+h*py, p2x=cx-h*px, p2y=cy-h*py;
+  var f=function(n){return n.toFixed(2)};
+  return 'M '+f(p1x)+' '+f(p1y)+' A '+R+' '+R+' 0 1 0 '+f(p2x)+' '+f(p2y)+
+         ' A '+f(rb)+' '+f(rb)+' 0 0 1 '+f(p1x)+' '+f(p1y)+' Z';
+}
+function deepen(){ if(markPath && r<RMAX){ r+=1; markPath.setAttribute('d',biteD(r)); } }
 
 /* The visitor's own record of the visit: which block was open when they got
    here, and how many have closed since. Both are observed, never estimated —
@@ -438,7 +487,7 @@ function fmt(n){return (n||0).toLocaleString('en-US')}
 function paintVisit(){
   if(arrival===null) return;
   var el=$('visit'), mins=Math.round((Date.now()-arrivedAt)/60000);
-  var t='The chain was at block <b>#'+fmt(arrival)+'</b> when you opened this page.';
+  var t='The chain was at block <b>#'+fmtH(arrival)+'</b> when you opened this page.';
   if(watched>0){
     t+='<br>Since then <em>'+fmt(watched)+(watched===1?' block has':' blocks have')+' closed</em>'
       +(mins?' — in the '+mins+(mins===1?' minute':' minutes')+' you have been here.':'.');
@@ -454,7 +503,7 @@ function paintVisit(){
    this page that happens TO the visitor. It is stated once and then it stays. */
 function markMoment(h){
   var el=$('moment');
-  el.innerHTML='A block just closed while you were here. <b>#'+fmt(h)+'</b>, '
+  el.innerHTML='A block just closed while you were here. <b>#'+fmtH(h)+'</b>, '
     +'found by a machine somewhere, paying <b>{{ consensus.initial_subsidy_coins }} MBITE</b> '
     +'to whoever was running it. <a href="/explorer">Check it on the explorer</a>.';
   if(el.hidden){ el.hidden=false; el.classList.add('in') }
@@ -478,10 +527,10 @@ function pollTip(){
       pulseUntil=performance.now()+1400;
       beat.classList.add('hit');
       setTimeout(function(){ beat.classList.remove('hit') },700);
-      markMoment(h); paintVisit(); flare(); pollBlocks(); measure();
+      deepen(); markMoment(h); paintVisit(); flare(); pollBlocks(); measure();
     }
     height=h; hasTip=true;
-    $('beatH').textContent=fmt(h);
+    $('beatH').textContent=fmtH(h);
     if(j.tip_hash) $('tip').textContent=j.tip_hash;
   }).catch(function(){});
 }
@@ -512,7 +561,7 @@ function pollBlocks(){
       var right=(b.subsidy!=null&&units)?(b.subsidy/units)+' MBITE'
                 :(b.tx_count!=null?b.tx_count+(b.tx_count===1?' tx':' txs'):'—');
       out+='<div class="row'+(seen[b.height]?'':' new')+'">'
-         +   '<b>#'+fmt(b.height)+'</b>'
+         +   '<b>#'+fmtH(b.height)+'</b>'
          +   '<span class="h">'+(b.hash||'—')+'</span>'
          +   '<span class="w">'+right+' · '+(ago(b.timestamp)||'—')+'</span>'
          + '</div>';
@@ -531,7 +580,7 @@ if(!reduce){
   body.classList.add('film');
   window.scrollTo(0,0);
 
-  var film=$('film'), stage=$('stage'), plate=$('plate'), bloom=$('bloom'), flash=$('flash');
+  var film=$('film'), stage=$('stage'), plate=$('plate');
   var acts=[].slice.call(document.querySelectorAll('.act'));
   var claims=[].slice.call(document.querySelectorAll('.claim'));
   var dots=[].slice.call(document.querySelectorAll('#rail span'));
@@ -573,19 +622,15 @@ if(!reduce){
     }
   };
 
-  /* the descent: the plate sinks and grows, then eases back for the horizon */
+  /* the descent: the plate sinks and grows, then eases back for the horizon.
+     No gold glow on the photograph — the block-found signature lives on the
+     mark (deepen(), above), matching d06 exactly rather than inventing a
+     second one. */
   var paintScene=function(p){
     var down=smooth(0.00,0.66,p), out=smooth(0.74,1.00,p);
     var scale=lerp(1.00,1.22,down)-0.11*out;
     var y=lerp(0,8,down)-4.5*out;
     plate.style.transform='translate3d(0,'+y.toFixed(2)+'%,0) scale('+scale.toFixed(4)+')';
-    /* a found block swells the limb and decays over the pulse, rather than
-       switching a light on and off */
-    var left=pulseUntil-performance.now();
-    var live=(left>0)?(Math.min(left,1400)/1400)*0.62:0;
-    var horizon=smooth(0.90,1.00,p)*0.34;
-    bloom.style.opacity=Math.max(live,horizon).toFixed(3);
-    flash.style.opacity=(live>0?live*0.13:0).toFixed(3);
   };
 
   /* starfield, sized to the device it landed on */

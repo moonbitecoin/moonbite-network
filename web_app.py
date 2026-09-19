@@ -838,10 +838,11 @@ def api_tip():
 
 @app.route("/")
 def home_page():
-    """The home page: 'Take a bite of the moon' — a keyframed canvas moon that
-    gets bitten as you scroll, live chain heartbeat from /api/tip, and a
-    shareable claim-a-block card at the end."""
-    return render_template("home_bite.html")
+    """The home page: 'Money you can still mine on a laptop' — the five-act
+    scroll film, rebuilt to docs/moonbite-guidelines.html (the canonical mark
+    as the live block-found signature, display type capped at two uses, data
+    in tabular mono, a real primary nav with Caveats, the standing disclosure)."""
+    return render_template("horizon.html")
 
 
 @app.route("/horizon")
