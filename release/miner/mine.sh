@@ -30,15 +30,26 @@ write_conf() {
   mkdir -p "$DATADIR"
   local pw; pw=$(sed -n 's/^rpcpassword=//p' "$CONF" 2>/dev/null | head -1) || true
   [ -z "$pw" ] && pw=$(head -c 24 /dev/urandom | od -An -tx1 | tr -d ' \n')
+  # MOONBITE_P2P_PORT / MOONBITE_RPC_PORT let more than one node run on the
+  # same machine at once (mine.ps1 already supports this) - the default ports
+  # collide the moment a second instance, e.g. a seed node, is already up.
+  local p2p="" rpcp=""
+  [ -n "${MOONBITE_P2P_PORT:-}" ] && p2p="port=$MOONBITE_P2P_PORT"$'\n'
+  [ -n "${MOONBITE_RPC_PORT:-}" ] && rpcp="rpcport=$MOONBITE_RPC_PORT"$'\n'
+  # Create the file 0600 from birth. A bare `>` here writes at the process
+  # umask (often 0644), leaving the RPC password world-readable until the
+  # chmod below runs - tighten umask around the write only, then restore it.
+  local old_umask; old_umask=$(umask); umask 077
   cat > "$CONF" <<CONF
 server=1
 listen=1
 dbcache=512
 rpcuser=moonminer
 rpcpassword=$pw
-# Live MoonBite seed node - how your miner finds the network.
+${p2p}${rpcp}# Live MoonBite seed node - how your miner finds the network.
 addnode=67.205.154.64:9444
 CONF
+  umask "$old_umask"
   chmod 600 "$CONF"
 }
 
