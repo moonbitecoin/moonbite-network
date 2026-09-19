@@ -850,6 +850,14 @@ def horizon_page():
     return render_template("horizon.html")
 
 
+@app.route("/home")
+def home_standard_page():
+    """Homepage built to docs/moonbite-guidelines.html: the mark as a living hero
+    (bite deepens per real block), a live explorer strip, the glyph composer,
+    caveats in the primary nav, one gold action, the standing disclosure."""
+    return render_template("home_standard.html")
+
+
 @app.route("/hello")
 def hello_page():
     """A welcome homepage for people who have never touched crypto: feel the

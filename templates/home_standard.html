@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MoonBite — a coin is mined, never minted</title>
+<meta name="description" content="MoonBite (MBITE) is a proof-of-work coin. Every coin is mined, one block at a time, about every {{ consensus.block_time_min }} minutes. Watch the chain, run a node, mine.">
+<link rel="icon" type="image/svg+xml" href="/static/moonbite-logo.svg">
+<link rel="stylesheet" href="/static/fonts/moonbite-fonts.css">
+<style nonce="{{ csp_nonce }}">
+/* MoonBite home — built to docs/moonbite-guidelines.html.
+   d03 Void/Bone carry the brand; gold on ~5% of the screen, one primary action.
+   d04 display type twice: the wordmark and the single largest statement.
+   d06 one easing, three durations; the bite deepens as a block is found.
+   d11 block heights are never thousands-separated; amounts are tabular mono.
+   d15 max-width 1140, caveats in the primary nav, no modal / countdown.      */
+:root{
+  --void:#0B0D12; --slate:#161A22; --bone:#F5F2EA; --gold:#D9A441; --ash:#8A8580;
+  --gain:#2E9E6B; --loss:#C8402F;
+  --display:'Archivo Black','Helvetica Neue','Arial Black',sans-serif;
+  --body:Inter,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --data:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  --ease:cubic-bezier(0.22,1,0.36,1); --t1:120ms; --t2:240ms; --t3:600ms;
+  --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--void);color:var(--bone);font-family:var(--body);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--gold);color:var(--void)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:6px}
+.skip{position:absolute;left:-9999px;z-index:50;background:var(--gold);color:var(--void);padding:var(--s3) var(--s4);font-weight:700}
+.skip:focus{left:0;top:0}
+.wrap{max-width:1140px;margin:0 auto;padding:0 var(--s5)}
+.eyebrow{font-family:var(--data);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ash)}
+.data{font-family:var(--data);font-variant-numeric:tabular-nums;font-size:15px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(34px,6vw,56px);line-height:1.02;letter-spacing:-.02em}
+h2{font-family:var(--body);font-weight:700;font-size:24px;line-height:1.25;letter-spacing:-.01em}
+h3{font-family:var(--body);font-weight:700;font-size:17px}
+p{max-width:60ch}
+.muted{color:var(--ash)}
+
+/* nav — d15 caveats in the primary nav */
+.nav{display:flex;align-items:center;gap:var(--s5);padding:var(--s4) 0;border-bottom:1px solid rgba(245,242,234,.08)}
+.wordmark{display:flex;align-items:center;gap:var(--s3);font-family:var(--display);font-weight:400;
+  font-size:18px;letter-spacing:-.02em;text-transform:uppercase;min-height:44px}
+.wordmark svg{width:22px;height:22px}
+.nav ul{margin-left:auto;display:flex;gap:var(--s5);list-style:none}
+.nav a{color:var(--ash);font-size:15px;min-height:44px;display:inline-flex;align-items:center;
+  transition:color var(--t1) var(--ease)}
+.nav a:hover{color:var(--bone)}
+/* d15: Caveats stays in the primary nav at every width; only Press yields on phones */
+@media(max-width:768px){.nav ul{gap:var(--s4);flex-wrap:wrap;justify-content:flex-end}.nav li:nth-child(5){display:none}}
+
+/* hero — the mark is the hero */
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:var(--s8);align-items:center;padding:var(--s9) 0 var(--s8)}
+@media(max-width:1024px){.hero{grid-template-columns:1fr;gap:var(--s7);padding-top:var(--s7)}}
+.mark{width:min(100%,420px);aspect-ratio:1;margin:0 auto}
+.mark svg{width:100%;height:100%;display:block;overflow:visible}
+.mark path{fill:var(--bone);transition:d var(--t3) var(--ease)}
+.hero .lede{margin-top:var(--s5);font-size:18px;color:rgba(245,242,234,.86)}
+.live{margin-top:var(--s5);display:flex;flex-wrap:wrap;gap:var(--s2) var(--s5);align-items:baseline}
+.live .h{font-family:var(--data);font-variant-numeric:tabular-nums;font-size:15px}
+.live .h b{font-weight:400;color:var(--bone)}
+.live .age{font-family:var(--data);font-size:13px;color:var(--ash)}
+.actions{margin-top:var(--s6);display:flex;flex-wrap:wrap;gap:var(--s3)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 var(--s5);
+  border-radius:6px;font-weight:700;font-size:15px;border:1px solid transparent;
+  transition:background var(--t2) var(--ease),border-color var(--t2) var(--ease),transform var(--t1) var(--ease)}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--gold);color:var(--void)}      /* the one gold action */
+.btn-primary:hover{background:#e0af57}
+.btn-ghost{color:var(--bone);border-color:rgba(245,242,234,.24)}
+.btn-ghost:hover{border-color:rgba(245,242,234,.6)}
+.tone{margin-top:var(--s4);display:inline-flex;align-items:center;gap:var(--s2);font-size:13px;color:var(--ash);cursor:pointer;min-height:44px}
+.tone input{accent-color:var(--gold)}
+
+/* chain strip — d19: the explorer is the product */
+.section{padding:var(--s8) 0;border-top:1px solid rgba(245,242,234,.08)}
+.section .eyebrow{margin-bottom:var(--s3)}
+.blocks{margin-top:var(--s5);border:1px solid rgba(245,242,234,.10);border-radius:10px;overflow:hidden}
+.row{display:grid;grid-template-columns:110px 1fr 120px 150px;gap:var(--s4);align-items:center;
+  padding:var(--s4) var(--s5);border-top:1px solid rgba(245,242,234,.08);font-family:var(--data);
+  font-variant-numeric:tabular-nums;font-size:15px}
+.row:first-child{border-top:0}
+.row.head{background:var(--slate);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ash);font-family:var(--data)}
+.row .hash{display:flex;align-items:center;gap:var(--s2);min-width:0}
+.row .hash span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ash)}
+.copy{flex:none;background:none;border:1px solid rgba(245,242,234,.18);color:var(--ash);border-radius:6px;
+  font-family:var(--data);font-size:12px;padding:4px 8px;cursor:pointer;min-height:28px;
+  transition:border-color var(--t1) var(--ease),color var(--t1) var(--ease)}
+.copy:hover{color:var(--bone);border-color:rgba(245,242,234,.5)}
+.row .age{color:var(--ash);font-size:13px}
+.row .new{animation:rowIn var(--t2) var(--ease)}
+@keyframes rowIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.empty{padding:var(--s5);font-family:var(--data);font-size:14px;color:var(--ash)}
+@media(max-width:768px){.row{grid-template-columns:90px 1fr 110px}.row .rw{display:none}}
+
+/* mechanism cards — d14 radius 10, Slate */
+.cards{margin-top:var(--s5);display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s4)}
+@media(max-width:768px){.cards{grid-template-columns:1fr}}
+.card{background:var(--slate);border-radius:10px;padding:var(--s5)}
+.card h3{margin-bottom:var(--s2)}
+.card p{color:rgba(245,242,234,.8);font-size:15px}
+.card .fig{margin-top:var(--s3);font-family:var(--data);font-variant-numeric:tabular-nums;font-size:15px}
+
+/* supply — d16 always the full ceiling, axis labelled from 0 */
+.supply{margin-top:var(--s5);background:var(--slate);border-radius:10px;padding:var(--s5)}
+.bar{margin-top:var(--s3);height:10px;border-radius:6px;background:rgba(245,242,234,.10);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--bone);transition:width var(--t3) var(--ease)}
+.axis{display:flex;justify-content:space-between;margin-top:var(--s2);font-family:var(--data);font-size:12px;color:var(--ash);font-variant-numeric:tabular-nums}
+
+/* glyph composer — d02 */
+.glyph{margin-top:var(--s5);display:grid;grid-template-columns:1fr 1fr;gap:var(--s5);align-items:start}
+@media(max-width:768px){.glyph{grid-template-columns:1fr}}
+.glyph label{display:block;font-family:var(--data);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ash);margin-bottom:var(--s2)}
+.glyph input{width:100%;background:var(--slate);border:1px solid rgba(245,242,234,.14);color:var(--bone);
+  border-radius:6px;padding:var(--s3) var(--s4);font-family:var(--data);font-size:16px;min-height:48px}
+.glyph input:focus{border-color:var(--bone);outline:none}
+.glyph output{display:block;background:var(--slate);border-radius:10px;padding:var(--s5);
+  font-family:var(--data);font-variant-numeric:tabular-nums;font-size:clamp(22px,4vw,34px);word-break:break-all}
+.glyph .note{margin-top:var(--s3);font-size:13px;color:var(--ash)}
+.glyph .copyrow{margin-top:var(--s3);display:flex;gap:var(--s2);align-items:center}
+
+/* caveats — d09 say what is not true yet */
+.caveats{margin-top:var(--s5);display:grid;grid-template-columns:repeat(2,1fr);gap:var(--s3)}
+@media(max-width:768px){.caveats{grid-template-columns:1fr}}
+.caveats div{padding:var(--s4) var(--s5);border:1px solid rgba(245,242,234,.10);border-radius:10px;font-size:15px}
+.caveats b{display:block;margin-bottom:4px}
+.caveats span{color:rgba(245,242,234,.78)}
+
+footer{border-top:1px solid rgba(245,242,234,.08);padding:var(--s7) 0 var(--s8);color:var(--ash);font-size:14px}
+footer .disc{max-width:70ch;line-height:1.7}
+footer .links{margin-top:var(--s5);display:flex;flex-wrap:wrap;gap:var(--s2) var(--s5)}
+footer .links a{color:var(--ash)}footer .links a:hover{color:var(--bone)}
+footer .utc{margin-top:var(--s4);font-family:var(--data);font-size:12px}
+
+@media(prefers-reduced-motion:reduce){
+  .mark path,.bar i,.btn{transition:none}
+  .row .new{animation:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#chain">Skip to the live chain</a>
+
+<div class="wrap">
+  <nav class="nav" aria-label="Primary">
+    <a class="wordmark" href="/">
+      <svg viewBox="-150 -150 300 300" aria-hidden="true">
+        <path d="M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 A 62 62 0 0 1 13.99 -99.02 Z" fill="#F5F2EA"/>
+      </svg>MoonBite
+    </a>
+    <ul>
+      <li><a href="/how-it-works">How mining works</a></li>
+      <li><a href="/mine">Get started</a></li>
+      <li><a href="/explorer">Explorer</a></li>
+      <li><a href="/you-need-to-know">Caveats</a></li>
+      <li><a href="/press">Press</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO: the mark, alive with the chain -->
+  <header class="hero">
+    <div class="mark" aria-hidden="true">
+      <svg viewBox="-150 -150 300 300"><path id="markPath" d="M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 A 62 62 0 0 1 13.99 -99.02 Z"/></svg>
+    </div>
+    <div>
+      <p class="eyebrow">Proof of work · live</p>
+      <h1>A coin is mined, never minted.</h1>
+      <p class="lede">MoonBite is a proof-of-work network. Every MBITE in existence
+        was found by a computer solving a block, about every {{ consensus.block_time_min }}
+        minutes. No coin was issued, allocated or sold. The mark above deepens by one
+        increment each time a block is found.</p>
+      <div class="live" aria-live="polite">
+        <span class="h">Block <b id="height">—</b></span>
+        <span class="age" id="age">reading the chain</span>
+        <span class="h">Reward <b>Ȼ{{ '%.8f' % consensus.initial_subsidy_coins }}</b></span>
+      </div>
+      <div class="actions">
+        <a class="btn btn-primary" href="/mine">Start mining</a>
+        <a class="btn btn-ghost" href="/explorer">Open the explorer</a>
+      </div>
+      <label class="tone"><input type="checkbox" id="tone"> Play the block-found tone</label>
+    </div>
+  </header>
+</div>
+
+<!-- THE CHAIN -->
+<section class="section" id="chain">
+  <div class="wrap">
+    <p class="eyebrow">Latest blocks · times in UTC</p>
+    <h2>The chain, as it is.</h2>
+    <div class="blocks" id="blocks">
+      <div class="row head"><span>Height</span><span>Hash</span><span class="rw">Reward</span><span>Found</span></div>
+      <div class="empty" id="blocksEmpty">Reading the chain.</div>
+    </div>
+  </div>
+</section>
+
+<!-- MECHANISM -->
+<section class="section">
+  <div class="wrap">
+    <p class="eyebrow">How it works</p>
+    <h2>Three rules. No committee.</h2>
+    <div class="cards">
+      <div class="card"><h3>Mined, not minted</h3>
+        <p>A computer guesses until it finds a valid block. The network pays it the
+          block reward. That is the only way a coin comes to exist.</p>
+        <div class="fig">Ȼ{{ '%.8f' % consensus.initial_subsidy_coins }} per block</div></div>
+      <div class="card"><h3>Blocks every {{ consensus.block_time_min }} minutes</h3>
+        <p>Difficulty adjusts every 60 blocks so the spacing holds whether ten
+          machines are mining or ten thousand.</p>
+        <div class="fig">{{ consensus.blocks_per_day }} blocks per day</div></div>
+      <div class="card"><h3>A fixed ceiling</h3>
+        <p>The reward halves every {{ '{:,}'.format(consensus.halving_interval) }} blocks.
+          The schedule was fixed before the first block and cannot be raised.</p>
+        <div class="fig">{{ '{:,.8f}'.format(consensus.max_supply_coins) }} MBITE, ever</div></div>
+    </div>
+    <div class="supply" aria-label="Supply against the fixed ceiling">
+      <div class="eyebrow">Mined so far, against the ceiling</div>
+      <div class="bar"><i id="supplyBar"></i></div>
+      <div class="axis"><span>0</span><span id="supplyNow">—</span><span>{{ '{:,.8f}'.format(consensus.max_supply_coins) }}</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- GLYPH -->
+<section class="section">
+  <div class="wrap">
+    <p class="eyebrow">The glyph</p>
+    <h2>Write an amount.</h2>
+    <div class="glyph">
+      <div>
+        <label for="amt">Amount in MBITE</label>
+        <input id="amt" inputmode="decimal" value="50" autocomplete="off" spellcheck="false">
+        <p class="note">Amounts are written glyph-first with no space, to eight
+          places. Until the font ships, Ȼ (U+023B) is the approved stand-in — use it
+          in a handle, a bio, a post.</p>
+      </div>
+      <div>
+        <output id="glyphOut" for="amt">Ȼ50.00000000</output>
+        <div class="copyrow"><button class="copy" id="copyGlyph" type="button">Copy</button>
+          <span class="note" id="copied"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CAVEATS -->
+<section class="section" id="caveats">
+  <div class="wrap">
+    <p class="eyebrow">What is not true yet</p>
+    <h2>Read this before you mine.</h2>
+    <div class="caveats">
+      <div><b>There is no price.</b><span>MBITE is not listed anywhere. Nobody can sell you one, and anyone offering to is lying.</span></div>
+      <div><b>It may never be worth anything.</b><span>Mining consumes electricity that may never be recovered.</span></div>
+      <div><b>There is no team allocation.</b><span>No presale, no airdrop, no early access. Every coin is mined.</span></div>
+      <div><b>Nobody can help you recover a wallet.</b><span>Your keys are yours alone. Lose them and the coins are gone, by design.</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p class="disc">MBITE is a proof-of-work cryptocurrency. It is not an investment, a
+      security, or a promise of future value. It has no guaranteed price, no listing, and
+      no team allocation. Mining consumes electricity that may never be recovered.</p>
+    <div class="links">
+      <a href="/how-it-works">How mining works</a><a href="/mine">Get started</a>
+      <a href="/explorer">Explorer</a><a href="/you-need-to-know">Caveats</a>
+      <a href="/press">Press</a><a href="/brand">Brand and licence</a><a href="/moonbite-core">Source</a>
+    </div>
+    <p class="utc">Chain tip <span id="tip">—</span></p>
+  </div>
+</footer>
+
+<script nonce="{{ csp_nonce }}">
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i)};
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+var MAX_SUPPLY={{ consensus.max_supply_coins }};
+
+/* d01 construction: R=100, bite centre at 0.95R on the 45° upper-right axis.
+   d06 signature: the bite deepens by one increment as a block is found.
+   The path is rebuilt from the geometry so it stays a single closed path. */
+var R=100, D=95, r=62, RMAX=66;
+function markPath(rb){
+  var a=(R*R-rb*rb+D*D)/(2*D), h=Math.sqrt(Math.max(0,R*R-a*a));
+  var ux=Math.SQRT1_2, uy=-Math.SQRT1_2;            // toward upper-right (SVG y-down)
+  var px=-uy, py=ux;                                 // perpendicular
+  var cx=a*ux, cy=a*uy;
+  var p1x=cx+h*px, p1y=cy+h*py, p2x=cx-h*px, p2y=cy-h*py;
+  var f=function(n){return n.toFixed(2)};
+  return 'M '+f(p1x)+' '+f(p1y)+' A '+R+' '+R+' 0 1 0 '+f(p2x)+' '+f(p2y)+
+         ' A '+f(rb)+' '+f(rb)+' 0 0 1 '+f(p1x)+' '+f(p1y)+' Z';
+}
+function deepen(){ if(r<RMAX){ r+=1; $('markPath').setAttribute('d',markPath(r)); } }
+
+/* d08: four short notes, opt-in, under 600 ms total */
+function tone(){
+  if(!$('tone').checked) return;
+  try{
+    var ac=new (window.AudioContext||window.webkitAudioContext)();
+    [523.25,659.25,783.99,1046.5].forEach(function(fq,i){
+      var o=ac.createOscillator(), g=ac.createGain();
+      o.type='sine'; o.frequency.value=fq; g.gain.value=0;
+      o.connect(g); g.connect(ac.destination);
+      var t=ac.currentTime+i*0.12;
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.08,t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+0.13);
+      o.start(t); o.stop(t+0.14);
+    });
+  }catch(e){}
+}
+
+/* d11: block heights never separated; times in UTC, labelled */
+function ago(ts){ if(!ts) return ''; var s=Math.max(0,Date.now()/1000-ts);
+  if(s<90) return 'just now'; if(s<5400) return Math.round(s/60)+' min ago';
+  if(s<172800) return Math.round(s/3600)+' h ago'; return Math.round(s/86400)+' d ago'; }
+function utc(ts){ var d=new Date(ts*1000); return d.toISOString().slice(11,16)+' UTC'; }
+function chunk(h){ return (h||'').replace(/(.{8})/g,'$1 ').trim(); }   // d17 grouped for screen readers
+
+var height=0, hasTip=false, seen={};
+function pollTip(){
+  fetch('/api/blockchain/info').then(function(x){return x.json()}).then(function(j){
+    if(j.status!=='success') return;
+    var h=j.height||0;
+    if(hasTip && h>height){                      // one increment per block found (d06)
+      for(var i=0,n=Math.min(h-height,RMAX-r);i<n;i++) deepen();
+      tone(); pollBlocks();
+    }
+    height=h; hasTip=true;
+    $('height').textContent=String(h);                     // no thousands separator
+    if(j.tip_hash){ var t=$('tip'); t.textContent=j.tip_hash; t.setAttribute('aria-label',chunk(j.tip_hash)); }
+    if(j.total_money_coins!=null){
+      var pct=Math.min(100,(j.total_money_coins/MAX_SUPPLY)*100);
+      $('supplyBar').style.width=pct.toFixed(3)+'%';
+      $('supplyNow').textContent=j.total_money_coins.toLocaleString('en-US',{minimumFractionDigits:8,maximumFractionDigits:8})+' mined';
+    }
+  }).catch(function(){});
+}
+function pollBlocks(){
+  fetch('/api/explorer/blocks?limit=4').then(function(x){return x.json()}).then(function(j){
+    var bl=(j&&j.blocks)||[]; var box=$('blocks');
+    if(!bl.length){ $('blocksEmpty').textContent='The chain is not answering right now.'; return; }
+    var head=box.querySelector('.row.head'); box.innerHTML=''; box.appendChild(head);
+    bl.forEach(function(b){
+      var units=b.units_per_coin||0;
+      var rw=(b.subsidy!=null&&units)?('Ȼ'+(b.subsidy/units).toFixed(8)):'—';
+      var row=document.createElement('div'); row.className='row'+(seen[b.height]?'':' new');
+      row.innerHTML='<span>'+b.height+'</span>'+
+        '<span class="hash"><span aria-label="'+chunk(b.hash)+'">'+b.hash+'</span>'+
+        '<button class="copy" type="button" data-h="'+b.hash+'" aria-label="Copy hash">Copy</button></span>'+
+        '<span class="rw">'+rw+'</span>'+
+        '<span class="age" title="'+utc(b.timestamp)+'">'+ago(b.timestamp)+' · '+utc(b.timestamp)+'</span>';
+      box.appendChild(row); seen[b.height]=1;
+    });
+    if(bl[0]&&bl[0].timestamp) $('age').textContent='found '+ago(bl[0].timestamp)+' · '+utc(bl[0].timestamp);
+  }).catch(function(){ $('blocksEmpty').textContent='The chain is not answering right now.'; });
+}
+document.addEventListener('click',function(e){
+  var b=e.target.closest('.copy[data-h]'); if(!b) return;
+  navigator.clipboard&&navigator.clipboard.writeText(b.getAttribute('data-h'));
+  b.textContent='Copied'; setTimeout(function(){b.textContent='Copy'},1200);
+});
+
+/* d02 glyph composer: glyph-first, no space, eight places, tabular */
+var amt=$('amt'), out=$('glyphOut');
+function fmtAmt(v){ var n=parseFloat(String(v).replace(/[^0-9.]/g,'')); if(!isFinite(n)) n=0;
+  var s=n.toFixed(8); var parts=s.split('.'); parts[0]=parts[0].replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  return 'Ȼ'+parts.join('.'); }
+amt.addEventListener('input',function(){ out.textContent=fmtAmt(amt.value); });
+$('copyGlyph').addEventListener('click',function(){
+  navigator.clipboard&&navigator.clipboard.writeText(out.textContent);
+  $('copied').textContent='Copied'; setTimeout(function(){$('copied').textContent=''},1200);
+});
+
+pollTip(); pollBlocks();
+setInterval(function(){ if(!document.hidden) pollTip(); },20000);
+})();
+</script>
+</body>
+</html>
