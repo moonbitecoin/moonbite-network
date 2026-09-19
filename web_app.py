@@ -28,6 +28,7 @@ from typing import Optional
 
 from flask import (
     Flask,
+    Response,
     jsonify,
     make_response,
     redirect,
@@ -4995,6 +4996,39 @@ def add_security_headers(response):
     else:
         response.headers.setdefault("Content-Security-Policy", _CSP)
     return response
+
+
+# ============================================================================= #
+# SEO: robots.txt + sitemap.xml
+# ============================================================================= #
+
+# Launch set: the pages we're actively promoting and stand behind today.
+# Everything else (design experiments, retired demo-chain pages, drafts) is
+# real code left in place for later, but has no business being indexed or
+# found by a crawler until it's finished and reviewed.
+_LAUNCH_PATHS = [
+    "/", "/mine", "/get-wallet", "/wallet", "/explorer",
+    "/whitepaper", "/full-node", "/support", "/about",
+]
+
+
+@app.route("/robots.txt")
+def robots_txt():
+    lines = ["User-agent: *"] + [f"Allow: {p}" for p in _LAUNCH_PATHS] + [
+        "Disallow: /",
+        "",
+        "Sitemap: https://moonbite.org/sitemap.xml",
+    ]
+    return Response("\n".join(lines), mimetype="text/plain")
+
+
+@app.route("/sitemap.xml")
+def sitemap_xml():
+    urls = "".join(
+        f"<url><loc>https://moonbite.org{p}</loc></url>" for p in _LAUNCH_PATHS
+    )
+    xml = f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>'
+    return Response(xml, mimetype="application/xml")
 
 
 # ============================================================================= #
