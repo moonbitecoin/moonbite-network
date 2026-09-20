@@ -361,10 +361,7 @@ def json_error(
         response["action"] = suggested_action
 
     # Include debug info only if requested and in non-production or explicitly enabled
-    if debug_message and (
-        os.environ.get("FLASK_DEBUG") == "1"
-        or request.args.get("debug") == "true"
-    ):
+    if debug_message and os.environ.get("FLASK_DEBUG") == "1":
         response["debug"] = debug_message
 
     return jsonify(response), http_status
@@ -2471,6 +2468,7 @@ def _qr_svg(payload: str) -> Optional[str]:
 
 
 @app.route("/api/merchant/invoices", methods=["GET"])
+@rate_limit(10, 60)
 def api_merchant_invoices_list():
     """List invoices (optionally for one merchant), each freshly checked on-chain.
 
@@ -2693,7 +2691,7 @@ def api_wallet_hd_removed():
 def api_wallet_accounts_list():
     """List all accounts for the current user session with their balances."""
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
 
         accounts = wallet_history.list_accounts(session_id)
         result = []
@@ -2746,7 +2744,7 @@ def api_wallet_accounts_list():
 def api_wallet_account_detail(account_id: str):
     """Get details for a specific account including addresses and balance."""
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
 
         account = wallet_history.get_account(session_id, account_id)
         if not account:
@@ -2832,7 +2830,7 @@ def _register_public_account(session_id, name, address, color, is_default,
 def api_wallet_accounts_create():
     """Create a new account with a generated HD wallet."""
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
         data = request.get_json() or {}
 
         name = (data.get("name") or "").strip()
@@ -2904,7 +2902,7 @@ def api_wallet_accounts_create():
 def api_wallet_accounts_import():
     """Import an account from an existing mnemonic."""
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
         data = request.get_json() or {}
 
         name = (data.get("name") or "").strip()
@@ -2977,7 +2975,7 @@ def api_wallet_accounts_import():
 def api_wallet_accounts_update(account_id: str):
     """Update account name and/or color."""
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
         data = request.get_json() or {}
 
         name = data.get("name")
@@ -3023,7 +3021,7 @@ def api_wallet_accounts_update(account_id: str):
 def api_wallet_accounts_switch(account_id: str):
     """Switch to an account (set as current in session)."""
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
 
         account = wallet_history.get_account(session_id, account_id)
         if not account:
@@ -3056,7 +3054,7 @@ def api_wallet_accounts_switch(account_id: str):
 def api_wallet_accounts_set_default(account_id: str):
     """Set an account as the default."""
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
 
         account = wallet_history.set_default_account(session_id, account_id)
         if not account:
@@ -3085,7 +3083,7 @@ def api_wallet_accounts_set_default(account_id: str):
 def api_wallet_accounts_delete(account_id: str):
     """Delete (soft-delete) an account."""
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
 
         deleted = wallet_history.delete_account(session_id, account_id)
 
@@ -3119,7 +3117,7 @@ def api_wallet_accounts_delete(account_id: str):
 def api_wallet_accounts_balance(account_id: str):
     """Get balance for a specific account."""
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
 
         account = wallet_history.get_account(session_id, account_id)
         if not account:
@@ -3177,7 +3175,7 @@ def api_wallet_accounts_balance(account_id: str):
 def api_wallet_preferences_get():
     """Get all user preferences with defaults filled in."""
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
 
         prefs = wallet_history.get_preferences(session_id)
 
@@ -3200,7 +3198,7 @@ def api_wallet_preferences_get():
 def api_wallet_preferences_update():
     """Update user preferences. Returns all current preferences after update."""
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
         data = request.get_json() or {}
 
         if not isinstance(data, dict):
@@ -3260,7 +3258,7 @@ def api_wallet_preferences_defaults():
 def api_wallet_preferences_reset():
     """Reset all user preferences to defaults."""
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
 
         reset_prefs = wallet_history.reset_preferences(session_id)
 
@@ -3295,7 +3293,7 @@ def api_biometric_available():
         - device_name: string of registered device name if enabled
     """
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
 
         # Check if user has biometric enabled
         is_enabled = wallet_history.is_biometric_available(session_id)
@@ -3335,7 +3333,7 @@ def api_biometric_register():
         - message: confirmation message
     """
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
         data = request.get_json() or {}
 
         # Validate required fields
@@ -3406,7 +3404,7 @@ def api_biometric_verify():
         - remaining_attempts: attempts remaining before rate limit (on failure)
     """
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
         data = request.get_json() or {}
 
         # Check rate limiting
@@ -3466,7 +3464,7 @@ def api_biometric_disable():
         - message: confirmation message
     """
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
 
         # Disable biometric
         success = wallet_history.disable_biometric(session_id)
@@ -3504,7 +3502,7 @@ def api_biometric_status():
         - failed_attempts: number of failed attempts since last success
     """
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
         auth_state = wallet_history.get_auth_state(session_id)
 
         if not auth_state:
@@ -3552,7 +3550,7 @@ def api_biometric_audit():
         - offset: current offset
     """
     try:
-        session_id = request.remote_addr or "unknown"
+        session_id = _get_session_id()
 
         action = request.args.get("action", None)
         limit = int(request.args.get("limit", 50))
@@ -3584,18 +3582,27 @@ def api_biometric_audit():
 # ============================================================================= #
 
 
+_chain_addr_cache: dict = {}
+_CHAIN_ADDR_TTL = 5.0
+
+
 @app.route("/api/chain/address/<address>", methods=["GET"])
-@rate_limit(60, 60)
+@rate_limit(15, 60)
 def api_chain_address(address):
     """Real balance + spendable UTXOs for an address, straight from the node
     (scantxoutset). Powers the self-custody wallet. Amounts in base units (1e8).
     """
     if not _merchant_use_rpc():
         return jsonify({"status": "error", "message": "node not configured"}), 503
-    try:
-        from explorer.address import is_valid_address as _iv  # optional
-    except Exception:  # noqa: BLE001
-        _iv = None
+    # scantxoutset walks the whole UTXO set (seconds on the seed box) and the
+    # address lands inside a descriptor string, so junk input is both a DoS
+    # vector and an injection risk: validate first, and cache the full reply
+    # briefly so a polling wallet doesn't pin the node.
+    if not _valid_receiving_address(address):
+        return jsonify({"status": "error", "message": "invalid address"}), 400
+    hit = _chain_addr_cache.get(address)
+    if hit is not None and time.time() - hit[0] < _CHAIN_ADDR_TTL:
+        return jsonify(hit[1]), 200
     try:
         rpc = _get_merchant_rpc()
         res = rpc.scantxoutset("start", [{"desc": f"addr({address})"}])
@@ -3612,15 +3619,18 @@ def api_chain_address(address):
             height = int(rpc.getblockcount())
         except Exception:  # noqa: BLE001
             height = res.get("height", 0)
-        return jsonify({
+        payload = {
             "status": "success",
             "address": address,
             "balance_units": total,
             "utxos": utxos,
             "height": height,
-        }), 200
-    except Exception as e:  # noqa: BLE001
-        return jsonify({"status": "error", "message": str(e)[:120]}), 502
+        }
+        _chain_addr_cache[address] = (time.time(), payload)
+        return jsonify(payload), 200
+    except Exception:  # noqa: BLE001
+        app.logger.exception("chain address scan failed")
+        return jsonify({"status": "error", "message": "lookup failed"}), 502
 
 
 @app.route("/api/chain/broadcast", methods=["POST"])
@@ -4421,6 +4431,7 @@ def api_explorer_blocks():
 
 
 @app.route("/api/explorer/block/<identifier>", methods=["GET"])
+@rate_limit(30, 60)
 def api_explorer_block(identifier: str):
     """Return a block by height or hash, including its transactions."""
     if _merchant_use_rpc():
