@@ -127,19 +127,21 @@
         <div class="mb-section-head mb-reveal">
             <span class="mb-eyebrow">Quick start</span>
             <h2 class="mb-section-title">Start a node, hit the API</h2>
-            <p class="mb-section-sub">Once you have the daemon binary (see the <a href="/downloads/README.txt" class="link">download notes</a>), a testnet node is one command away. The RPC then waits for you on localhost.</p>
+            <p class="mb-section-sub">Once you have the daemon binary (see the <a href="/downloads/README.txt" class="link">download notes</a>), a node is one command away. The RPC then waits for you on localhost.</p>
         </div>
         <div class="mb-grid mb-grid-2">
             <div class="mb-card mb-reveal">
                 <h3 class="mb-card-title">Start the node</h3>
-                <pre class="mb-code"><span class="mb-c-comment"># start moonbited on testnet</span>
-moonbited -testnet \
+                <pre class="mb-code"><span class="mb-c-comment"># start moonbited on the live mainnet</span>
+moonbited \
   -daemon \
   -rpcuser=rpcuser \
   -rpcpassword=rpcpass
 
 <span class="mb-c-comment"># watch it sync</span>
-moonbite-cli -testnet getblockchaininfo</pre>
+moonbite-cli getblockchaininfo
+
+<span class="mb-c-comment"># or add -testnet to either command to run testnet instead</span></pre>
             </div>
             <div class="mb-card mb-reveal">
                 <h3 class="mb-card-title">Hit the read-only REST API</h3>

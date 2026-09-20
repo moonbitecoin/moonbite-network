@@ -39,13 +39,13 @@
             <div class="mb-milestone is-done mb-reveal">
                 <div class="mb-milestone-phase">Step 2</div>
                 <h3>Generate a receive address</h3>
-                <p>Inside the wallet, spin up a new receive address. Mainnet addresses start with <code>moon1</code>; testnet with <code>tmoon1</code>. This is where your mining rewards land. Copy it — the next step needs it.</p>
+                <p>Inside the wallet, spin up a new receive address (it'll start with <code>moon1</code>). This is where your mining rewards land. Copy it — the next step needs it.</p>
                 <a href="/wallet" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Open wallet →</a>
             </div>
             <div class="mb-milestone is-active mb-reveal">
                 <div class="mb-milestone-phase">Step 3</div>
                 <h3>Mine your first MBITE</h3>
-                <p>Open the miner and paste in your address. It runs RandomX proof-of-work to compete for block rewards. Find a valid block and the whole reward pays straight to your address — no pool, no middleman, no cut. Testnet rewards are up for grabs right now.</p>
+                <p>Open the miner and paste in your address. It runs RandomX proof-of-work to compete for block rewards. Find a valid block and the whole reward pays straight to your address — no pool, no middleman, no cut.</p>
                 <a href="/mine" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Start mining →</a>
             </div>
             <div class="mb-milestone mb-reveal">
@@ -68,7 +68,7 @@
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">⏱️</div>
                 <h3>Block time: ~2 minutes</h3>
-                <p>The network aims for a new block every 120 seconds. Your odds of finding one track your share of the total hash rate. On testnet, where competition is thin, blocks come fast.</p>
+                <p>The network aims for a new block every 120 seconds. Your odds of finding one track your share of the total hash rate.</p>
             </div>
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">🎁</div>
@@ -78,7 +78,7 @@
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">💰</div>
                 <h3>No market value yet</h3>
-                <p>MBITE is pre-mainnet and listed on nothing. The coins you mine now are real chain coins, but they carry no monetary value today. Mine to take part — not because you're expecting a price.</p>
+                <p>MBITE isn't listed on any exchange yet. The coins you mine now are real chain coins, but they carry no monetary value today. Mine to take part — not because you're expecting a price.</p>
             </div>
             <div class="mb-feature mb-reveal">
                 <div class="mb-feature-icon">🔑</div>
@@ -104,20 +104,20 @@
         <div class="mb-section-head mb-reveal">
             <span class="mb-eyebrow">Quick reference</span>
             <h2 class="mb-section-title">Terminal, if that's your thing</h2>
-            <p class="mb-section-sub">Prefer the command line? These snippets get you moving on testnet.</p>
+            <p class="mb-section-sub">Prefer the command line? These snippets get you moving on mainnet.</p>
         </div>
         <div class="mb-code mb-reveal">
-            <span class="mb-c-comment"># Check your wallet balance on testnet</span><br>
-            <span class="mb-c-key">./moonbite-cli</span> -testnet getbalance<br>
+            <span class="mb-c-comment"># Check your wallet balance</span><br>
+            <span class="mb-c-key">./moonbite-cli</span> getbalance<br>
             <br>
             <span class="mb-c-comment"># Generate a new receive address</span><br>
-            <span class="mb-c-key">./moonbite-cli</span> -testnet getnewaddress<br>
+            <span class="mb-c-key">./moonbite-cli</span> getnewaddress<br>
             <br>
             <span class="mb-c-comment"># Start the daemon and begin syncing</span><br>
-            <span class="mb-c-key">./moonbited</span> -testnet -daemon<br>
+            <span class="mb-c-key">./moonbited</span> -daemon<br>
             <br>
             <span class="mb-c-comment"># Check how many blocks you've synced</span><br>
-            <span class="mb-c-key">./moonbite-cli</span> -testnet getblockcount
+            <span class="mb-c-key">./moonbite-cli</span> getblockcount
         </div>
         <div style="text-align: center; margin-top: 2rem;">
             <a href="/developers" class="btn btn-secondary">Full CLI reference →</a>

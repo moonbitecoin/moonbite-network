@@ -5009,6 +5009,7 @@ def add_security_headers(response):
 _LAUNCH_PATHS = [
     "/", "/mine", "/get-wallet", "/wallet", "/explorer",
     "/whitepaper", "/full-node", "/support", "/about",
+    "/developers", "/dashboard", "/privacy", "/sell", "/press",
 ]
 
 
