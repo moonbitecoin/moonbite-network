@@ -12,7 +12,7 @@ This file builds the **C++ node**, so it lives in the node repo:
 moonbite-core/.github/workflows/release.yml
 ```
 
-A copy is kept here in MoonBite-Coin only for visibility and review. The
+A copy is kept here in moonbite-network only for visibility and review. The
 running workflow must be the one in moonbite-core.
 
 ## How it works

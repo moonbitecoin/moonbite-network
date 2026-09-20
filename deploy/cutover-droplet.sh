@@ -4,7 +4,7 @@ set -u
 
 # Branch to deploy. Defaults to main now that the rebuild is merged.
 BRANCH="${1:-main}"
-REPO=https://github.com/moonbitecoin/MoonBite-Coin.git
+REPO=https://github.com/moonbitecoin/moonbite-network.git
 
 OLD=/opt/moonbite-dashboard-old
 CUR=/opt/moonbite-dashboard

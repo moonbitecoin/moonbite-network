@@ -26,7 +26,7 @@ env:
   RANDOMX_TAG: "v1.2.1"
   # Repo holding the miner scripts (mine.sh / mine.ps1 / README) shipped with
   # the binaries, so there is one source of truth for them.
-  MINER_SCRIPTS_REPO: "moonbitecoin/MoonBite-Coin"
+  MINER_SCRIPTS_REPO: "moonbitecoin/moonbite-network"
 
 jobs:
   build:

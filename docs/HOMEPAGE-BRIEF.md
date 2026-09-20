@@ -174,7 +174,7 @@ reader draw the harder conclusion themselves.
     10 MBITE subsidy; 1,650,000-block halving; 60-block retarget; bech32 HRP `moon`;
     P2P 9444. Each row links to the commit and file.
   - Repositories: `github.com/moonbitecoin/moonbite-core` (node),
-    `github.com/moonbitecoin/MoonBite-Coin` (this site).
+    `github.com/moonbitecoin/moonbite-network` (this site).
   - Wallet derivation: BIP39 mnemonic → BIP84 `m/84'/2'/0'/0/0` → P2WPKH.
   - **Audit status: none.** No paid third-party audit has been commissioned. Saying so is worth
     more than any badge, and the alternative is a claim that cannot survive a single question.

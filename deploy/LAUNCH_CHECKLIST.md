@@ -90,7 +90,7 @@ Let's Encrypt. The Railway service stays the **node/explorer**; only the
 website moves here.
 
 **Prerequisite — get the new code onto GitHub.** The deploy `git clone`s from
-`moonbitecoin/MoonBite-Coin`. The local repo shares **no history** with
+`moonbitecoin/moonbite-network`. The local repo shares **no history** with
 `origin/main` (9 remote commits vs 7 local, no merge-base), so a plain push is
 rejected and force-push would destroy the remote. Reconcile deliberately (e.g.
 graft local work onto a branch off `origin/main`, or open a fresh branch/PR).
@@ -101,7 +101,7 @@ graft local work onto a branch off `origin/main`, or open a fresh branch/PR).
    `www` A record to the same IP (or CNAME `www` → `moonbite.org`). Drop the
    Namecheap Stellar/parking records. TTL low (5 min) during cutover.
 2. **Deploy the app (root on the VPS):**
-   `curl -fsSL https://raw.githubusercontent.com/moonbitecoin/MoonBite-Coin/main/deploy/setup-dashboard.sh | bash`
+   `curl -fsSL https://raw.githubusercontent.com/moonbitecoin/moonbite-network/main/deploy/setup-dashboard.sh | bash`
    (installs venv from `requirements-web.txt`, gunicorn `web_app:app` on
    127.0.0.1:8050, nginx :80). Verify: `curl -sf http://127.0.0.1:8050/`.
 3. **HTTPS (after DNS resolves to the VPS):**

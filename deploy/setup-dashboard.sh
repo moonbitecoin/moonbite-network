@@ -3,7 +3,7 @@
 # Run as root on your VPS
 set -euo pipefail
 
-REPO_URL="https://github.com/moonbitecoin/MoonBite-Coin.git"
+REPO_URL="https://github.com/moonbitecoin/moonbite-network.git"
 APP_DIR="/opt/moonbite-dashboard"
 APP_USER="dashboard"
 PORT=8050  # internal gunicorn port; nginx proxies 80 → here

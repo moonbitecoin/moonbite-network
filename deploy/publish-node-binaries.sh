@@ -16,7 +16,7 @@ set -euo pipefail
 
 SRC="${SRC:-/root/bigcoin-core/src}"
 TAG="${TAG:-node-v1}"
-REPO="${REPO:-moonbitecoin/MoonBite-Coin}"
+REPO="${REPO:-moonbitecoin/moonbite-network}"
 OUT="${OUT:-$(cd "$(dirname "$0")" && pwd)/dist/$TAG}"
 
 DAEMON_SRC="$SRC/litecoind"
