@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block body_class %}mb-v2{% endblock %}
+
+{% block title %}Bug Bounty Hackathon — MoonBite{% endblock %}
+{% block meta_description %}Break MoonBite, get paid in MBITE. A two-week bug-bounty hackathon: hunt bugs in the node, wallet, miner, and site. Top 5 hunters on the leaderboard win the prize pool.{% endblock %}
+
+{% block content %}
+<section class="mb-hero">
+    <div class="mb-hero-glow"></div>
+    <div class="mb-container">
+        <div class="mb-hero-inner">
+            <span class="mb-badge"><span class="mb-dot"></span> Bug Bounty Hackathon · 21 Sep – 5 Oct 2026</span>
+            <h1 class="mb-hero-title">Break it. <span class="mb-gradient-text">Get paid.</span></h1>
+            <p class="mb-hero-sub">MoonBite's whole pitch is "don't trust us — verify." So come verify. For two weeks, every real bug you find in the node, the wallet, the miner, or this site earns points. The five hunters with the most points split the prize pool.</p>
+            <div class="mb-cta-row">
+                <a href="#submit" class="btn btn-primary mb-btn-xl">How to submit</a>
+                <a href="https://github.com/moonbitecoin/moonbite-network" class="btn btn-secondary mb-btn-xl" target="_blank" rel="noopener">Read the source first</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- HONESTY BANNER -->
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-banner mb-reveal">
+            <span>Prizes are paid in MBITE from coins the founder mined himself on the live chain — MoonBite has no premine and no treasury, so there is nowhere else for them to come from. MBITE has <strong>no market value and no exchange listing</strong>; treat prizes as a stake in the network, not money. MoonBite is <strong>not an investment or a security</strong>.</span>
+        </div>
+    </div>
+</section>
+
+<!-- PRIZES -->
+<section class="mb-section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">The pool</span>
+            <h2 class="mb-section-title">5,000 MBITE across the top 5</h2>
+            <p class="mb-section-sub">Ranked by total points from accepted reports when the clock stops on 5 Oct 2026, 18:00 UTC.</p>
+        </div>
+        <div class="mb-grid mb-grid-3">
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">🥇</div><h3>1st — 2,000 MBITE</h3><p>Top of the leaderboard.</p></div>
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">🥈</div><h3>2nd — 1,200 MBITE</h3><p></p></div>
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">🥉</div><h3>3rd — 800 MBITE</h3><p></p></div>
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">4️⃣</div><h3>4th — 600 MBITE</h3><p></p></div>
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">5️⃣</div><h3>5th — 400 MBITE</h3><p></p></div>
+            <div class="mb-feature mb-reveal"><div class="mb-feature-icon">🧮</div><h3>Points per bug</h3><p>Critical 500 · High 250 · Medium 100 · Low 40. First valid report of an issue gets the points; duplicates credit the first.</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- SCOPE -->
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Scope</span>
+            <h2 class="mb-section-title">What counts</h2>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">⛓️</div>
+                <div class="mb-card-title">MoonBite Core (the big one)</div>
+                <div class="mb-card-text"><p>Consensus bugs, chain splits, coin inflation, crashes a peer can trigger remotely. Anything that breaks the chain's rules is an automatic Critical. Test on <strong>regtest or testnet</strong> — that's what they're for.</p></div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">👛</div>
+                <div class="mb-card-title">Wallet</div>
+                <div class="mb-card-text"><p>The web wallet at moonbite.org/wallet and the desktop wallet. Seed handling, key generation, transaction building, anything that could lose or leak a user's coins.</p></div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">⛏️</div>
+                <div class="mb-card-title">Miner &amp; downloads</div>
+                <div class="mb-card-text"><p>mine.sh, mine.ps1, the bundles, checksums, and the download pipeline. A bundle that doesn't run on a stock machine is a valid bug too.</p></div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🌐</div>
+                <div class="mb-card-title">moonbite.org</div>
+                <div class="mb-card-text"><p>The site, its APIs, and the explorer. Injection, auth bypass, data leaks, broken logic, or plain wrong information displayed as fact.</p></div>
+            </div>
+        </div>
+        <div class="mb-banner mb-reveal" style="margin-top: 1.2rem;">
+            <span><strong>Out of scope:</strong> traffic-flooding the live seed node or site (that's just an outage, not a finding), attacks on other users or their coins, social engineering, and anything needing physical access. Consensus attacks belong on regtest/testnet, never mainnet.</span>
+        </div>
+    </div>
+</section>
+
+<!-- HOW TO SUBMIT -->
+<section class="mb-section" id="submit" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">Submit</span>
+            <h2 class="mb-section-title">Two doors, pick the right one</h2>
+        </div>
+        <div class="mb-grid mb-grid-2">
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🔒</div>
+                <div class="mb-card-title">Security vulnerabilities — private</div>
+                <div class="mb-card-text">
+                    <p>Anything exploitable goes through GitHub's private vulnerability reporting, so it gets fixed before it gets famous. Public zero-days forfeit the points.</p>
+                    <p style="margin-top: 0.75rem;"><a href="https://github.com/moonbitecoin/moonbite-network/security/advisories/new" class="link" target="_blank" rel="noopener">Report privately on GitHub →</a></p>
+                </div>
+            </div>
+            <div class="mb-card mb-reveal">
+                <div class="mb-card-icon">🐛</div>
+                <div class="mb-card-title">Ordinary bugs — public issue</div>
+                <div class="mb-card-text">
+                    <p>Crashes, wrong balances, broken pages, misleading copy, bundles that don't run: open a public issue titled <code>[bounty]</code> with steps to reproduce.</p>
+                    <p style="margin-top: 0.75rem;"><a href="https://github.com/moonbitecoin/moonbite-network/issues/new" class="link" target="_blank" rel="noopener">Open an issue →</a></p>
+                </div>
+            </div>
+        </div>
+        <div class="mb-section-sub mb-reveal" style="margin-top: 1.2rem; max-width: 760px;">
+            <p>Every report needs: what you found, steps to reproduce it, and what you think the impact is. Include a <code>moon1...</code> address — that's where prizes land. Severity is judged by the maintainer; the running leaderboard is published in a pinned GitHub discussion during the event, and final standings within 72 hours of close.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

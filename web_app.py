@@ -1156,6 +1156,12 @@ def privacy_page():
     return render_template("privacy.html")
 
 
+@app.route("/bounty")
+def bounty_page():
+    """Bug-bounty hackathon page (21 Sep - 5 Oct 2026)."""
+    return render_template("bounty.html")
+
+
 @app.route("/press")
 def press_page():
     """Press and brand information."""
@@ -5020,7 +5026,7 @@ def add_security_headers(response):
 _LAUNCH_PATHS = [
     "/", "/mine", "/get-wallet", "/wallet", "/explorer",
     "/whitepaper", "/full-node", "/support", "/about",
-    "/developers", "/dashboard", "/privacy", "/sell", "/press",
+    "/developers", "/dashboard", "/privacy", "/sell", "/press", "/bounty",
 ]
 
 
