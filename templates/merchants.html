@@ -24,7 +24,7 @@
 <section class="mb-section" id="directory">
     <div class="mb-container">
         <div class="mb-banner mb-reveal" style="margin-bottom: var(--spacing-2xl);">
-            <span>ℹ️ <strong>Early days. We say so.</strong> MBITE has no established market value yet, so this list starts empty and only fills up as real businesses opt in. A listing isn't an endorsement, and MoonBite is <strong>not an investment or a security</strong>.</span>
+            <span>ℹ <strong>Early days. We say so.</strong> MBITE has no established market value yet, so this list starts empty and only fills up as real businesses opt in. A listing isn't an endorsement, and MoonBite is <strong>not an investment or a security</strong>.</span>
         </div>
 
         <div class="mb-section-head mb-reveal">
@@ -146,23 +146,20 @@
         </div>
         <div class="mb-grid mb-grid-3 mb-reveal">
             <div class="mb-card">
-                <div class="mb-card-icon">🧾</div>
                 <h3 class="mb-card-title">1 · Raise a request</h3>
                 <p class="mb-card-text">You type an amount. We make a payment link that points at <em>your</em> address. No account, no deposit, no custody.</p>
             </div>
             <div class="mb-card">
-                <div class="mb-card-icon">📲</div>
                 <h3 class="mb-card-title">2 · Customer pays you</h3>
                 <p class="mb-card-text">They send MBITE from their wallet straight to your address. The coins never pass through us.</p>
             </div>
             <div class="mb-card">
-                <div class="mb-card-icon">👀</div>
                 <h3 class="mb-card-title">3 · We confirm on-chain</h3>
                 <p class="mb-card-text">The server watches the chain and flips the request to <strong>paid</strong> the moment your address gets the coins. Watch-only. No keys, ever.</p>
             </div>
         </div>
         <div class="mb-banner mb-reveal" style="margin-top: var(--spacing-2xl);">
-            <span>🔎 <strong>Demo checks run against this educational node.</strong> A payment is detected when your address actually receives coins here; in production the same check points at the MoonBite node. Prices are set in MBITE — a fiat peg needs real trades, and those don't exist yet.</span>
+            <span> <strong>Demo checks run against this educational node.</strong> A payment is detected when your address actually receives coins here; in production the same check points at the MoonBite node. Prices are set in MBITE — a fiat peg needs real trades, and those don't exist yet.</span>
         </div>
     </div>
 </section>
@@ -192,7 +189,7 @@
         var v = Number(n);
         return isFinite(v) ? v.toLocaleString(undefined, { maximumFractionDigits: 8 }) : String(n);
     }
-    var CAT_ICON = { goods: "📦", services: "🛠️", food: "🍽️", digital: "💾", donation: "❤️", other: "✨" };
+    var CAT_ICON = { goods: "", services: "", food: "", digital: "", donation: "", other: "" };
 
     /* ---------------------------------------------- directory ---- */
     var grid = document.getElementById("mrcGrid");
@@ -200,7 +197,7 @@
     var currentCat = "";
 
     function cardHtml(m) {
-        var icon = CAT_ICON[m.category] || "✨";
+        var icon = CAT_ICON[m.category] || "";
         var name = '<div class="mb-mrc-name">' + esc(m.name) + "</div>";
         var head = m.url
             ? '<a class="mb-mrc-name-link" href="' + esc(m.url) + '" target="_blank" rel="noopener nofollow">' + esc(m.name) + " ↗</a>"
@@ -355,7 +352,7 @@
         var pct = inv.amount_units ? Math.min(100, Math.round(100 * inv.paid_units / inv.amount_units)) : 0;
         fill.style.width = pct + "%";
         if (inv.status === "paid") {
-            note.innerHTML = "✅ <strong>Paid.</strong> Your address received the full amount on-chain.";
+            note.innerHTML = " <strong>Paid.</strong> Your address received the full amount on-chain.";
         } else if (inv.status === "expired") {
             note.innerHTML = "⌛ <strong>Expired.</strong> No full payment arrived in time — raise a new request.";
         } else {

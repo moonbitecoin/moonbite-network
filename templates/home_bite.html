@@ -337,7 +337,7 @@ function renderChain(){
   const feed=$('txFeed');feed.innerHTML='';
   chain.blocks.forEach(b=>{
     const row=document.createElement('div');row.className='card-row';
-    row.innerHTML='<span>⛏ block '+fmtH(b.height)+' · '+agoTxt(b.time)+' ago</span><b class="a">+'
+    row.innerHTML='<span> block '+fmtH(b.height)+' · '+agoTxt(b.time)+' ago</span><b class="a">+'
       +b.subsidy_coins.toFixed(0)+' MBITE</b>';
     feed.appendChild(row);
   });

@@ -13,21 +13,21 @@
 
     <!-- Search Bar -->
     <div class="card card-full">
-        <div class="card-header">🔍 Search the Chain</div>
+        <div class="card-header"> Search the Chain</div>
         <div class="card-body">
             <form id="searchForm" class="mining-form">
                 <div class="form-group">
                     <label for="searchInput">Block height, block hash, or transaction ID</label>
                     <input
-                        type="text"
-                        id="searchInput"
-                        class="form-input"
-                        placeholder="e.g. 0  or  a full 64-char hash..."
-                        autocomplete="off"
+ type="text"
+ id="searchInput"
+ class="form-input"
+ placeholder="e.g. 0 or a full 64-char hash..."
+ autocomplete="off"
                     >
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary btn-large">🔎 Search</button>
+                    <button type="submit" class="btn btn-primary btn-large"> Search</button>
                     <button type="button" id="backBtn" class="btn btn-secondary btn-large hidden" data-act="browse">← Back to Blocks</button>
                 </div>
             </form>
@@ -89,79 +89,79 @@
 
 {% block scripts_extra %}
 <script nonce="{{ csp_nonce }}">
-    let currentOffset = 0;
-    const PAGE_SIZE = 15;
+ let currentOffset = 0;
+ const PAGE_SIZE = 15;
 
-    function showStatus(message, type = 'info') {
-        const el = document.getElementById('statusMessage');
-        el.textContent = message;
-        el.className = `status-message ${type}`;
-        el.classList.remove('hidden');
-        setTimeout(() => el.classList.add('hidden'), 5000);
+ function showStatus(message, type = 'info') {
+ const el = document.getElementById('statusMessage');
+ el.textContent = message;
+ el.className = `status-message ${type}`;
+ el.classList.remove('hidden');
+ setTimeout(() => el.classList.add('hidden'), 5000);
     }
 
-    function esc(s) {
-        return String(s).replace(/[&<>"']/g, c => ({
+ function esc(s) {
+ return String(s).replace(/[&<>"']/g, c => ({
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
         }[c]));
     }
 
-    function shortHash(h) {
-        if (!h) return '--';
-        return h.length > 20 ? `${h.substring(0, 10)}…${h.substring(h.length - 8)}` : h;
+ function shortHash(h) {
+ if (!h) return '--';
+ return h.length > 20 ? `${h.substring(0, 10)}…${h.substring(h.length - 8)}` : h;
     }
 
     // Base units per coin: 100 on the educational chain, 1e8 on MoonBite Core.
     // /api/blockchain/info reports it; every payload also carries units_per_coin.
     // Default matches the real chain (1 MBITE = 1e8 units) rather than a value
     // off by 1,000,000x, in case anything renders before the first stats fetch.
-    let UNITS_PER_COIN = 100000000;
+ let UNITS_PER_COIN = 100000000;
     // d18: never round a balance down for display. Math.floor(sats/UNITS) used
     // to discard every fractional MBITE, so any amount under one whole coin
     // rendered as "0 MBITE" - on the one page whose entire value is honesty
     // about what the chain actually did (d19). 8dp per d11, trimmed of
     // trailing zeros, same convention the wallet uses.
-    function fmtCoins(sats) {
-        const coins = (sats || 0) / UNITS_PER_COIN;
-        const s = coins.toFixed(8).replace(/0+$/, '').replace(/\.$/, '');
-        return `${s || '0'} MBITE`;
+ function fmtCoins(sats) {
+ const coins = (sats || 0) / UNITS_PER_COIN;
+ const s = coins.toFixed(8).replace(/0+$/, '').replace(/\.$/, '');
+ return `${s || '0'} MBITE`;
     }
 
     // d11: times are UTC, always labelled - not the viewer's local zone with
     // no indication of which zone it is.
-    function fmtTime(ts) {
-        try {
-            const d = new Date(ts * 1000);
-            const pad = (n) => String(n).padStart(2, '0');
-            return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} `
+ function fmtTime(ts) {
+ try {
+ const d = new Date(ts * 1000);
+ const pad = (n) => String(n).padStart(2, '0');
+ return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} `
                  + `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())} UTC`;
         } catch (e) { return ts; }
     }
 
     // ---- Chain stats ----
-    async function loadStats() {
-        try {
-            const r = await fetch('/api/blockchain/info');
-            const d = await r.json();
-            if (d.status === 'success') {
-                if (d.units_per_coin) { UNITS_PER_COIN = d.units_per_coin; }
-                document.getElementById('statHeight').textContent = d.height;
-                document.getElementById('statMempool').textContent = d.mempool_size;
+ async function loadStats() {
+ try {
+ const r = await fetch('/api/blockchain/info');
+ const d = await r.json();
+ if (d.status === 'success') {
+ if (d.units_per_coin) { UNITS_PER_COIN = d.units_per_coin; }
+ document.getElementById('statHeight').textContent = d.height;
+ document.getElementById('statMempool').textContent = d.mempool_size;
             }
         } catch (e) { console.error(e); }
     }
 
     // ---- Browse: latest blocks ----
-    async function loadBlocks(reset = true) {
-        if (reset) { currentOffset = 0; }
-        try {
-            const r = await fetch(`/api/explorer/blocks?limit=${PAGE_SIZE}&offset=${currentOffset}`);
-            const d = await r.json();
-            if (d.status !== 'success') { showStatus(d.message || 'Failed to load blocks', 'error'); return; }
+ async function loadBlocks(reset = true) {
+ if (reset) { currentOffset = 0; }
+ try {
+ const r = await fetch(`/api/explorer/blocks?limit=${PAGE_SIZE}&offset=${currentOffset}`);
+ const d = await r.json();
+ if (d.status !== 'success') { showStatus(d.message || 'Failed to load blocks', 'error'); return; }
 
-            document.getElementById('statBlocks').textContent = d.total;
+ document.getElementById('statBlocks').textContent = d.total;
 
-            const rows = d.blocks.map(b => `
+ const rows = d.blocks.map(b => `
                 <div class="tx-item block-row" data-block="${b.height}">
                     <div class="tx-info">
                         <div class="tx-id"><strong>#${b.height}</strong> &nbsp; <code>${esc(shortHash(b.hash))}</code></div>
@@ -174,66 +174,66 @@
                 </div>
             `).join('');
 
-            const list = document.getElementById('blocksList');
-            if (reset) { list.innerHTML = rows || '<p>No blocks yet.</p>'; }
-            else { list.insertAdjacentHTML('beforeend', rows); }
+ const list = document.getElementById('blocksList');
+ if (reset) { list.innerHTML = rows || '<p>No blocks yet.</p>'; }
+ else { list.insertAdjacentHTML('beforeend', rows); }
 
-            currentOffset += d.blocks.length;
-            const more = document.getElementById('loadMoreBtn');
-            more.classList.toggle('hidden', currentOffset >= d.total);
+ currentOffset += d.blocks.length;
+ const more = document.getElementById('loadMoreBtn');
+ more.classList.toggle('hidden', currentOffset >= d.total);
         } catch (e) {
-            console.error(e);
-            showStatus('Network error loading blocks', 'error');
+ console.error(e);
+ showStatus('Network error loading blocks', 'error');
         }
     }
 
-    function loadMoreBlocks() { loadBlocks(false); }
+ function loadMoreBlocks() { loadBlocks(false); }
 
-    function showBrowse() {
-        document.getElementById('browseView').classList.remove('hidden');
-        document.getElementById('detailView').classList.add('hidden');
-        document.getElementById('backBtn').classList.add('hidden');
-        document.body.scrollTop = 0;
-        document.documentElement.scrollTop = 0;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+ function showBrowse() {
+ document.getElementById('browseView').classList.remove('hidden');
+ document.getElementById('detailView').classList.add('hidden');
+ document.getElementById('backBtn').classList.add('hidden');
+ document.body.scrollTop = 0;
+ document.documentElement.scrollTop = 0;
+ window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function showDetail(title, html) {
-        document.getElementById('detailTitle').innerHTML = title;
-        document.getElementById('detailBody').innerHTML = html;
-        document.getElementById('browseView').classList.add('hidden');
-        document.getElementById('detailView').classList.remove('hidden');
-        document.getElementById('backBtn').classList.remove('hidden');
+ function showDetail(title, html) {
+ document.getElementById('detailTitle').innerHTML = title;
+ document.getElementById('detailBody').innerHTML = html;
+ document.getElementById('browseView').classList.add('hidden');
+ document.getElementById('detailView').classList.remove('hidden');
+ document.getElementById('backBtn').classList.remove('hidden');
         // This layout scrolls <body> itself (mobile-sheet pattern), not the
         // window/viewport, so window.scrollTo() alone was a no-op: clicking a
         // transaction from partway down a block's list landed on the new
         // page still scrolled to that same depth, with its own header and
         // search box scrolled out of view above. Reset both, since which one
         // is the real scroller can vary by browser/layout.
-        document.body.scrollTop = 0;
-        document.documentElement.scrollTop = 0;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+ document.body.scrollTop = 0;
+ document.documentElement.scrollTop = 0;
+ window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function kv(label, value, mono = false) {
-        return `<div class="stat">
+ function kv(label, value, mono = false) {
+ return `<div class="stat">
             <div class="stat-label">${esc(label)}</div>
             <div class="stat-value ${mono ? 'monospace' : ''}">${value}</div>
         </div>`;
     }
 
-    function renderTx(tx) {
-        const ins = tx.inputs.map(i => i.prev_txid === '0'.repeat(64)
-            ? `<div class="tx-detail">🪙 Coinbase (newly minted)</div>`
+ function renderTx(tx) {
+ const ins = tx.inputs.map(i => i.prev_txid === '0'.repeat(64)
+            ? `<div class="tx-detail"> Coinbase (newly minted)</div>`
             : `<div class="tx-detail monospace">${esc(shortHash(i.prev_txid))}:${i.output_index}</div>`
         ).join('');
-        const outs = tx.outputs.map(o => `
+ const outs = tx.outputs.map(o => `
             <div class="tx-detail">
                 <span class="monospace">${esc(o.address || shortHash(o.pubkey_hash))}</span>
                 &nbsp;→&nbsp; <strong>${fmtCoins(o.amount)}</strong>
             </div>
         `).join('');
-        return `
+ return `
             <div class="tx-item" style="cursor:pointer" data-tx="${tx.txid}">
                 <div class="tx-info">
                     <div class="tx-id"><code>${esc(shortHash(tx.txid))}</code>
@@ -247,13 +247,13 @@
             </div>`;
     }
 
-    async function openBlock(id) {
-        try {
-            const r = await fetch(`/api/explorer/block/${encodeURIComponent(id)}`);
-            const d = await r.json();
-            if (d.status !== 'success') { showStatus(d.message || 'Block not found', 'error'); return; }
-            const b = d.block;
-            const meta = `<div class="mining-stats">
+ async function openBlock(id) {
+ try {
+ const r = await fetch(`/api/explorer/block/${encodeURIComponent(id)}`);
+ const d = await r.json();
+ if (d.status !== 'success') { showStatus(d.message || 'Block not found', 'error'); return; }
+ const b = d.block;
+ const meta = `<div class="mining-stats">
                 ${kv('Height', b.height)}
                 ${kv('Confirmations', b.confirmations)}
                 ${kv('Transactions', b.tx_count)}
@@ -265,22 +265,22 @@
                 ${kv('Prev Hash', esc(b.prev_hash), true)}
                 ${kv('Merkle Root', esc(b.merkle_root), true)}
             </div>`;
-            const txs = `<div class="card-header" style="margin-top:1.25rem">Transactions (${b.transactions.length})</div>
+ const txs = `<div class="card-header" style="margin-top:1.25rem">Transactions (${b.transactions.length})</div>
                 <div class="tx-list">${b.transactions.map(renderTx).join('')}</div>`;
-            showDetail(`Block #${b.height}`, meta + txs);
+ showDetail(`Block #${b.height}`, meta + txs);
         } catch (e) {
-            console.error(e);
-            showStatus('Network error loading block', 'error');
+ console.error(e);
+ showStatus('Network error loading block', 'error');
         }
     }
 
-    async function openTx(txid) {
-        try {
-            const r = await fetch(`/api/explorer/tx/${encodeURIComponent(txid)}`);
-            const d = await r.json();
-            if (d.status !== 'success') { showStatus(d.message || 'Transaction not found', 'error'); return; }
-            const t = d.transaction;
-            const meta = `<div class="mining-stats">
+ async function openTx(txid) {
+ try {
+ const r = await fetch(`/api/explorer/tx/${encodeURIComponent(txid)}`);
+ const d = await r.json();
+ if (d.status !== 'success') { showStatus(d.message || 'Transaction not found', 'error'); return; }
+ const t = d.transaction;
+ const meta = `<div class="mining-stats">
                 ${kv('Status', t.status)}
                 ${kv('Confirmations', t.confirmations)}
                 ${kv('Coinbase', t.is_coinbase ? 'Yes' : 'No')}
@@ -288,63 +288,63 @@
                 ${t.block_height !== undefined ? kv('In Block', '#' + t.block_height) : ''}
                 ${kv('TXID', esc(t.txid), true)}
             </div>`;
-            const ins = t.inputs.map(i => i.prev_txid === '0'.repeat(64)
-                ? `<div class="tx-item"><div class="tx-detail">🪙 Coinbase (newly minted)</div></div>`
+ const ins = t.inputs.map(i => i.prev_txid === '0'.repeat(64)
+                ? `<div class="tx-item"><div class="tx-detail"> Coinbase (newly minted)</div></div>`
                 : `<div class="tx-item"><div class="tx-detail monospace">${esc(shortHash(i.prev_txid))}:${i.output_index}</div></div>`
             ).join('');
-            const outs = t.outputs.map(o => `
+ const outs = t.outputs.map(o => `
                 <div class="tx-item">
                     <div class="tx-info">
                         <div class="tx-id monospace">${esc(o.address || shortHash(o.pubkey_hash))}</div>
                         <div class="tx-meta"><span class="tx-detail">${fmtCoins(o.amount)}</span></div>
                     </div>
                 </div>`).join('');
-            const body = meta +
+ const body = meta +
                 `<div class="card-header" style="margin-top:1.25rem">Inputs (${t.input_count})</div><div class="tx-list">${ins}</div>` +
                 `<div class="card-header" style="margin-top:1.25rem">Outputs (${t.output_count})</div><div class="tx-list">${outs}</div>`;
-            showDetail('Transaction', body);
+ showDetail('Transaction', body);
         } catch (e) {
-            console.error(e);
-            showStatus('Network error loading transaction', 'error');
+ console.error(e);
+ showStatus('Network error loading transaction', 'error');
         }
     }
 
     // ---- Search ----
-    document.getElementById('searchForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const q = document.getElementById('searchInput').value.trim();
-        if (!q) { showStatus('Enter a height, hash, or txid', 'error'); return; }
-        try {
-            const r = await fetch(`/api/explorer/search?q=${encodeURIComponent(q)}`);
-            const d = await r.json();
-            if (d.status !== 'success') { showStatus(d.message || 'Nothing found', 'error'); return; }
-            if (d.kind === 'block') { openBlock(d.id); }
-            else if (d.kind === 'tx') { openTx(d.id); }
+ document.getElementById('searchForm').addEventListener('submit', async (e) => {
+ e.preventDefault();
+ const q = document.getElementById('searchInput').value.trim();
+ if (!q) { showStatus('Enter a height, hash, or txid', 'error'); return; }
+ try {
+ const r = await fetch(`/api/explorer/search?q=${encodeURIComponent(q)}`);
+ const d = await r.json();
+ if (d.status !== 'success') { showStatus(d.message || 'Nothing found', 'error'); return; }
+ if (d.kind === 'block') { openBlock(d.id); }
+ else if (d.kind === 'tx') { openTx(d.id); }
         } catch (err) {
-            console.error(err);
-            showStatus('Network error during search', 'error');
+ console.error(err);
+ showStatus('Network error during search', 'error');
         }
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-        loadStats();
-        loadBlocks(true);
-        setInterval(() => {
-            loadStats();
-            if (!document.getElementById('detailView').classList.contains('hidden')) return;
-            loadBlocks(true);
+ document.addEventListener('DOMContentLoaded', () => {
+ loadStats();
+ loadBlocks(true);
+ setInterval(() => {
+ loadStats();
+ if (!document.getElementById('detailView').classList.contains('hidden')) return;
+ loadBlocks(true);
         }, 5000);
     });
-    document.addEventListener('click', function (e) {
+ document.addEventListener('click', function (e) {
         // Covers rows rendered later from template literals too.
-        var t = e.target;
-        if (!t.closest) return;
-        var b = t.closest('[data-block]');
-        if (b) { openBlock(b.getAttribute('data-block')); return; }
-        var x = t.closest('[data-tx]');
-        if (x) { openTx(x.getAttribute('data-tx')); return; }
-        if (t.closest('[data-act="browse"]')) { showBrowse(); return; }
-        if (t.closest('[data-act="load-more"]')) { loadMoreBlocks(); return; }
+ var t = e.target;
+ if (!t.closest) return;
+ var b = t.closest('[data-block]');
+ if (b) { openBlock(b.getAttribute('data-block')); return; }
+ var x = t.closest('[data-tx]');
+ if (x) { openTx(x.getAttribute('data-tx')); return; }
+ if (t.closest('[data-act="browse"]')) { showBrowse(); return; }
+ if (t.closest('[data-act="load-more"]')) { loadMoreBlocks(); return; }
     });
 </script>
 {% endblock %}

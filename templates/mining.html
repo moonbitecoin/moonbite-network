@@ -47,10 +47,10 @@
 
                 <div class="form-actions">
                     <button type="submit" id="startBtn" class="btn btn-success btn-large">
-                        ⚒️ Start Mining
+                         Start Mining
                     </button>
                     <button type="button" id="stopBtn" class="btn btn-danger btn-large hidden" data-act="stop-mining">
-                        ⏹️ Stop Mining
+                        ⏹ Stop Mining
                     </button>
                 </div>
             </form>
@@ -131,7 +131,7 @@
 
     <!-- Miner badges (earned locally, judged by first-block chain height) -->
     <div class="card card-full">
-        <div class="card-header">🏅 Your Miner Badges</div>
+        <div class="card-header"> Your Miner Badges</div>
         <div class="card-body">
             <div id="mbBadgeShelf" class="mb-badge-shelf"></div>
             <div class="card-subtitle" style="margin-top:10px;">Earned by mining, never bought. Height tiers are locked to the chain height of your first block — being early can't be copied.</div>
@@ -167,7 +167,7 @@
 
     <!-- Information Box -->
     <div class="card card-full">
-        <div class="card-header">ℹ️ Mining Information</div>
+        <div class="card-header">ℹ Mining Information</div>
         <div class="card-body">
             <ul class="info-list">
                 <li>Mining uses Proof-of-Work consensus to secure the blockchain</li>
@@ -242,20 +242,20 @@
                 document.getElementById('totalBlocks').textContent = data.blocks_to_mine;
                 document.getElementById('miningOrb').classList.remove('idle');
 
-                showStatus('✓ Mining started', 'success');
+                showStatus(' Mining started', 'success');
 
                 // Poll for mining status every 500ms
                 statusCheckInterval = setInterval(pollMiningStatus, 500);
             } else {
                 showStatus('Error: ' + (data.message || 'Failed to start mining'), 'error');
                 startBtn.disabled = false;
-                startBtn.textContent = '⚒️ Start Mining';
+                startBtn.textContent = ' Start Mining';
             }
         } catch (error) {
             console.error('Error:', error);
             showStatus('Network error: ' + error.message, 'error');
             startBtn.disabled = false;
-            startBtn.textContent = '⚒️ Start Mining';
+            startBtn.textContent = ' Start Mining';
         }
     }
 
@@ -311,7 +311,7 @@
 
             if (data.status === 'stopped') {
                 stopMiningUI();
-                showStatus('✓ Mining stopped', 'success');
+                showStatus(' Mining stopped', 'success');
             }
         } catch (error) {
             console.error('Error stopping mining:', error);
@@ -332,7 +332,7 @@
         document.getElementById('startBtn').classList.remove('hidden');
         document.getElementById('stopBtn').classList.add('hidden');
         document.getElementById('startBtn').disabled = false;
-        document.getElementById('startBtn').textContent = '⚒️ Start Mining';
+        document.getElementById('startBtn').textContent = ' Start Mining';
     }
 
     // Populate address field if available from wallet

@@ -491,7 +491,7 @@
     // found readouts
     var handleForUrl = num(s.height).replace(/,/g, "");
     $("verifyUrl").textContent = "MOONBITE.ORG/BITE/" + handleForUrl + " · ANYONE CAN CHECK IT";
-    $("shareBtn").textContent = s.copied ? "COPIED ✓" : "COPY MY LINK";
+    $("shareBtn").textContent = s.copied ? "COPIED " : "COPY MY LINK";
     if ($("handleInput").value !== s.handle) $("handleInput").value = s.handle;
 
     // ring + sweep tempo

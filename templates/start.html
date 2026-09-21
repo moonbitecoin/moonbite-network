@@ -247,12 +247,12 @@ select:focus-visible, [tabindex]:focus-visible {
         <div class="ar">→</div>
       </a>
       <a class="nextcard" href="/calculator">
-        <div class="ic">📈</div>
+        <div class="ic"></div>
         <div><b>What it's worth being early</b><span>Run the numbers on your machine</span></div>
         <div class="ar">→</div>
       </a>
       <a class="nextcard" href="#" id="againCard">
-        <div class="ic">⛏️</div>
+        <div class="ic"></div>
         <div><b>Mine another block</b><span>Same address, same odds</span></div>
         <div class="ar">→</div>
       </a>
@@ -483,9 +483,9 @@ function shortAddr(a){
       try {
         var prof=JSON.parse(localStorage.getItem('mb_miner_profiles')||'{}')[addr];
         if(prof && prof.badges){
-          var NAMES={first_bite:'🌑 First Bite',genesis:'🌟 Genesis Miner',pioneer:'Pioneer',
-            pre_halving:'⏳ Pre-Halving',ten:'Ten Bites',hundred:'💯 Hundred Bites',
-            week_streak:'🔥 Seven Moons'};
+          var NAMES={first_bite:' First Bite',genesis:' Genesis Miner',pioneer:'Pioneer',
+            pre_halving:'⏳ Pre-Halving',ten:'Ten Bites',hundred:' Hundred Bites',
+            week_streak:' Seven Moons'};
           $('dBadges').innerHTML = prof.badges.map(function(b){
             return '<span class="bpill">'+(NAMES[b]||b)+'</span>'; }).join('');
         }

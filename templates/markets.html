@@ -23,7 +23,7 @@
 <section class="mb-section" id="book">
     <div class="mb-container">
         <div class="mb-banner mb-reveal" style="margin-bottom: var(--spacing-2xl);">
-            <span>ℹ️ <strong>This is not a live market.</strong> Every number below is an offer someone typed in — not a traded price, not a valuation. MBITE has no exchange listing yet and MoonBite is <strong>not an investment or a security</strong>. The server holds no funds; every trade settles directly between two wallets.</span>
+            <span>ℹ <strong>This is not a live market.</strong> Every number below is an offer someone typed in — not a traded price, not a valuation. MBITE has no exchange listing yet and MoonBite is <strong>not an investment or a security</strong>. The server holds no funds; every trade settles directly between two wallets.</span>
         </div>
 
         <div class="mb-section-head mb-reveal">
@@ -130,23 +130,20 @@
         </div>
         <div class="mb-grid mb-grid-3 mb-reveal">
             <div class="mb-card">
-                <div class="mb-card-icon">📝</div>
                 <h3 class="mb-card-title">1 · Post or take an offer</h3>
                 <p class="mb-card-text">Add a buy or sell order, or grab one you like from the book. The only thing you share is the address where you get paid.</p>
             </div>
             <div class="mb-card">
-                <div class="mb-card-icon">🔒</div>
                 <h3 class="mb-card-title">2 · Atomic swap</h3>
                 <p class="mb-card-text">Both sides lock funds in a hash-time-locked contract. Either the full trade clears, or everyone gets their coins back. There is no version where one side walks away with both.</p>
             </div>
             <div class="mb-card">
-                <div class="mb-card-icon">✅</div>
                 <h3 class="mb-card-title">3 · Done</h3>
                 <p class="mb-card-text">MBITE ⇄ LTC or BTC swaps natively — they share the Bitcoin script family. USDT needs a smart-contract leg. All the server ever did was note that you two matched.</p>
             </div>
         </div>
         <div class="mb-banner mb-reveal" style="margin-top: var(--spacing-2xl);">
-            <span>🚧 <strong>Automated swap coordination isn't built yet (Phase 2).</strong> Today the exchange matches orders and hands you both the addresses; you run the atomic swap with an external tool. Funds will never route through this server — not now, not after Phase 2.</span>
+            <span> <strong>Automated swap coordination isn't built yet (Phase 2).</strong> Today the exchange matches orders and hands you both the addresses; you run the atomic swap with an external tool. Funds will never route through this server — not now, not after Phase 2.</span>
         </div>
     </div>
 </section>
@@ -256,7 +253,7 @@
                 var id = b.getAttribute("data-id");
                 document.getElementById("mbExCancelId").value = id;
                 if (navigator.clipboard) navigator.clipboard.writeText(id).catch(function () {});
-                b.textContent = "✓";
+                b.textContent = "";
                 setTimeout(function () { b.textContent = "id"; }, 1200);
             });
         });

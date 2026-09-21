@@ -8,17 +8,17 @@
 <link rel="icon" type="image/svg+xml" href="/static/moonbite-logo.svg">
 <link rel="stylesheet" href="/static/fonts/moonbite-fonts.css">
 <link rel="preload" as="image" href="/static/img/hero-moon.webp"
-      imagesrcset="/static/img/hero-moon-sm.webp 1200w, /static/img/hero-moon.webp 2200w"
-      imagesizes="100vw">
+ imagesrcset="/static/img/hero-moon-sm.webp 1200w, /static/img/hero-moon.webp 2200w"
+ imagesizes="100vw">
 <style nonce="{{ csp_nonce }}">
 /* MoonBite home — one continuous descent.
-   Brand Reserve only: Void / Slate / Moongold / Bone / Ash. Red and green are
-   functional colours and appear nowhere on this page. Nothing loads from a
-   third party: type, image and script all come from our own origin. */
+ Brand Reserve only: Void / Slate / Moongold / Bone / Ash. Red and green are
+ functional colours and appear nowhere on this page. Nothing loads from a
+ third party: type, image and script all come from our own origin. */
 :root{
   /* docs/moonbite-guidelines.html d03: Void and Bone carry the brand; gold is
-     the one accent, used sparingly. No second gold tone — a lighter "gold-2"
-     reads as a gradient family, which d01/d03 rule out. */
+ the one accent, used sparingly. No second gold tone — a lighter "gold-2"
+ reads as a gradient family, which d01/d03 rule out. */
   --void:#0B0D12; --slate:#161A22; --gold:#D9A441;
   --bone:#F5F2EA; --ash:#8A8580; --gain:#2E9E6B; --loss:#C8402F;
   --display:'Archivo Black','Helvetica Neue','Arial Black',sans-serif;
@@ -31,37 +31,37 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{background:var(--void);color:var(--bone);font-family:var(--ui);
-  overflow-x:hidden;-webkit-font-smoothing:antialiased;line-height:1.5}
+ overflow-x:hidden;-webkit-font-smoothing:antialiased;line-height:1.5}
 img{display:block}
 a{color:inherit;text-decoration:none}
 ::selection{background:var(--gold);color:var(--void)}
 :focus-visible{outline:2px solid var(--gold);outline-offset:4px;border-radius:2px}
 .skip{position:absolute;left:-9999px;z-index:200;background:var(--gold);color:var(--void);
-  padding:12px 18px;font-weight:700}
+ padding:12px 18px;font-weight:700}
 .skip:focus{left:0;top:0}
 
 /* masthead — d15: a real primary nav, Caveats included, not buried in the footer */
 .top{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;align-items:center;gap:14px;
-  padding:16px clamp(18px,4vw,44px);
-  background:linear-gradient(180deg,rgba(11,13,18,.78),rgba(11,13,18,0))}
+ padding:16px clamp(18px,4vw,44px);
+ background:linear-gradient(180deg,rgba(11,13,18,.78),rgba(11,13,18,0))}
 .brand{display:flex;align-items:center;gap:10px;min-height:44px;
-  font-family:var(--display);font-size:1rem;text-transform:uppercase;letter-spacing:-.02em}
+ font-family:var(--display);font-size:1rem;text-transform:uppercase;letter-spacing:-.02em}
 .brand svg{width:24px;height:24px;flex:none;overflow:visible}
 /* d06 signature: the bite deepens by one increment as a block is found. The
-   mark is a single closed path rebuilt from its own construction geometry
+ mark is a single closed path rebuilt from its own construction geometry
    (d01: R=100, bite 0.62R centred 0.95R on the 45deg axis) — no separate
    "found" graphic, the mark itself is the live indicator. */
 .brand path{transition:d var(--t3) var(--ease)}
 .topnav{margin-left:var(--s5,24px);display:flex;gap:20px;list-style:none}
 .topnav a{color:var(--ash);font-size:.9rem;min-height:44px;display:inline-flex;align-items:center;
-  transition:color var(--t1) var(--ease)}
+ transition:color var(--t1) var(--ease)}
 .topnav a:hover{color:var(--bone)}
 @media(max-width:900px){ .topnav{gap:14px} .topnav li:nth-child(2),.topnav li:nth-child(3){display:none} }
 .beat{margin-left:auto;display:flex;align-items:center;gap:8px;min-height:44px;
-  font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--ash)}
+ font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+ color:var(--ash)}
 .beat i{width:6px;height:6px;border-radius:50%;background:var(--gold);flex:none;
-  transition:transform var(--t2) var(--ease)}
+ transition:transform var(--t2) var(--ease)}
 .beat.hit i{transform:scale(1.9)}
 
 /* the world */
@@ -72,11 +72,11 @@ a{color:inherit;text-decoration:none}
 #plate{position:relative;height:min(56vh,520px);z-index:0}
 #plate img{width:100%;height:100%;object-fit:cover;object-position:50% 60%}
 #plate::after{content:"";position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(11,13,18,.55) 0%,rgba(11,13,18,0) 45%,
-                             rgba(11,13,18,.65) 88%,var(--void) 100%)}
+ background:linear-gradient(180deg,rgba(11,13,18,.55) 0%,rgba(11,13,18,0) 45%,
+ rgba(11,13,18,.65) 88%,var(--void) 100%)}
 /* d07: duotone Void/Bone keeps the photograph inside the palette. These are
-   legibility scrims only — pure Void, no colour — never a gold glow: the
-   block-found signature lives on the mark (d06), not as light on the photo. */
+ legibility scrims only — pure Void, no colour — never a gold glow: the
+ block-found signature lives on the mark (d06), not as light on the photo. */
 .sky,.vig{display:none;position:absolute;inset:0;pointer-events:none;z-index:1}
 .sky{background:linear-gradient(180deg,rgba(11,13,18,.88) 0%,rgba(11,13,18,.34) 36%,rgba(11,13,18,0) 62%)}
 .vig{background:radial-gradient(126% 92% at 50% 46%,transparent 40%,rgba(6,7,10,.82) 100%)}
@@ -86,46 +86,46 @@ a{color:inherit;text-decoration:none}
 .act+.act{border-top:1px solid rgba(245,242,234,.07)}
 .in{position:relative;max-width:min(920px,94vw)}
 .tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.28em;text-transform:uppercase;
-  color:var(--gold);margin-bottom:18px}
+ color:var(--gold);margin-bottom:18px}
 /* d04: display type (Archivo Black) is used at most twice per page — the
-   wordmark and the single largest statement. h1 is that statement; every
-   other heading on the page uses the H1/H2 role from the same doc, a heavy
-   Inter weight, not the display face. */
+ wordmark and the single largest statement. h1 is that statement; every
+ other heading on the page uses the H1/H2 role from the same doc, a heavy
+ Inter weight, not the display face. */
 h1{font-family:var(--display);font-weight:400;letter-spacing:-.03em;line-height:.98;
-  font-size:clamp(2.05rem,6.6vw,4.9rem);max-width:15ch}
+ font-size:clamp(2.05rem,6.6vw,4.9rem);max-width:15ch}
 h2{font-family:var(--ui);font-weight:800;letter-spacing:-.01em;line-height:1.08;
-  font-size:clamp(1.6rem,4.4vw,2.55rem);max-width:16ch}
+ font-size:clamp(1.6rem,4.4vw,2.55rem);max-width:16ch}
 .sub{margin-top:22px;max-width:40ch;font-size:clamp(1rem,1.9vw,1.18rem);font-weight:500;
-  line-height:1.55;color:rgba(245,242,234,.76)}
+ line-height:1.55;color:rgba(245,242,234,.76)}
 .gold{color:var(--gold)}
 /* the line the page is willing to be quoted on */
 .knife{color:var(--bone);font-weight:600;max-width:34ch;
-  font-size:clamp(1.05rem,2.1vw,1.32rem)}
+ font-size:clamp(1.05rem,2.1vw,1.32rem)}
 .quiet{margin-top:14px;font-size:clamp(.9rem,1.6vw,1rem);color:var(--ash);max-width:34ch}
 
 /* the block that closed while you were here — Slate panel, a thin gold rule,
-   not a gold-tinted box: gold stays the exception, not the background */
+ not a gold-tinted box: gold stays the exception, not the background */
 .moment{margin-top:18px;padding:13px 15px;border-left:2px solid var(--gold);
-  background:var(--slate);font-family:var(--mono);font-size:.78rem;
-  line-height:1.7;color:var(--bone);max-width:46ch}
+ background:var(--slate);font-family:var(--mono);font-size:.78rem;
+ line-height:1.7;color:var(--bone);max-width:46ch}
 .moment b{color:var(--gold);font-weight:400}
 .moment a{color:var(--ash);text-decoration:underline;text-underline-offset:3px}
 .moment.in{animation:momentIn var(--t3) var(--ease)}
 @keyframes momentIn{from{opacity:0;transform:translate3d(0,10px,0)}to{opacity:1;transform:none}}
 /* what the chain did during your visit — yours, and checkable */
 .visit{margin-top:24px;font-family:var(--mono);font-size:.78rem;line-height:1.8;
-  color:var(--ash);max-width:46ch}
+ color:var(--ash);max-width:46ch}
 .visit b{color:var(--bone);font-weight:400}
 .visit em{font-style:normal;color:var(--bone)}
 @media(prefers-reduced-motion:reduce){ .moment.in{animation:none} }
 
 .btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
 .btn{display:inline-flex;align-items:center;min-height:50px;padding:0 28px;border-radius:5px;
-  font-weight:700;font-size:.99rem;border:1px solid transparent;
-  transition:transform var(--t1) var(--ease),background var(--t2) var(--ease),
-             border-color var(--t2) var(--ease)}
+ font-weight:700;font-size:.99rem;border:1px solid transparent;
+ transition:transform var(--t1) var(--ease),background var(--t2) var(--ease),
+ border-color var(--t2) var(--ease)}
 /* d14: one primary action per view, in Moongold; the interaction is motion
-   only (the prescribed lift), never a second gold tone standing in for a hover state */
+ only (the prescribed lift), never a second gold tone standing in for a hover state */
 .btn-a{background:var(--gold);color:var(--void)}
 .btn-a:hover{transform:translateY(-2px)}
 .btn-b{border-color:rgba(245,242,234,.28);color:var(--bone)}
@@ -133,19 +133,19 @@ h2{font-family:var(--ui);font-weight:800;letter-spacing:-.01em;line-height:1.08;
 .fine{margin-top:24px;max-width:48ch;font-size:.84rem;line-height:1.65;color:var(--ash)}
 
 /* act II — three claims, each on its own beat. Inter Extrabold, not the
-   display face: d04 reserves Archivo Black for the wordmark + h1 only. */
+ display face: d04 reserves Archivo Black for the wordmark + h1 only. */
 .claims{margin-top:16px;display:flex;flex-direction:column;gap:clamp(18px,3.2vh,32px)}
 .claim{max-width:24ch;font-family:var(--ui);font-weight:800;letter-spacing:-.01em;
-  line-height:1.1;font-size:clamp(1.4rem,3.6vw,2.4rem)}
+ line-height:1.1;font-size:clamp(1.4rem,3.6vw,2.4rem)}
 .claim small{display:block;margin-top:10px;font-family:var(--ui);font-weight:500;
-  font-size:clamp(.9rem,1.5vw,1rem);line-height:1.55;color:rgba(245,242,234,.66);
-  letter-spacing:0;max-width:34ch}
+ font-size:clamp(.9rem,1.5vw,1rem);line-height:1.55;color:rgba(245,242,234,.66);
+ letter-spacing:0;max-width:34ch}
 
 /* act III — the ledger */
 .ledger{margin-top:32px;border-top:1px solid rgba(245,242,234,.14)}
 .row{display:grid;grid-template-columns:5.5rem 1fr auto;gap:14px;align-items:baseline;
-  padding:13px 0;border-bottom:1px solid rgba(245,242,234,.07);font-family:var(--mono);
-  font-size:.8rem;color:rgba(245,242,234,.62)}
+ padding:13px 0;border-bottom:1px solid rgba(245,242,234,.07);font-family:var(--mono);
+ font-size:.8rem;color:rgba(245,242,234,.62)}
 .row b{color:var(--bone);font-weight:400}
 .row .h{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ash)}
 .row .w{color:var(--bone);white-space:nowrap}
@@ -157,20 +157,20 @@ h2{font-family:var(--ui);font-weight:800;letter-spacing:-.01em;line-height:1.08;
 
 /* act IV — the rulebook */
 .rules{margin-top:30px;display:grid;gap:1px;background:rgba(245,242,234,.10);
-  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border:1px solid rgba(245,242,234,.10)}
+ grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border:1px solid rgba(245,242,234,.10)}
 .rule{background:var(--void);padding:18px 16px}
 /* d04: every figure representing money or a count is set in the monospace
-   face with tabular figures, not the display face — these are data. */
+ face with tabular figures, not the display face — these are data. */
 .rule b{display:block;font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums;
-  font-size:clamp(1.05rem,2.1vw,1.45rem);letter-spacing:0;line-height:1.15}
+ font-size:clamp(1.05rem,2.1vw,1.45rem);letter-spacing:0;line-height:1.15}
 .rule span{display:block;margin-top:8px;font-family:var(--mono);font-size:.62rem;
-  letter-spacing:.16em;text-transform:uppercase;color:var(--ash)}
+ letter-spacing:.16em;text-transform:uppercase;color:var(--ash)}
 /* act IV carries the most content, so it runs two columns where there is room */
 .act-rules .in{max-width:min(1140px,94vw)}
 .act-rules h2{font-size:clamp(1.5rem,3.6vw,2.3rem);max-width:14ch}
 @media(min-width:980px){
   .act-rules .in{display:grid;grid-template-columns:1.05fr .95fr;
-    gap:clamp(30px,4vw,60px);align-items:start}
+ gap:clamp(30px,4vw,60px);align-items:start}
   .act-rules .rules{margin-top:26px}
   .act-rules .chart,.act-rules .also{margin-top:0}
   .act-rules .also{margin-top:28px;grid-template-columns:1fr;gap:16px}
@@ -178,45 +178,45 @@ h2{font-family:var(--ui);font-weight:800;letter-spacing:-.01em;line-height:1.08;
 .chart{margin-top:34px;max-width:520px}
 .chart svg{width:100%;height:auto}
 .chart figcaption{margin-top:10px;font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--ash)}
+ text-transform:uppercase;color:var(--ash)}
 .also{margin-top:34px;display:grid;gap:22px;
-  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));max-width:760px}
+ grid-template-columns:repeat(auto-fit,minmax(230px,1fr));max-width:760px}
 .also h3{font-family:var(--mono);font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--bone);margin-bottom:8px}
+ color:var(--bone);margin-bottom:8px}
 .also p{font-size:.93rem;line-height:1.6;color:rgba(245,242,234,.72)}
 
 /* scroll cue + rail */
 .cue{position:absolute;left:clamp(20px,7vw,96px);bottom:26px;display:none;flex-direction:column;
-  gap:8px;font-family:var(--mono);font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;
-  color:rgba(245,242,234,.42);z-index:3}
+ gap:8px;font-family:var(--mono);font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;
+ color:rgba(245,242,234,.42);z-index:3}
 .cue i{width:1px;height:26px;background:linear-gradient(180deg,var(--gold),transparent);
-  animation:drip 2.2s ease-in-out infinite}
+ animation:drip 2.2s ease-in-out infinite}
 @keyframes drip{0%,100%{opacity:.25;transform:scaleY(.5)}50%{opacity:1;transform:scaleY(1)}}
 #rail{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:35;display:none;
-  flex-direction:column;gap:9px}
+ flex-direction:column;gap:9px}
 #rail{transition:opacity var(--t2) var(--ease)}
 #rail span{width:5px;height:5px;border-radius:50%;background:rgba(245,242,234,.22);
-  transition:background var(--t2) var(--ease),transform var(--t2) var(--ease)}
+ transition:background var(--t2) var(--ease),transform var(--t2) var(--ease)}
 #rail span.on{background:var(--gold);transform:scale(1.6)}
 
 /* footer */
 footer{position:relative;z-index:2;background:var(--void);
-  border-top:1px solid rgba(245,242,234,.12);padding:52px 0 44px}
+ border-top:1px solid rgba(245,242,234,.12);padding:52px 0 44px}
 .wrap{max-width:1180px;margin:0 auto;padding:0 clamp(20px,4vw,28px)}
 .fg{display:grid;grid-template-columns:1.7fr repeat(3,1fr);gap:32px}
 @media(max-width:820px){.fg{grid-template-columns:1fr 1fr;gap:26px}}
 .fg p{margin-top:12px;max-width:32ch;font-size:.88rem;line-height:1.6;color:var(--ash)}
 .fcol h3{margin-bottom:12px;font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--ash)}
+ text-transform:uppercase;color:var(--ash)}
 .fcol a{display:block;padding:7px 0;min-height:34px;font-size:.9rem;color:var(--ash);
-  transition:color var(--t2) var(--ease)}
+ transition:color var(--t2) var(--ease)}
 .fcol a:hover{color:var(--gold)}
 .credit{margin-top:42px;padding-top:20px;border-top:1px solid rgba(245,242,234,.06);
-  font-family:var(--mono);font-size:.68rem;line-height:1.9;color:var(--ash);
-  overflow-wrap:anywhere}
+ font-family:var(--mono);font-size:.68rem;line-height:1.9;color:var(--ash);
+ overflow-wrap:anywhere}
 
 /* film mode — added by the script only when motion is welcome. Without it the
-   page is a plain, readable, stacked document, which is also the no-JS state. */
+ page is a plain, readable, stacked document, which is also the no-JS state. */
 body.film #film{height:640vh}
 body.film #stage{position:sticky;top:0;height:100svh;overflow:hidden}
 body.film #stars{display:block}
@@ -227,42 +227,42 @@ body.film .cue{display:flex}
 body.film #rail{display:flex}
 /* padding-top clears the fixed masthead so no act ever sits under it */
 body.film .act{position:absolute;inset:0;display:flex;flex-direction:column;
-  justify-content:center;border:0;padding:78px clamp(20px,7vw,96px) 56px;
-  pointer-events:none;will-change:opacity,transform}
+ justify-content:center;border:0;padding:78px clamp(20px,7vw,96px) 56px;
+ pointer-events:none;will-change:opacity,transform}
 /* on a short or narrow screen the diagram yields to the words */
 @media(max-width:979px){ body.film .chart{display:none} }
 /* the copy always sits on its own scrim, at every drift position: one wash
-   from the left for the headlines, one from the foot for the fine print that
-   would otherwise fall on the lit part of the surface */
+ from the left for the headlines, one from the foot for the fine print that
+ would otherwise fall on the lit part of the surface */
 body.film .act::before{content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(11,13,18,0) 42%,rgba(11,13,18,.76) 100%),
-             linear-gradient(100deg,rgba(11,13,18,.92) 0%,rgba(11,13,18,.70) 38%,
-                             rgba(11,13,18,.16) 66%,rgba(11,13,18,0) 82%)}
+ background:linear-gradient(180deg,rgba(11,13,18,0) 42%,rgba(11,13,18,.76) 100%),
+ linear-gradient(100deg,rgba(11,13,18,.92) 0%,rgba(11,13,18,.70) 38%,
+ rgba(11,13,18,.16) 66%,rgba(11,13,18,0) 82%)}
 body.film .fine{color:rgba(245,242,234,.70)}
 /* act IV holds the most words; on a small stage it tightens instead of clipping */
 @media(max-width:979px){
-  body.film .act-rules h2{font-size:clamp(1.45rem,5.2vw,2rem)}
-  body.film .act-rules .rules{margin-top:18px}
-  body.film .act-rules .rule{padding:12px 13px}
-  body.film .act-rules .rule b{font-size:1.05rem}
-  body.film .act-rules .rule span{margin-top:5px;font-size:.56rem}
-  body.film .act-rules .also{margin-top:20px;gap:13px}
-  body.film .act-rules .also p{font-size:.82rem;line-height:1.5}
-  body.film .act-rules .also h3{margin-bottom:5px}
+ body.film .act-rules h2{font-size:clamp(1.45rem,5.2vw,2rem)}
+ body.film .act-rules .rules{margin-top:18px}
+ body.film .act-rules .rule{padding:12px 13px}
+ body.film .act-rules .rule b{font-size:1.05rem}
+ body.film .act-rules .rule span{margin-top:5px;font-size:.56rem}
+ body.film .act-rules .also{margin-top:20px;gap:13px}
+ body.film .act-rules .also p{font-size:.82rem;line-height:1.5}
+ body.film .act-rules .also h3{margin-bottom:5px}
 }
 /* short windows: give the acts back the room the masthead was holding */
 @media(max-height:720px){
-  body.film .act{padding-top:64px;padding-bottom:34px}
-  body.film .act-rules h2{font-size:clamp(1.3rem,4.2vw,1.9rem)}
-  body.film .act-rules .also p{font-size:.78rem;line-height:1.45}
-  body.film .claims{gap:14px}
-  body.film .claim{font-size:clamp(1.15rem,2.6vw,1.75rem)}
-  body.film .claim small{margin-top:6px;font-size:.8rem;line-height:1.45}
-  body.film .row{padding:10px 0}
-  body.film .moment{margin-top:14px;padding:10px 12px;font-size:.7rem;line-height:1.6}
-  body.film .visit{margin-top:16px;font-size:.72rem;line-height:1.6}
-  body.film .fine{margin-top:16px;font-size:.78rem}
-  body.film .knife{font-size:clamp(.98rem,1.9vw,1.15rem)}
+ body.film .act{padding-top:64px;padding-bottom:34px}
+ body.film .act-rules h2{font-size:clamp(1.3rem,4.2vw,1.9rem)}
+ body.film .act-rules .also p{font-size:.78rem;line-height:1.45}
+ body.film .claims{gap:14px}
+ body.film .claim{font-size:clamp(1.15rem,2.6vw,1.75rem)}
+ body.film .claim small{margin-top:6px;font-size:.8rem;line-height:1.45}
+ body.film .row{padding:10px 0}
+ body.film .moment{margin-top:14px;padding:10px 12px;font-size:.7rem;line-height:1.6}
+ body.film .visit{margin-top:16px;font-size:.72rem;line-height:1.6}
+ body.film .fine{margin-top:16px;font-size:.78rem}
+ body.film .knife{font-size:clamp(.98rem,1.9vw,1.15rem)}
 }
 body.film .act .in{max-height:100%;overflow:hidden}
 body.film .act a{pointer-events:auto}
@@ -276,7 +276,7 @@ body.film .act a{pointer-events:auto}
   <a class="brand" href="/">
     <svg viewBox="-150 -150 300 300" aria-hidden="true">
       <path id="markPath" fill="#F5F2EA"
-            d="M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 A 62 62 0 0 1 13.99 -99.02 Z"/>
+ d="M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 A 62 62 0 0 1 13.99 -99.02 Z"/>
       <!-- d02 currency glyph: two struck bars, 2.55R wide, 0.13R thick, -0.34R/+0.18R -->
       <rect x="-127.5" y="-40.5" width="255" height="13" fill="#D9A441"/>
       <rect x="-127.5" y="11.5" width="255" height="13" fill="#D9A441"/>
@@ -301,9 +301,9 @@ body.film .act a{pointer-events:auto}
     <canvas id="stars" aria-hidden="true"></canvas>
     <div id="plate">
       <img src="/static/img/hero-moon.webp"
-           srcset="/static/img/hero-moon-sm.webp 1200w, /static/img/hero-moon.webp 2200w"
-           sizes="100vw" width="2200" height="1776" fetchpriority="high"
-           alt="The lunar surface photographed from orbit by Apollo 17: the craters Eratosthenes and Copernicus under a black sky.">
+ srcset="/static/img/hero-moon-sm.webp 1200w, /static/img/hero-moon.webp 2200w"
+ sizes="100vw" width="2200" height="1776" fetchpriority="high"
+ alt="The lunar surface photographed from orbit by Apollo 17: the craters Eratosthenes and Copernicus under a black sky.">
     </div>
     <div class="sky" aria-hidden="true"></div>
     <div class="vig" aria-hidden="true"></div>
@@ -314,7 +314,7 @@ body.film .act a{pointer-events:auto}
         <p class="tag">MoonBite · MBITE</p>
         <h1>Money you can still mine on a laptop.</h1>
         <p class="sub knife">Every MBITE that exists was mined by somebody.
-          None were given to anyone — including us.</p>
+ None were given to anyone — including us.</p>
         <p class="sub quiet">Fixed supply. {{ consensus.block_time_min }}-minute settlement.</p>
         <div class="btns">
           <a class="btn btn-a" href="/mine">Start mining</a>
@@ -330,10 +330,10 @@ body.film .act a{pointer-events:auto}
         <div class="claims">
           <p class="claim" data-beat="0">Anyone can make it.
             <small>A general-purpose processor is enough. No warehouse, no waiting list,
-              no permission.</small></p>
+ no permission.</small></p>
           <p class="claim" data-beat="1">Nobody was <span class="gold">given</span> any.
             <small>Supply began at nothing. No premine, no presale, no allocation to
-              anyone, including us.</small></p>
+ anyone, including us.</small></p>
           <p class="claim" data-beat="2">There will never be more than
             {{ consensus.max_supply_label }}.
             <small>The schedule was fixed before the first block and cannot be raised.</small></p>
@@ -347,13 +347,13 @@ body.film .act a{pointer-events:auto}
         <p class="tag">Live</p>
         <h2>It is running while you read this.</h2>
         <p class="sub">A block closes about every {{ consensus.block_time_min }} minutes.
-          These are the most recent, read from the chain itself.</p>
+ These are the most recent, read from the chain itself.</p>
         <div class="ledger" id="ledger" aria-live="polite">
           <p class="lstate" id="lstate">Reading the chain&hellip;</p>
         </div>
         <p class="moment" id="moment" hidden></p>
         <noscript><p class="lstate">Live chain data needs JavaScript. The same figures are
-          on the <a class="gold" href="/explorer">block explorer</a>.</p></noscript>
+ on the <a class="gold" href="/explorer">block explorer</a>.</p></noscript>
       </div>
     </section>
 
@@ -374,11 +374,11 @@ body.film .act a{pointer-events:auto}
        <div>
         <figure class="chart">
           <svg viewBox="0 0 288 96" role="img"
-               aria-label="The block reward halves every {{ '{:,}'.format(consensus.halving_interval) }} blocks: {{ consensus.initial_subsidy_coins }} MBITE, then half that, then half again, toward zero.">
+ aria-label="The block reward halves every {{ '{:,}'.format(consensus.halving_interval) }} blocks: {{ consensus.initial_subsidy_coins }} MBITE, then half that, then half again, toward zero.">
             <path d="M0,84 L0,24 H44 V54 H88 V69 H132 V76.5 H176 V80.25 H220 V82.1 H264 V84 Z"
-                  fill="rgba(217,164,65,.16)"/>
+ fill="rgba(217,164,65,.16)"/>
             <path d="M0,24 H44 V54 H88 V69 H132 V76.5 H176 V80.25 H220 V82.1 H264"
-                  fill="none" stroke="#D9A441" stroke-width="1.6"/>
+ fill="none" stroke="#D9A441" stroke-width="1.6"/>
             <line x1="0" y1="84" x2="288" y2="84" stroke="rgba(245,242,234,.20)" stroke-width="1"/>
             <text x="0" y="16" font-family="ui-monospace,monospace" font-size="8" fill="#8A8580">{{ consensus.initial_subsidy_coins }} MBITE</text>
             <text x="228" y="95" font-family="ui-monospace,monospace" font-size="8" fill="#8A8580">&rarr; zero</text>
@@ -387,12 +387,12 @@ body.film .act a{pointer-events:auto}
         </figure>
         <div class="also">
           <div><h3>The work</h3><p>Proof-of-work, tuned so a general-purpose processor stays
-            competitive. Difficulty answers the network every 60 blocks, so the spacing holds
-            whether ten machines are mining or ten thousand.</p></div>
+ competitive. Difficulty answers the network every 60 blocks, so the spacing holds
+ whether ten machines are mining or ten thousand.</p></div>
           <div><h3>Privacy, opt-in</h3><p>MWEB lets you move value without publishing the
-            amount. It is a choice you make per payment, not a default imposed on the chain.</p></div>
+ amount. It is a choice you make per payment, not a default imposed on the chain.</p></div>
           <div><h3>Vaults</h3><p>Timelocked wallet vaults hold coins for a set period and sweep
-            them to a recovery address if something goes wrong.</p></div>
+ them to a recovery address if something goes wrong.</p></div>
         </div>
        </div>
       </div>
@@ -411,8 +411,8 @@ body.film .act a{pointer-events:auto}
           <a class="btn btn-b" href="/moonbite-core">Read the source</a>
         </div>
         <p class="fine">MBITE is a proof-of-work cryptocurrency. It is not an investment, a
-          security, or a promise of future value. It has no guaranteed price, no listing, and
-          no team allocation. Mining consumes electricity that may never be recovered.</p>
+ security, or a promise of future value. It has no guaranteed price, no listing, and
+ no team allocation. Mining consumes electricity that may never be recovered.</p>
       </div>
     </section>
   </div>
@@ -430,7 +430,7 @@ body.film .act a{pointer-events:auto}
           </svg><span>MoonBite</span>
         </p>
         <p>{{ consensus.initial_subsidy_coins }} MBITE every {{ consensus.block_time_min }}
-          minutes, to whoever does the work.</p>
+ minutes, to whoever does the work.</p>
       </div>
       <div class="fcol"><h3>Start</h3>
         <a href="/mine">Mine</a><a href="/get-wallet">Wallet</a><a href="/how-it-works">How it works</a></div>
@@ -442,14 +442,14 @@ body.film .act a{pointer-events:auto}
     </div>
     <!-- d12: the standing disclosure, verbatim, wherever a page speaks for the project -->
     <p class="fine" style="max-width:70ch">MBITE is a proof-of-work cryptocurrency. It is not
-      an investment, a security, or a promise of future value. It has no guaranteed price, no
-      listing, and no team allocation. Mining consumes electricity that may never be recovered.</p>
+ an investment, a security, or a promise of future value. It has no guaranteed price, no
+ listing, and no team allocation. Mining consumes electricity that may never be recovered.</p>
     <p class="credit">
-      Open source. Consensus parameters and every design decision are recorded in the ADRs.<br>
-      Photograph: NASA / Apollo 17 (AS17-145-22285), the craters Eratosthenes and Copernicus
-      from lunar orbit, 13 December 1972. Colour-graded by MoonBite. NASA does not endorse
-      MoonBite.<br>
-      Chain tip <span id="tip">—</span>
+ Open source. Consensus parameters and every design decision are recorded in the ADRs.<br>
+ Photograph: NASA / Apollo 17 (AS17-145-22285), the craters Eratosthenes and Copernicus
+ from lunar orbit, 13 December 1972. Colour-graded by MoonBite. NASA does not endorse
+ MoonBite.<br>
+ Chain tip <span id="tip">—</span>
     </p>
   </div>
 </footer>
@@ -466,77 +466,77 @@ var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches
 var height=0, hasTip=false, pulseUntil=0, beat=$('beat');
 var arrival=null, arrivedAt=Date.now(), watched=0;
 /* d11: thousands are separated with a comma for amounts and counts, but a
-   BLOCK HEIGHT is never separated — fmt() is for money/counts, fmtH() for height. */
+ BLOCK HEIGHT is never separated — fmt() is for money/counts, fmtH() for height. */
 function fmt(n){return (n||0).toLocaleString('en-US')}
 function fmtH(n){return String(n||0)}
 
 /* d01/d06: the mark is a single closed path; the bite deepens by one
-   increment for every block found — the prescribed signature motion, not a
-   decorative light on the photograph. Geometry mirrors the construction grid:
-   R=100, bite centred at 0.95R on the 45deg upper-right axis. */
+ increment for every block found — the prescribed signature motion, not a
+ decorative light on the photograph. Geometry mirrors the construction grid:
+ R=100, bite centred at 0.95R on the 45deg upper-right axis. */
 var R=100, D=95, r=62, RMAX=66;
 var markPath=$('markPath');
 function biteD(rb){
-  var a=(R*R-rb*rb+D*D)/(2*D), h=Math.sqrt(Math.max(0,R*R-a*a));
-  var ux=Math.SQRT1_2, uy=-Math.SQRT1_2, px=-uy, py=ux;
-  var cx=a*ux, cy=a*uy, p1x=cx+h*px, p1y=cy+h*py, p2x=cx-h*px, p2y=cy-h*py;
-  var f=function(n){return n.toFixed(2)};
-  return 'M '+f(p1x)+' '+f(p1y)+' A '+R+' '+R+' 0 1 0 '+f(p2x)+' '+f(p2y)+
+ var a=(R*R-rb*rb+D*D)/(2*D), h=Math.sqrt(Math.max(0,R*R-a*a));
+ var ux=Math.SQRT1_2, uy=-Math.SQRT1_2, px=-uy, py=ux;
+ var cx=a*ux, cy=a*uy, p1x=cx+h*px, p1y=cy+h*py, p2x=cx-h*px, p2y=cy-h*py;
+ var f=function(n){return n.toFixed(2)};
+ return 'M '+f(p1x)+' '+f(p1y)+' A '+R+' '+R+' 0 1 0 '+f(p2x)+' '+f(p2y)+
          ' A '+f(rb)+' '+f(rb)+' 0 0 1 '+f(p1x)+' '+f(p1y)+' Z';
 }
 function deepen(){ if(markPath && r<RMAX){ r+=1; markPath.setAttribute('d',biteD(r)); } }
 
 /* The visitor's own record of the visit: which block was open when they got
-   here, and how many have closed since. Both are observed, never estimated —
-   if the chain has not moved, it says so rather than inventing movement. */
+ here, and how many have closed since. Both are observed, never estimated —
+ if the chain has not moved, it says so rather than inventing movement. */
 function paintVisit(){
-  if(arrival===null) return;
-  var el=$('visit'), mins=Math.round((Date.now()-arrivedAt)/60000);
-  var t='The chain was at block <b>#'+fmtH(arrival)+'</b> when you opened this page.';
-  if(watched>0){
-    t+='<br>Since then <em>'+fmt(watched)+(watched===1?' block has':' blocks have')+' closed</em>'
+ if(arrival===null) return;
+ var el=$('visit'), mins=Math.round((Date.now()-arrivedAt)/60000);
+ var t='The chain was at block <b>#'+fmtH(arrival)+'</b> when you opened this page.';
+ if(watched>0){
+ t+='<br>Since then <em>'+fmt(watched)+(watched===1?' block has':' blocks have')+' closed</em>'
       +(mins?' — in the '+mins+(mins===1?' minute':' minutes')+' you have been here.':'.');
   }else{
-    t+='<br>It has not moved yet. A block takes about '
+ t+='<br>It has not moved yet. A block takes about '
       +{{ consensus.block_time_min }}+' minutes.';
   }
-  el.innerHTML=t;
-  el.hidden=false;
+ el.innerHTML=t;
+ el.hidden=false;
 }
 
 /* The moment: a block closing while someone is watching is the only thing on
-   this page that happens TO the visitor. It is stated once and then it stays. */
+ this page that happens TO the visitor. It is stated once and then it stays. */
 function markMoment(h){
-  var el=$('moment');
-  el.innerHTML='A block just closed while you were here. <b>#'+fmtH(h)+'</b>, '
+ var el=$('moment');
+ el.innerHTML='A block just closed while you were here. <b>#'+fmtH(h)+'</b>, '
     +'found by a machine somewhere, paying <b>{{ consensus.initial_subsidy_coins }} MBITE</b> '
     +'to whoever was running it. <a href="/explorer">Check it on the explorer</a>.';
-  if(el.hidden){ el.hidden=false; el.classList.add('in') }
+ if(el.hidden){ el.hidden=false; el.classList.add('in') }
 }
 
 function pollTip(){
-  fetch('/api/blockchain/info').then(function(r){return r.json()}).then(function(j){
-    if(j.status!=='success') return;
-    var h=j.height||0;
-    if(arrival===null){ arrival=h; paintVisit() }
+ fetch('/api/blockchain/info').then(function(r){return r.json()}).then(function(j){
+ if(j.status!=='success') return;
+ var h=j.height||0;
+ if(arrival===null){ arrival=h; paintVisit() }
     /* hasTip, not height: a chain sitting at block 0 is a falsy height, and
-       the first block it ever mines is exactly the one worth announcing */
-    var gained=hasTip?(h-height):0;
+ the first block it ever mines is exactly the one worth announcing */
+ var gained=hasTip?(h-height):0;
     /* A jump of more than half an hour of chain is not something anyone sat
-       and watched — it means our first reading came from a node that was
-       still catching up. Re-baseline rather than claim the visitor saw it. */
-    if(gained>30){
-      arrival=h; watched=0; arrivedAt=Date.now(); paintVisit();
+ and watched — it means our first reading came from a node that was
+ still catching up. Re-baseline rather than claim the visitor saw it. */
+ if(gained>30){
+ arrival=h; watched=0; arrivedAt=Date.now(); paintVisit();
     }else if(gained>0){
-      watched+=gained;
-      pulseUntil=performance.now()+1400;
-      beat.classList.add('hit');
-      setTimeout(function(){ beat.classList.remove('hit') },700);
-      deepen(); markMoment(h); paintVisit(); flare(); pollBlocks(); measure();
+ watched+=gained;
+ pulseUntil=performance.now()+1400;
+ beat.classList.add('hit');
+ setTimeout(function(){ beat.classList.remove('hit') },700);
+ deepen(); markMoment(h); paintVisit(); flare(); pollBlocks(); measure();
     }
-    height=h; hasTip=true;
+ height=h; hasTip=true;
     $('beatH').textContent=fmtH(h);
-    if(j.tip_hash) $('tip').textContent=j.tip_hash;
+ if(j.tip_hash) $('tip').textContent=j.tip_hash;
   }).catch(function(){});
 }
 /* the world acknowledges the block: the limb flares, once, briefly */
@@ -545,158 +545,158 @@ setInterval(paintVisit,60000);
 
 /* honest ages: a block is minutes, hours or days old, never 1,481,496m */
 function ago(ts){
-  if(!ts) return '';
-  var s=Math.max(0,(Date.now()/1000)-ts);
-  if(s<90) return 'just now';
-  if(s<5400) return Math.round(s/60)+'m ago';
-  if(s<172800) return Math.round(s/3600)+'h ago';
-  return Math.round(s/86400)+'d ago';
+ if(!ts) return '';
+ var s=Math.max(0,(Date.now()/1000)-ts);
+ if(s<90) return 'just now';
+ if(s<5400) return Math.round(s/60)+'m ago';
+ if(s<172800) return Math.round(s/3600)+'h ago';
+ return Math.round(s/86400)+'d ago';
 }
 
 var seen={};
 function pollBlocks(){
-  fetch('/api/explorer/blocks?limit=4').then(function(r){return r.json()}).then(function(j){
-    var bl=(j&&j.blocks)||[];
-    if(!bl.length){ $('lstate').textContent='The chain is not answering right now.'; return }
-    var out='';
-    for(var i=0;i<bl.length;i++){
-      var b=bl[i];
+ fetch('/api/explorer/blocks?limit=4').then(function(r){return r.json()}).then(function(j){
+ var bl=(j&&j.blocks)||[];
+ if(!bl.length){ $('lstate').textContent='The chain is not answering right now.'; return }
+ var out='';
+ for(var i=0;i<bl.length;i++){
+ var b=bl[i];
       /* the reward is only shown when the chain reports it; never assumed */
-      var units=b.units_per_coin||0;
-      var right=(b.subsidy!=null&&units)?(b.subsidy/units)+' MBITE'
+ var units=b.units_per_coin||0;
+ var right=(b.subsidy!=null&&units)?(b.subsidy/units)+' MBITE'
                 :(b.tx_count!=null?b.tx_count+(b.tx_count===1?' tx':' txs'):'—');
-      out+='<div class="row'+(seen[b.height]?'':' new')+'">'
+ out+='<div class="row'+(seen[b.height]?'':' new')+'">'
          +   '<b>#'+fmtH(b.height)+'</b>'
          +   '<span class="h">'+(b.hash||'—')+'</span>'
          +   '<span class="w">'+right+' · '+(ago(b.timestamp)||'—')+'</span>'
          + '</div>';
-      seen[b.height]=1;
+ seen[b.height]=1;
     }
     $('ledger').innerHTML=out;
   }).catch(function(){
-    var s=$('lstate'); if(s) s.textContent='The chain is not answering right now.';
+ var s=$('lstate'); if(s) s.textContent='The chain is not answering right now.';
   });
 }
 
 /* Everything below is the film. The page is complete without it. */
 var measure=function(){};
 if(!reduce){
-  if('scrollRestoration' in history) history.scrollRestoration='manual';
-  body.classList.add('film');
-  window.scrollTo(0,0);
+ if('scrollRestoration' in history) history.scrollRestoration='manual';
+ body.classList.add('film');
+ window.scrollTo(0,0);
 
-  var film=$('film'), stage=$('stage'), plate=$('plate');
-  var acts=[].slice.call(document.querySelectorAll('.act'));
-  var claims=[].slice.call(document.querySelectorAll('.claim'));
-  var dots=[].slice.call(document.querySelectorAll('#rail span'));
+ var film=$('film'), stage=$('stage'), plate=$('plate');
+ var acts=[].slice.call(document.querySelectorAll('.act'));
+ var claims=[].slice.call(document.querySelectorAll('.claim'));
+ var dots=[].slice.call(document.querySelectorAll('#rail span'));
 
-  var clamp=function(v,a,b){return v<a?a:(v>b?b:v)};
-  var smooth=function(a,b,x){ if(b===a) return x<a?0:1;
-    var t=clamp((x-a)/(b-a),0,1); return t*t*(3-2*t) };
-  var lerp=function(a,b,t){return a+(b-a)*t};
+ var clamp=function(v,a,b){return v<a?a:(v>b?b:v)};
+ var smooth=function(a,b,x){ if(b===a) return x<a?0:1;
+ var t=clamp((x-a)/(b-a),0,1); return t*t*(3-2*t) };
+ var lerp=function(a,b,t){return a+(b-a)*t};
 
   /* Act windows: fade-in start/end, fade-out start/end, as film fractions.
-     They overlap deliberately — the outgoing act is still leaving as the next
-     one arrives, so there is never a frame with no words on it. The vertical
-     offset is what keeps the handover reading as movement, not as ghosting. */
-  var SEQ=[[0.000,0.000,0.155,0.225],[0.155,0.225,0.365,0.435],
+ They overlap deliberately — the outgoing act is still leaving as the next
+ one arrives, so there is never a frame with no words on it. The vertical
+ offset is what keeps the handover reading as movement, not as ghosting. */
+ var SEQ=[[0.000,0.000,0.155,0.225],[0.155,0.225,0.365,0.435],
            [0.365,0.435,0.590,0.660],[0.590,0.660,0.835,0.905],
            [0.835,0.905,1.000,1.010]];
   /* the three claims of act II arrive on their own beats */
-  var BEATS=[[0.235,0.270],[0.275,0.310],[0.315,0.350]];
+ var BEATS=[[0.235,0.270],[0.275,0.310],[0.315,0.350]];
 
-  var paintActs=function(p){
-    for(var i=0;i<acts.length;i++){
-      var q=SEQ[i];
-      var fin=smooth(q[0],q[1],p), fout=smooth(q[2],q[3],p);
+ var paintActs=function(p){
+ for(var i=0;i<acts.length;i++){
+ var q=SEQ[i];
+ var fin=smooth(q[0],q[1],p), fout=smooth(q[2],q[3],p);
       /* Asymmetric on purpose. A symmetric crossfade parks two blocks of text
-         at half opacity on the same lines and reads as mud. Weighting the
-         entrance up and the exit down means the arriving act is always the
-         dominant one, and the leaving act is a ghost behind it. */
-      var o=Math.pow(fin,0.7)*Math.pow(1-fout,1.7);
-      var dy=(1-fin)*80-fout*80;
-      acts[i].style.opacity=o.toFixed(3);
-      acts[i].style.transform='translate3d(0,'+dy.toFixed(2)+'px,0)';
-      acts[i].style.visibility=(o>0.01)?'visible':'hidden';
-      if(dots[i]) dots[i].classList.toggle('on',o>0.5);
+ at half opacity on the same lines and reads as mud. Weighting the
+ entrance up and the exit down means the arriving act is always the
+ dominant one, and the leaving act is a ghost behind it. */
+ var o=Math.pow(fin,0.7)*Math.pow(1-fout,1.7);
+ var dy=(1-fin)*80-fout*80;
+ acts[i].style.opacity=o.toFixed(3);
+ acts[i].style.transform='translate3d(0,'+dy.toFixed(2)+'px,0)';
+ acts[i].style.visibility=(o>0.01)?'visible':'hidden';
+ if(dots[i]) dots[i].classList.toggle('on',o>0.5);
     }
-    for(var c=0;c<claims.length;c++){
-      var t=smooth(BEATS[c][0],BEATS[c][1],p);
-      claims[c].style.opacity=t.toFixed(3);
-      claims[c].style.transform='translate3d(0,'+((1-t)*18).toFixed(2)+'px,0)';
+ for(var c=0;c<claims.length;c++){
+ var t=smooth(BEATS[c][0],BEATS[c][1],p);
+ claims[c].style.opacity=t.toFixed(3);
+ claims[c].style.transform='translate3d(0,'+((1-t)*18).toFixed(2)+'px,0)';
     }
   };
 
   /* the descent: the plate sinks and grows, then eases back for the horizon.
-     No gold glow on the photograph — the block-found signature lives on the
-     mark (deepen(), above), matching d06 exactly rather than inventing a
-     second one. */
-  var paintScene=function(p){
-    var down=smooth(0.00,0.66,p), out=smooth(0.74,1.00,p);
-    var scale=lerp(1.00,1.22,down)-0.11*out;
-    var y=lerp(0,8,down)-4.5*out;
-    plate.style.transform='translate3d(0,'+y.toFixed(2)+'%,0) scale('+scale.toFixed(4)+')';
+ No gold glow on the photograph — the block-found signature lives on the
+ mark (deepen(), above), matching d06 exactly rather than inventing a
+ second one. */
+ var paintScene=function(p){
+ var down=smooth(0.00,0.66,p), out=smooth(0.74,1.00,p);
+ var scale=lerp(1.00,1.22,down)-0.11*out;
+ var y=lerp(0,8,down)-4.5*out;
+ plate.style.transform='translate3d(0,'+y.toFixed(2)+'%,0) scale('+scale.toFixed(4)+')';
   };
 
   /* starfield, sized to the device it landed on */
-  var cv=$('stars'), cx=cv.getContext('2d'), SW=0, SH=0, DPR=1, stars=[];
-  var lean=(navigator.hardwareConcurrency||4)<=4
+ var cv=$('stars'), cx=cv.getContext('2d'), SW=0, SH=0, DPR=1, stars=[];
+ var lean=(navigator.hardwareConcurrency||4)<=4
            || matchMedia('(pointer: coarse)').matches;
-  var sizeStars=function(){
-    DPR=Math.min(window.devicePixelRatio||1,lean?1.5:2);
-    SW=cv.width=Math.floor(innerWidth*DPR);
-    SH=cv.height=Math.floor(innerHeight*DPR);
-    cv.style.width=innerWidth+'px'; cv.style.height=innerHeight+'px';
-    stars=[];
-    var n=Math.round(clamp(innerWidth*innerHeight/(lean?26000:14000),30,130));
-    for(var i=0;i<n;i++) stars.push({x:Math.random()*SW,y:Math.random()*SH*0.66,
-      r:(Math.random()*1.1+0.2)*DPR,z:Math.random()*0.8+0.2,t:Math.random()*6.28});
+ var sizeStars=function(){
+ DPR=Math.min(window.devicePixelRatio||1,lean?1.5:2);
+ SW=cv.width=Math.floor(innerWidth*DPR);
+ SH=cv.height=Math.floor(innerHeight*DPR);
+ cv.style.width=innerWidth+'px'; cv.style.height=innerHeight+'px';
+ stars=[];
+ var n=Math.round(clamp(innerWidth*innerHeight/(lean?26000:14000),30,130));
+ for(var i=0;i<n;i++) stars.push({x:Math.random()*SW,y:Math.random()*SH*0.66,
+ r:(Math.random()*1.1+0.2)*DPR,z:Math.random()*0.8+0.2,t:Math.random()*6.28});
   };
-  var drawStars=function(p){
-    cx.clearRect(0,0,SW,SH);
-    var drift=p*SH*0.10;
-    for(var i=0;i<stars.length;i++){
-      var s=stars[i]; s.t+=0.010;
-      var y=s.y+drift*s.z;
-      if(y>SH) continue;
-      cx.beginPath(); cx.arc(s.x,y,s.r,0,6.283);
-      cx.fillStyle='rgba(236,230,214,'+((0.20+0.28*Math.sin(s.t))*s.z).toFixed(3)+')';
-      cx.fill();
+ var drawStars=function(p){
+ cx.clearRect(0,0,SW,SH);
+ var drift=p*SH*0.10;
+ for(var i=0;i<stars.length;i++){
+ var s=stars[i]; s.t+=0.010;
+ var y=s.y+drift*s.z;
+ if(y>SH) continue;
+ cx.beginPath(); cx.arc(s.x,y,s.r,0,6.283);
+ cx.fillStyle='rgba(236,230,214,'+((0.20+0.28*Math.sin(s.t))*s.z).toFixed(3)+')';
+ cx.fill();
     }
   };
 
   /* one loop, one cached scroll value, transform and opacity only */
-  var rail=$('rail');
-  var target=0, cur=0, running=false;
-  measure=function(){
-    var span=film.offsetHeight-stage.offsetHeight;
-    target=clamp(-film.getBoundingClientRect().top/(span||1),0,1);
+ var rail=$('rail');
+ var target=0, cur=0, running=false;
+ measure=function(){
+ var span=film.offsetHeight-stage.offsetHeight;
+ target=clamp(-film.getBoundingClientRect().top/(span||1),0,1);
     /* the rail belongs to the film, not to the footer below it */
-    rail.style.opacity=(window.pageYOffset>span+40)?'0':'1';
-    if(!running){ running=true; requestAnimationFrame(frame) }
+ rail.style.opacity=(window.pageYOffset>span+40)?'0':'1';
+ if(!running){ running=true; requestAnimationFrame(frame) }
   };
-  var frame=function(){
-    cur+=(target-cur)*0.09;
-    if(Math.abs(target-cur)<0.0002) cur=target;
-    paintScene(cur); paintActs(cur); drawStars(cur);
-    if(document.hidden){ running=false; return }
-    if(cur===target && pulseUntil<performance.now()){ running=false; return }
-    requestAnimationFrame(frame);
+ var frame=function(){
+ cur+=(target-cur)*0.09;
+ if(Math.abs(target-cur)<0.0002) cur=target;
+ paintScene(cur); paintActs(cur); drawStars(cur);
+ if(document.hidden){ running=false; return }
+ if(cur===target && pulseUntil<performance.now()){ running=false; return }
+ requestAnimationFrame(frame);
   };
 
   /* a found block has to wake the idle loop so the flare actually plays */
-  flare=measure;
+ flare=measure;
 
-  addEventListener('scroll',measure,{passive:true});
-  addEventListener('resize',function(){ sizeStars(); measure() });
-  document.addEventListener('visibilitychange',function(){ if(!document.hidden) measure() });
+ addEventListener('scroll',measure,{passive:true});
+ addEventListener('resize',function(){ sizeStars(); measure() });
+ document.addEventListener('visibilitychange',function(){ if(!document.hidden) measure() });
 
-  sizeStars();
-  var span=film.offsetHeight-stage.offsetHeight;
-  target=cur=clamp(-film.getBoundingClientRect().top/(span||1),0,1);
+ sizeStars();
+ var span=film.offsetHeight-stage.offsetHeight;
+ target=cur=clamp(-film.getBoundingClientRect().top/(span||1),0,1);
   /* frame one is fully legible: the headline never fades up from zero */
-  paintScene(cur); paintActs(cur); drawStars(cur);
-  window.__seek=function(v){ target=cur=v; paintScene(v); paintActs(v); drawStars(v); return v };
+ paintScene(cur); paintActs(cur); drawStars(cur);
+ window.__seek=function(v){ target=cur=v; paintScene(v); paintActs(v); drawStars(v); return v };
 }
 
 pollTip(); pollBlocks();

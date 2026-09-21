@@ -51,7 +51,7 @@
         <div class="card-body">
             <code id="tipHash" class="monospace">Loading...</code>
             <button id="refreshBtn" class="btn btn-secondary" data-act="refresh">
-                🔄 Refresh
+ Refresh
             </button>
         </div>
     </div>
@@ -68,8 +68,8 @@
 
     <!-- Quick Links -->
     <div class="quick-links">
-        <a href="/wallet" class="btn btn-primary">💰 Manage Wallet</a>
-        <a href="/mining" class="btn btn-success">⚒️ Start Mining</a>
+        <a href="/wallet" class="btn btn-primary"> Manage Wallet</a>
+        <a href="/mining" class="btn btn-success"> Start Mining</a>
     </div>
 </div>
 {% endblock %}
@@ -77,32 +77,32 @@
 {% block scripts_extra %}
 <script nonce="{{ csp_nonce }}">
     // Fetch and display blockchain info
-    async function refreshBlockchainInfo() {
-        try {
-            const response = await fetch('/api/blockchain/info');
-            const data = await response.json();
+ async function refreshBlockchainInfo() {
+ try {
+ const response = await fetch('/api/blockchain/info');
+ const data = await response.json();
 
-            if (data.status === 'success') {
-                document.getElementById('chainHeight').textContent = data.height;
-                document.getElementById('totalMoney').textContent =
+ if (data.status === 'success') {
+ document.getElementById('chainHeight').textContent = data.height;
+ document.getElementById('totalMoney').textContent =
                     `${data.total_money_coins} MBITE (${data.total_money_satoshis} satoshis)`;
-                document.getElementById('txCount').textContent = data.tx_count;
-                document.getElementById('mempoolSize').textContent = data.mempool_size;
-                document.getElementById('tipHash').textContent = data.tip_hash;
+ document.getElementById('txCount').textContent = data.tx_count;
+ document.getElementById('mempoolSize').textContent = data.mempool_size;
+ document.getElementById('tipHash').textContent = data.tip_hash;
             }
         } catch (error) {
-            console.error('Error fetching blockchain info:', error);
+ console.error('Error fetching blockchain info:', error);
         }
     }
 
     // Fetch and display recent transactions
-    async function loadTransactions() {
-        try {
-            const response = await fetch('/api/transactions');
-            const data = await response.json();
+ async function loadTransactions() {
+ try {
+ const response = await fetch('/api/transactions');
+ const data = await response.json();
 
-            if (data.status === 'success' && data.transactions.length > 0) {
-                const listHtml = data.transactions.map(tx => `
+ if (data.status === 'success' && data.transactions.length > 0) {
+ const listHtml = data.transactions.map(tx => `
                     <div class="tx-item">
                         <div class="tx-info">
                             <div class="tx-id"><code>${tx.txid.substring(0, 16)}...</code></div>
@@ -113,29 +113,29 @@
                         </div>
                     </div>
                 `).join('');
-                document.getElementById('transactionsList').innerHTML = listHtml;
+ document.getElementById('transactionsList').innerHTML = listHtml;
             } else {
-                document.getElementById('transactionsList').innerHTML =
+ document.getElementById('transactionsList').innerHTML =
                     '<p>No transactions yet.</p>';
             }
         } catch (error) {
-            console.error('Error fetching transactions:', error);
+ console.error('Error fetching transactions:', error);
         }
     }
 
     // Load data on page load
-    document.addEventListener('DOMContentLoaded', () => {
-        refreshBlockchainInfo();
-        loadTransactions();
+ document.addEventListener('DOMContentLoaded', () => {
+ refreshBlockchainInfo();
+ loadTransactions();
         // Auto-refresh every 3 seconds
-        setInterval(refreshBlockchainInfo, 3000);
-        setInterval(loadTransactions, 5000);
+ setInterval(refreshBlockchainInfo, 3000);
+ setInterval(loadTransactions, 5000);
     });
-    document.addEventListener('click', function (e) {
+ document.addEventListener('click', function (e) {
         // Delegated so the page needs no inline handlers and can run under a
         // strict CSP (no 'unsafe-inline').
-        var el = e.target.closest && e.target.closest('[data-act="refresh"]');
-        if (el) refreshBlockchainInfo();
+ var el = e.target.closest && e.target.closest('[data-act="refresh"]');
+ if (el) refreshBlockchainInfo();
     });
 </script>
 {% endblock %}

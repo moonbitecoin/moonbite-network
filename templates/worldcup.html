@@ -183,7 +183,7 @@ select:focus-visible, [tabindex]:focus-visible {
   <section class="card">
     <div class="card-t">YOUR COUNTRY</div>
     <div class="you">
-      <div class="fl" id="youFlag">🏳️</div>
+      <div class="fl" id="youFlag"></div>
       <div class="m">
         <div class="nm" id="youName">Choose your country</div>
         <div class="no" id="youNo"></div>
@@ -306,7 +306,7 @@ select:focus-visible, [tabindex]:focus-visible {
      so the separate code chip would be duplication there. */
   (function(){
     try { var c=document.createElement('canvas').getContext('2d'); c.font='40px serif';
-      if(!(c.measureText('🇨🇳').width < c.measureText('🇨').width*1.6))
+      if(!(c.measureText('').width < c.measureText('').width*1.6))
         document.body.classList.add('no-flags');
     } catch(e){}
   })();

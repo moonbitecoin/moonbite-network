@@ -623,7 +623,7 @@ select:focus-visible, [tabindex]:focus-visible {
   });
   $('btnCopyMort').addEventListener('click', function(){
     copyText(shareText());
-    this.textContent = '✓ Copied'; var b = this;
+    this.textContent = ' Copied'; var b = this;
     setTimeout(function(){ b.textContent = 'Copy text'; }, 1800);
   });
   $('btnNative').addEventListener('click', function(){

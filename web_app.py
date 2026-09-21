@@ -957,8 +957,8 @@ def home_v2_page():
 
 @app.route("/dashboard")
 def dashboard_page():
-    """Render the live network dashboard."""
-    return render_template("index.html")
+    # Folded into the explorer: one page for everything live-chain.
+    return redirect("/explorer", code=302)
 
 
 # --- bitcoin.org-style information architecture (marketing pages) ------------ #
@@ -1127,8 +1127,8 @@ def sell_page():
 
 @app.route("/full-node")
 def full_node_page():
-    """Running a full node."""
-    return render_template("full_node.html")
+    # Folded into /developers, which carries the run-a-node guide.
+    return redirect("/developers#run-a-node", code=302)
 
 
 @app.route("/development")
@@ -5025,8 +5025,7 @@ def add_security_headers(response):
 # found by a crawler until it's finished and reviewed.
 _LAUNCH_PATHS = [
     "/", "/mine", "/get-wallet", "/wallet", "/explorer",
-    "/whitepaper", "/full-node", "/support", "/about",
-    "/developers", "/dashboard", "/privacy", "/sell", "/press", "/bounty",
+    "/whitepaper", "/developers", "/bounty", "/about",
 ]
 
 

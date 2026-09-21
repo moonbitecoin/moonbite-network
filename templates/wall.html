@@ -133,7 +133,7 @@ select:focus-visible, [tabindex]:focus-visible {
     <h1>Everyone who<br>found a <span class="g">block</span>.</h1>
     <p class="lede">In the order they found it. Your number is issued once and never
       reissued — it cannot be bought, only taken earlier than someone else.</p>
-    <div class="verified">✓ EVERY ENTRY VERIFIED AGAINST THE CHAIN</div>
+    <div class="verified"> EVERY ENTRY VERIFIED AGAINST THE CHAIN</div>
     <div class="count">
       <div class="v num" id="total">0</div>
       <div class="k" id="totalK">certificates issued, of forever</div>
@@ -196,13 +196,13 @@ select:focus-visible, [tabindex]:focus-visible {
     });
   }
   function flag(code){
-    if(!code || code.length!==2) return '🏳️';
+    if(!code || code.length!==2) return '';
     return code.toUpperCase().replace(/./g, function(ch){
       return String.fromCodePoint(0x1F1E6 + ch.charCodeAt(0) - 65); });
   }
   (function(){
     try { var c=document.createElement('canvas').getContext('2d'); c.font='40px serif';
-      if(!(c.measureText('🇨🇳').width < c.measureText('🇨').width*1.6))
+      if(!(c.measureText('').width < c.measureText('').width*1.6))
         document.body.classList.add('no-flags');
     } catch(e){}
   })();
@@ -282,7 +282,7 @@ select:focus-visible, [tabindex]:focus-visible {
       return '<div class="cert'+(isMine?' mine':'')+(c.id===1?' first':'')+'">'+
         '<div class="ribbon"></div>'+
         '<div class="no">#'+c.id+'</div>'+
-        '<div class="hd"><span class="fl">'+(c.country?flag(c.country):'🏳️')+'</span>'+
+        '<div class="hd"><span class="fl">'+(c.country?flag(c.country):'')+'</span>'+
         '<span class="who">'+esc(c.handle)+'</span></div>'+
         '<div class="amt">+'+coin(c.reward)+' MBITE</div>'+
         '<div class="meta">Block #'+ht(c.height)+' · '+esc(when(c.created_at))+'</div>'+
