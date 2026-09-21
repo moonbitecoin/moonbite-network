@@ -3,7 +3,7 @@
 {% block body_class %}mb-v2{% endblock %}
 
 {% block title %}Blog / Build Log — MoonBite{% endblock %}
-{% block meta_description %}MoonBite is building in the open. No posts yet — the real build log is in the GitHub commit history and ADRs. Follow along to catch the first post when it lands.{% endblock %}
+{% block meta_description %}The MoonBite build log. First post: mainnet launched 21 Sep 2026 from a fresh genesis — the public beta chain is retired. The detailed log lives in the GitHub commit history and ADRs.{% endblock %}
 
 {% block content %}
 <section class="mb-hero">
@@ -17,11 +17,34 @@
     </div>
 </section>
 
+
+<!-- FIRST REAL POST: MAINNET LAUNCH -->
+<section class="mb-section">
+    <div class="mb-container">
+        <div class="mb-section-head mb-reveal">
+            <span class="mb-eyebrow">21 Sep 2026</span>
+            <h2 class="mb-section-title">Mainnet is live. The beta chain is retired.</h2>
+        </div>
+        <div class="mb-card mb-reveal" style="max-width: 760px; margin: 0 auto;">
+            <div class="mb-card-text" style="line-height: 1.8;">
+                <p>Since August, MoonBite ran a public beta chain — real proof-of-work, real software, real bugs found and fixed in the open. That test period is over. The beta chain is retired, and every balance on it — the founder's included — is void.</p>
+                <p style="margin-top: 0.9rem;">Mainnet starts today from a fresh genesis block whose coinbase message says exactly that, permanently and verifiably:</p>
+                <p style="margin-top: 0.9rem;"><code>MoonBite 21/Sep/2026 beta chain retired every coin starts from zero</code></p>
+                <p style="margin-top: 0.9rem;">From block 0, everyone mines under the same rules: 10 MBITE per 2-minute block, halving every 1,650,000 blocks, a ~33,000,000 MBITE cap, RandomX CPU proof-of-work. No premine, no presale, no allocation. Download the miner, run one command, and you compete from the same start line as everyone else — including us.</p>
+                <div class="mb-cta-row" style="margin-top: 1.2rem;">
+                    <a href="/mine" class="btn btn-primary">Start mining</a>
+                    <a href="/explorer" class="btn btn-secondary">Watch the chain from block 0</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- HONESTY BANNER -->
 <section class="mb-section">
     <div class="mb-container">
         <div class="mb-banner mb-reveal">
-            <span>Nothing here is published yet. There are <strong>no real articles on this page.</strong> The cards below are topics we plan to cover — not stories with fake dates, authors, or bylines. When a post is real, it replaces a placeholder.</span>
+            <span>One real post lives here so far — the mainnet launch note above. The cards below are topics we plan to cover, <strong>not articles you can read yet.</strong> When a piece is real, it takes a placeholder's spot, exactly like the launch note did.</span>
         </div>
     </div>
 </section>
