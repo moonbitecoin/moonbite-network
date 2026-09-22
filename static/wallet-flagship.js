@@ -14,6 +14,7 @@ const FEE = 0.001, UNIT = 1e8;
 let seedPhrase = null;      // in-memory only, after create/unlock
 let wallet = null;          // { address }
 let balanceUnits = 0;
+let _balInit = false;       // guards first balance read from logging a fake receive
 let seedSource = 'create';  // 'create' | 'import' (for PIN back button)
 let pinBuf = '', pinStage = 'first', firstPin = '';
 
@@ -24,6 +25,7 @@ function go(id){
   const el = $('#'+id); el.classList.add('active'); el.scrollTop = 0;
   updateNav(id);
   if(id === 's-settings') fillSettings();
+  if(id === 's-activity'){ renderActivity(); refreshConfirmations(); }
 }
 function updateNav(id){
   const bar = $('#tabbar'); const show = TAB_SCREENS.includes(id);
@@ -116,7 +118,7 @@ async function onUnlockKey(k){
 /* ---------- wallet ---------- */
 async function deriveWallet(){ const d = await deriveFromSeedPhrase(seedPhrase); wallet = { address: d.address }; }
 function realAddress(){ return (wallet && wallet.address && isValidAddress(wallet.address)) ? wallet.address : null; }
-function enterHome(){ go('s-home'); renderHome(); refreshBalance(); }
+function enterHome(){ go('s-home'); renderHome(); renderActivity(); refreshBalance(); refreshConfirmations(); }
 
 function fmt(units){ return (units/UNIT).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:8}); }
 function renderHome(){
@@ -126,12 +128,68 @@ function renderHome(){
 }
 async function refreshBalance(){
   const a = realAddress(); if(!a) return;
+  const prev = balanceUnits;
   try{
     const r = await fetch('/api/chain/address/' + encodeURIComponent(a));
     const j = await r.json();
     balanceUnits = (j.total_units ?? j.confirmed_units ?? j.balance_units ?? 0) || 0;
-  }catch(e){ /* offline: keep last known */ }
-  renderHome();
+  }catch(e){ renderHome(); return; }  // offline: keep last known, don't mislog
+  // A net increase since the last successful read is money that arrived. This
+  // is the honest history model for a stock node with no address index: the log
+  // reflects what this device has actually observed on-chain.
+  if(_balInit && balanceUnits > prev){
+    logActivity({ type:'receive', amountUnits: balanceUnits - prev, status:'confirmed' });
+  }
+  _balInit = true;
+  renderHome(); renderActivity();
+}
+
+/* ---------- activity ledger (local, per wallet — no address index on chain) ---------- */
+function actKey(){ const a = realAddress(); return a ? 'mbf_act_' + a : null; }
+function getActivity(){ try{ return JSON.parse(localStorage.getItem(actKey()) || '[]'); }catch(e){ return []; } }
+function saveActivity(a){ const k = actKey(); if(k) localStorage.setItem(k, JSON.stringify(a.slice(0, 200))); }
+function logActivity(entry){
+  const a = getActivity();
+  a.unshift(Object.assign({ ts: Math.floor(Date.now()/1000) }, entry));
+  saveActivity(a); renderActivity();
+}
+function fmtWhen(ts){
+  const d = new Date(ts*1000);
+  return d.toLocaleDateString(undefined, {month:'short', day:'numeric'}) + ' · ' +
+         d.toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit'});
+}
+function txRow(it){
+  const sent = it.type === 'send';
+  const sub = fmtWhen(it.ts) + (it.status ? '  ·  ' + it.status : '') +
+              (it.txid ? '  ·  ' + it.txid.slice(0,8) + '…' : '');
+  return `<div class="tx ${sent?'out':'in'}"><div class="ic"><svg class="icon"><use href="#${sent?'i-send':'i-recv'}"/></svg></div>`+
+    `<div class="meta"><div class="t">${sent?'Sent':'Received'}</div><div class="s">${sub}</div></div>`+
+    `<div class="amt">${sent?'−':'+'}${fmt(it.amountUnits)} MBITE</div></div>`;
+}
+function renderActivity(){
+  const items = getActivity(), home = $('#activity'), full = $('#activityFull');
+  if(!items.length){
+    if(home) home.innerHTML = '<div class="empty">No transactions yet.<br>Receive MBITE to get started.</div>';
+    if(full) full.innerHTML = '<div class="empty">No transactions yet.<br>Your sends and receives will appear here.</div>';
+    return;
+  }
+  if(home) home.innerHTML = items.slice(0,4).map(txRow).join('');
+  if(full) full.innerHTML = items.map(txRow).join('');
+}
+async function refreshConfirmations(){
+  const a = getActivity(); let changed = false;
+  for(const it of a){
+    if(it.type === 'send' && it.status === 'pending' && it.txid){
+      try{
+        const r = await fetch('/api/explorer/tx/' + it.txid);
+        if(r.ok){
+          const d = await r.json(); const tx = d && d.transaction;
+          if(tx && (tx.status === 'confirmed' || tx.block_height != null)){ it.status = 'confirmed'; changed = true; }
+        }
+      }catch(e){ /* offline: leave pending */ }
+    }
+  }
+  if(changed){ saveActivity(a); renderActivity(); }
 }
 
 /* ---------- receive ---------- */
@@ -196,6 +254,7 @@ async function doSend(){
     });
     const bj = await br.json();
     if(!br.ok || bj.status !== 'success') throw new Error(bj.message || 'The network rejected this transaction.');
+    logActivity({ type: 'send', amountUnits, txid: built.txid || bj.txid, status: 'pending' });
     $('#sendAmt').value = ''; $('#sendTo').value = ''; onSendInput();
     toast('Sent'); go('s-home'); setTimeout(refreshBalance, 1500);
   }catch(e){
