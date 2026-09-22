@@ -4288,6 +4288,43 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                 return;
             }
 
+            /* Prove the entered phrase belongs to the wallet ALREADY on this
+               device before we let the next step overwrite its encrypted seed.
+               This is the "forgot my PIN" path (it only runs when a blob is
+               present), so the phrase must derive the SAME address. Skipping
+               this check let a different-but-checksum-valid phrase silently
+               destroy the original seed (fund loss if never backed up) or let
+               someone with brief device access plant their own wallet. */
+            let enteredAddr = null;
+            try {
+                const d = window.MoonBiteAddress &&
+                    await window.MoonBiteAddress.deriveFromSeedPhrase(seedInput);
+                enteredAddr = d && d.address;
+            } catch (e) { /* leave null -> treated as mismatch below */ }
+
+            const currentAddr = (CustodialWallet.getWallet() || {}).address || '';
+            if (currentAddr && currentAddr.startsWith('moon1') &&
+                enteredAddr !== currentAddr) {
+                const ok = confirm(
+                    'This recovery phrase belongs to a DIFFERENT wallet than the ' +
+                    'one on this device.\n\nContinuing will REPLACE the wallet ' +
+                    'stored here. If the current wallet’s recovery phrase is ' +
+                    'not backed up elsewhere, its funds will be permanently lost.' +
+                    '\n\nReplace the wallet on this device?');
+                if (!ok) {
+                    errorDiv.textContent =
+                        'Recovery cancelled — the wallet on this device was not changed.';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                /* User accepted the replacement: keep the old blob under a
+                   backup key so a mistaken replace is still recoverable. */
+                try {
+                    localStorage.setItem('moonbite_seed_encrypted_backup', encryptedSeed);
+                    localStorage.setItem('moonbite_seed_backup_ts', String(Date.now()));
+                } catch (e) { /* storage full/unavailable: proceed anyway */ }
+            }
+
             // Store recovery seed temporarily for PIN setup
             sessionStorage.setItem('recoverySeedPhrase', seedInput);
             errorDiv.style.display = 'none';
@@ -4421,6 +4458,31 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
 
                 showScreen('dashboardScreen');
                 setActiveNav(document.querySelectorAll('.nav-item')[0]);
+
+                /* Legacy weak-entropy ("brainwallet") detection. A stored phrase
+                   that is not valid BIP39 was turned into a key by
+                   sha256(prefix+phrase) (moonbite-address.js), which is guessable
+                   by offline enumeration. Onboarding now rejects such phrases,
+                   but a pre-existing wallet can still hold one. Warn loudly and
+                   flag it so funds get moved to a real BIP39 wallet. Best-effort:
+                   never blocks unlock. */
+                try {
+                    const isBip39 = window.MoonBitePhrase &&
+                        await window.MoonBitePhrase.validateMnemonic(seed);
+                    if (!isBip39) {
+                        localStorage.setItem('moonbite_legacy_weak_seed', '1');
+                        if (!sessionStorage.getItem('moonbite_legacy_warned')) {
+                            sessionStorage.setItem('moonbite_legacy_warned', '1');
+                            alert('SECURITY WARNING\n\nThis wallet’s recovery ' +
+                                'phrase is a legacy, weak-entropy phrase that an ' +
+                                'attacker can guess. Create a NEW wallet and move ' +
+                                'any funds to it as soon as possible, and do not ' +
+                                'receive new MBITE to this wallet.');
+                        }
+                    } else {
+                        localStorage.removeItem('moonbite_legacy_weak_seed');
+                    }
+                } catch (e) { /* detection is best-effort; never block unlock */ }
             } else {
                 // PIN is incorrect - show error
                 document.getElementById('pinVerifyError').style.display = 'block';
