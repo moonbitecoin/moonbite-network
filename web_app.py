@@ -482,6 +482,12 @@ _RETIRED_API_PREFIXES = (
     "/api/mining/", "/api/mine", "/api/wallet/new", "/api/wallet/balance",
     "/api/wallet/backup", "/api/wallet/transaction", "/api/transactions",
     "/api/blockchain/status", "/api/tx/broadcast",
+    # Mock stubs that fabricate fund-relevant data on the live site: the plural
+    # /api/merchants/* invoice mock returns an unspendable payment address, and
+    # /api/hardware-wallet/* returns fake signatures. Retire them in live mode
+    # so nothing is misled; the REAL merchant API is singular /api/merchant/*
+    # (merchants.py) and does not match these prefixes.
+    "/api/merchants/", "/api/hardware-wallet/",
 )
 
 
