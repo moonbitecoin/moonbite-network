@@ -4,6 +4,7 @@
 import { generatePhrase, validateMnemonic } from './moonbite-phrase.js';
 import { deriveFromSeedPhrase, isValidAddress } from './moonbite-address.js';
 import { encryptSeed, decryptSeed, isNewFormat } from './moonbite-crypto.js';
+import { buildSignedTransaction } from './moonbite-tx.js';
 import { qrMatrix } from './vendor/qr.js';
 
 const $ = s => document.querySelector(s);
@@ -163,13 +164,38 @@ function onSendInput(){
   $('#sendErr').textContent = '';
 }
 function sendMax(){ const max = Math.max(0, balanceUnits/UNIT - FEE); $('#sendAmt').value = max > 0 ? +max.toFixed(8) : '0'; onSendInput(); }
-function doSend(){
+async function doSend(){
   const amt = parseFloat($('#sendAmt').value) || 0, to = $('#sendTo').value.trim(), err = $('#sendErr');
+  err.textContent = '';
   if(!isValidAddress(to)){ err.textContent = 'That doesn’t look like a valid MoonBite address.'; return; }
-  if((amt + FEE)*UNIT > balanceUnits){ err.textContent = 'Not enough MBITE for that amount plus the fee.'; return; }
-  // Signing + broadcast reuse the same audited modules as the production send
-  // path (buildSignedTransaction -> /api/chain/broadcast); wired on integration.
-  toast('Reviewed — ready to sign & broadcast');
+  const amountUnits = Math.round(amt * UNIT), feeUnits = Math.round(FEE * UNIT);
+  if(amountUnits <= 0){ err.textContent = 'Enter an amount to send.'; return; }
+  if(amountUnits + feeUnits > balanceUnits){ err.textContent = 'Not enough MBITE for that amount plus the fee.'; return; }
+  const a = realAddress();
+  if(!a || !seedPhrase){ err.textContent = 'Unlock your wallet first.'; return; }
+
+  const btn = $('#sendBtn'), label = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try{
+    // Real spend: fetch this wallet's UTXOs, sign ON DEVICE with the audited
+    // builder, and broadcast the finished hex. The seed never leaves the page.
+    const r = await fetch('/api/chain/address/' + encodeURIComponent(a));
+    const j = await r.json();
+    const utxos = j.utxos || [];
+    const built = await buildSignedTransaction({ seedPhrase, toAddress: to, amountUnits, feeUnits, utxos });
+    const br = await fetch('/api/chain/broadcast', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rawtx: built.rawHex }),
+    });
+    const bj = await br.json();
+    if(!br.ok || bj.status !== 'success') throw new Error(bj.message || 'The network rejected this transaction.');
+    $('#sendAmt').value = ''; $('#sendTo').value = ''; onSendInput();
+    toast('Sent'); go('s-home'); setTimeout(refreshBalance, 1500);
+  }catch(e){
+    err.textContent = (e && e.message) ? e.message : 'Send failed. Please try again.';
+  }finally{
+    btn.disabled = false; btn.textContent = label;
+  }
 }
 
 /* ---------- event delegation (CSP-safe: no inline handlers) ---------- */

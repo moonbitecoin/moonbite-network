@@ -1328,14 +1328,21 @@ def governance_adr(slug):
 
 @app.route("/wallet")
 def wallet_page():
-    """One wallet: the MoonBite desktop app.
+    """The MoonBite self-custody wallet (flagship UI).
 
-    The old in-browser PWA held its own keys, separate from the node and the
-    coins a miner actually holds — two wallets that only looked alike. There is
-    the production PWA (self-custody, recovery phrase created on-device). The
-    desktop app is this same wallet wrapped in a native window, so the two are
-    identical.
+    Brand-aligned, mobile-first; reuses the same audited client-side crypto
+    modules as before (BIP39 generation, PBKDF2+AES-GCM at rest, on-device
+    signing) and the same /api/chain/* endpoints, so it is functionally the
+    production wallet with a new front end. Served as a static file; it is
+    CSP-safe (external module scripts, no inline handlers).
     """
+    return send_from_directory("static", "wallet-flagship.html")
+
+
+@app.route("/wallet-classic")
+def wallet_classic_page():
+    """The previous wallet UI, kept reachable for anyone who prefers it or has
+    it installed as a PWA. Same keys and endpoints as /wallet."""
     return render_template("wallet-pwa-app.html")
 
 
