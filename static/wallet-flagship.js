@@ -23,6 +23,22 @@ function toBaseUnits(inputVal){
   return displayUnit === 'units' ? Math.round(n) : Math.round(n * UNIT);
 }
 
+/* ---------- theme (dark / light / system) ---------- */
+let themePref = 'dark';
+try{ themePref = localStorage.getItem('mbf_theme') || 'dark'; }catch(e){}
+const _mqLight = window.matchMedia('(prefers-color-scheme: light)');
+function resolvedTheme(){ return themePref === 'system' ? (_mqLight.matches ? 'light' : 'dark') : themePref; }
+function applyTheme(){ document.documentElement.setAttribute('data-theme', resolvedTheme()); updateThemeSeg(); }
+function updateThemeSeg(){
+  document.querySelectorAll('#themeSeg .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.arg === themePref));
+}
+function setTheme(t){
+  themePref = ['dark','light','system'].includes(t) ? t : 'dark';
+  try{ localStorage.setItem('mbf_theme', themePref); }catch(e){}
+  applyTheme();
+}
+try{ _mqLight.addEventListener('change', () => { if(themePref === 'system') applyTheme(); }); }catch(e){}
+
 let seedPhrase = null;      // in-memory only, after create/unlock
 let wallet = null;          // { address }
 let balanceUnits = 0;
@@ -290,7 +306,7 @@ async function doSend(){
 }
 
 /* ---------- settings ---------- */
-function fillSettings(){ const a = realAddress(); $('#setAddr').textContent = a || '—'; updateUnitSeg(); }
+function fillSettings(){ const a = realAddress(); $('#setAddr').textContent = a || '—'; updateUnitSeg(); updateThemeSeg(); }
 function lockWallet(){ seedPhrase = null; startUnlock(); }
 
 function updateUnitSeg(){
@@ -331,7 +347,7 @@ async function revealCopy(){
 /* ---------- event delegation (CSP-safe: no inline handlers) ---------- */
 const ACTIONS = { go: (a) => go(a), tab: (a) => go(a), startCreate, doImport, toPin: startPinSet, pinBack,
   openReceive, copyAddr, refreshBalance, sendMax, doSend,
-  lockWallet, revealStart, revealDone, revealCopy, setUnit };
+  lockWallet, revealStart, revealDone, revealCopy, setUnit, setTheme };
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if(!el) return;
   const fn = ACTIONS[el.dataset.act]; if(fn) fn(el.dataset.arg);
@@ -341,6 +357,7 @@ $('#sendTo').addEventListener('input', onSendInput);
 
 /* ---------- boot ---------- */
 (function boot(){
+  applyTheme();
   const env = localStorage.getItem(LS);
   if(env && isNewFormat(env)) startUnlock(); else go('s-welcome');
 })();

@@ -24,6 +24,21 @@
   --shadow:0 24px 60px -20px rgba(0,0,0,.7);
   font-synthesis:none;
 }
+/* Light theme — Bone carries it, Void becomes the ink (brand-legit: the
+   guideline uses Bone as a primary surface). Gold darkens for contrast. */
+:root[data-theme="light"]{
+  --void:#F4F1E9; --void-2:#FFFFFF; --slate:#FFFFFF; --slate-2:#EEEAE1;
+  --bone:#141319; --ash:#6B675F; --ash-dim:#9A948B;
+  --gold:#9A7328; --gold-soft:#D9A441; --gold-deep:#7A5A1E;
+  --line:rgba(20,19,25,.10); --line-gold:rgba(154,115,40,.24);
+  --shadow:0 20px 50px -22px rgba(60,50,20,.28);
+}
+:root[data-theme="light"] .sky{background:
+  radial-gradient(120% 80% at 50% -12%, #FFFFFF 0%, var(--void) 62%), var(--void)}
+:root[data-theme="light"] .stars{display:none}
+:root[data-theme="light"] .aurora{opacity:.3;filter:blur(64px);background:
+  radial-gradient(44% 38% at 28% 14%, rgba(217,164,65,.16), transparent 72%),
+  radial-gradient(50% 44% at 76% 62%, rgba(217,164,65,.07), transparent 76%)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{
@@ -133,7 +148,7 @@ h1,h2,h3,.num{font-family:var(--d); letter-spacing:-.01em}
 .empty{color:var(--ash-dim);text-align:center;padding:34px 0;font-size:14px;line-height:1.7}
 
 .qr-card{align-items:center;text-align:center;padding:26px 22px;margin-bottom:18px;display:flex;flex-direction:column}
-.qr-frame{width:206px;height:206px;background:var(--bone);border-radius:16px;padding:12px;
+.qr-frame{width:206px;height:206px;background:#F5F2EA;border-radius:16px;padding:12px;
   display:flex;align-items:center;justify-content:center;margin:4px auto 20px;box-shadow:0 16px 40px -18px rgba(217,164,65,.5)}
 .qr-frame svg{width:100%;height:100%;display:block}
 .addr{font-family:var(--b);font-size:13.5px;color:var(--bone);word-break:break-all;line-height:1.6;
@@ -353,6 +368,14 @@ h1,h2,h3,.num{font-family:var(--d); letter-spacing:-.01em}
 
   <section id="s-settings" class="screen">
     <div class="title" style="margin-bottom:18px">Settings</div>
+    <div class="set-group">
+      <div class="set-label">Appearance</div>
+      <div class="seg" id="themeSeg">
+        <button class="seg-btn" data-act="setTheme" data-arg="dark">Dark</button>
+        <button class="seg-btn" data-act="setTheme" data-arg="light">Light</button>
+        <button class="seg-btn" data-act="setTheme" data-arg="system">System</button>
+      </div>
+    </div>
     <div class="set-group">
       <div class="set-label">Display balances in</div>
       <div class="seg" id="unitSeg">
