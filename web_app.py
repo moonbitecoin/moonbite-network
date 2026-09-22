@@ -146,6 +146,12 @@ def init_schemas():
 _MAX_CONTENT_LENGTH = int(os.environ.get("MOONBITE_MAX_BODY_BYTES", str(256 * 1024)))
 app.config["MAX_CONTENT_LENGTH"] = _MAX_CONTENT_LENGTH
 
+# Hard ceiling on the flat-file wallet-backup store (unauthenticated writes).
+# At the 256 KB body cap this bounds worst-case disk use to ~cap * 256 KB, so a
+# request loop cannot fill the host. Real backup blobs are tiny, so a modest
+# default leaves ample headroom for legitimate use on a small droplet.
+_MAX_BACKUP_FILES = int(os.environ.get("MOONBITE_MAX_BACKUP_FILES", "1000"))
+
 # Global state for mining operations - queue-based for concurrent mining
 import queue
 import uuid
@@ -4618,6 +4624,7 @@ def add_cors_headers(response):
 # ============================================================================= #
 
 @app.route("/api/wallet/backup/create", methods=["POST"])
+@rate_limit(5, 60)
 def create_backup():
     """Create encrypted cloud backup of wallet seed phrase"""
     try:
@@ -4637,6 +4644,16 @@ def create_backup():
 
         # Save to backups directory
         os.makedirs("backups", exist_ok=True)
+        # Global cap: this is an unauthenticated flat-file store, so without a
+        # bound a loop of requests fills the disk and takes the whole host down
+        # (and with it the SQLite DBs and chain store). Refuse once full rather
+        # than exhaust the disk. Rate limit above bounds the burst rate.
+        try:
+            existing = sum(1 for e in os.scandir("backups") if e.is_file())
+        except OSError:
+            existing = 0
+        if existing >= _MAX_BACKUP_FILES:
+            return jsonify({"error": "backup store is full"}), 507
         backup_file = f"backups/{backup_data['id']}.json"
         with open(backup_file, "w") as f:
             json.dump(backup_data, f)
