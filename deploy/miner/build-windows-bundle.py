@@ -69,26 +69,76 @@ def build(out_dir: str) -> str:
             with open(src, "rb") as f:
                 z.writestr(info, f.read())
 
+    # Write the checksum manifest from the artifacts we just built -- never
+    # hand-typed, never allowed to drift from what actually ships. Covers the
+    # zip AND each member, so a user can verify the download and its contents.
+    sums_path = os.path.join(out_dir, "SHA256SUMS.txt")
+    with open(sums_path, "w", encoding="utf-8", newline="\n") as sf:
+        sf.write(f"{_sha256(zip_path)} *{ZIP_NAME}\n")
+        for src_name, arc in MEMBERS:
+            if src_name.endswith(".exe"):
+                sf.write(f"{_sha256(os.path.join(SRC, src_name))} *{arc}\n")
+
     print("built:", zip_path)
+    print("sums :", sums_path)
     print(f"{'file':32} {'bytes':>12}  sha256")
     for src_name, _ in MEMBERS:
         p = os.path.join(SRC, src_name)
         print(f"{src_name:32} {os.path.getsize(p):>12}  {_sha256(p)}")
     print("-" * 60)
     print(f"{ZIP_NAME:32} {os.path.getsize(zip_path):>12}  {_sha256(zip_path)}")
+    print("\nNEXT: sign the manifest before publishing --")
+    print(f"    minisign -Sm {sums_path}   # produces {os.path.basename(sums_path)}.minisig")
+    print("  then --stage (or copy) the zip, SHA256SUMS.txt and .minisig together.")
+    print("  See deploy/RELEASE-SIGNING.md.")
     return zip_path
 
 
 def stage(zip_path: str) -> None:
-    """Copy the built zip into the dir web_app serves downloads from."""
+    """Copy the built zip + its checksum manifest (+ signature, if present)
+    into the dir web_app serves downloads from.
+
+    Refuses to stage if a required signature is missing once signing has been
+    set up, so an unsigned bundle can never quietly reach users. The manifest
+    and signature are served next to the zip (the /downloads/<file> route), so
+    the installers can fetch and verify them.
+    """
     sys.path.insert(0, REPO)
     import storage  # noqa: E402  (resolve the same dir the route uses)
+    src_dir = os.path.dirname(zip_path)
+    sums = os.path.join(src_dir, "SHA256SUMS.txt")
+    sig = sums + ".minisig"
+    pub = os.path.join(REPO, "deploy", "moonbite-release.pub")
+
+    if not os.path.isfile(sums):
+        sys.exit("refusing to stage: SHA256SUMS.txt missing (run build first).")
+    # If a real release pubkey is configured, a signature is mandatory.
+    if _pubkey_configured(pub) and not os.path.isfile(sig):
+        sys.exit(f"refusing to stage: {os.path.basename(sig)} missing but a "
+                 "release key is configured. Sign the manifest first:\n"
+                 f"    minisign -Sm {sums}\nSee deploy/RELEASE-SIGNING.md.")
+
     dest_dir = storage.data_path("downloads", "MOONBITE_DOWNLOAD_DIR")
     os.makedirs(dest_dir, exist_ok=True)
-    dest = os.path.join(dest_dir, ZIP_NAME)
-    with open(zip_path, "rb") as fsrc, open(dest, "wb") as fdst:
-        fdst.write(fsrc.read())
-    print("staged ->", dest)
+    for src in (zip_path, sums, sig):
+        if not os.path.isfile(src):
+            continue
+        dest = os.path.join(dest_dir, os.path.basename(src))
+        with open(src, "rb") as fsrc, open(dest, "wb") as fdst:
+            fdst.write(fsrc.read())
+        print("staged ->", dest)
+
+
+def _pubkey_configured(pub_path: str) -> bool:
+    """True once the placeholder release pubkey has been replaced with a real
+    minisign public key line."""
+    if not os.path.isfile(pub_path):
+        return False
+    for line in open(pub_path, encoding="utf-8"):
+        line = line.strip()
+        if line and not line.startswith(("#", "untrusted comment")):
+            return not line.startswith("REPLACE_ME")
+    return False
 
 
 def main() -> None:

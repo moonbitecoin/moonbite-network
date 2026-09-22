@@ -22,3 +22,7 @@ release/miner/downloads/
 *.tar.gz
 *.zip
 CURRENT_TUNNEL_URL.txt
+
+# Release signing: the SECRET signing key must NEVER be committed (deploy/RELEASE-SIGNING.md)
+*.key
+deploy/moonbite-release.key

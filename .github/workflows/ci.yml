@@ -34,6 +34,12 @@ jobs:
         continue-on-error: true
         run: mypy .
 
+      # Fail the build if any published checksum does not match the artifact it
+      # names, or two same-named release artifacts disagree (audit finding B2).
+      # A required gate: a wrong "verify this hash" instruction is worse than none.
+      - name: Verify published release checksums
+        run: python deploy/verify-release-checksums.py
+
       # Temporarily disabled to allow deployment
       # - name: Run tests
       #   run: pytest -q

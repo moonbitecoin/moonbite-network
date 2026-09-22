@@ -1,0 +1,18 @@
+# MoonBite release signing key (minisign public key).
+#
+# This is a PLACEHOLDER. Until the line below is replaced with a real minisign
+# public key, the installers and the bundle builder run in sha256-integrity-only
+# mode and print a loud warning: downloads are checked for corruption but NOT
+# for authenticity, so a malicious origin swap is not yet detectable.
+#
+# To activate signing, follow deploy/RELEASE-SIGNING.md:
+#   1. On an OFFLINE machine, generate the key:  minisign -G -p moonbite-release.pub -s moonbite-release.key
+#   2. Keep moonbite-release.key offline, passphrase-protected. NEVER commit it.
+#   3. Paste the generated public key line (starts "RW...") below, replacing REPLACE_ME.
+#   4. Publish this same public key on moonbite.org and in the repo README so
+#      users can pin it independently of any single origin.
+#
+# The line below MUST be a single minisign public key (untrusted-comment line
+# optional). Everything starting with '#' is ignored by the installers.
+
+REPLACE_ME_WITH_MINISIGN_PUBLIC_KEY

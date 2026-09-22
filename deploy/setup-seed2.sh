@@ -15,7 +15,43 @@ DATADIR=/var/lib/moonbite
 CONF=/etc/moonbite/moonbite.conf
 BINDIR=/opt/moonbite/bin
 
+# URL of the signed checksum manifest for the linux bundle (+ .minisig beside
+# it). Overridable; default assumes the release process publishes it here.
+SUMS_URL="${SUMS_URL:-https://moonbite.org/downloads/SHA256SUMS-linux.txt}"
+
+# --- Release signing public key (minisign), baked into this script ----------
+# This script is fetched over curl|bash, so the ONLY thing that makes the
+# download trustworthy is a key pinned HERE, in the script itself. Replace the
+# placeholder during the key ceremony (deploy/RELEASE-SIGNING.md) -- this block
+# AND deploy/moonbite-release.pub must carry the same key. Marker: RELEASE_PUBKEY
+RELEASE_PUBKEY="REPLACE_ME_WITH_MINISIGN_PUBLIC_KEY"
+# ---------------------------------------------------------------------------
+
 [ "$(id -u)" -eq 0 ] || { echo "run as root" >&2; exit 1; }
+
+_pubkey_configured() { printf '%s' "$RELEASE_PUBKEY" | grep -qE '^RW[A-Za-z0-9+/=]'; }
+
+# mb_verify <file> <sums> <name> -- fail closed when the pinned key is set.
+mb_verify() {
+  local file="$1" sums="$2" name="$3" sig="$2.minisig" pub
+  [ -f "$file" ] && [ -f "$sums" ] || { echo "verify: missing artifact/manifest for $name" >&2; return 1; }
+  if _pubkey_configured; then
+    command -v minisign >/dev/null 2>&1 || { apt-get update -qq && apt-get install -y -qq minisign >/dev/null 2>&1; } || true
+    command -v minisign >/dev/null 2>&1 || { echo "verify: minisign unavailable but a release key is pinned -- refusing $name" >&2; return 1; }
+    [ -f "$sig" ] || { echo "verify: signature for $(basename "$sums") missing but a key is pinned -- refusing" >&2; return 1; }
+    pub="$(mktemp)"; printf 'untrusted comment: moonbite release key\n%s\n' "$RELEASE_PUBKEY" > "$pub"
+    minisign -Vm "$sums" -p "$pub" -x "$sig" >/dev/null 2>&1 || { rm -f "$pub"; echo "verify: BAD SIGNATURE on $(basename "$sums") -- refusing $name" >&2; return 1; }
+    rm -f "$pub"; echo "  signature OK ($(basename "$sums"))"
+  else
+    echo "  WARNING: no release key pinned in this script -- sha256 integrity only, NOT authenticity (deploy/RELEASE-SIGNING.md)" >&2
+  fi
+  local want got
+  want="$(grep -E "[[:space:]][*]?${name}\$" "$sums" | awk '{print $1}' | head -1)"
+  [ -n "$want" ] || { echo "verify: $name not listed in manifest -- refusing" >&2; return 1; }
+  got="$(sha256sum "$file" | awk '{print $1}')"
+  [ "$want" = "$got" ] || { echo "verify: SHA256 MISMATCH for $name (want $want got $got)" >&2; return 1; }
+  echo "  sha256 OK ($name)"
+}
 
 echo "== swap (RandomX validation needs headroom on small boxes) =="
 if ! swapon --show | grep -q .; then
@@ -26,6 +62,19 @@ fi
 echo "== binaries (the public miner bundle ships moonbited + cli + libfmt, \$ORIGIN rpath) =="
 mkdir -p "$BINDIR"
 curl -fsSL https://moonbite.org/download/linux -o /tmp/mb.tar.gz
+
+# Verify the tarball BEFORE extracting or running anything as root. Fetch the
+# signed manifest; if the pinned key is set this is authenticity-checked and
+# fails closed, otherwise it is sha256-only with a warning.
+if _pubkey_configured || curl -fsSL "$SUMS_URL" -o /tmp/mb.sums 2>/dev/null; then
+  curl -fsSL "$SUMS_URL" -o /tmp/mb.sums || { echo "ABORT: cannot fetch checksum manifest $SUMS_URL but a release key is pinned" >&2; exit 1; }
+  curl -fsSL "$SUMS_URL.minisig" -o /tmp/mb.sums.minisig 2>/dev/null || true
+  mb_verify /tmp/mb.tar.gz /tmp/mb.sums moonbite-miner-linux-x86_64.tar.gz \
+    || { echo "ABORT: linux bundle failed verification -- not installing" >&2; exit 1; }
+else
+  echo "  WARNING: installing UNVERIFIED tarball (no key pinned, no manifest reachable)" >&2
+fi
+
 tar -xzf /tmp/mb.tar.gz -C /tmp
 d=$(find /tmp -maxdepth 1 -type d -name "moonbite-miner*" | head -1)
 install -m 755 "$d/moonbited" "$d/moonbite-cli" "$BINDIR"/

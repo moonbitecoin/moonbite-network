@@ -19,6 +19,44 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 MOONBITED_SRC="${1:-}"
 MOONBITECLI_SRC="${2:-}"
 SEEDS_FILE="${SEEDS_FILE:-$HERE/seeds.txt}"
+RELEASE_PUB="${RELEASE_PUB:-$HERE/moonbite-release.pub}"
+# URL of the signed SHA256SUMS manifest covering the binaries below. Its
+# detached signature is expected at <url>.minisig. Set this when fetching
+# binaries over the network; local-path installs (args) are trusted as-is.
+MOONBITE_SUMS_URL="${MOONBITE_SUMS_URL:-}"
+
+# True once moonbite-release.pub holds a real minisign key (not the placeholder).
+_pubkey_configured() {
+  [ -f "$RELEASE_PUB" ] || return 1
+  grep -qE '^[[:space:]]*RW[A-Za-z0-9+/=]' "$RELEASE_PUB"
+}
+
+# mb_verify <file> <sums_file> <name_in_sums>
+# Fails closed: when a real release pubkey is configured a valid minisign
+# signature over the manifest is REQUIRED; otherwise sha256 integrity only,
+# with a loud warning. Never silently skips a signature that is expected.
+mb_verify() {
+  local file="$1" sums="$2" name="$3" sig="$2.minisig"
+  [ -f "$file" ] || { echo "verify: missing $file" >&2; return 1; }
+  [ -f "$sums" ] || { echo "verify: missing checksum manifest for $name" >&2; return 1; }
+  if _pubkey_configured; then
+    command -v minisign >/dev/null 2>&1 || apt-get install -y -qq minisign >/dev/null 2>&1 || true
+    command -v minisign >/dev/null 2>&1 || {
+      echo "verify: a release key is configured but minisign is unavailable -- refusing to install unverified $name" >&2; return 1; }
+    [ -f "$sig" ] || { echo "verify: signature for $(basename "$sums") missing but a release key is configured -- refusing" >&2; return 1; }
+    minisign -Vm "$sums" -p "$RELEASE_PUB" -x "$sig" >/dev/null 2>&1 || {
+      echo "verify: BAD SIGNATURE on $(basename "$sums") -- refusing $name" >&2; return 1; }
+    echo "    signature OK ($(basename "$sums"))"
+  else
+    echo "    WARNING: no release pubkey configured -- sha256 integrity only, NOT authenticity (see deploy/RELEASE-SIGNING.md)" >&2
+  fi
+  local want got
+  want="$(grep -E "[[:space:]][*]?${name}\$" "$sums" | awk '{print $1}' | head -1)"
+  [ -n "$want" ] || { echo "verify: $name not listed in manifest -- refusing" >&2; return 1; }
+  got="$(sha256sum "$file" | awk '{print $1}')"
+  [ "$want" = "$got" ] || { echo "verify: SHA256 MISMATCH for $name" >&2; echo "  want $want" >&2; echo "  got  $got" >&2; return 1; }
+  echo "    sha256 OK ($name)"
+}
 
 echo "==> [1/8] Sanity checks"
 [ "$(id -u)" -eq 0 ] || { echo "Run as root (sudo)."; exit 1; }
@@ -43,8 +81,29 @@ if [ -n "$MOONBITED_SRC" ] && [ -f "$MOONBITED_SRC" ]; then
   install -m 0755 "$MOONBITED_SRC"   /usr/local/bin/moonbited
   install -m 0755 "${MOONBITECLI_SRC:?pass moonbite-cli path as 2nd arg}" /usr/local/bin/moonbite-cli
 elif [ -n "${MOONBITED_URL:-}" ]; then
-  fetch "$MOONBITED_URL"   /usr/local/bin/moonbited
-  fetch "${MOONBITECLI_URL:?set MOONBITECLI_URL too}" /usr/local/bin/moonbite-cli
+  : "${MOONBITECLI_URL:?set MOONBITECLI_URL too}"
+  # Download to a staging dir first, verify against the signed manifest, and
+  # only then install. A release key + SUMS URL make this authenticity-checked;
+  # without them it is sha256-only and refuses to proceed if a key is set.
+  if _pubkey_configured && [ -z "$MOONBITE_SUMS_URL" ]; then
+    echo "ERROR: a release signing key is configured ($RELEASE_PUB) but MOONBITE_SUMS_URL is unset."
+    echo "       Set MOONBITE_SUMS_URL to the signed SHA256SUMS manifest for these binaries."
+    exit 1
+  fi
+  STAGE="$(mktemp -d)"; trap 'rm -rf "$STAGE"' EXIT
+  fetch "$MOONBITED_URL"    "$STAGE/moonbited"
+  fetch "$MOONBITECLI_URL"  "$STAGE/moonbite-cli"
+  if [ -n "$MOONBITE_SUMS_URL" ]; then
+    echo "    verifying against $MOONBITE_SUMS_URL"
+    curl -fSL "$MOONBITE_SUMS_URL" -o "$STAGE/SHA256SUMS.txt"
+    curl -fSL "$MOONBITE_SUMS_URL.minisig" -o "$STAGE/SHA256SUMS.txt.minisig" 2>/dev/null || true
+    mb_verify "$STAGE/moonbited"   "$STAGE/SHA256SUMS.txt" moonbited   || { echo "ABORT: moonbited failed verification"; exit 1; }
+    mb_verify "$STAGE/moonbite-cli" "$STAGE/SHA256SUMS.txt" moonbite-cli || { echo "ABORT: moonbite-cli failed verification"; exit 1; }
+  else
+    echo "    WARNING: MOONBITE_SUMS_URL unset -- installing UNVERIFIED binaries (see deploy/RELEASE-SIGNING.md)" >&2
+  fi
+  install -m 0755 "$STAGE/moonbited"    /usr/local/bin/moonbited
+  install -m 0755 "$STAGE/moonbite-cli" /usr/local/bin/moonbite-cli
 elif command -v moonbited >/dev/null 2>&1 && command -v moonbite-cli >/dev/null 2>&1; then
   echo "    using moonbited already on PATH: $(command -v moonbited)"
 else
