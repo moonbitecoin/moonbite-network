@@ -389,6 +389,7 @@ h1,h2,h3,.num{font-family:var(--d); letter-spacing:-.01em}
     </div>
     <div class="set-group">
       <div class="set-label">Security</div>
+      <div class="set-row" data-act="changePinStart"><svg class="icon set-lead"><use href="#i-lock"/></svg><span>Change PIN</span><svg class="icon set-ic"><use href="#i-chev"/></svg></div>
       <div class="set-row" data-act="revealStart"><svg class="icon set-lead"><use href="#i-eye"/></svg><span>Reveal recovery phrase</span><svg class="icon set-ic"><use href="#i-chev"/></svg></div>
       <div class="set-row danger" data-act="lockWallet"><svg class="icon set-lead"><use href="#i-logout"/></svg><span>Lock wallet</span><svg class="icon set-ic"><use href="#i-chev"/></svg></div>
     </div>
@@ -419,6 +420,32 @@ h1,h2,h3,.num{font-family:var(--d); letter-spacing:-.01em}
     <div class="spacer"></div>
     <button class="btn btn-ghost" data-act="revealCopy"><svg class="icon"><use href="#i-copy"/></svg>Copy phrase</button>
     <div style="height:16px"></div>
+  </section>
+
+  <section id="s-changepin-current" class="screen center">
+    <div class="top"><div class="back" data-act="go" data-arg="s-settings"><svg class="icon"><use href="#i-back"/></svg></div><div class="title">Change PIN</div></div>
+    <div class="spacer"></div>
+    <svg class="icon" style="width:38px;height:38px;stroke:var(--gold);margin-bottom:8px"><use href="#i-lock"/></svg>
+    <h2 style="font-size:20px;margin-bottom:6px">Enter current PIN</h2>
+    <p class="muted" style="font-size:14px">Confirm it's you before choosing a new one.</p>
+    <div class="pin-dots" id="cpCurDots"></div>
+    <div class="err" id="cpCurErr"></div>
+    <div class="spacer"></div>
+    <div class="pad" id="cpCurPad"></div>
+    <div style="height:20px"></div>
+  </section>
+
+  <section id="s-changepin-new" class="screen center">
+    <div class="top"><div class="back" data-act="go" data-arg="s-settings"><svg class="icon"><use href="#i-back"/></svg></div><div class="title">Change PIN</div></div>
+    <div class="spacer"></div>
+    <svg class="icon" style="width:38px;height:38px;stroke:var(--gold);margin-bottom:8px"><use href="#i-lock"/></svg>
+    <h2 style="font-size:20px;margin-bottom:6px" id="cpNewTitle">Choose a new PIN</h2>
+    <p class="muted" style="font-size:14px" id="cpNewHint">6 digits.</p>
+    <div class="pin-dots" id="cpNewDots"></div>
+    <div class="err" id="cpNewErr"></div>
+    <div class="spacer"></div>
+    <div class="pad" id="cpNewPad"></div>
+    <div style="height:20px"></div>
   </section>
 
   <nav class="tabbar" id="tabbar" hidden>

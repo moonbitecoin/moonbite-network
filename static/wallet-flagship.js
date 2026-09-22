@@ -344,10 +344,59 @@ async function revealCopy(){
   catch(e){ toast('Copy failed'); }
 }
 
+/* ---------- change PIN ---------- */
+let _cpSeed = null, _cpBuf = '', _cpFirst = '', _cpStage = 'first';
+function changePinStart(){
+  _cpSeed = null; _cpBuf = ''; $('#cpCurErr').textContent = ''; dots($('#cpCurDots'), 0);
+  buildPad($('#cpCurPad'), onCpCurKey); go('s-changepin-current');
+}
+async function onCpCurKey(k){
+  if(k === 'del'){ _cpBuf = _cpBuf.slice(0,-1); dots($('#cpCurDots'), _cpBuf.length); return; }
+  if(_cpBuf.length >= 6) return;
+  _cpBuf += k; dots($('#cpCurDots'), _cpBuf.length);
+  if(_cpBuf.length < 6) return;
+  const seed = await decryptSeed(localStorage.getItem(LS), _cpBuf);
+  if(!seed){ $('#cpCurErr').textContent = 'Wrong PIN'; _cpBuf = '';
+    setTimeout(() => dots($('#cpCurDots'), 0), 300); return; }
+  _cpSeed = seed; startCpNew();
+}
+function startCpNew(){
+  _cpBuf = ''; _cpFirst = ''; _cpStage = 'first';
+  $('#cpNewTitle').textContent = 'Choose a new PIN'; $('#cpNewHint').textContent = '6 digits.';
+  $('#cpNewErr').textContent = ''; dots($('#cpNewDots'), 0);
+  buildPad($('#cpNewPad'), onCpNewKey); go('s-changepin-new');
+}
+function onCpNewKey(k){
+  if(k === 'del'){ _cpBuf = _cpBuf.slice(0,-1); dots($('#cpNewDots'), _cpBuf.length); return; }
+  if(_cpBuf.length >= 6) return;
+  _cpBuf += k; dots($('#cpNewDots'), _cpBuf.length);
+  if(_cpBuf.length < 6) return;
+  if(_cpStage === 'first'){
+    _cpFirst = _cpBuf; _cpBuf = ''; _cpStage = 'confirm';
+    setTimeout(() => { $('#cpNewTitle').textContent = 'Confirm new PIN';
+      $('#cpNewHint').textContent = 'Enter it once more.'; dots($('#cpNewDots'), 0); }, 160);
+  } else {
+    if(_cpBuf !== _cpFirst){
+      $('#cpNewErr').textContent = 'PINs didn’t match — try again.';
+      _cpBuf = ''; _cpFirst = ''; _cpStage = 'first';
+      setTimeout(() => { $('#cpNewTitle').textContent = 'Choose a new PIN';
+        $('#cpNewHint').textContent = '6 digits.'; dots($('#cpNewDots'), 0); }, 160);
+      return;
+    }
+    finishChangePin(_cpFirst);
+  }
+}
+async function finishChangePin(newPin){
+  const env = await encryptSeed(_cpSeed, newPin);
+  localStorage.setItem(LS, env);
+  _cpSeed = null; _cpBuf = ''; _cpFirst = '';
+  toast('PIN changed'); go('s-settings');
+}
+
 /* ---------- event delegation (CSP-safe: no inline handlers) ---------- */
 const ACTIONS = { go: (a) => go(a), tab: (a) => go(a), startCreate, doImport, toPin: startPinSet, pinBack,
   openReceive, copyAddr, refreshBalance, sendMax, doSend,
-  lockWallet, revealStart, revealDone, revealCopy, setUnit, setTheme };
+  lockWallet, revealStart, revealDone, revealCopy, setUnit, setTheme, changePinStart };
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if(!el) return;
   const fn = ACTIONS[el.dataset.act]; if(fn) fn(el.dataset.arg);
