@@ -183,6 +183,34 @@ h1,h2,h3,.num{font-family:var(--d); letter-spacing:-.01em}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .err{color:var(--loss);font-size:13px;margin-top:10px;min-height:16px;text-align:center}
 
+/* bottom tab bar */
+.tabbar{flex:none;display:flex;background:var(--void-2);border-top:1px solid var(--line);
+  padding:8px 8px calc(8px + env(safe-area-inset-bottom))}
+.tabbar[hidden]{display:none}
+.tab{flex:1;background:none;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;
+  gap:5px;padding:8px 0;color:var(--ash-dim);font-family:var(--b);font-size:11px;font-weight:600;
+  transition:color .2s ease}
+.tab .icon{width:22px;height:22px;stroke:var(--ash-dim);transition:stroke .2s ease}
+.tab.active{color:var(--gold)} .tab.active .icon{stroke:var(--gold)}
+.tab:active{transform:scale(.94)}
+
+/* settings */
+.set-group{margin-bottom:22px}
+.set-label{color:var(--ash);font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin:0 2px 10px}
+.set-row{display:flex;align-items:center;gap:12px;background:var(--slate);border:1px solid var(--line);
+  border-radius:14px;padding:15px 16px;cursor:pointer;transition:background .2s ease}
+.set-row:hover{background:var(--slate-2)}
+.set-row + .set-row{margin-top:8px}
+.set-row > span{flex:1;font-weight:500;font-size:14.5px}
+.set-row .set-lead{stroke:var(--gold);width:20px;height:20px;flex:none}
+.set-row .set-ic{stroke:var(--ash-dim);width:18px;height:18px;flex:none}
+.set-row.static{cursor:default}
+.set-row.danger .set-lead{stroke:var(--loss)}
+.set-addr{flex:1;font-family:var(--m);font-size:13px;color:var(--bone);word-break:break-all;line-height:1.5}
+.net-ok{display:flex;align-items:center;gap:7px;color:var(--gain);font-size:13px;font-weight:600}
+.net-ok .dot{width:7px;height:7px;border-radius:50%;background:var(--gain)}
+.set-foot{color:var(--ash-dim);font-size:12px;text-align:center;margin-top:auto;padding:16px 0 4px}
+
 @media (max-width:380px){ .balance{font-size:46px} .h1{font-size:30px} }
 </style>
 </head>
@@ -201,6 +229,12 @@ h1,h2,h3,.num{font-family:var(--d); letter-spacing:-.01em}
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
   <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 8v5M12 16.5v.5"/><path d="M10.3 4l-7 12A2 2 0 0 0 5 19h14a2 2 0 0 0 1.7-3l-7-12a2 2 0 0 0-3.4 0Z"/></symbol>
   <symbol id="i-del" viewBox="0 0 24 24"><path d="M20 6H9l-5 6 5 6h11a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1ZM17 10l-4 4M13 10l4 4"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/><path d="M10 20v-5h4v5"/></symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24"><path d="M4 12h3l2.5-6 4 13 2.5-7H21"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.5M12 18.5V21M5.2 5.2l1.8 1.8M17 17l1.8 1.8M3 12h2.5M18.5 12H21M5.2 18.8l1.8-1.8M17 7l1.8-1.8"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M15 5H6a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h9"/><path d="M12 12h9M18 9l3 3-3 3"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
 </defs></svg>
 
 <div class="app">
@@ -306,6 +340,57 @@ h1,h2,h3,.num{font-family:var(--d); letter-spacing:-.01em}
     <button class="btn btn-primary" id="sendBtn" data-act="doSend" disabled>Review &amp; send</button>
     <div style="height:16px"></div>
   </section>
+
+  <section id="s-activity" class="screen">
+    <div class="title" style="margin-bottom:18px">Activity</div>
+    <div class="activity" id="activityFull"><div class="empty">No transactions yet.<br>Your sends and receives will appear here.</div></div>
+  </section>
+
+  <section id="s-settings" class="screen">
+    <div class="title" style="margin-bottom:18px">Settings</div>
+    <div class="set-group">
+      <div class="set-label">Your address</div>
+      <div class="set-row" data-act="copyAddr"><div class="set-addr" id="setAddr">—</div><svg class="icon set-ic"><use href="#i-copy"/></svg></div>
+    </div>
+    <div class="set-group">
+      <div class="set-label">Security</div>
+      <div class="set-row" data-act="revealStart"><svg class="icon set-lead"><use href="#i-eye"/></svg><span>Reveal recovery phrase</span><svg class="icon set-ic"><use href="#i-chev"/></svg></div>
+      <div class="set-row danger" data-act="lockWallet"><svg class="icon set-lead"><use href="#i-logout"/></svg><span>Lock wallet</span><svg class="icon set-ic"><use href="#i-chev"/></svg></div>
+    </div>
+    <div class="set-group">
+      <div class="set-label">Network</div>
+      <div class="set-row static"><span>MoonBite · Mainnet</span><span class="net-ok"><span class="dot"></span>Connected</span></div>
+    </div>
+    <div class="set-foot">MoonBite self-custody wallet · your keys never leave this device</div>
+  </section>
+
+  <section id="s-reveal-pin" class="screen center">
+    <div class="top"><div class="back" data-act="go" data-arg="s-settings"><svg class="icon"><use href="#i-back"/></svg></div><div class="title">Confirm PIN</div></div>
+    <div class="spacer"></div>
+    <svg class="icon" style="width:38px;height:38px;stroke:var(--gold);margin-bottom:8px"><use href="#i-eye"/></svg>
+    <h2 style="font-size:20px;margin-bottom:6px">Reveal recovery phrase</h2>
+    <p class="muted" style="font-size:14px">Enter your PIN to show your 12 words.</p>
+    <div class="pin-dots" id="revealDots"></div>
+    <div class="err" id="revealErr"></div>
+    <div class="spacer"></div>
+    <div class="pad" id="revealPad"></div>
+    <div style="height:20px"></div>
+  </section>
+
+  <section id="s-reveal" class="screen">
+    <div class="top"><div class="back" data-act="revealDone"><svg class="icon"><use href="#i-back"/></svg></div><div class="title">Recovery phrase</div></div>
+    <div class="warn"><svg class="icon"><use href="#i-alert"/></svg><span>Never share these words. Anyone who has them controls your coins.</span></div>
+    <div class="seed-grid" id="revealGrid" style="margin-top:14px"></div>
+    <div class="spacer"></div>
+    <button class="btn btn-ghost" data-act="revealCopy"><svg class="icon"><use href="#i-copy"/></svg>Copy phrase</button>
+    <div style="height:16px"></div>
+  </section>
+
+  <nav class="tabbar" id="tabbar" hidden>
+    <button class="tab" data-act="tab" data-arg="s-home"><svg class="icon"><use href="#i-home"/></svg><span>Home</span></button>
+    <button class="tab" data-act="tab" data-arg="s-activity"><svg class="icon"><use href="#i-activity"/></svg><span>Activity</span></button>
+    <button class="tab" data-act="tab" data-arg="s-settings"><svg class="icon"><use href="#i-gear"/></svg><span>Settings</span></button>
+  </nav>
 </div>
 
 <div class="toast" id="toast"><svg class="icon"><use href="#i-check"/></svg><span id="toastMsg">Copied</span></div>

@@ -18,10 +18,17 @@ let seedSource = 'create';  // 'create' | 'import' (for PIN back button)
 let pinBuf = '', pinStage = 'first', firstPin = '';
 
 /* ---------- navigation ---------- */
+const TAB_SCREENS = ['s-home', 's-activity', 's-settings'];
 function go(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = $('#'+id); el.classList.add('active');
-  el.scrollTop = 0;
+  const el = $('#'+id); el.classList.add('active'); el.scrollTop = 0;
+  updateNav(id);
+  if(id === 's-settings') fillSettings();
+}
+function updateNav(id){
+  const bar = $('#tabbar'); const show = TAB_SCREENS.includes(id);
+  bar.hidden = !show;
+  bar.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.arg === id));
 }
 function toast(msg){
   $('#toastMsg').textContent = msg; const t = $('#toast');
@@ -198,9 +205,39 @@ async function doSend(){
   }
 }
 
+/* ---------- settings ---------- */
+function fillSettings(){ const a = realAddress(); $('#setAddr').textContent = a || '—'; }
+function lockWallet(){ seedPhrase = null; startUnlock(); }
+
+let revealBuf = '';
+function revealStart(){
+  revealBuf = ''; $('#revealErr').textContent = ''; dots($('#revealDots'), 0);
+  buildPad($('#revealPad'), onRevealKey); go('s-reveal-pin');
+}
+async function onRevealKey(k){
+  if(k === 'del'){ revealBuf = revealBuf.slice(0,-1); dots($('#revealDots'), revealBuf.length); return; }
+  if(revealBuf.length >= 6) return;
+  revealBuf += k; dots($('#revealDots'), revealBuf.length);
+  if(revealBuf.length < 6) return;
+  const seed = await decryptSeed(localStorage.getItem(LS), revealBuf);
+  if(!seed){ $('#revealErr').textContent = 'Wrong PIN'; revealBuf = '';
+    setTimeout(() => dots($('#revealDots'), 0), 300); return; }
+  const words = seed.split(/\s+/);
+  $('#revealGrid').innerHTML = words.map((w,i) => `<div class="word"><i>${i+1}</i><b>${w}</b></div>`).join('');
+  go('s-reveal');
+}
+function revealDone(){ $('#revealGrid').innerHTML = ''; go('s-settings'); } // clear words from DOM
+async function revealCopy(){
+  const words = [...document.querySelectorAll('#revealGrid .word b')].map(b => b.textContent);
+  if(!words.length) return;
+  try{ await navigator.clipboard.writeText(words.join(' ')); toast('Recovery phrase copied'); }
+  catch(e){ toast('Copy failed'); }
+}
+
 /* ---------- event delegation (CSP-safe: no inline handlers) ---------- */
-const ACTIONS = { go: (a) => go(a), startCreate, doImport, toPin: startPinSet, pinBack,
-  openReceive, copyAddr, refreshBalance, sendMax, doSend };
+const ACTIONS = { go: (a) => go(a), tab: (a) => go(a), startCreate, doImport, toPin: startPinSet, pinBack,
+  openReceive, copyAddr, refreshBalance, sendMax, doSend,
+  lockWallet, revealStart, revealDone, revealCopy };
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if(!el) return;
   const fn = ACTIONS[el.dataset.act]; if(fn) fn(el.dataset.arg);
