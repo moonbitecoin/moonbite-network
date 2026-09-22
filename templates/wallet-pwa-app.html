@@ -2105,7 +2105,7 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
                     <div>
                         <label class="form-label" style="margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-size: 11px;">Your Mining Address</label>
                         <div style="background: rgba(26, 31, 58, 0.5); border: 1px solid rgba(217, 164, 65, 0.12); border-radius: 12px; padding: 14px; display: flex; align-items: center; gap: 10px;">
-                            <div id="receiveAddress" style="flex: 1; font-family: 'Courier New', monospace; font-size: 12px; color: var(--gold); word-break: break-all; font-weight: 600;">moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k</div>
+                            <div id="receiveAddress" style="flex: 1; font-family: 'Courier New', monospace; font-size: 12px; color: var(--gold); word-break: break-all; font-weight: 600;">Unlock your wallet to reveal your address</div>
                             <button data-act="call" data-fn="copyAddress" style="background: linear-gradient(135deg, var(--fire-orange), #B8863B); border: none; color: white; padding: 10px 14px; min-height: 44px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s ease; white-space: nowrap;">Copy</button>
                         </div>
                         <div id="copyFeedback" style="font-size: 11px; color: #2E9E6B; margin-top: 6px; text-align: center; display: none;">Copied to clipboard!</div>
@@ -3195,8 +3195,26 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             el.classList.add('active');
         }
 
+        // Single source of truth for the receive address: the wallet's OWN
+        // derived, checksum-valid address. Never a hardcoded placeholder -- a
+        // placeholder address is not spendable by the user, so any MBITE sent to
+        // a copied/shared placeholder is permanently lost.
+        function _realWalletAddress() {
+            const w = (typeof CustodialWallet !== 'undefined') && CustodialWallet.getWallet();
+            const addr = w && w.address;
+            if (addr && window.MoonBiteAddress &&
+                window.MoonBiteAddress.isValidAddress(addr)) {
+                return addr;
+            }
+            return null;
+        }
+
         function copyAddress() {
-            const address = 'moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k';
+            const address = _realWalletAddress();
+            if (!address) {
+                alert('Unlock your wallet first to reveal your receive address.');
+                return;
+            }
             navigator.clipboard.writeText(address);
 
             // Show visual feedback
@@ -3210,7 +3228,11 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
         }
 
         function shareWalletAddress() {
-            const address = 'moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k';
+            const address = _realWalletAddress();
+            if (!address) {
+                alert('Unlock your wallet first to reveal your receive address.');
+                return;
+            }
             if (navigator.share) {
                 navigator.share({
                     title: 'MoonBite Mining Address',
@@ -3223,11 +3245,6 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             }
         }
 
-        function copySeed() {
-            navigator.clipboard.writeText('abandon ability about above absent absorb abstract abuse access accident account accuse');
-            alert('Seed phrase copied to clipboard!');
-        }
-
         function generateQRCode() {
             const container = document.getElementById('qrCodeContainer');
             if (!container) return;
@@ -3235,8 +3252,13 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             // Clear previous QR code
             container.innerHTML = '';
 
-            // Get wallet address
-            const address = document.getElementById('receiveAddress')?.textContent || 'moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k';
+            // Only ever encode the wallet's own valid address. Encoding a
+            // placeholder would produce a QR that sends funds nowhere spendable.
+            const address = _realWalletAddress();
+            if (!address) {
+                container.innerHTML = '<div style="color: #888; font-size: 12px; padding: 20px; text-align: center;">Unlock your wallet to show its QR code</div>';
+                return;
+            }
 
             // Generate inline SVG QR code (no external library needed)
             try {
@@ -4010,9 +4032,15 @@ h1,h2,.big,.reveal .big,.balance-amount,.elapsed,.mort-big{
             updateSendAvailable();
         }
 
-        // Copy Address Function
+        // Copy Address Function (this later definition is the effective one).
+        // Uses the wallet's own derived, checksum-valid address only -- never a
+        // placeholder, which would send received funds somewhere unspendable.
         function copyAddress() {
-            const address = document.getElementById('receiveAddress')?.textContent || 'moon1qw3j5r2h8g9f4k2m5l7n9p0a1s3d5f7g9h2j4k';
+            const address = _realWalletAddress();
+            if (!address) {
+                alert('Unlock your wallet first to reveal your receive address.');
+                return;
+            }
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(address).then(() => {
                     alert('Address copied to clipboard!');
