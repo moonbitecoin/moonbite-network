@@ -210,6 +210,11 @@ h1,h2,h3,.num{font-family:var(--d); letter-spacing:-.01em}
 .net-ok{display:flex;align-items:center;gap:7px;color:var(--gain);font-size:13px;font-weight:600}
 .net-ok .dot{width:7px;height:7px;border-radius:50%;background:var(--gain)}
 .set-foot{color:var(--ash-dim);font-size:12px;text-align:center;margin-top:auto;padding:16px 0 4px}
+.seg{display:flex;gap:4px;background:var(--void-2);border:1px solid var(--line);border-radius:14px;padding:4px}
+.seg-btn{flex:1;background:none;border:0;cursor:pointer;color:var(--ash);font-family:var(--b);font-weight:600;
+  font-size:14px;padding:11px 0;border-radius:10px;transition:all .18s ease}
+.seg-btn.active{background:var(--gold);color:#20170A;box-shadow:0 4px 14px -6px rgba(217,164,65,.5)}
+.seg-btn:not(.active):active{background:var(--slate)}
 
 @media (max-width:380px){ .balance{font-size:46px} .h1{font-size:30px} }
 </style>
@@ -331,9 +336,9 @@ h1,h2,h3,.num{font-family:var(--d); letter-spacing:-.01em}
     </div>
     <div class="field"><label>To address</label><input class="input" id="sendTo" placeholder="moon1…" spellcheck="false"></div>
     <div class="review card" id="sendReview" style="display:none">
-      <div class="row"><span class="k">Amount</span><span class="v mono"><span id="rvAmt">0</span> MBITE</span></div>
+      <div class="row"><span class="k">Amount</span><span class="v mono" id="rvAmt">0 MBITE</span></div>
       <div class="row"><span class="k">Network fee</span><span class="v mono" id="rvFee">0.001 MBITE</span></div>
-      <div class="row total"><span class="k">Total</span><span class="v mono"><span id="rvTot">0</span> MBITE</span></div>
+      <div class="row total"><span class="k">Total</span><span class="v mono" id="rvTot">0 MBITE</span></div>
     </div>
     <div class="err" id="sendErr"></div>
     <div class="spacer"></div>
@@ -348,6 +353,13 @@ h1,h2,h3,.num{font-family:var(--d); letter-spacing:-.01em}
 
   <section id="s-settings" class="screen">
     <div class="title" style="margin-bottom:18px">Settings</div>
+    <div class="set-group">
+      <div class="set-label">Display balances in</div>
+      <div class="seg" id="unitSeg">
+        <button class="seg-btn" data-act="setUnit" data-arg="mbite">MBITE</button>
+        <button class="seg-btn" data-act="setUnit" data-arg="units">Base units</button>
+      </div>
+    </div>
     <div class="set-group">
       <div class="set-label">Your address</div>
       <div class="set-row" data-act="copyAddr"><div class="set-addr" id="setAddr">—</div><svg class="icon set-ic"><use href="#i-copy"/></svg></div>

@@ -10,6 +10,18 @@ import { qrMatrix } from './vendor/qr.js';
 const $ = s => document.querySelector(s);
 const LS = 'mbf_seed_enc';
 const FEE = 0.001, UNIT = 1e8;
+const FEE_UNITS = Math.round(FEE * UNIT);   // network fee in base units
+
+// Display currency: the native coin or its smallest indivisible unit. There is
+// no fiat option because MBITE has no market price (price_feed.py returns
+// "unpriced") — showing a currency value would be fabricated.
+let displayUnit = 'mbite';
+try{ displayUnit = localStorage.getItem('mbf_display_unit') || 'mbite'; }catch(e){}
+function unitLabel(){ return displayUnit === 'units' ? 'units' : 'MBITE'; }
+function toBaseUnits(inputVal){
+  const n = parseFloat(inputVal) || 0;
+  return displayUnit === 'units' ? Math.round(n) : Math.round(n * UNIT);
+}
 
 let seedPhrase = null;      // in-memory only, after create/unlock
 let wallet = null;          // { address }
@@ -120,11 +132,17 @@ async function deriveWallet(){ const d = await deriveFromSeedPhrase(seedPhrase);
 function realAddress(){ return (wallet && wallet.address && isValidAddress(wallet.address)) ? wallet.address : null; }
 function enterHome(){ go('s-home'); renderHome(); renderActivity(); refreshBalance(); refreshConfirmations(); }
 
-function fmt(units){ return (units/UNIT).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:8}); }
+function fmt(units){
+  return displayUnit === 'units'
+    ? Math.round(units).toLocaleString('en-US')
+    : (units/UNIT).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:8});
+}
 function renderHome(){
   $('#balNum').textContent = fmt(balanceUnits);
-  $('#balSpend').textContent = fmt(balanceUnits);
-  $('#sendAvail').textContent = fmt(balanceUnits);
+  const u = document.querySelector('.balance .unit'); if(u) u.textContent = unitLabel();
+  $('#balSpend').textContent = fmt(balanceUnits) + ' ' + unitLabel();
+  $('#sendAvail').textContent = fmt(balanceUnits) + ' ' + unitLabel();
+  const au = document.querySelector('.amt-unit'); if(au) au.textContent = unitLabel();
 }
 async function refreshBalance(){
   const a = realAddress(); if(!a) return;
@@ -164,7 +182,7 @@ function txRow(it){
               (it.txid ? '  ·  ' + it.txid.slice(0,8) + '…' : '');
   return `<div class="tx ${sent?'out':'in'}"><div class="ic"><svg class="icon"><use href="#${sent?'i-send':'i-recv'}"/></svg></div>`+
     `<div class="meta"><div class="t">${sent?'Sent':'Received'}</div><div class="s">${sub}</div></div>`+
-    `<div class="amt">${sent?'−':'+'}${fmt(it.amountUnits)} MBITE</div></div>`;
+    `<div class="amt">${sent?'−':'+'}${fmt(it.amountUnits)} ${unitLabel()}</div></div>`;
 }
 function renderActivity(){
   const items = getActivity(), home = $('#activity'), full = $('#activityFull');
@@ -220,20 +238,27 @@ function renderQR(text, frame){
 
 /* ---------- send ---------- */
 function onSendInput(){
-  const amt = parseFloat($('#sendAmt').value) || 0;
+  const amountUnits = toBaseUnits($('#sendAmt').value);
   const to = $('#sendTo').value.trim();
-  $('#sendReview').style.display = amt > 0 ? 'block' : 'none';
-  $('#rvAmt').textContent = amt.toLocaleString('en-US', {maximumFractionDigits:8});
-  $('#rvTot').textContent = (amt + FEE).toLocaleString('en-US', {maximumFractionDigits:8});
-  $('#sendBtn').disabled = !(amt > 0 && to.length > 6);
+  $('#sendReview').style.display = amountUnits > 0 ? 'block' : 'none';
+  $('#rvAmt').textContent = fmt(amountUnits) + ' ' + unitLabel();
+  $('#rvFee').textContent = fmt(FEE_UNITS) + ' ' + unitLabel();
+  $('#rvTot').textContent = fmt(amountUnits + FEE_UNITS) + ' ' + unitLabel();
+  $('#sendBtn').disabled = !(amountUnits > 0 && to.length > 6);
   $('#sendErr').textContent = '';
 }
-function sendMax(){ const max = Math.max(0, balanceUnits/UNIT - FEE); $('#sendAmt').value = max > 0 ? +max.toFixed(8) : '0'; onSendInput(); }
+function sendMax(){
+  const maxUnits = Math.max(0, balanceUnits - FEE_UNITS);
+  $('#sendAmt').value = displayUnit === 'units'
+    ? String(maxUnits)
+    : (maxUnits > 0 ? +(maxUnits/UNIT).toFixed(8) : '0');
+  onSendInput();
+}
 async function doSend(){
-  const amt = parseFloat($('#sendAmt').value) || 0, to = $('#sendTo').value.trim(), err = $('#sendErr');
+  const to = $('#sendTo').value.trim(), err = $('#sendErr');
   err.textContent = '';
   if(!isValidAddress(to)){ err.textContent = 'That doesn’t look like a valid MoonBite address.'; return; }
-  const amountUnits = Math.round(amt * UNIT), feeUnits = Math.round(FEE * UNIT);
+  const amountUnits = toBaseUnits($('#sendAmt').value), feeUnits = FEE_UNITS;
   if(amountUnits <= 0){ err.textContent = 'Enter an amount to send.'; return; }
   if(amountUnits + feeUnits > balanceUnits){ err.textContent = 'Not enough MBITE for that amount plus the fee.'; return; }
   const a = realAddress();
@@ -265,8 +290,18 @@ async function doSend(){
 }
 
 /* ---------- settings ---------- */
-function fillSettings(){ const a = realAddress(); $('#setAddr').textContent = a || '—'; }
+function fillSettings(){ const a = realAddress(); $('#setAddr').textContent = a || '—'; updateUnitSeg(); }
 function lockWallet(){ seedPhrase = null; startUnlock(); }
+
+function updateUnitSeg(){
+  document.querySelectorAll('#unitSeg .seg-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.arg === displayUnit));
+}
+function setUnit(u){
+  displayUnit = (u === 'units') ? 'units' : 'mbite';
+  try{ localStorage.setItem('mbf_display_unit', displayUnit); }catch(e){}
+  updateUnitSeg(); renderHome(); renderActivity(); onSendInput();
+}
 
 let revealBuf = '';
 function revealStart(){
@@ -296,7 +331,7 @@ async function revealCopy(){
 /* ---------- event delegation (CSP-safe: no inline handlers) ---------- */
 const ACTIONS = { go: (a) => go(a), tab: (a) => go(a), startCreate, doImport, toPin: startPinSet, pinBack,
   openReceive, copyAddr, refreshBalance, sendMax, doSend,
-  lockWallet, revealStart, revealDone, revealCopy };
+  lockWallet, revealStart, revealDone, revealCopy, setUnit };
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if(!el) return;
   const fn = ACTIONS[el.dataset.act]; if(fn) fn(el.dataset.arg);
