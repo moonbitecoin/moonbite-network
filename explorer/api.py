@@ -43,25 +43,35 @@ def _err(message, status):
 
 
 # Minimal in-process anti-abuse limiter for the unauthenticated relay endpoints
-# (single-node explorer). Keyed on remote_addr so it fails closed if a proxy
-# hides the real client. Consensus validity is still enforced by the node.
+# (single-node explorer). Keyed on remote_addr; consensus validity is still
+# enforced by the node.
 _rl_lock = threading.Lock()
 _rl_hits: "defaultdict[tuple, list]" = defaultdict(list)
-
-
-# Per-client request history for the limiter below.
-_rl_lock = threading.Lock()
-_rl_hits = defaultdict(list)
 
 
 def _rl_client_id():
     """Caller identity for rate limiting.
 
-    ProxyFix has already resolved remote_addr to what the trusted proxy saw, so
-    X-Forwarded-For is deliberately not parsed here — a client that could add
-    its own hops would otherwise rotate identities freely and never be capped.
+    app.py wraps the WSGI app in ProxyFix, so request.remote_addr is the client
+    IP our trusted proxy observed (its rightmost appended X-Forwarded-For hop),
+    not the edge/LB address. X-Forwarded-For is deliberately not parsed here — a
+    client that could add its own hops would otherwise rotate identities freely
+    and never be capped. On a bare host (TRUSTED_PROXY_COUNT=0) this is the TCP
+    peer, which is correct there too.
     """
     return request.remote_addr or "unknown"
+
+
+# Short per-address cache for scantxoutset results: a full-UTXO-set walk is
+# expensive, so a burst of repeat lookups for the same address is served once.
+_scan_cache_lock = threading.Lock()
+_scan_cache: "dict[str, tuple]" = {}   # address -> (ts, (utxos, scan_height))
+_SCAN_TTL = 5.0
+_SCAN_CACHE_MAX = 4096
+
+
+class _InvalidAddress(Exception):
+    """Raised when an address fails node validation before any UTXO scan."""
 
 
 def _rate_limit(max_calls, window_seconds=60):
@@ -205,11 +215,26 @@ def status():
 
 
 def _scan_utxos(client, address):
-    """Returns (utxos, scan_height). Raises RPCError/RPCConnectionError.
+    """Returns (utxos, scan_height). Raises RPCError/RPCConnectionError, or
+    _InvalidAddress if the node rejects the address before any scan.
 
-    In demo mode there is no UTXO set, so returns ([], None)."""
+    In demo mode there is no UTXO set, so returns ([], None). A short per-address
+    cache absorbs repeat lookups, and the address is validated (cheap RPC) before
+    the expensive scantxoutset walk so junk input cannot force a full UTXO scan.
+    """
     if client.is_demo():
         return [], None
+
+    now = time.time()
+    with _scan_cache_lock:
+        hit = _scan_cache.get(address)
+        if hit and now - hit[0] < _SCAN_TTL:
+            return hit[1]
+
+    v = client.validateaddress(address)
+    if not (isinstance(v, dict) and v.get("isvalid")):
+        raise _InvalidAddress(address)
+
     result = client.scantxoutset("start", [{"desc": f"addr({address})"}])
     if not result or not result.get("success", False):
         return [], result.get("height") if result else None
@@ -228,15 +253,28 @@ def _scan_utxos(client, address):
             "height": u_height,
             "confirmations": confirmations,
         })
+
+    with _scan_cache_lock:
+        if len(_scan_cache) >= _SCAN_CACHE_MAX:
+            # Drop expired entries first; if still full, clear (bounded memory).
+            stale = [k for k, (ts, _) in _scan_cache.items() if now - ts >= _SCAN_TTL]
+            for k in stale:
+                del _scan_cache[k]
+            if len(_scan_cache) >= _SCAN_CACHE_MAX:
+                _scan_cache.clear()
+        _scan_cache[address] = (now, (utxos, scan_height))
     return utxos, scan_height
 
 
 @api.route("/address/<address>/utxos")
+@_rate_limit(15, 60)
 def address_utxos(address):
     client = _client()
     address = address.strip()
     try:
         utxos, scan_height = _scan_utxos(client, address)
+    except _InvalidAddress:
+        return _err("invalid address", 400)
     except RPCConnectionError as exc:
         return _err(str(exc), 503)
     except RPCError as exc:
@@ -251,11 +289,14 @@ def address_utxos(address):
 
 
 @api.route("/address/<address>/balance")
+@_rate_limit(15, 60)
 def address_balance(address):
     client = _client()
     address = address.strip()
     try:
         utxos, _ = _scan_utxos(client, address)
+    except _InvalidAddress:
+        return _err("invalid address", 400)
     except RPCConnectionError as exc:
         return _err(str(exc), 503)
     except RPCError as exc:

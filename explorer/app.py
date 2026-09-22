@@ -5,8 +5,10 @@ DEMO_MODE that serves realistic sample data so the explorer can be run and
 demoed without a live chain.
 """
 import datetime
+import os
 
 from flask import Flask, abort, redirect, render_template, request, url_for
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 import config
 import webhooks
@@ -14,6 +16,18 @@ from api import api as api_blueprint
 from rpc import RpcClient, RPCConnectionError, RPCError
 
 app = Flask(__name__)
+
+# ProxyFix rewrites request.remote_addr to the client IP our OWN proxy observed
+# (the rightmost X-Forwarded-For hop it appended), so the rate limiter in api.py
+# keys on the real client and not the single edge/LB address. Without this,
+# behind Railway/Cloudflare every request shares one bucket and a single client
+# can lock an endpoint for everyone. Set TRUSTED_PROXY_COUNT=0 on a bare host.
+_TRUSTED_PROXY_COUNT = int(os.environ.get("TRUSTED_PROXY_COUNT", "1"))
+if _TRUSTED_PROXY_COUNT > 0:
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app, x_for=_TRUSTED_PROXY_COUNT, x_proto=1, x_host=1
+    )
+
 app.register_blueprint(api_blueprint)
 
 # Start the background webhook poller (single instance across gunicorn workers

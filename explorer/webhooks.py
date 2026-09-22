@@ -236,7 +236,31 @@ def delete(hook_id: str, secret: str) -> bool:
 # Delivery
 # ------------------------------------------------------------------------- #
 
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Refuse to follow redirects during delivery. The registered URL is
+    validated as public, but a 3xx Location (or an http:// downgrade) can point
+    at an internal target — the SSRF bypass that made delivery-time validation
+    necessary. Returning None here lets the 3xx surface as an HTTPError, which
+    _deliver counts as a failed (non-2xx) delivery."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+_no_redirect_opener = urllib.request.build_opener(_NoRedirect)
+
+
 def _deliver(hook: sqlite3.Row, payload: dict) -> bool:
+    # Re-validate at delivery time: the callback host's DNS could have been
+    # repointed to a private/loopback address since registration (rebinding),
+    # and only the registration-time check would have caught it. Skipped when
+    # private targets are explicitly allowed (self-hosted/testing).
+    if not config.WEBHOOK_ALLOW_PRIVATE:
+        try:
+            _validate_callback_url(hook["url"])
+        except WebhookError:
+            return False
+
     body = json.dumps(payload, separators=(",", ":")).encode("utf-8")
     sig = hmac.new(hook["secret"].encode(), body, hashlib.sha256).hexdigest()
     req = urllib.request.Request(hook["url"], data=body, method="POST")
@@ -246,7 +270,9 @@ def _deliver(hook: sqlite3.Row, payload: dict) -> bool:
     req.add_header("X-MoonBite-Delivery", uuid.uuid4().hex)
     req.add_header("X-MoonBite-Signature", f"sha256={sig}")
     try:
-        with urllib.request.urlopen(req, timeout=config.WEBHOOK_TIMEOUT) as resp:
+        # No-redirect opener: a 3xx to an internal host is not followed and is
+        # treated as a failed delivery rather than an SSRF into the host.
+        with _no_redirect_opener.open(req, timeout=config.WEBHOOK_TIMEOUT) as resp:
             return 200 <= resp.status < 300
     except urllib.error.HTTPError as exc:
         return 200 <= exc.code < 300
