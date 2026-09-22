@@ -21,7 +21,7 @@ import sqlite3
 import threading
 import time
 import uuid
-from decimal import Decimal, InvalidOperation
+from decimal import ROUND_DOWN, Decimal, InvalidOperation
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -34,6 +34,11 @@ CATEGORIES = ("goods", "services", "food", "digital", "donation", "other")
 # in-process demo keeps 100. The invoiced amount and the injected received_lookup
 # MUST share this basis — that pairing is wired in web_app.py.
 UNITS_PER_COIN = int(os.environ.get("MOONBITE_UNITS_PER_COIN", "100"))
+
+# Upper bound on a single invoice, above the ~33M supply cap so no real payment
+# is blocked, but finite so an astronomically large (yet finite) Decimal cannot
+# overflow the base-unit conversion downstream.
+_MAX_INVOICE_COINS = Decimal(os.environ.get("MOONBITE_MAX_INVOICE_COINS", "100000000"))
 
 # An invoice is payable for this long, then it expires (seconds).
 DEFAULT_INVOICE_TTL = 60 * 60  # 1 hour
@@ -124,14 +129,29 @@ def _pos_amount(value) -> Decimal:
         d = Decimal(str(value))
     except (InvalidOperation, ValueError, TypeError):
         raise ValueError("amount must be a number")
+    # Decimal("inf")/"nan" parse cleanly and slip past the <= 0 check (NaN
+    # compares false, Infinity compares greater), so reject non-finite first.
+    if not d.is_finite():
+        raise ValueError("amount must be a finite number")
     if d <= 0:
         raise ValueError("amount must be greater than zero")
+    if d > _MAX_INVOICE_COINS:
+        raise ValueError("amount is too large")
     return d
 
 
 def _amount_units(d: Decimal) -> int:
-    # Convert a MBITE amount to the chain's integer base units.
-    return int((d * UNITS_PER_COIN).to_integral_value())
+    # Convert a MBITE amount to the chain's integer base units WITHOUT silently
+    # discarding value: an amount finer than one base unit used to round to 0,
+    # creating a zero-value invoice (goods for free). Reject it instead.
+    scaled = d * UNITS_PER_COIN
+    integral = scaled.to_integral_value(rounding=ROUND_DOWN)
+    if scaled != integral:
+        raise ValueError("amount is finer than the smallest MBITE unit")
+    units = int(integral)
+    if units <= 0:
+        raise ValueError("amount is below the smallest MBITE unit")
+    return units
 
 
 # --------------------------------------------------------------------------- #
