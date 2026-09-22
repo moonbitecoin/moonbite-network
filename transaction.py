@@ -28,6 +28,26 @@ from ecdsa import SECP256k1, BadSignatureError, SigningKey, VerifyingKey
 
 from params import MAX_MONEY
 
+_CURVE_N = SECP256k1.order  # secp256k1 group order
+
+
+def canonical_low_s(sig64: bytes) -> bytes:
+    """Return a 64-byte r||s signature normalized to low-S (s <= n/2).
+
+    For ECDSA, (r, s) and (r, n - s) are both valid signatures of the same
+    message under the same key, so anyone can flip s without the private key.
+    Because a tx's txid commits to its signatures, that malleates the txid.
+    Canonicalizing to low-S here (and rejecting high-S in verify) removes the
+    trivial vector. RFC 6979 fixes the nonce but does NOT imply low-S, so our
+    own signer emits high-S about half the time without this.
+    """
+    if len(sig64) != 64:
+        return sig64
+    r, s = sig64[:32], int.from_bytes(sig64[32:], "big")
+    if s > _CURVE_N // 2:
+        s = _CURVE_N - s
+    return r + s.to_bytes(32, "big")
+
 
 # --------------------------------------------------------------------------- #
 # Crypto helpers
@@ -64,7 +84,13 @@ class TxOutput:
 
     @staticmethod
     def from_dict(d: dict) -> "TxOutput":
-        return TxOutput(amount=d["amount"], pubkey_hash=d["pubkey_hash"])
+        # Enforce integer amounts at the deserialization boundary: a float (or
+        # bool, an int subclass) reaching consensus validation would sidestep
+        # the integer-money invariant and enable rounding/precision forgery.
+        amount = d["amount"]
+        if isinstance(amount, bool) or not isinstance(amount, int):
+            raise ValueError("TxOutput.amount must be an integer")
+        return TxOutput(amount=amount, pubkey_hash=d["pubkey_hash"])
 
 
 @dataclass
@@ -159,9 +185,12 @@ class Transaction:
         """
         vk: VerifyingKey = signing_key.get_verifying_key()
         self.inputs[index].pubkey = vk.to_string().hex()
-        self.inputs[index].signature = signing_key.sign_deterministic(
+        sig = signing_key.sign_deterministic(
             self.signing_bytes(), hashfunc=hashlib.sha256
-        ).hex()
+        )
+        # Normalize to low-S so our own signatures are canonical and pass the
+        # malleability check in verify() (RFC 6979 alone does not guarantee it).
+        self.inputs[index].signature = canonical_low_s(sig).hex()
 
     def is_coinbase(self) -> bool:
         """A coinbase (Milestone 5) mints coins via a single null-prevout input."""
@@ -204,12 +233,20 @@ class Transaction:
                 return False  # not authorized to spend this output
 
             try:
+                sig_bytes = bytes.fromhex(txin.signature)
+                # Reject non-canonical (high-S) signatures: (r, s) and (r, n-s)
+                # are both valid, so accepting high-S would let anyone mutate a
+                # signature — and thus the signature-committing txid — without
+                # the private key.
+                if len(sig_bytes) != 64:
+                    return False
+                s_val = int.from_bytes(sig_bytes[32:], "big")
+                if s_val == 0 or s_val > _CURVE_N // 2:
+                    return False
                 vk = VerifyingKey.from_string(
                     bytes.fromhex(txin.pubkey), curve=SECP256k1
                 )
-                vk.verify(
-                    bytes.fromhex(txin.signature), message, hashfunc=hashlib.sha256
-                )
+                vk.verify(sig_bytes, message, hashfunc=hashlib.sha256)
             except (BadSignatureError, ValueError):
                 return False
 

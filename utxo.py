@@ -20,6 +20,7 @@ import math
 from typing import Iterator, Optional
 
 from block import Block, coinbase_height
+from params import MAX_MONEY
 from transaction import Transaction, TxOutput
 
 
@@ -143,7 +144,21 @@ def validate_coinbase(block: Block, height: int, expected_subsidy: int, fees: in
         return False
     if any(other.is_coinbase() for other in block.transactions[1:]):
         return False
+    if not cb.outputs:
+        return False
+    # Per-output bounds, mirroring Transaction.verify for non-coinbase txs
+    # (transaction.py). The coinbase never flows through verify, so without
+    # this a negative output could balance an arbitrarily large positive one
+    # and still satisfy the sum check below -> unbounded mint. `bool` is an
+    # int subclass, so reject it explicitly.
+    for o in cb.outputs:
+        if isinstance(o.amount, bool) or not isinstance(o.amount, int):
+            return False
+        if o.amount <= 0 or o.amount > MAX_MONEY:
+            return False
     claimed = sum(o.amount for o in cb.outputs)
+    if claimed > MAX_MONEY:
+        return False
     return claimed <= expected_subsidy + fees
 
 
