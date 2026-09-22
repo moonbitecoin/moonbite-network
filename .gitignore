@@ -26,3 +26,10 @@ CURRENT_TUNNEL_URL.txt
 # Release signing: the SECRET signing key must NEVER be committed (deploy/RELEASE-SIGNING.md)
 *.key
 deploy/moonbite-release.key
+
+# Flutter build cache + runtime logs: regenerable, never tracked (carry local paths/PII)
+mobile/build/
+mobile/.dart_tool/
+mobile/.flutter-plugins-dependencies
+blockchain.log
+node_output.log
