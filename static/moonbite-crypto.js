@@ -124,3 +124,52 @@ export async function readSeed(stored, pin) {
     }
     return { seed: decryptLegacy(stored), migrated: true };
 }
+
+/* ---------------------------------------------------------------------------
+ * Biometric (WebAuthn PRF) seed wrapping.
+ *
+ * Touch ID / Face ID / Windows Hello unlock, done the only way that is safe
+ * for a self-custody wallet: entirely on the device, with no server able to
+ * grant or deny access. The platform authenticator's PRF extension yields a
+ * stable 32-byte secret that only a successful biometric check can release;
+ * we wrap the seed under a key derived from it (HKDF for domain separation).
+ * Losing the biometric never locks anyone out — the PIN envelope is always
+ * kept alongside as the fallback.
+ *
+ * The stored blob (mbb1.<hkdfSalt>.<iv>.<ct>) is useless without the PRF
+ * secret, which never leaves the authenticator's control.
+ * ------------------------------------------------------------------------- */
+const BIO_VERSION = 'mbb1';
+
+async function keyFromPrf(prfBytes, salt) {
+    const base = await crypto.subtle.importKey('raw', prfBytes, 'HKDF', false, ['deriveKey']);
+    return crypto.subtle.deriveKey(
+        { name: 'HKDF', hash: 'SHA-256', salt, info: enc.encode('moonbite-bio-v1') },
+        base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+    );
+}
+
+export async function encryptSeedWithPrf(seedPhrase, prfBytes) {
+    if (!seedPhrase) throw new Error('nothing to encrypt');
+    const salt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
+    const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
+    const key = await keyFromPrf(new Uint8Array(prfBytes), salt);
+    const ct = new Uint8Array(await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv }, key, enc.encode(seedPhrase)
+    ));
+    return [BIO_VERSION, toBase64(salt), toBase64(iv), toBase64(ct)].join('.');
+}
+
+export async function decryptSeedWithPrf(envelope, prfBytes) {
+    if (typeof envelope !== 'string' || !envelope.startsWith(BIO_VERSION + '.')) return null;
+    const [, saltB64, ivB64, ctB64] = envelope.split('.');
+    try {
+        const key = await keyFromPrf(new Uint8Array(prfBytes), fromBase64(saltB64));
+        const pt = await crypto.subtle.decrypt(
+            { name: 'AES-GCM', iv: fromBase64(ivB64) }, key, fromBase64(ctB64)
+        );
+        return dec.decode(pt);
+    } catch (e) {
+        return null;
+    }
+}

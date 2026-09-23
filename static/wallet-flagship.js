@@ -3,7 +3,7 @@
  * audited crypto modules for all key operations. */
 import { generatePhrase, validateMnemonic } from './moonbite-phrase.js';
 import { deriveFromSeedPhrase, isValidAddress } from './moonbite-address.js';
-import { encryptSeed, decryptSeed, isNewFormat } from './moonbite-crypto.js';
+import { encryptSeed, decryptSeed, isNewFormat, encryptSeedWithPrf, decryptSeedWithPrf } from './moonbite-crypto.js';
 import { buildSignedTransaction } from './moonbite-tx.js';
 import { qrMatrix } from './vendor/qr.js';
 
@@ -131,6 +131,10 @@ async function finishSetup(pin){
 function startUnlock(){
   pinBuf = ''; $('#unlockErr').textContent = ''; dots($('#unlockDots'), 0);
   buildPad($('#unlockPad'), onUnlockKey); go('s-unlock');
+  // offer biometric only when it's set up and the device can actually do it
+  const btn = $('#bioUnlockBtn');
+  if(btn){ btn.hidden = true;
+    if(bioEnabled()) bioSupported().then(ok => { btn.hidden = !ok; }); }
 }
 async function onUnlockKey(k){
   if(k === 'del'){ pinBuf = pinBuf.slice(0,-1); dots($('#unlockDots'), pinBuf.length); return; }
@@ -147,6 +151,75 @@ async function onUnlockKey(k){
 async function deriveWallet(){ const d = await deriveFromSeedPhrase(seedPhrase); wallet = { address: d.address }; }
 function realAddress(){ return (wallet && wallet.address && isValidAddress(wallet.address)) ? wallet.address : null; }
 function enterHome(){ go('s-home'); renderHome(); renderActivity(); refreshBalance(); refreshConfirmations(); }
+
+/* ---------- biometric unlock (WebAuthn PRF, fully on-device) ----------
+ * Touch ID / Face ID / Windows Hello gate the release of a per-credential
+ * secret (the PRF output). We wrap the seed under a key derived from it, so a
+ * successful biometric check — and nothing else, no server — decrypts the
+ * wallet. The PIN envelope stays as the always-available fallback. */
+const BIO_LS = 'mbf_bio';
+// A fixed per-app salt for the PRF evaluation; the secret is the authenticator's,
+// this only namespaces it. Same value on enable and on unlock.
+const BIO_PRF_SALT = new Uint8Array([
+  0x6d,0x6f,0x6f,0x6e,0x62,0x69,0x74,0x65,0x2d,0x77,0x61,0x6c,0x6c,0x65,0x74,0x2d,
+  0x62,0x69,0x6f,0x2d,0x70,0x72,0x66,0x2d,0x76,0x31,0x00,0x00,0x00,0x00,0x00,0x01]);
+function _b64e(buf){ let s=''; const b=new Uint8Array(buf); for(const x of b) s+=String.fromCharCode(x); return btoa(s); }
+function _b64d(s){ const t=atob(s); const o=new Uint8Array(t.length); for(let i=0;i<t.length;i++)o[i]=t.charCodeAt(i); return o; }
+function bioStored(){ try{ return JSON.parse(localStorage.getItem(BIO_LS)||'null'); }catch(e){ return null; } }
+function bioEnabled(){ return !!bioStored(); }
+async function bioSupported(){
+  try{
+    if(!window.PublicKeyCredential || !navigator.credentials || !PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) return false;
+    return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+  }catch(e){ return false; }
+}
+async function bioGetSecret(credIdBuf){
+  const asrt = await navigator.credentials.get({ publicKey:{
+    challenge: crypto.getRandomValues(new Uint8Array(32)),
+    allowCredentials:[{ id: credIdBuf, type:'public-key' }],
+    userVerification:'required', timeout:60000,
+    extensions:{ prf:{ eval:{ first: BIO_PRF_SALT } } }
+  }});
+  const r = asrt.getClientExtensionResults().prf;
+  return (r && r.results && r.results.first) ? r.results.first : null;
+}
+async function enableBiometric(seed){
+  const cred = await navigator.credentials.create({ publicKey:{
+    rp:{ id: location.hostname, name:'MoonBite Wallet' },
+    user:{ id: crypto.getRandomValues(new Uint8Array(16)), name:'moonbite-wallet', displayName:'MoonBite Wallet' },
+    challenge: crypto.getRandomValues(new Uint8Array(32)),
+    pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+    authenticatorSelection:{ authenticatorAttachment:'platform', userVerification:'required', residentKey:'required' },
+    timeout:60000, extensions:{ prf:{} }
+  }});
+  if(!cred) throw new Error('cancelled');
+  const ext = cred.getClientExtensionResults();
+  if(!ext.prf || !ext.prf.enabled) throw new Error('unsupported');
+  const secret = await bioGetSecret(cred.rawId);
+  if(!secret) throw new Error('unsupported');
+  const seedEnc = await encryptSeedWithPrf(seed, secret);
+  localStorage.setItem(BIO_LS, JSON.stringify({ credId: _b64e(cred.rawId), seedEnc }));
+}
+function disableBiometric(){ try{ localStorage.removeItem(BIO_LS); }catch(e){} }
+async function bioUnlock(){
+  const st = bioStored(); if(!st) return;
+  try{
+    const secret = await bioGetSecret(_b64d(st.credId));
+    if(!secret){ $('#unlockErr').textContent = 'Biometric unlock failed — use your PIN'; return; }
+    const seed = await decryptSeedWithPrf(st.seedEnc, secret);
+    if(!seed){ $('#unlockErr').textContent = 'Biometric unlock failed — use your PIN'; return; }
+    seedPhrase = seed; await deriveWallet(); enterHome();
+  }catch(e){ /* user cancelled the prompt — silently fall back to the PIN pad */ }
+}
+async function onBioToggle(){
+  if(bioEnabled()){ disableBiometric(); toast('Biometric unlock turned off'); fillSettings(); return; }
+  if(!seedPhrase){ toast('Unlock your wallet first'); return; }
+  if(!(await bioSupported())){ toast('This device has no biometric unlock'); return; }
+  try{ await enableBiometric(seedPhrase); toast('Biometric unlock is on'); fillSettings(); }
+  catch(e){ toast(e && e.message==='unsupported'
+      ? "This device can't store a secure biometric key"
+      : 'Biometric setup was cancelled'); }
+}
 
 function fmt(units){
   return displayUnit === 'units'
@@ -306,7 +379,15 @@ async function doSend(){
 }
 
 /* ---------- settings ---------- */
-function fillSettings(){ const a = realAddress(); $('#setAddr').textContent = a || '—'; updateUnitSeg(); updateThemeSeg(); }
+function fillSettings(){ const a = realAddress(); $('#setAddr').textContent = a || '—'; updateUnitSeg(); updateThemeSeg(); updateBioRow(); }
+function updateBioRow(){
+  const row = $('#bioRow'), state = $('#bioState'); if(!row) return;
+  const on = bioEnabled();
+  if(state) state.textContent = on ? 'On' : 'Off';
+  row.classList.toggle('on', on);
+  // hide the row entirely on a device that can't do platform biometrics
+  bioSupported().then(ok => { row.hidden = !ok && !on; });
+}
 function lockWallet(){ seedPhrase = null; startUnlock(); }
 
 function updateUnitSeg(){
@@ -396,7 +477,8 @@ async function finishChangePin(newPin){
 /* ---------- event delegation (CSP-safe: no inline handlers) ---------- */
 const ACTIONS = { go: (a) => go(a), tab: (a) => go(a), startCreate, doImport, toPin: startPinSet, pinBack,
   openReceive, copyAddr, refreshBalance, sendMax, doSend,
-  lockWallet, revealStart, revealDone, revealCopy, setUnit, setTheme, changePinStart };
+  lockWallet, revealStart, revealDone, revealCopy, setUnit, setTheme, changePinStart,
+  bioUnlock, bioToggle: onBioToggle };
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if(!el) return;
   const fn = ACTIONS[el.dataset.act]; if(fn) fn(el.dataset.arg);

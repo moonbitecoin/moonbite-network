@@ -234,6 +234,10 @@ body{min-height:100vh}
   font-size:13.5px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:60;box-shadow:0 12px 30px -8px rgba(0,0,0,.5)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast .icon{width:16px;height:16px;stroke:var(--gain)}
+.bio-state{flex:none;font-family:var(--m);font-size:12px;color:var(--ash);text-transform:uppercase;letter-spacing:.06em}
+.bio-row.on .bio-state{color:var(--gold)}
+.bio-row.on .set-lead{stroke:var(--gold)}
+.bio-unlock{margin-top:16px;max-width:300px}
 </style>
 </head>
 <body>
@@ -257,6 +261,7 @@ body{min-height:100vh}
   <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
   <symbol id="i-logout" viewBox="0 0 24 24"><path d="M15 5H6a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h9"/><path d="M12 12h9M18 9l3 3-3 3"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-touch" viewBox="0 0 24 24"><path d="M12 10v3M8.5 8.5a5 5 0 0 1 7 0M6 11a8.5 8.5 0 0 1 .8-3.6M18 11a8.5 8.5 0 0 0-.8-3.6M8.5 13.5a5 5 0 0 0 1.2 4M15.5 13.5a5 5 0 0 1-.5 5M11.5 20a8.5 8.5 0 0 1-1.2-2"/></symbol>
   <!-- The real MoonBite mark (d01): one closed bitten-moon path, R=100,
        bite 0.62R centred 0.95R on the 45deg axis. Filled, not stroked. -->
   <symbol id="i-mark" viewBox="-110 -110 220 220"><path d="M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 A 62 62 0 0 1 13.99 -99.02 Z"/></symbol>
@@ -320,6 +325,7 @@ body{min-height:100vh}
     <div class="err" id="unlockErr"></div>
     <div class="spacer"></div>
     <div class="pad" id="unlockPad"></div>
+    <button class="btn btn-ghost bio-unlock" id="bioUnlockBtn" data-act="bioUnlock" hidden><svg class="icon"><use href="#i-touch"/></svg>Unlock with biometrics</button>
     <div style="height:20px"></div>
   </section>
 
@@ -400,6 +406,7 @@ body{min-height:100vh}
     </div>
     <div class="set-group">
       <div class="set-label">Security</div>
+      <div class="set-row bio-row" id="bioRow" data-act="bioToggle" hidden><svg class="icon set-lead"><use href="#i-touch"/></svg><span>Biometric unlock</span><span class="bio-state" id="bioState">Off</span></div>
       <div class="set-row" data-act="changePinStart"><svg class="icon set-lead"><use href="#i-lock"/></svg><span>Change PIN</span><svg class="icon set-ic"><use href="#i-chev"/></svg></div>
       <div class="set-row" data-act="revealStart"><svg class="icon set-lead"><use href="#i-eye"/></svg><span>Reveal recovery phrase</span><svg class="icon set-ic"><use href="#i-chev"/></svg></div>
       <div class="set-row danger" data-act="lockWallet"><svg class="icon set-lead"><use href="#i-logout"/></svg><span>Lock wallet</span><svg class="icon set-ic"><use href="#i-chev"/></svg></div>
