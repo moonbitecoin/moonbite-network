@@ -17,14 +17,17 @@ find pays you, and only you.
 
 ## Run it
 
-No wallet, no account, nothing to set up first. Just run the script:
+No wallet, no account, nothing to set up first.
+
+**Windows — double-click `Mine-MoonBite.bat`.** That's it, no terminal.
+A window opens and stays open while it mines; closing it stops mining.
 
 **Linux / macOS**
 ```bash
 ./mine.sh
 ```
 
-**Windows (PowerShell)**
+**Windows, from PowerShell instead of double-clicking**
 ```powershell
 .\mine.ps1
 ```
@@ -35,12 +38,16 @@ node's own built-in wallet on this machine — it prints that address the first
 time, and reuses it on every run after. That address is real and yours; import
 it into the wallet app any time you want to spend from it.
 
-Already have a wallet and want rewards to land there directly instead? Pass its
-address:
+Already have a wallet and want rewards to land there directly instead? Pass it
+as an argument:
 
 ```bash
-./mine.sh moon1youraddress        # Linux / macOS
-.\mine.ps1 moon1youraddress       # Windows
+./mine.sh moon1youraddress                  # Linux / macOS
+.\mine.ps1 moon1youraddress                 # Windows, PowerShell
+Mine-MoonBite.bat moon1youraddress          # Windows, double-click alternative:
+                                             # drag the .bat onto a shortcut
+                                             # with the address appended, or
+                                             # run it once from a terminal
 ```
 
 Leave it running; each block it finds is printed, and the reward is spendable

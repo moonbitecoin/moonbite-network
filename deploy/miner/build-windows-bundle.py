@@ -37,6 +37,7 @@ MEMBERS = [
     ("moonbited.exe", "moonbited.exe"),
     ("moonbite-cli.exe", "moonbite-cli.exe"),
     ("mine.ps1", "mine.ps1"),
+    ("Mine-MoonBite.bat", "Mine-MoonBite.bat"),
     ("README.md", "README.md"),
 ]
 

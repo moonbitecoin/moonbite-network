@@ -141,21 +141,26 @@ pre { background:#0E1017; border:1px solid #23262F; border-radius:10px; padding:
       </div>
       <div class="os-block on" data-os="nix"><pre>./mine.sh</pre></div>
       <div class="os-block" data-os="mac">
+        <p><b>Not published yet</b> — see the hollow macOS buttons above. Once
+ it is, macOS quarantines programs downloaded from the internet, so an
+ unsigned binary needs one extra step before <code>./mine.sh</code> will run:</p>
         <pre>xattr -dr com.apple.quarantine moonbite-miner &amp;&amp; ./mine.sh</pre>
-        <p class="faint" style="margin-top:10px">macOS quarantines programs
- downloaded from the internet, so an unsigned binary is blocked with
-        "cannot be opened because the developer cannot be verified." The
-        <code>xattr</code> line clears that flag for the extracted
-        <code>moonbite-miner</code> folder; then run <code>./mine.sh</code> as
- usual. Run both from a Terminal opened in that folder.</p>
+        <p class="faint" style="margin-top:10px">That clears the quarantine
+ flag macOS sets on downloads and blocks with "cannot be opened because the
+ developer cannot be verified." Run both lines from a Terminal opened in the
+ extracted folder.</p>
       </div>
       <div class="os-block" data-os="win">
+        <p><b>Double-click <code>Mine-MoonBite.bat</code></b> in the folder you
+ extracted. A window opens and stays open while it mines — that's the whole
+ setup, no terminal required.</p>
+        <p class="faint" style="margin-top:10px">Prefer a terminal, or want to
+ pass in your own address? Open PowerShell in that folder and run:</p>
         <pre>powershell -ExecutionPolicy Bypass -File .\mine.ps1</pre>
         <p class="faint" style="margin-top:10px">Windows blocks scripts downloaded
  from the internet by default, so run it with <code>-ExecutionPolicy Bypass</code>
- as shown — right-click the extracted folder, choose <b>Open in Terminal</b>,
- and paste the line. Plain <code>.\mine.ps1</code> is refused with
-        "running scripts is disabled on this system."</p>
+ as shown. Plain <code>.\mine.ps1</code> is refused with "running scripts is
+ disabled on this system." The <code>.bat</code> above does this for you.</p>
       </div>
     </div>
   </div>
