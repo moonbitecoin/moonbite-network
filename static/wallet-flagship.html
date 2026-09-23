@@ -56,7 +56,7 @@ body{min-height:100vh}
 .title{font-weight:700;font-size:16px;letter-spacing:.01em}
 
 /* ---- welcome ---- */
-.hero-mark{width:72px;height:72px;stroke:var(--gold);margin-bottom:22px}
+.hero-mark{width:64px;height:64px;margin-bottom:22px}
 .h1{font-family:var(--d);font-size:30px;line-height:1.08;letter-spacing:.005em;margin-bottom:14px}
 .lead{color:var(--ash);font-size:14.5px;line-height:1.55;max-width:300px;margin-bottom:26px}
 .trust{display:flex;gap:20px;justify-content:center;margin-top:22px;color:var(--ash);
@@ -94,8 +94,8 @@ body{min-height:100vh}
   color:var(--bone);font-family:var(--b);font-size:15px;padding:15px 16px;outline:none;transition:border-color .15s}
 .input:focus{border-color:var(--line-gold)}
 .input::placeholder{color:var(--ash-dim)}
-.input.amt{font-family:var(--m);font-size:34px;font-weight:700;padding-right:88px;letter-spacing:-.02em}
-.amt-unit{position:absolute;right:16px;bottom:15px;font-family:var(--d);font-size:13px;color:var(--gold);letter-spacing:.08em}
+.input.amt{font-family:var(--m);font-size:34px;font-weight:700;padding-right:64px;letter-spacing:-.02em}
+.amt-unit{position:absolute;right:16px;bottom:18px;width:24px;height:24px}
 .avail{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-family:var(--m);font-size:12.5px;color:var(--ash)}
 .avail b{color:var(--bone);font-weight:700}
 .avail a{color:var(--gold);cursor:pointer;text-transform:uppercase;letter-spacing:.06em;font-size:11px}
@@ -130,13 +130,17 @@ body{min-height:100vh}
 .balance-wrap{width:100%;padding:28px 0 4px;position:relative}
 .balance-label{font-family:var(--m);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ash)}
 .balance-rule{height:1px;background:var(--gold);opacity:.55;margin:12px 0 20px;max-width:230px}
-/* the figure owns the full row; the coin sits up by the label so long
-   balances never collide with it */
+/* the real MoonBite logo: bone moon + gold bars, transparent background */
+.glyph{display:block;overflow:visible}
+.glyph .moon{fill:var(--bone)}
+.glyph .bar{fill:var(--gold)}
+/* the figure owns the full row; the small currency sign is the logo,
+   scaled to the number so it sits inline with the digits */
 .balance-row{display:block}
-.balance{display:flex;flex-direction:column;gap:8px;font-family:var(--m);min-width:0}
-.balance #balNum{font-weight:700;font-size:clamp(46px,15vw,60px);line-height:.86;letter-spacing:-.035em;white-space:nowrap}
-.balance .unit{font-family:var(--d);font-size:13px;color:var(--gold);letter-spacing:.14em}
-.balance-coin{position:absolute;top:24px;right:0;width:50px;height:50px}
+.balance{display:flex;align-items:baseline;gap:.24em;min-width:0;font-size:clamp(46px,15vw,60px)}
+.balance #balNum{font-family:var(--m);font-weight:700;font-size:1em;line-height:.86;letter-spacing:-.035em;white-space:nowrap}
+.balance .unit{width:.62em;height:.62em;align-self:center;position:relative;top:.03em;flex:none}
+.balance-coin{position:absolute;top:22px;right:0;width:52px;height:52px}
 .balance-sub{margin-top:20px;font-family:var(--m);font-size:12.5px;color:var(--ash)}
 .balance-sub b{color:var(--bone);font-weight:700}
 
@@ -252,12 +256,17 @@ body{min-height:100vh}
   <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
   <symbol id="i-logout" viewBox="0 0 24 24"><path d="M15 5H6a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h9"/><path d="M12 12h9M18 9l3 3-3 3"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <!-- The real MoonBite mark (d01): one closed bitten-moon path, R=100,
+       bite 0.62R centred 0.95R on the 45deg axis. Filled, not stroked. -->
+  <symbol id="i-mark" viewBox="-110 -110 220 220"><path d="M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 A 62 62 0 0 1 13.99 -99.02 Z"/></symbol>
+  <!-- The MBITE currency glyph (d02): the mark struck by two gold bars. -->
+  <symbol id="i-mbite" viewBox="-140 -140 280 280"><path d="M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 A 62 62 0 0 1 13.99 -99.02 Z"/><rect class="bar" x="-127.5" y="-40.5" width="255" height="13"/><rect class="bar" x="-127.5" y="11.5" width="255" height="13"/></symbol>
 </defs></svg>
 
 <div class="app">
   <section id="s-welcome" class="screen center active">
     <div class="spacer"></div>
-    <svg class="icon hero-mark"><use href="#i-moon"/></svg>
+    <svg class="glyph hero-mark" viewBox="-140 -140 280 280" aria-hidden="true"><path class="moon" d="M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 A 62 62 0 0 1 13.99 -99.02 Z"/><rect class="bar" x="-127.5" y="-40.5" width="255" height="13"/><rect class="bar" x="-127.5" y="11.5" width="255" height="13"/></svg>
     <h1 class="h1">Your coins,<br>your keys.</h1>
     <p class="lead">A self-custody wallet for MoonBite. No account, no custodian — just you and the chain.</p>
     <div style="width:100%">
@@ -303,7 +312,7 @@ body{min-height:100vh}
 
   <section id="s-unlock" class="screen center">
     <div class="spacer"></div>
-    <svg class="icon hero-mark" style="width:60px;height:60px;margin-bottom:14px"><use href="#i-moon"/></svg>
+    <svg class="glyph hero-mark" style="width:60px;height:60px;margin-bottom:14px" viewBox="-140 -140 280 280" aria-hidden="true"><path class="moon" d="M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 A 62 62 0 0 1 13.99 -99.02 Z"/><rect class="bar" x="-127.5" y="-40.5" width="255" height="13"/><rect class="bar" x="-127.5" y="11.5" width="255" height="13"/></svg>
     <h2 style="font-size:22px;margin-bottom:6px">Welcome back</h2>
     <p class="muted" style="font-size:14px">Enter your PIN to unlock</p>
     <div class="pin-dots" id="unlockDots"></div>
@@ -319,13 +328,8 @@ body{min-height:100vh}
       <div class="balance-label">Total balance</div>
       <div class="balance-rule"></div>
       <div class="balance-row">
-        <div class="balance mono"><span id="balNum">0.00</span><span class="unit">MBITE</span></div>
-        <svg class="balance-coin" viewBox="0 0 100 100" aria-hidden="true">
-          <defs><clipPath id="mb-coin"><circle cx="50" cy="50" r="46"/></clipPath></defs>
-          <g clip-path="url(#mb-coin)"><circle cx="50" cy="50" r="46" fill="var(--gold)" opacity=".09"/><circle cx="93" cy="39" r="30" fill="var(--void)"/></g>
-          <circle cx="50" cy="50" r="46" fill="none" stroke="var(--gold)" stroke-width="1.25" opacity=".85"/>
-          <circle cx="93" cy="39" r="30" fill="none" stroke="var(--gold)" stroke-width="1.25" opacity=".85"/>
-        </svg>
+        <div class="balance"><span id="balNum" class="mono">0.00</span><svg class="unit glyph" viewBox="-140 -140 280 280" aria-label="MBITE"><path class="moon" d="M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 A 62 62 0 0 1 13.99 -99.02 Z"/><rect class="bar" x="-127.5" y="-40.5" width="255" height="13"/><rect class="bar" x="-127.5" y="11.5" width="255" height="13"/></svg></div>
+        <svg class="balance-coin glyph" viewBox="-140 -140 280 280" aria-hidden="true"><path class="moon" d="M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 A 62 62 0 0 1 13.99 -99.02 Z"/><rect class="bar" x="-127.5" y="-40.5" width="255" height="13"/><rect class="bar" x="-127.5" y="11.5" width="255" height="13"/></svg>
       </div>
       <div class="balance-sub">Spendable <b id="balSpend" class="mono">0.00</b></div>
     </div>
@@ -352,7 +356,7 @@ body{min-height:100vh}
     <div class="field">
       <label>Amount</label>
       <input class="input amt mono" id="sendAmt" inputmode="decimal" placeholder="0">
-      <div class="amt-unit">MBITE</div>
+      <svg class="amt-unit glyph" viewBox="-140 -140 280 280" aria-label="MBITE"><path class="moon" d="M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 A 62 62 0 0 1 13.99 -99.02 Z"/><rect class="bar" x="-127.5" y="-40.5" width="255" height="13"/><rect class="bar" x="-127.5" y="11.5" width="255" height="13"/></svg>
       <div class="avail"><span>Available <b class="mono" id="sendAvail">0.00</b></span><a data-act="sendMax">Use max</a></div>
     </div>
     <div class="field"><label>To address</label><input class="input" id="sendTo" placeholder="moon1…" spellcheck="false"></div>
