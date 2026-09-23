@@ -130,11 +130,13 @@ body{min-height:100vh}
 .balance-wrap{width:100%;padding:28px 0 4px;position:relative}
 .balance-label{font-family:var(--m);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ash)}
 .balance-rule{height:1px;background:var(--gold);opacity:.55;margin:12px 0 20px;max-width:230px}
-.balance-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
-.balance{display:flex;flex-direction:column;gap:6px;font-family:var(--m)}
-.balance #balNum{font-weight:700;font-size:44px;line-height:.9;letter-spacing:-.03em}
-.balance .unit{font-family:var(--d);font-size:12.5px;color:var(--gold);letter-spacing:.14em}
-.balance-coin{width:66px;height:66px;flex:none}
+/* the figure owns the full row; the coin sits up by the label so long
+   balances never collide with it */
+.balance-row{display:block}
+.balance{display:flex;flex-direction:column;gap:8px;font-family:var(--m);min-width:0}
+.balance #balNum{font-weight:700;font-size:clamp(46px,15vw,60px);line-height:.86;letter-spacing:-.035em;white-space:nowrap}
+.balance .unit{font-family:var(--d);font-size:13px;color:var(--gold);letter-spacing:.14em}
+.balance-coin{position:absolute;top:24px;right:0;width:50px;height:50px}
 .balance-sub{margin-top:20px;font-family:var(--m);font-size:12.5px;color:var(--ash)}
 .balance-sub b{color:var(--bone);font-weight:700}
 
