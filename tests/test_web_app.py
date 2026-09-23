@@ -49,15 +49,16 @@ class TestPageRendering:
         assert b"MoonBite" in response.data
 
     def test_wallet_page(self, client):
-        """Test GET /wallet returns wallet page."""
+        """Test GET /wallet returns the flagship wallet page."""
         response = client.get("/wallet")
         assert response.status_code == 200
-        assert b"Wallet" in response.data
-        # The wallet is seed-first now: there is no server-side "Generate New
-        # Address" button, because the address is derived in the browser from
-        # the user's own phrase.
-        assert b"seedPhraseScreen" in response.data
-        assert b"moonbite-address.js" in response.data
+        assert b"MoonBite Wallet" in response.data
+        # The wallet is seed-first: the 12-word recovery phrase is generated
+        # and held in the browser (seedGrid), never server-side, and all
+        # crypto runs from the audited client module.
+        assert b"seedGrid" in response.data
+        assert b"recovery phrase" in response.data
+        assert b"wallet-flagship.js" in response.data
 
     def test_mining_page(self, client):
         """Test GET /mining returns mining page."""
