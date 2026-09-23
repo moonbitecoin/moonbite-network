@@ -46,8 +46,9 @@ listen=1
 dbcache=512
 rpcuser=moonminer
 rpcpassword=$pw
-${p2p}${rpcp}# Live MoonBite seed node - how your miner finds the network.
+${p2p}${rpcp}# Live MoonBite seed nodes - how your miner finds the network.
 addnode=67.205.154.64:9444
+addnode=165.232.106.9:9444
 CONF
   umask "$old_umask"
   chmod 600 "$CONF"

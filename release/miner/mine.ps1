@@ -53,7 +53,8 @@ listen=1
 dbcache=512
 rpcuser=moonminer
 rpcpassword=$pw
-$p2p$rpcp addnode=67.205.154.64:9444
+$p2p${rpcp}addnode=67.205.154.64:9444
+addnode=165.232.106.9:9444
 "@ | Set-Content -Encoding ascii $conf
 }
 function Wait-Rpc {
