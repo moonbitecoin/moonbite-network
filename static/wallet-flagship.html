@@ -132,6 +132,7 @@ body{min-height:100vh}
 .balance-rule{height:1px;background:var(--gold);opacity:.55;margin:12px 0 20px;max-width:230px}
 /* the real MoonBite logo: bone moon + gold bars, transparent background */
 .glyph{display:block;overflow:visible}
+.btn-glyph{width:18px;height:18px;flex:none}
 .glyph .moon{fill:var(--bone)}
 .glyph .bar{fill:var(--gold)}
 /* the figure owns the full row; the small currency sign is the logo,
@@ -270,7 +271,7 @@ body{min-height:100vh}
     <h1 class="h1">Your coins,<br>your keys.</h1>
     <p class="lead">A self-custody wallet for MoonBite. No account, no custodian — just you and the chain.</p>
     <div style="width:100%">
-      <button class="btn btn-primary" data-act="startCreate"><svg class="icon"><use href="#i-moon"/></svg>Create a new wallet</button>
+      <button class="btn btn-primary" data-act="startCreate"><svg class="glyph btn-glyph" viewBox="-140 -140 280 280" aria-hidden="true"><path class="moon" d="M 13.99 -99.02 A 100 100 0 1 0 99.02 -13.99 A 62 62 0 0 1 13.99 -99.02 Z"/><rect class="bar" x="-127.5" y="-40.5" width="255" height="13"/><rect class="bar" x="-127.5" y="11.5" width="255" height="13"/></svg>Create a new wallet</button>
       <button class="btn btn-ghost" style="margin-top:12px" data-act="go" data-arg="s-import"><svg class="icon"><use href="#i-key"/></svg>I have a recovery phrase</button>
     </div>
     <div class="trust"><span><svg class="icon"><use href="#i-shield"/></svg>Non-custodial</span><span><svg class="icon"><use href="#i-lock"/></svg>Keys never leave</span></div>
