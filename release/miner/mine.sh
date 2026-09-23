@@ -57,8 +57,33 @@ wait_rpc() {
   local i; for i in $(seq 1 60); do cli getblockcount >/dev/null 2>&1 && return 0; sleep 2; done
   echo "node did not start (check $DATADIR/debug.log)" >&2; return 1
 }
+# True if something is already listening on the given TCP port (ss, then
+# netstat, then /proc as fallbacks - one of them exists on any Linux/macOS).
+port_in_use() {
+  local p="$1"
+  if command -v ss >/dev/null 2>&1; then ss -ltn 2>/dev/null | grep -qE "[:.]$p\b" && return 0; fi
+  if command -v netstat >/dev/null 2>&1; then netstat -an 2>/dev/null | grep -qE "[:.]$p\b.*LISTEN" && return 0; fi
+  if command -v lsof >/dev/null 2>&1; then lsof -iTCP:"$p" -sTCP:LISTEN >/dev/null 2>&1 && return 0; fi
+  return 1
+}
 start_node() {
   cli getblockcount >/dev/null 2>&1 && return 0
+  # A node we can't authenticate to may already own the ports - usually a
+  # second copy of this miner on the same machine. Only one node runs per
+  # machine; another just fails to bind and hangs. Say so and stop cleanly.
+  local p2p="${MOONBITE_P2P_PORT:-9444}" rpcp="${MOONBITE_RPC_PORT:-9445}"
+  if port_in_use "$p2p" || port_in_use "$rpcp"; then
+    cat >&2 <<MSG
+
+  A MoonBite node is already running on this computer (port $p2p is in use).
+  You are already mining - only one node runs per machine, so this isn't needed.
+
+  To run a SECOND, separate miner here on purpose, give it its own ports and
+  data folder first, for example:
+      MOONBITE_P2P_PORT=19444 MOONBITE_RPC_PORT=19445 MOONBITE_DATADIR=~/.moonbite2 ./mine.sh
+MSG
+    exit 0
+  fi
   write_conf
   "$DAEMON" -datadir="$DATADIR" -conf="$CONF" -daemon >/dev/null
   wait_rpc

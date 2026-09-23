@@ -32,6 +32,14 @@ function Invoke-Cli {
 }
 function Test-Addr([string]$a) { return ($a -match '^moon1[0-9a-z]{20,88}$') }
 
+function Get-P2pPort { if ($env:MOONBITE_P2P_PORT) { [int]$env:MOONBITE_P2P_PORT } else { 9444 } }
+function Get-RpcPort { if ($env:MOONBITE_RPC_PORT) { [int]$env:MOONBITE_RPC_PORT } else { 9445 } }
+function Test-PortListening([int]$port) {
+  # Get-NetTCPConnection is missing on very old Windows; fall back to netstat.
+  try { return [bool](Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction Stop) }
+  catch { return [bool](netstat -ano | Select-String ":$port\s.*LISTENING") }
+}
+
 function Write-Conf {
   New-Item -ItemType Directory -Force -Path $datadir | Out-Null
   $pw = $null
@@ -48,9 +56,35 @@ rpcpassword=$pw
 $p2p$rpcp addnode=67.205.154.64:9444
 "@ | Set-Content -Encoding ascii $conf
 }
-function Wait-Rpc { for ($i=0; $i -lt 90; $i++) { try { Invoke-Cli getblockcount | Out-Null; return } catch { Start-Sleep 2 } } throw "node did not start" }
+function Wait-Rpc {
+  Write-Host " Starting the node..."
+  for ($i=0; $i -lt 90; $i++) {
+    try { Invoke-Cli getblockcount | Out-Null; return } catch {}
+    if ($i -eq 4) { Write-Host " Still starting - the first run builds the RandomX cache, which can take a minute..." }
+    Start-Sleep 2
+  }
+  throw "The node did not start. Check $datadir\debug.log for the reason."
+}
 function Start-Node {
+  # Already have a reachable node (e.g. this script re-run)? Use it.
   try { Invoke-Cli getblockcount | Out-Null; return } catch {}
+  # A node we can't authenticate to may already own the ports - typically a
+  # second copy of this miner on the same PC. Only one node runs per machine;
+  # launching another just fails to bind and hangs. Say so plainly and stop.
+  if ((Test-PortListening (Get-P2pPort)) -or (Test-PortListening (Get-RpcPort))) {
+    Write-Host ""
+    Write-Host "  A MoonBite node is already running on this computer"
+    Write-Host "  (network port $(Get-P2pPort) is in use). You are already mining -"
+    Write-Host "  only one node runs per machine, so this window isn't needed."
+    Write-Host ""
+    Write-Host "  To run a SECOND, separate miner here on purpose, give it its own"
+    Write-Host "  ports and data folder first, for example:"
+    Write-Host '      $env:MOONBITE_P2P_PORT=19444; $env:MOONBITE_RPC_PORT=19445'
+    Write-Host '      $env:MOONBITE_DATADIR="$env:USERPROFILE\.moonbite2"'
+    Write-Host "      .\mine.ps1"
+    Write-Host ""
+    exit 0
+  }
   Write-Conf
   Start-Process -FilePath $daemon -ArgumentList "-datadir=$datadir","-conf=$conf" -WindowStyle Hidden | Out-Null
   Wait-Rpc
